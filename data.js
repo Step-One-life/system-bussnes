@@ -12,13 +12,81 @@
 const STORAGE_KEYS = {
   STUDENTS:  'tk_students',
   TRAININGS: 'tk_trainings',
+  GROUPS:    'tk_groups',
 };
-
-/** Fixed groups — never mutate */
-const GROUPS = ['Трикинг', 'Взрослые', 'Тхэквондо', 'Индивидуальные'];
 
 /** Subscription types */
 const SUB_TYPES = { '1': 1, '4': 4, '8': 8 };
+
+/* ────────────────────────────────────────────────
+   Groups (dynamic, stored in localStorage)
+───────────────────────────────────────────────── */
+
+async function getGroups() {
+  const groups = _read(STORAGE_KEYS.GROUPS, []);
+  let migrated = false;
+  for (const g of groups) {
+    // Migrate old schedule format { days[], time } → { schedule: [{ day, time }] }
+    if (!g.schedule && Array.isArray(g.days)) {
+      g.schedule = g.days.map(day => ({ day, time: g.time || '' }));
+      delete g.days;
+      delete g.time;
+      migrated = true;
+    }
+    // Migrate: add isIndividual flag
+    if (g.isIndividual === undefined) {
+      g.isIndividual = g.name === 'Индивидуальные';
+      migrated = true;
+    }
+  }
+  if (migrated) _write(STORAGE_KEYS.GROUPS, groups);
+  return groups;
+}
+
+async function getIndividualGroups() {
+  const groups = await getGroups();
+  return groups.filter(g => g.isIndividual);
+}
+
+async function createGroup(data) {
+  const groups = await getGroups();
+  if (groups.find(g => g.name === data.name)) {
+    throw new Error(`Группа «${data.name}» уже существует`);
+  }
+  const group = {
+    id:           data.name,
+    name:         data.name,
+    schedule:     data.schedule     || [],
+    duration:     data.duration     || 60,
+    isIndividual: data.isIndividual || false,
+    createdAt:    new Date().toISOString(),
+  };
+  groups.push(group);
+  _write(STORAGE_KEYS.GROUPS, groups);
+  return group;
+}
+
+async function updateGroup(id, changes) {
+  const groups = await getGroups();
+  const idx = groups.findIndex(g => g.id === id);
+  if (idx === -1) return null;
+  groups[idx] = { ...groups[idx], ...changes };
+  _write(STORAGE_KEYS.GROUPS, groups);
+  return groups[idx];
+}
+
+async function getGroupById(id) {
+  const groups = await getGroups();
+  return groups.find(g => g.id === id) ?? null;
+}
+
+async function deleteGroup(id) {
+  const groups = await getGroups();
+  const filtered = groups.filter(g => g.id !== id);
+  if (filtered.length === groups.length) return false;
+  _write(STORAGE_KEYS.GROUPS, filtered);
+  return true;
+}
 
 /* ────────────────────────────────────────────────
    UUID helper
@@ -144,6 +212,10 @@ async function addSubscription(studentId, subData) {
   if (!student) return null;
 
   const total = SUB_TYPES[subData.type] ?? 1;
+  const createdDate = new Date(subData.createdAt || new Date().toISOString().slice(0, 10));
+  const expiresDate = new Date(createdDate);
+  expiresDate.setDate(expiresDate.getDate() + 35);
+
   const sub = {
     id:        uuid(),
     groupId:   subData.groupId,
@@ -151,6 +223,7 @@ async function addSubscription(studentId, subData) {
     total,
     remaining: total,
     createdAt: subData.createdAt || new Date().toISOString().slice(0, 10),
+    expiresAt: expiresDate.toISOString().slice(0, 10),
     isActive:  true,
   };
 
@@ -305,6 +378,91 @@ async function updateTraining(id, changes) {
 }
 
 /**
+ * Restore one session to the active (or most recently deactivated) subscription for a group.
+ * Used when removing a student from a training by mistake.
+ * @param {string} studentId
+ * @param {string} groupId
+ * @returns {Promise<Subscription|null>}
+ */
+async function restoreSession(studentId, groupId) {
+  const student = await getStudentById(studentId);
+  if (!student) return null;
+
+  const subs = student.subscriptions;
+
+  // Prefer active sub; fall back to most recent for this group
+  let idx = subs.findIndex(s => s.groupId === groupId && s.isActive);
+  if (idx === -1) {
+    idx = subs.reduce((best, s, i) => {
+      if (s.groupId !== groupId) return best;
+      if (best === -1) return i;
+      return new Date(subs[i].createdAt) > new Date(subs[best].createdAt) ? i : best;
+    }, -1);
+  }
+  if (idx === -1) return null;
+
+  subs[idx].remaining = Math.min(subs[idx].remaining + 1, subs[idx].total);
+  if (subs[idx].remaining > 0) subs[idx].isActive = true;
+
+  await updateStudent(studentId, { subscriptions: subs });
+  return subs[idx];
+}
+
+/**
+ * Remove a visit record by trainingId from a student's history.
+ * @param {string} studentId
+ * @param {string} trainingId
+ * @returns {Promise<void>}
+ */
+async function removeVisit(studentId, trainingId) {
+  const student = await getStudentById(studentId);
+  if (!student) return;
+  const visitHistory = student.visitHistory.filter(v => v.trainingId !== trainingId);
+  await updateStudent(studentId, { visitHistory });
+}
+
+/**
+ * Extend the expiry date of the active (or most recent) subscription for a group.
+ * @param {string} studentId
+ * @param {string} groupId
+ * @param {number} days
+ * @returns {Promise<Subscription|null>}
+ */
+async function extendSubscription(studentId, groupId, days) {
+  const student = await getStudentById(studentId);
+  if (!student) return null;
+
+  const subs = student.subscriptions;
+
+  // Prefer the active-by-sessions sub; fall back to most recent for this group
+  let idx = subs.findIndex(s => s.groupId === groupId && s.isActive);
+  if (idx === -1) {
+    idx = subs.reduce((best, s, i) => {
+      if (s.groupId !== groupId) return best;
+      if (best === -1) return i;
+      return new Date(subs[i].createdAt) > new Date(subs[best].createdAt) ? i : best;
+    }, -1);
+  }
+  if (idx === -1) return null;
+
+  const sub = subs[idx];
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const base = sub.expiresAt ? new Date(sub.expiresAt) : today;
+  const from = base > today ? base : today;
+  const newExpiry = new Date(from);
+  newExpiry.setDate(newExpiry.getDate() + days);
+  subs[idx].expiresAt = newExpiry.toISOString().slice(0, 10);
+
+  // Reactivate only if sessions remain (was expired by date, not by sessions)
+  if (sub.remaining > 0) subs[idx].isActive = true;
+
+  await updateStudent(studentId, { subscriptions: subs });
+  return subs[idx];
+}
+
+/**
  * Delete a training by id.
  * @param {string} id
  * @returns {Promise<boolean>}
@@ -328,6 +486,18 @@ async function deleteTraining(id) {
 async function seedDemoData() {
   const existing = await getStudents();
   if (existing.length > 0) return; // already seeded
+
+  // Seed default groups
+  const existingGroups = await getGroups();
+  if (!existingGroups.length) {
+    const defaults = [
+      { name: 'Трикинг',        duration: 90, schedule: [{ day: 'Пн', time: '19:00' }, { day: 'Ср', time: '19:00' }, { day: 'Пт', time: '19:00' }] },
+      { name: 'Взрослые',       duration: 60, schedule: [{ day: 'Вт', time: '20:00' }, { day: 'Чт', time: '20:00' }] },
+      { name: 'Тхэквондо',      duration: 60, schedule: [{ day: 'Пн', time: '17:00' }, { day: 'Ср', time: '17:00' }, { day: 'Пт', time: '17:00' }] },
+      { name: 'Индивидуальные', duration: 60, schedule: [], isIndividual: true },
+    ];
+    for (const d of defaults) await createGroup(d);
+  }
 
   const today = new Date();
   const fmt = d => d.toISOString().slice(0, 10);
@@ -407,15 +577,25 @@ async function seedDemoData() {
 async function clearAllData() {
   localStorage.removeItem(STORAGE_KEYS.STUDENTS);
   localStorage.removeItem(STORAGE_KEYS.TRAININGS);
+  localStorage.removeItem(STORAGE_KEYS.GROUPS);
 }
 
 /* ────────────────────────────────────────────────
    Exports (global, since we're not using modules)
 ───────────────────────────────────────────────── */
 window.DB = {
-  // constants
-  GROUPS,
+  // GROUPS as a live getter — excludes individual groups (those are managed via Индивидуальные page)
+  get GROUPS() { return _read(STORAGE_KEYS.GROUPS, []).filter(g => !g.isIndividual).map(g => g.name); },
+
   SUB_TYPES,
+
+  // groups
+  getGroups,
+  getGroupById,
+  getIndividualGroups,
+  createGroup,
+  updateGroup,
+  deleteGroup,
 
   // students
   getStudents,
@@ -428,10 +608,13 @@ window.DB = {
   addSubscription,
   deductSession,
   getActiveSubscription,
+  extendSubscription,
+  restoreSession,
 
   // visits
   recordVisit,
   getLastVisitDate,
+  removeVisit,
 
   // trainings
   getTrainings,

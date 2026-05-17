@@ -45,10 +45,11 @@ async function navigate(page) {
 
   // Render the page
   switch (page) {
-    case 'home':      await renderHome();      break;
-    case 'students':  await renderStudents();  break;
-    case 'groups':    await renderGroups();    break;
-    case 'trainings': await renderTrainings(); break;
+    case 'home':       await renderHome();       break;
+    case 'students':   await renderStudents();   break;
+    case 'groups':     await renderGroups();     break;
+    case 'trainings':  await renderTrainings();  break;
+    case 'individual': await renderIndividual(); break;
   }
 
   // Re-create lucide icons
@@ -110,6 +111,228 @@ async function renderHome() {
   `;
   lucide.createIcons({ nodes: [tArea] });
   setupTrainingToggles(tArea);
+}
+
+/* ────────────────────────────────────────────────
+   Page: Individual sessions
+───────────────────────────────────────────────── */
+
+/** Ensure the internal "Индивидуальные" group exists; create it if not. */
+async function ensureIndividualGroup() {
+  const groups = await DB.getGroups();
+  let indGroup = groups.find(g => g.isIndividual);
+  if (!indGroup) {
+    indGroup = await DB.createGroup({ name: 'Индивидуальные', schedule: [], duration: 60, isIndividual: true });
+  }
+  return indGroup;
+}
+
+async function renderIndividual() {
+  const el = document.getElementById('page-individual');
+
+  const indGroup   = await ensureIndividualGroup();
+  const indGroupId = indGroup.name;
+
+  const [kpis, warnings, students, trainings] = await Promise.all([
+    Logic.getIndividualKPIs([indGroupId]),
+    Logic.getIndividualWarnings([indGroupId]),
+    DB.getStudents(),
+    DB.getTrainings(),
+  ]);
+
+  const clients        = students.filter(s => s.groups.includes(indGroupId));
+  const recentSessions = trainings.filter(t => t.groupId === indGroupId).slice(0, 5);
+
+  el.innerHTML = `
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Индивидуальные занятия</h1>
+        <div class="page-subtitle">${kpis.clients} клиентов</div>
+      </div>
+      <button class="btn btn--primary" id="addIndSessionBtn">
+        <i data-lucide="plus"></i> Записать занятие
+      </button>
+    </div>
+
+    <div class="kpi-grid" style="margin-bottom:var(--sp-6)">
+      <div class="kpi-card kpi-card--accent">
+        <div class="kpi-card__icon"><i data-lucide="users"></i></div>
+        <div class="kpi-card__label">Всего клиентов</div>
+        <div class="kpi-card__value" data-countup="${kpis.clients}">0</div>
+      </div>
+      <div class="kpi-card kpi-card--ok">
+        <div class="kpi-card__icon"><i data-lucide="calendar-check"></i></div>
+        <div class="kpi-card__label">Занятий за месяц</div>
+        <div class="kpi-card__value" data-countup="${kpis.monthSessions}">0</div>
+      </div>
+      <div class="kpi-card kpi-card--accent">
+        <div class="kpi-card__icon"><i data-lucide="calendar"></i></div>
+        <div class="kpi-card__label">За эту неделю</div>
+        <div class="kpi-card__value" data-countup="${kpis.weekSessions}">0</div>
+      </div>
+      <div class="kpi-card kpi-card--${kpis.expiring > 0 ? 'danger' : 'ok'}">
+        <div class="kpi-card__icon"><i data-lucide="alert-circle"></i></div>
+        <div class="kpi-card__label">Требуют внимания</div>
+        <div class="kpi-card__value" data-countup="${kpis.expiring}">0</div>
+      </div>
+    </div>
+
+    ${warnings.length ? `
+      <div class="section-title">⚠️ Требуют внимания</div>
+      <div class="warning-list" style="margin-bottom:var(--sp-6)">
+        ${warnings.map(w => UI.renderWarningItem(w)).join('')}
+      </div>
+    ` : ''}
+
+    <div class="section-title">Клиенты</div>
+    <div class="table-wrap" style="margin-bottom:var(--sp-6)">
+      ${clients.length ? `
+        <table class="table">
+          <thead><tr>
+            <th>Имя</th>
+            <th>Абонемент</th>
+            <th>Статус</th>
+            <th>Последнее занятие</th>
+            <th></th>
+          </tr></thead>
+          <tbody>
+            ${clients.map(s => {
+              const sub    = s.subscriptions.find(sub => sub.groupId === indGroupId && sub.isActive);
+              const status = Logic.getSubStatus(s, indGroupId);
+              const lv     = DB.getLastVisitDate(s);
+              return `
+                <tr data-student-id="${s.id}">
+                  <td class="font-medium">${s.name}</td>
+                  <td>${UI.renderProgressBar(sub)}</td>
+                  <td>${UI.renderBadge(status)}</td>
+                  <td class="text-sm text-secondary">${lv ? Logic.formatDateShort(lv) : '—'}</td>
+                  <td>
+                    <button class="btn btn--ghost btn--sm" data-action="view-student" data-id="${s.id}">
+                      <i data-lucide="chevron-right"></i>
+                    </button>
+                  </td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+      ` : UI.renderEmptyState({ icon: 'user-round', title: 'Нет клиентов', text: 'Нажмите «Записать занятие», чтобы добавить клиента' })}
+    </div>
+
+    ${recentSessions.length ? `
+      <div class="section-title">Последние занятия</div>
+      <div style="display:flex; flex-direction:column; gap:var(--sp-3)">
+        ${recentSessions.map(t => UI.renderTrainingItem(t, students)).join('')}
+      </div>
+    ` : ''}
+  `;
+
+  lucide.createIcons({ nodes: [el] });
+  UI.animateCountUp();
+  setupTrainingToggles(el);
+
+  el.querySelectorAll('[data-action="view-student"]').forEach(btn => {
+    btn.addEventListener('click', e => { e.stopPropagation(); openStudentDrawer(btn.dataset.id); });
+  });
+  el.querySelectorAll('tbody tr').forEach(row => {
+    row.addEventListener('click', () => openStudentDrawer(row.dataset.studentId));
+  });
+
+  el.querySelector('#addIndSessionBtn')?.addEventListener('click', () => {
+    openCreateIndividualSessionModal(indGroupId);
+  });
+}
+
+/* ────────────────────────────────────────────────
+   Modal: Create individual session
+───────────────────────────────────────────────── */
+
+async function openCreateIndividualSessionModal(indGroupId) {
+  const allStudents = await DB.getStudents();
+
+  UI.openModal({
+    title: 'Записать индивидуальное занятие',
+    body: UI.renderIndividualSessionModal(allStudents, indGroupId),
+    footer: `
+      <button class="btn btn--secondary" id="cancelIndSession">Отмена</button>
+      <button class="btn btn--primary"   id="saveIndSession">Записать и списать</button>
+    `,
+    onOpen: modal => {
+      lucide.createIcons({ nodes: [modal] });
+
+      const clientSelect = modal.querySelector('#indSessionClient');
+      const subInfoEl    = modal.querySelector('#indClientSubInfo');
+      const subTypeGroup = modal.querySelector('#indSubTypeGroup');
+
+      const refreshClientInfo = () => {
+        const studentId = clientSelect.value;
+        if (!studentId) {
+          subInfoEl.innerHTML = '';
+          subTypeGroup.style.display = 'none';
+          return;
+        }
+        const student   = allStudents.find(s => s.id === studentId);
+        const activeSub = student?.subscriptions.find(s => s.groupId === indGroupId && s.isActive);
+
+        if (activeSub) {
+          subInfoEl.innerHTML = `
+            <div class="card" style="padding:var(--sp-3); margin-top:var(--sp-2)">
+              ${UI.renderProgressBar(activeSub)}
+            </div>
+          `;
+          subTypeGroup.style.display = 'none';
+        } else {
+          subInfoEl.innerHTML = `<p class="text-muted text-sm" style="margin-top:var(--sp-2)">Нет активного абонемента — выберите тип занятия</p>`;
+          subTypeGroup.style.display = '';
+        }
+      };
+
+      clientSelect.addEventListener('change', refreshClientInfo);
+      modal.querySelector('#cancelIndSession')?.addEventListener('click', UI.closeModal);
+
+      modal.querySelector('#saveIndSession')?.addEventListener('click', async () => {
+        const studentId = clientSelect.value;
+        const date      = modal.querySelector('#indSessionDate').value;
+        const time      = modal.querySelector('#indSessionTime').value;
+        const note      = modal.querySelector('#indSessionNote')?.value.trim() || '';
+
+        if (!studentId || !date) {
+          UI.showToast({ type: 'error', title: 'Выберите клиента и дату' });
+          return;
+        }
+
+        // Ensure student is linked to individual group
+        const student = await DB.getStudentById(studentId);
+        if (!student.groups.includes(indGroupId)) {
+          await DB.updateStudent(studentId, { groups: [...student.groups, indGroupId] });
+        }
+
+        // If no active sub, create one from selected type
+        const activeSub = student.subscriptions.find(s => s.groupId === indGroupId && s.isActive);
+        if (!activeSub) {
+          const subType = modal.querySelector('#indSubType')?.value || '1';
+          await DB.addSubscription(studentId, { groupId: indGroupId, type: subType, createdAt: date });
+        }
+
+        // Create training and mark attendance
+        const training = await DB.createTraining({ date, time, groupId: indGroupId, attendees: [studentId], note });
+        const results  = await Logic.markAttendance(training, [studentId]);
+
+        UI.closeModal();
+        UI.showToast({ type: 'success', title: 'Занятие записано', msg: student.name });
+
+        for (const r of results) {
+          if (r.status === 'expired') {
+            UI.showToast({ type: 'error', title: r.name, msg: 'Абонемент закончился — нужно продлить' });
+          } else if (r.status === 'ending') {
+            UI.showToast({ type: 'warn', title: r.name, msg: `Осталось ${r.sub?.remaining} занятий` });
+          }
+        }
+
+        await renderIndividual();
+      });
+    },
+  });
 }
 
 /* ────────────────────────────────────────────────
@@ -235,14 +458,17 @@ async function renderGroups() {
     return;
   }
 
-  // Load stats for all groups
+  const groups   = (await DB.getGroups()).filter(g => !g.isIndividual);
   const statsArr = await Promise.all(
-    DB.GROUPS.map(g => Logic.getGroupStats(g).then(s => ({ g, s })))
+    groups.map(g => Logic.getGroupStats(g.name).then(s => ({ g, s })))
   );
 
   el.innerHTML = `
     <div class="page-header">
       <h1 class="page-title">Группы</h1>
+      <button class="btn btn--primary" id="createGroupBtn">
+        <i data-lucide="plus"></i> Создать группу
+      </button>
     </div>
     <div class="groups-grid">
       ${statsArr.map(({ g, s }) => UI.renderGroupCard(g, s)).join('')}
@@ -250,6 +476,15 @@ async function renderGroups() {
   `;
 
   lucide.createIcons({ nodes: [el] });
+
+  el.querySelector('#createGroupBtn')?.addEventListener('click', openCreateGroupModal);
+
+  el.querySelectorAll('[data-action="edit-group"]').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      openEditGroupModal(btn.dataset.groupId);
+    });
+  });
 
   el.querySelectorAll('.group-card').forEach(card => {
     card.addEventListener('click', () => {
@@ -260,9 +495,11 @@ async function renderGroups() {
 }
 
 async function renderGroupDetail(groupId) {
-  const el = document.getElementById('page-groups');
+  const el      = document.getElementById('page-groups');
+  const group   = await DB.getGroupById(groupId);
   const students = await Logic.getStudentsByGroup(groupId);
   const stats    = await Logic.getGroupStats(groupId);
+  const schedule = Logic.formatSchedule(group);
 
   el.innerHTML = `
     <div class="page-header">
@@ -271,8 +508,11 @@ async function renderGroupDetail(groupId) {
           <i data-lucide="arrow-left"></i> Все группы
         </button>
         <h1 class="page-title">${groupId}</h1>
-        <div class="page-subtitle">${stats.total} учеников</div>
+        <div class="page-subtitle">${stats.total} учеников${schedule ? ' · ' + schedule : ''}</div>
       </div>
+      <button class="btn btn--secondary" id="editGroupBtn">
+        <i data-lucide="pencil"></i> Редактировать
+      </button>
     </div>
 
     <div class="kpi-grid" style="margin-bottom:var(--sp-6)">
@@ -337,6 +577,8 @@ async function renderGroupDetail(groupId) {
     renderGroups();
   });
 
+  el.querySelector('#editGroupBtn')?.addEventListener('click', () => openEditGroupModal(groupId));
+
   el.querySelectorAll('[data-action="view-student"], tbody tr').forEach(el => {
     el.addEventListener('click', e => {
       e.stopPropagation();
@@ -387,14 +629,340 @@ async function renderTrainings() {
 }
 
 /* ────────────────────────────────────────────────
-   Training accordion
+   Training accordion + actions
 ───────────────────────────────────────────────── */
 
 function setupTrainingToggles(container) {
   container.querySelectorAll('.training-item__header').forEach(header => {
-    header.addEventListener('click', () => {
+    header.addEventListener('click', e => {
+      // Don't toggle if user clicked the add button inside the header
+      if (e.target.closest('[data-action="add-to-training"]')) return;
       header.closest('.training-item').classList.toggle('expanded');
     });
+  });
+
+  container.querySelectorAll('[data-action="add-to-training"]').forEach(btn => {
+    btn.addEventListener('click', async e => {
+      e.stopPropagation();
+      const students = await DB.getStudents();
+      openAddToTrainingModal(btn.dataset.trainingId, students);
+    });
+  });
+
+  container.querySelectorAll('[data-action="remove-from-training"]').forEach(btn => {
+    btn.addEventListener('click', async e => {
+      e.stopPropagation();
+      const { trainingId, studentId } = btn.dataset;
+
+      const training = await DB.getTrainingById(trainingId);
+      if (!training) return;
+
+      const student = await DB.getStudentById(studentId);
+      const name = student?.name ?? 'Ученик';
+
+      await DB.updateTraining(trainingId, {
+        attendees: training.attendees.filter(id => id !== studentId),
+      });
+      await DB.restoreSession(studentId, training.groupId);
+      await DB.removeVisit(studentId, trainingId);
+
+      UI.showToast({ type: 'info', title: 'Убран с тренировки', msg: name });
+
+      if (AppState.currentPage === 'trainings')  await renderTrainings();
+      else if (AppState.currentPage === 'home')   await renderHome();
+      else if (AppState.currentPage === 'individual') await renderIndividual();
+    });
+  });
+
+  container.querySelectorAll('[data-action="delete-training"]').forEach(btn => {
+    btn.addEventListener('click', async e => {
+      e.stopPropagation();
+      const { trainingId } = btn.dataset;
+
+      const training = await DB.getTrainingById(trainingId);
+      if (!training) return;
+
+      if (!confirm('Удалить тренировку? Занятия будут возвращены ученикам.')) return;
+
+      for (const studentId of training.attendees) {
+        await DB.restoreSession(studentId, training.groupId);
+        await DB.removeVisit(studentId, trainingId);
+      }
+
+      await DB.deleteTraining(trainingId);
+      UI.showToast({ type: 'success', title: 'Тренировка удалена' });
+
+      if (AppState.currentPage === 'trainings')       await renderTrainings();
+      else if (AppState.currentPage === 'home')        await renderHome();
+      else if (AppState.currentPage === 'individual')  await renderIndividual();
+    });
+  });
+}
+
+/* ────────────────────────────────────────────────
+   Modal: Add student to existing training
+───────────────────────────────────────────────── */
+
+async function openAddToTrainingModal(trainingId, allStudents) {
+  const training = await DB.getTrainingById(trainingId);
+  if (!training) return;
+
+  const groupStudents = allStudents.filter(s =>
+    s.groups.includes(training.groupId) && !training.attendees.includes(s.id)
+  );
+
+  UI.openModal({
+    title: `Добавить на тренировку — ${training.groupId}`,
+    body: UI.renderAddToTrainingModal(training.groupId, groupStudents),
+    footer: `
+      <button class="btn btn--secondary" id="cancelAddToTraining">Отмена</button>
+      <button class="btn btn--primary"   id="saveAddToTraining">Добавить</button>
+    `,
+    onOpen: modal => {
+      lucide.createIcons({ nodes: [modal] });
+
+      // Tab switching
+      const tabExisting = modal.querySelector('#tabExisting');
+      const tabNew      = modal.querySelector('#tabNew');
+      const secExisting = modal.querySelector('#sectionExisting');
+      const secNew      = modal.querySelector('#sectionNew');
+
+      tabExisting.addEventListener('click', () => {
+        secExisting.style.display = '';
+        secNew.style.display = 'none';
+        tabExisting.className = 'btn btn--primary btn--sm';
+        tabNew.className      = 'btn btn--secondary btn--sm';
+        tabExisting.style.flex = tabNew.style.flex = '1';
+      });
+
+      tabNew.addEventListener('click', () => {
+        secExisting.style.display = 'none';
+        secNew.style.display = '';
+        tabNew.className      = 'btn btn--primary btn--sm';
+        tabExisting.className = 'btn btn--secondary btn--sm';
+        tabExisting.style.flex = tabNew.style.flex = '1';
+      });
+
+      modal.querySelector('#cancelAddToTraining')?.addEventListener('click', UI.closeModal);
+
+      modal.querySelector('#saveAddToTraining')?.addEventListener('click', async () => {
+        const isExistingTab = secExisting.style.display !== 'none';
+
+        if (isExistingTab) {
+          // ── Добавить из группы ──
+          const selected = [...modal.querySelectorAll('input[name="addAttendees"]:checked')]
+            .map(c => c.value);
+
+          if (!selected.length) {
+            UI.showToast({ type: 'warn', title: 'Выберите хотя бы одного ученика' });
+            return;
+          }
+
+          const fresh = await DB.getTrainingById(trainingId);
+          const updatedAttendees = [...new Set([...fresh.attendees, ...selected])];
+          await DB.updateTraining(trainingId, { attendees: updatedAttendees });
+
+          const results = await Logic.markAttendance(fresh, selected);
+
+          UI.closeModal();
+          UI.showToast({ type: 'success', title: 'Добавлено', msg: `${selected.length} чел. на тренировку` });
+
+          for (const r of results) {
+            if (r.status === 'expired') {
+              UI.showToast({ type: 'error', title: r.name, msg: 'Абонемент закончился — нужно продлить' });
+            } else if (r.status === 'ending') {
+              UI.showToast({ type: 'warn', title: r.name, msg: `Осталось ${r.sub?.remaining} занятий` });
+            } else if (r.status === 'none') {
+              UI.showToast({ type: 'warn', title: r.name, msg: 'Нет активного абонемента' });
+            }
+          }
+
+        } else {
+          // ── Новый ученик ──
+          const name = modal.querySelector('#newStudentName').value.trim();
+          if (!name) {
+            UI.showToast({ type: 'error', title: 'Введите имя ученика' });
+            return;
+          }
+
+          const subType = modal.querySelector('#newStudentSub').value;
+
+          const student = await DB.createStudent({ name, groups: [training.groupId] });
+
+          if (subType) {
+            await DB.addSubscription(student.id, {
+              groupId: training.groupId,
+              type: subType,
+              createdAt: training.date,
+            });
+          }
+
+          const fresh = await DB.getTrainingById(trainingId);
+          await DB.updateTraining(trainingId, { attendees: [...fresh.attendees, student.id] });
+
+          if (subType) {
+            const results = await Logic.markAttendance(fresh, [student.id]);
+            for (const r of results) {
+              if (r.status === 'ending') {
+                UI.showToast({ type: 'warn', title: r.name, msg: `Осталось ${r.sub?.remaining} занятий` });
+              }
+            }
+          } else {
+            await DB.recordVisit(student.id, {
+              date:       training.date,
+              groupId:    training.groupId,
+              trainingId: training.id,
+            });
+          }
+
+          UI.closeModal();
+          UI.showToast({ type: 'success', title: 'Ученик добавлен', msg: `${name} записан на тренировку` });
+        }
+
+        // Обновить текущую страницу
+        if (AppState.currentPage === 'trainings') await renderTrainings();
+        else if (AppState.currentPage === 'home')  await renderHome();
+      });
+    }
+  });
+}
+
+/* ────────────────────────────────────────────────
+   Modals: Create / Edit group
+───────────────────────────────────────────────── */
+
+function collectGroupFormData(modal) {
+  const schedule = [];
+  modal.querySelectorAll('.schedule-row').forEach(row => {
+    const cb = row.querySelector('.schedule-day-cb');
+    if (cb?.checked) {
+      const hh = String(parseInt(row.querySelector('.time-h')?.value || '0', 10) || 0).padStart(2, '0');
+      const mm = String(parseInt(row.querySelector('.time-m')?.value || '0', 10) || 0).padStart(2, '0');
+      schedule.push({ day: cb.value, time: `${hh}:${mm}` });
+    }
+  });
+  const duration = parseInt(modal.querySelector('#groupDuration')?.value ?? '60', 10);
+  return { schedule, duration };
+}
+
+function setupScheduleToggles(modal) {
+  // Auto-advance and validate time inputs
+  modal.querySelectorAll('.time-input').forEach(wrap => {
+    const hInput = wrap.querySelector('.time-h');
+    const mInput = wrap.querySelector('.time-m');
+
+    hInput.addEventListener('input', () => {
+      hInput.value = hInput.value.replace(/\D/g, '').slice(0, 2);
+      if (hInput.value.length === 2) { mInput.focus(); mInput.select(); }
+    });
+    hInput.addEventListener('blur', () => {
+      if (!hInput.value) return;
+      hInput.value = String(Math.min(23, parseInt(hInput.value, 10))).padStart(2, '0');
+    });
+
+    mInput.addEventListener('input', () => {
+      mInput.value = mInput.value.replace(/\D/g, '').slice(0, 2);
+    });
+    mInput.addEventListener('blur', () => {
+      if (!mInput.value) return;
+      mInput.value = String(Math.min(59, parseInt(mInput.value, 10))).padStart(2, '0');
+    });
+    mInput.addEventListener('keydown', e => {
+      if (e.key === 'Backspace' && !mInput.value) { hInput.focus(); hInput.select(); }
+    });
+  });
+
+  // Day checkbox toggle
+  modal.querySelectorAll('.schedule-day-cb').forEach(cb => {
+    const row      = cb.closest('.schedule-row');
+    const timeWrap = row.querySelector('.time-input');
+    const hInput   = timeWrap.querySelector('.time-h');
+    const mInput   = timeWrap.querySelector('.time-m');
+
+    cb.addEventListener('change', () => {
+      const on = cb.checked;
+      row.classList.toggle('active', on);
+      timeWrap.classList.toggle('disabled', !on);
+      hInput.disabled = !on;
+      mInput.disabled = !on;
+      if (on) { hInput.focus(); hInput.select(); }
+    });
+  });
+}
+
+function openCreateGroupModal() {
+  UI.openModal({
+    title: 'Создать группу',
+    body: UI.renderGroupModal(null),
+    footer: `
+      <button class="btn btn--secondary" id="cancelGroup">Отмена</button>
+      <button class="btn btn--primary"   id="saveGroup">Создать</button>
+    `,
+    onOpen: modal => {
+      lucide.createIcons({ nodes: [modal] });
+      setupScheduleToggles(modal);
+      modal.querySelector('#cancelGroup')?.addEventListener('click', UI.closeModal);
+      modal.querySelector('#saveGroup')?.addEventListener('click', async () => {
+        const name = modal.querySelector('#groupName')?.value.trim();
+        if (!name) {
+          UI.showToast({ type: 'error', title: 'Введите название группы' });
+          return;
+        }
+        try {
+          const { schedule, duration } = collectGroupFormData(modal);
+          const isIndividual = modal.querySelector('#groupIsIndividual')?.checked ?? false;
+          await DB.createGroup({ name, schedule, duration, isIndividual });
+          UI.closeModal();
+          UI.showToast({ type: 'success', title: 'Группа создана', msg: name });
+          await renderGroups();
+        } catch (e) {
+          UI.showToast({ type: 'error', title: e.message });
+        }
+      });
+    }
+  });
+}
+
+async function openEditGroupModal(groupId) {
+  const group = await DB.getGroupById(groupId);
+  if (!group) return;
+
+  UI.openModal({
+    title: 'Редактировать группу',
+    body: UI.renderGroupModal(group),
+    footer: `
+      <button class="btn btn--danger btn--sm" id="deleteGroupBtn" style="margin-right:auto">
+        <i data-lucide="trash-2"></i> Удалить
+      </button>
+      <button class="btn btn--secondary" id="cancelGroup">Отмена</button>
+      <button class="btn btn--primary"   id="saveGroup">Сохранить</button>
+    `,
+    onOpen: modal => {
+      lucide.createIcons({ nodes: [modal] });
+      setupScheduleToggles(modal);
+      modal.querySelector('#cancelGroup')?.addEventListener('click', UI.closeModal);
+      modal.querySelector('#saveGroup')?.addEventListener('click', async () => {
+        const { schedule, duration } = collectGroupFormData(modal);
+        await DB.updateGroup(groupId, { schedule, duration });
+        UI.closeModal();
+        UI.showToast({ type: 'success', title: 'Группа обновлена', msg: group.name });
+        await navigate(AppState.currentPage);
+      });
+      modal.querySelector('#deleteGroupBtn')?.addEventListener('click', async () => {
+        if (!confirm(`Удалить группу «${group.name}»?\nУченики останутся в системе.`)) return;
+        await DB.deleteGroup(groupId);
+        const allStudents = await DB.getStudents();
+        for (const s of allStudents) {
+          if (s.groups.includes(groupId)) {
+            await DB.updateStudent(s.id, { groups: s.groups.filter(g => g !== groupId) });
+          }
+        }
+        UI.closeModal();
+        UI.showToast({ type: 'success', title: 'Группа удалена', msg: group.name });
+        AppState.groupView = null;
+        await renderGroups();
+      });
+    }
   });
 }
 
@@ -560,24 +1128,67 @@ async function openRenewSubModal(studentId, groupId) {
 }
 
 /* ────────────────────────────────────────────────
+   Modal: Extend subscription by time
+───────────────────────────────────────────────── */
+
+async function openExtendSubModal(studentId, groupId) {
+  const student = await DB.getStudentById(studentId);
+  if (!student) return;
+
+  const sub = student.subscriptions.find(s => s.groupId === groupId && s.isActive)
+           ?? student.subscriptions.filter(s => s.groupId === groupId).at(-1)
+           ?? null;
+
+  UI.openModal({
+    title: 'Продлить срок абонемента',
+    body: UI.renderExtendSubModal(student.name, groupId, sub),
+    footer: `
+      <button class="btn btn--secondary" id="cancelExtend">Отмена</button>
+      <button class="btn btn--primary"   id="saveExtend">Продлить</button>
+    `,
+    onOpen: modal => {
+      modal.querySelector('#cancelExtend')?.addEventListener('click', UI.closeModal);
+      modal.querySelector('#saveExtend')?.addEventListener('click', async () => {
+        const days = parseInt(modal.querySelector('#extendDays').value, 10);
+        await DB.extendSubscription(studentId, groupId, days);
+        UI.closeModal();
+        UI.showToast({ type: 'success', title: 'Срок продлён', msg: `${student.name} · +${days} дн.` });
+        await navigate(AppState.currentPage);
+      });
+    }
+  });
+}
+
+/* ────────────────────────────────────────────────
    Drawer: Student detail
 ───────────────────────────────────────────────── */
 
 async function openStudentDrawer(studentId) {
-  const student = await DB.getStudentById(studentId);
+  const [student, allGroups] = await Promise.all([
+    DB.getStudentById(studentId),
+    DB.getGroups(),
+  ]);
   if (!student) return;
 
   UI.openDrawer({
     title: student.name,
-    body: UI.renderStudentDetail(student),
+    body: UI.renderStudentDetail(student, allGroups),
     onOpen: drawer => {
       lucide.createIcons({ nodes: [drawer] });
 
-      // Renew buttons
+      // Renew (new subscription)
       drawer.querySelectorAll('[data-action="renew-sub"]').forEach(btn => {
         btn.addEventListener('click', () => {
           UI.closeDrawer();
           openRenewSubModal(btn.dataset.studentId, btn.dataset.group);
+        });
+      });
+
+      // Extend time
+      drawer.querySelectorAll('[data-action="extend-sub-time"]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          UI.closeDrawer();
+          openExtendSubModal(btn.dataset.studentId, btn.dataset.group);
         });
       });
 

@@ -11,6 +11,19 @@
 ───────────────────────────────────────────────── */
 
 /**
+ * Days remaining until subscription expires (null if no expiresAt set).
+ * @param {Subscription} sub
+ * @returns {number|null}
+ */
+function getDaysRemaining(sub) {
+  if (!sub || !sub.expiresAt) return null;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const expiry = new Date(sub.expiresAt);
+  return Math.ceil((expiry - today) / (1000 * 60 * 60 * 24));
+}
+
+/**
  * Compute the subscription status label for a student in a given group.
  * @param {Student} student
  * @param {string} groupId
@@ -20,14 +33,16 @@ function getSubStatus(student, groupId) {
   const sub = student.subscriptions.find(s => s.groupId === groupId && s.isActive);
 
   if (!sub) {
-    // Check if they ever had one (expired)
-    const expired = student.subscriptions.find(s => s.groupId === groupId && !s.isActive);
-    if (expired) return { label: 'Нужно продлить', type: 'expired' };
+    const any = student.subscriptions.find(s => s.groupId === groupId);
+    if (any) return { label: 'Нужно продлить', type: 'expired' };
     return { label: 'Нет абонемента', type: 'none' };
   }
 
-  if (sub.remaining === 0) return { label: 'Нужно продлить', type: 'expired' };
-  if (sub.remaining <= 2)  return { label: 'Заканчивается',  type: 'ending' };
+  const days = getDaysRemaining(sub);
+
+  if (days !== null && days < 0) return { label: 'Истёк срок',    type: 'expired' };
+  if (sub.remaining === 0)       return { label: 'Нужно продлить', type: 'expired' };
+  if (sub.remaining <= 2 || (days !== null && days <= 7)) return { label: 'Заканчивается', type: 'ending' };
   return { label: 'Активен', type: 'active' };
 }
 
@@ -171,6 +186,57 @@ async function getWarningStudents() {
 }
 
 /**
+ * KPIs for individual sessions.
+ * @param {string[]} indGroupNames
+ */
+async function getIndividualKPIs(indGroupNames) {
+  if (!indGroupNames.length) return { clients: 0, monthSessions: 0, weekSessions: 0, expiring: 0 };
+
+  const [students, trainings] = await Promise.all([DB.getStudents(), DB.getTrainings()]);
+
+  const clients = students.filter(s => s.groups.some(g => indGroupNames.includes(g)));
+
+  const now          = new Date();
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const startOfWeek  = new Date(now);
+  startOfWeek.setDate(now.getDate() - ((now.getDay() + 6) % 7)); // Monday
+  startOfWeek.setHours(0, 0, 0, 0);
+
+  const indTrainings   = trainings.filter(t => indGroupNames.includes(t.groupId));
+  const monthSessions  = indTrainings.filter(t => new Date(t.date) >= startOfMonth).length;
+  const weekSessions   = indTrainings.filter(t => new Date(t.date) >= startOfWeek).length;
+
+  let expiring = 0;
+  for (const s of clients) {
+    const hasIssue = s.groups
+      .filter(g => indGroupNames.includes(g))
+      .some(g => { const st = getSubStatus(s, g); return st.type === 'expired' || st.type === 'ending'; });
+    if (hasIssue) expiring++;
+  }
+
+  return { clients: clients.length, monthSessions, weekSessions, expiring };
+}
+
+/**
+ * Students with expiring/expired individual subscriptions.
+ * @param {string[]} indGroupNames
+ */
+async function getIndividualWarnings(indGroupNames) {
+  const students = await DB.getStudents();
+  const warnings = [];
+  for (const s of students) {
+    for (const groupId of s.groups.filter(g => indGroupNames.includes(g))) {
+      const status = getSubStatus(s, groupId);
+      if (status.type === 'ending' || status.type === 'expired') {
+        const sub = s.subscriptions.find(sub => sub.groupId === groupId) ?? null;
+        warnings.push({ student: s, groupId, sub, status });
+      }
+    }
+  }
+  return warnings;
+}
+
+/**
  * Get students belonging to a specific group.
  * @param {string} groupId
  * @returns {Promise<Student[]>}
@@ -230,6 +296,35 @@ function formatDay(isoDate) {
   return new Date(isoDate).getDate().toString();
 }
 
+/** Format group schedule to a readable string.
+ *  Groups days that share the same time: "Пн, Ср 19:00 | Сб 16:00 · 90 мин"
+ */
+function formatSchedule(group) {
+  if (!group) return '';
+
+  const schedule = group.schedule ?? [];
+  if (!schedule.length && !group.duration) return 'Расписание не задано';
+
+  let schedulePart = '';
+  if (schedule.length) {
+    // Group by time
+    const byTime = new Map();
+    for (const { day, time } of schedule) {
+      const key = time || '';
+      if (!byTime.has(key)) byTime.set(key, []);
+      byTime.get(key).push(day);
+    }
+    schedulePart = [...byTime.entries()]
+      .map(([time, days]) => days.join(', ') + (time ? ' ' + time : ''))
+      .join(' | ');
+  }
+
+  const parts = [];
+  if (schedulePart)    parts.push(schedulePart);
+  if (group.duration)  parts.push(group.duration + ' мин');
+  return parts.join(' · ') || 'Расписание не задано';
+}
+
 /** Subscription type label */
 function subTypeLabel(type) {
   const labels = { '1': 'Разовое', '4': '4 занятия', '8': '8 занятий' };
@@ -240,6 +335,7 @@ function subTypeLabel(type) {
    Exports
 ───────────────────────────────────────────────── */
 window.Logic = {
+  getDaysRemaining,
   getSubStatus,
   getOverallSubStatus,
   getSubProgress,
@@ -254,4 +350,7 @@ window.Logic = {
   formatMonth,
   formatDay,
   subTypeLabel,
+  formatSchedule,
+  getIndividualKPIs,
+  getIndividualWarnings,
 };

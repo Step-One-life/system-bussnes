@@ -174,15 +174,31 @@ function renderProgressBar(sub) {
   if (!sub) return `<span class="text-muted text-sm">—</span>`;
 
   const { pct, cls } = Logic.getSubProgress(sub);
+  const days = Logic.getDaysRemaining(sub);
+
+  let daysLabel = '';
+  if (days !== null) {
+    if (days < 0)       daysLabel = `<span style="color:var(--danger)">истёк ${Math.abs(days)} дн. назад</span>`;
+    else if (days === 0) daysLabel = `<span style="color:var(--danger)">последний день</span>`;
+    else if (days <= 7) daysLabel = `<span style="color:var(--warning)">${days} дн.</span>`;
+    else                daysLabel = `<span class="text-secondary">${days} дн.</span>`;
+  }
+
   return `
     <div class="progress-wrap">
       <div class="progress-label">
         <span>${Logic.subTypeLabel(sub.type)}</span>
-        <span>${sub.remaining}/${sub.total}</span>
+        <span>${sub.remaining}/${sub.total} занятий</span>
       </div>
       <div class="progress-bar">
         <div class="progress-bar__fill progress-bar__fill--${cls}" style="width:${pct}%"></div>
       </div>
+      ${sub.expiresAt ? `
+        <div class="progress-label" style="margin-top:3px">
+          <span class="text-muted">до ${Logic.formatDateShort(sub.expiresAt)}</span>
+          ${daysLabel}
+        </div>
+      ` : ''}
     </div>
   `;
 }
@@ -285,32 +301,56 @@ function renderStudentRow(student) {
 /**
  * Render the drawer content for a student detail view.
  * @param {Student} student
+ * @param {object[]} allGroups — full group objects to distinguish individual vs group
  * @returns {string} HTML
  */
-function renderStudentDetail(student) {
-  const lastVisit = DB.getLastVisitDate(student);
+function renderStudentDetail(student, allGroups = []) {
+  const lastVisit    = DB.getLastVisitDate(student);
+  const indNames     = allGroups.filter(g => g.isIndividual).map(g => g.name);
+  const groupGroups  = student.groups.filter(g => !indNames.includes(g));
+  const indGroups    = student.groups.filter(g =>  indNames.includes(g));
 
-  // Subscriptions section
-  const subsHtml = student.groups.map(groupId => {
-    const activeSub = student.subscriptions.find(s => s.groupId === groupId && s.isActive);
-    const status = Logic.getSubStatus(student, groupId);
+  const renderSubCard = groupId => {
+    const activeSub  = student.subscriptions.find(s => s.groupId === groupId && s.isActive);
+    const status     = Logic.getSubStatus(student, groupId);
+    const isInd      = indNames.includes(groupId);
+    const isRazovoe  = activeSub?.type === '1';
+
+    const secondAction = (isInd && isRazovoe)
+      ? `<span class="text-muted text-sm" style="display:flex;align-items:center;gap:4px;padding:var(--sp-1) 0">
+           <i data-lucide="phone-call" style="width:13px;height:13px;flex-shrink:0"></i>
+           Узнать о следующей тренировке
+         </span>`
+      : `<button class="btn btn--ghost btn--sm" data-action="extend-sub-time"
+                 data-student-id="${student.id}" data-group="${groupId}">
+           <i data-lucide="clock"></i> Продлить срок
+         </button>`;
 
     return `
-      <div class="card" style="padding: var(--sp-4)">
+      <div class="card" style="padding:var(--sp-4)">
         <div class="flex items-center gap-3" style="margin-bottom:var(--sp-3)">
           <span class="font-semibold text-sm">${groupId}</span>
           <span class="ml-auto">${renderBadge(status)}</span>
         </div>
         ${renderProgressBar(activeSub)}
-        <div style="margin-top:var(--sp-3); display:flex; gap:var(--sp-2)">
-          <button class="btn btn--secondary btn--sm" data-action="renew-sub" 
+        <div style="margin-top:var(--sp-3); display:flex; gap:var(--sp-2); flex-wrap:wrap; align-items:center">
+          <button class="btn btn--secondary btn--sm" data-action="renew-sub"
                   data-student-id="${student.id}" data-group="${groupId}">
-            <i data-lucide="refresh-cw"></i> Продлить
+            <i data-lucide="refresh-cw"></i> Новый абонемент
           </button>
+          ${secondAction}
         </div>
       </div>
     `;
-  }).join('');
+  };
+
+  const groupSubsHtml = groupGroups.length
+    ? groupGroups.map(renderSubCard).join('')
+    : `<p class="text-muted text-sm">Нет групповых занятий</p>`;
+
+  const indSubsHtml = indGroups.length
+    ? indGroups.map(renderSubCard).join('')
+    : '';
 
   // Visit history
   const historyHtml = student.visitHistory.length
@@ -328,13 +368,22 @@ function renderStudentDetail(student) {
   return `
     <div style="display:flex; flex-direction:column; gap:var(--sp-2); margin-bottom:var(--sp-4)">
       <div class="text-secondary text-sm">Последнее посещение: <strong>${lastVisit ? Logic.formatDateShort(lastVisit) : '—'}</strong></div>
-      <div class="text-secondary text-sm">Групп: <strong>${student.groups.length}</strong></div>
     </div>
 
-    <div class="section-title">Абонементы</div>
+    <div class="section-title">Групповые занятия</div>
     <div style="display:flex; flex-direction:column; gap:var(--sp-3)">
-      ${subsHtml}
+      ${groupSubsHtml}
     </div>
+
+    ${indSubsHtml ? `
+      <div class="section-title mt-6">
+        <i data-lucide="user-round" style="width:14px;height:14px;flex-shrink:0"></i>
+        Индивидуальные
+      </div>
+      <div style="display:flex; flex-direction:column; gap:var(--sp-3)">
+        ${indSubsHtml}
+      </div>
+    ` : ''}
 
     <div class="section-title mt-6">История посещений</div>
     <div>${historyHtml}</div>
@@ -358,9 +407,17 @@ function renderStudentDetail(student) {
  * @returns {string} HTML
  */
 function renderTrainingItem(training, allStudents) {
-  const attendeeNames = training.attendees
-    .map(id => allStudents.find(s => s.id === id)?.name ?? 'Удалён')
-    .filter(Boolean);
+  // If the groupId is absent from the regular groups list, it's an individual session
+  const isInd      = !DB.GROUPS.includes(training.groupId);
+  const clientName = isInd ? (allStudents.find(s => s.id === training.attendees[0])?.name ?? null) : null;
+  const groupLabel = clientName
+    ? `Индивидуальная тренировка с ${clientName}`
+    : training.groupId;
+  const metaParts  = [
+    training.time || '',
+    isInd ? '' : `${training.attendees.length} чел.`,
+    training.note || '',
+  ].filter(Boolean).join(' · ');
 
   return `
     <div class="training-item" data-training-id="${training.id}">
@@ -370,21 +427,48 @@ function renderTrainingItem(training, allStudents) {
           <span class="training-item__mon">${Logic.formatMonth(training.date)}</span>
         </div>
         <div class="training-item__info">
-          <div class="training-item__group">${training.groupId}</div>
-          <div class="training-item__meta">
-            ${training.time ? training.time + ' · ' : ''}${training.attendees.length} чел.
-            ${training.note ? ' · ' + training.note : ''}
-          </div>
+          <div class="training-item__group">${groupLabel}</div>
+          <div class="training-item__meta">${metaParts}</div>
         </div>
+        <button class="btn btn--ghost btn--sm training-item__add-btn"
+                data-action="add-to-training" data-training-id="${training.id}"
+                title="Добавить ученика">
+          <i data-lucide="user-plus"></i>
+        </button>
         <i data-lucide="chevron-down" class="training-item__chevron"></i>
       </div>
       <div class="training-item__body">
-        ${attendeeNames.length
+        ${training.attendees.length
           ? `<div style="display:flex; flex-wrap:wrap; gap:var(--sp-2)">
-              ${attendeeNames.map(n => `<span class="badge badge--neutral">${n}</span>`).join('')}
+              ${training.attendees.map(id => {
+                const name = allStudents.find(s => s.id === id)?.name ?? 'Удалён';
+                return `
+                  <span class="attendee-tag">
+                    ${name}
+                    <button class="attendee-tag__remove"
+                            data-action="remove-from-training"
+                            data-training-id="${training.id}"
+                            data-student-id="${id}"
+                            title="Убрать с тренировки">
+                      <i data-lucide="x"></i>
+                    </button>
+                  </span>
+                `;
+              }).join('')}
              </div>`
           : `<p class="text-muted text-sm">Нет записей об учениках</p>`
         }
+        <div style="margin-top:var(--sp-4); display:flex; justify-content:space-between; align-items:center">
+          <button class="btn btn--secondary btn--sm"
+                  data-action="add-to-training" data-training-id="${training.id}">
+            <i data-lucide="user-plus"></i> Добавить ученика
+          </button>
+          <button class="btn btn--ghost btn--sm training-item__delete-btn"
+                  data-action="delete-training" data-training-id="${training.id}"
+                  title="Удалить тренировку">
+            <i data-lucide="trash-2"></i>
+          </button>
+        </div>
       </div>
     </div>
   `;
@@ -396,14 +480,22 @@ function renderTrainingItem(training, allStudents) {
 
 /**
  * Render a group card.
- * @param {string} groupId
+ * @param {{ id: string, name: string, days: string[], time: string, duration: number }} group
  * @param {{ total: number, active: number, ending: number, expired: number }} stats
  * @returns {string} HTML
  */
-function renderGroupCard(groupId, stats) {
+function renderGroupCard(group, stats) {
+  const schedule = Logic.formatSchedule(group);
   return `
-    <div class="group-card" data-group="${groupId}">
-      <div class="group-card__name">${groupId}</div>
+    <div class="group-card" data-group="${group.id}">
+      <div style="display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:var(--sp-2)">
+        <div class="group-card__name" style="margin-bottom:0">${group.name}</div>
+        <button class="btn btn--ghost btn--sm" data-action="edit-group" data-group-id="${group.id}"
+                title="Редактировать группу" style="margin:-4px -4px 0 0; flex-shrink:0">
+          <i data-lucide="pencil"></i>
+        </button>
+      </div>
+      <div class="text-sm text-muted" style="margin-bottom:var(--sp-4)">${schedule}</div>
       <div class="group-card__stats">
         <div class="group-stat">
           <span class="group-stat__label">Всего учеников</span>
@@ -519,9 +611,9 @@ function renderSubFields(groups) {
  * @param {Student[]} students  — all students (will filter by group client-side)
  * @returns {string}
  */
-function renderAddTrainingModal(students) {
+function renderAddTrainingModal(students, defaultGroup = null) {
   const groupOptions = DB.GROUPS.map(g =>
-    `<option value="${g}">${g}</option>`
+    `<option value="${g}" ${g === defaultGroup ? 'selected' : ''}>${g}</option>`
   ).join('');
 
   return `
@@ -604,6 +696,238 @@ function renderRenewSubModal(studentName, groupId) {
 }
 
 /* ────────────────────────────────────────────────
+   Modals: Create / Edit group
+───────────────────────────────────────────────── */
+
+const WEEK_DAYS = [
+  { abbr: 'Пн', full: 'Понедельник' },
+  { abbr: 'Вт', full: 'Вторник' },
+  { abbr: 'Ср', full: 'Среда' },
+  { abbr: 'Чт', full: 'Четверг' },
+  { abbr: 'Пт', full: 'Пятница' },
+  { abbr: 'Сб', full: 'Суббота' },
+  { abbr: 'Вс', full: 'Воскресенье' },
+];
+const DURATIONS = [30, 45, 60, 90, 120];
+
+/**
+ * Render the group create/edit modal body.
+ * Each day gets its own time input for custom schedules.
+ * @param {object|null} group — null for create
+ * @returns {string}
+ */
+function renderGroupModal(group) {
+  const isEdit   = !!group;
+  const schedule = group?.schedule ?? [];
+  const duration = group?.duration ?? 60;
+
+  const getEntry = abbr => schedule.find(s => s.day === abbr);
+
+  const scheduleRows = WEEK_DAYS.map(({ abbr, full }) => {
+    const entry     = getEntry(abbr);
+    const isChecked = !!entry;
+    const time      = entry?.time ?? '';
+    const [hh = '', mm = ''] = time ? time.split(':') : [];
+    return `
+      <div class="schedule-row${isChecked ? ' active' : ''}" data-day="${abbr}">
+        <label class="schedule-day-label">
+          <input type="checkbox" class="schedule-day-cb" value="${abbr}" ${isChecked ? 'checked' : ''} />
+          <span class="schedule-day-name">${full}</span>
+        </label>
+        <div class="time-input${isChecked ? '' : ' disabled'}">
+          <input type="text" class="time-h" maxlength="2" placeholder="ЧЧ"
+                 value="${hh}" ${isChecked ? '' : 'disabled'} inputmode="numeric" />
+          <span class="time-sep">:</span>
+          <input type="text" class="time-m" maxlength="2" placeholder="ММ"
+                 value="${mm}" ${isChecked ? '' : 'disabled'} inputmode="numeric" />
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  const durationOptions = DURATIONS.map(m =>
+    `<option value="${m}" ${duration === m ? 'selected' : ''}>${m} мин</option>`
+  ).join('');
+
+  return `
+    ${isEdit ? `
+      <div class="form-group">
+        <label class="form-label">Название</label>
+        <div class="form-input" style="background:var(--surface-2);color:var(--text-muted);cursor:default">${group.name}</div>
+      </div>
+    ` : `
+      <div class="form-group">
+        <label class="form-label">Название группы</label>
+        <input class="form-input" id="groupName" placeholder="Например: Дети" />
+      </div>
+    `}
+    <div class="form-group">
+      <label class="form-label">Расписание</label>
+      <div class="schedule-list">${scheduleRows}</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Длительность занятия</label>
+      <select class="form-select" id="groupDuration">${durationOptions}</select>
+    </div>
+  `;
+}
+
+/* ────────────────────────────────────────────────
+   Modals: Add student to existing training
+───────────────────────────────────────────────── */
+
+/**
+ * Render modal for adding a student to an existing training.
+ * @param {string} groupId
+ * @param {Student[]} groupStudents — students in group NOT yet attending
+ * @returns {string}
+ */
+function renderAddToTrainingModal(groupId, groupStudents) {
+  const existingList = groupStudents.length
+    ? groupStudents.map(s => {
+        const sub    = s.subscriptions.find(sub => sub.groupId === groupId && sub.isActive);
+        const status = Logic.getSubStatus(s, groupId);
+        const days   = sub ? Logic.getDaysRemaining(sub) : null;
+        const meta   = sub
+          ? `${sub.remaining}/${sub.total} зан.${days !== null ? ' · ' + (days < 0 ? 'срок истёк' : days + ' дн.') : ''}`
+          : 'нет абонемента';
+        return `
+          <div class="checkbox-item">
+            <input type="checkbox" id="add-${s.id}" name="addAttendees" value="${s.id}" />
+            <label for="add-${s.id}" style="display:flex; justify-content:space-between; align-items:center; width:100%; gap:var(--sp-3)">
+              <span class="font-medium">${s.name}</span>
+              <span style="display:flex; align-items:center; gap:var(--sp-2); flex-shrink:0">
+                <span class="text-muted text-sm">${meta}</span>
+                ${renderBadge(status)}
+              </span>
+            </label>
+          </div>
+        `;
+      }).join('')
+    : `<p class="text-muted text-sm" style="padding:var(--sp-2)">Все ученики группы уже записаны на эту тренировку</p>`;
+
+  return `
+    <div style="display:flex; gap:var(--sp-2); margin-bottom:var(--sp-5); border-bottom:1px solid var(--border); padding-bottom:var(--sp-4)">
+      <button class="btn btn--primary btn--sm" id="tabExisting" style="flex:1">Из группы</button>
+      <button class="btn btn--secondary btn--sm" id="tabNew" style="flex:1">Новый ученик</button>
+    </div>
+
+    <div id="sectionExisting">
+      <div class="form-group">
+        <label class="form-label">Ученики группы «${groupId}»</label>
+        <div class="checkbox-group">${existingList}</div>
+      </div>
+    </div>
+
+    <div id="sectionNew" style="display:none">
+      <div class="form-group">
+        <label class="form-label">Имя и фамилия</label>
+        <input class="form-input" id="newStudentName" placeholder="Алексей Иванов" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Абонемент</label>
+        <select class="form-select" id="newStudentSub">
+          <option value="">— без абонемента —</option>
+          <option value="1">Разовое посещение</option>
+          <option value="4">4 занятия</option>
+          <option value="8">8 занятий</option>
+        </select>
+      </div>
+    </div>
+  `;
+}
+
+/* ────────────────────────────────────────────────
+   Modals: Extend subscription by days
+───────────────────────────────────────────────── */
+
+/**
+ * Render the "Extend subscription time" modal body.
+ * @param {string} studentName
+ * @param {string} groupId
+ * @param {Subscription|null} sub — current subscription to show current expiry
+ * @returns {string}
+ */
+function renderExtendSubModal(studentName, groupId, sub) {
+  const options = [7, 14, 21, 30, 35, 45, 60, 90].map(d =>
+    `<option value="${d}"${d === 35 ? ' selected' : ''}>${d} дней</option>`
+  ).join('');
+
+  const currentExpiry = sub?.expiresAt
+    ? `<div class="text-secondary text-sm" style="margin-top:var(--sp-2)">
+         Текущий срок: <strong>${Logic.formatDateFull(sub.expiresAt)}</strong>
+       </div>`
+    : '';
+
+  return `
+    <p class="text-secondary text-sm">
+      Ученик: <strong>${studentName}</strong><br/>
+      Группа: <strong>${groupId}</strong>
+    </p>
+    ${currentExpiry}
+    <div class="form-group" style="margin-top:var(--sp-4)">
+      <label class="form-label">Продлить срок на</label>
+      <select class="form-select" id="extendDays">
+        ${options}
+      </select>
+    </div>
+  `;
+}
+
+/* ────────────────────────────────────────────────
+   Modal: Individual session
+───────────────────────────────────────────────── */
+
+/**
+ * Render the "Create individual session" modal body.
+ * @param {Student[]} students — all students
+ * @param {string} indGroupId — the individual group name
+ * @returns {string}
+ */
+function renderIndividualSessionModal(students, indGroupId) {
+  const sorted = [...students].sort((a, b) => a.name.localeCompare(b.name, 'ru'));
+  const options = sorted.map(s => {
+    const hasSub = s.subscriptions.some(sub => sub.groupId === indGroupId && sub.isActive);
+    return `<option value="${s.id}">${s.name}${hasSub ? '' : ' — нет абонемента'}</option>`;
+  }).join('');
+
+  return `
+    <div class="form-group">
+      <label class="form-label">Клиент</label>
+      <select class="form-select" id="indSessionClient">
+        <option value="">— выберите клиента —</option>
+        ${options}
+      </select>
+      <div id="indClientSubInfo"></div>
+    </div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:var(--sp-4)">
+      <div class="form-group">
+        <label class="form-label">Дата</label>
+        <input class="form-input" type="date" id="indSessionDate"
+               value="${new Date().toISOString().slice(0, 10)}" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Время</label>
+        <input class="form-input" type="time" id="indSessionTime" value="18:00" />
+      </div>
+    </div>
+    <div class="form-group" id="indSubTypeGroup" style="display:none">
+      <label class="form-label">Абонемент</label>
+      <select class="form-select" id="indSubType">
+        <option value="1">Разовое посещение</option>
+        <option value="4">4 занятия</option>
+        <option value="8">8 занятий</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Комментарий (необязательно)</label>
+      <textarea class="form-textarea" id="indSessionNote"
+                placeholder="Например: работали над акробатикой..."></textarea>
+    </div>
+  `;
+}
+
+/* ────────────────────────────────────────────────
    Exports
 ───────────────────────────────────────────────── */
 window.UI = {
@@ -627,4 +951,8 @@ window.UI = {
   renderAddTrainingModal,
   renderAttendeeCheckboxes,
   renderRenewSubModal,
+  renderExtendSubModal,
+  renderAddToTrainingModal,
+  renderGroupModal,
+  renderIndividualSessionModal,
 };

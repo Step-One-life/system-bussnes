@@ -171,6 +171,12 @@ ul, ol { list-style: none; }
   padding: 0 var(--sp-3);
 }
 
+.sidebar__divider {
+  height: 1px;
+  background: var(--border);
+  margin: var(--sp-2) var(--sp-3);
+}
+
 .sidebar__footer {
   padding: var(--sp-4) var(--sp-6) 0;
   border-top: 1px solid var(--border);
@@ -987,10 +993,29 @@ ul, ol { list-style: none; }
   margin-top: 2px;
 }
 
+.training-item__add-btn {
+  opacity: 0;
+  transition: opacity var(--dur) var(--ease);
+  flex-shrink: 0;
+}
+
+.training-item:hover .training-item__add-btn {
+  opacity: 1;
+}
+
+.training-item__delete-btn {
+  color: var(--text-muted);
+  transition: color var(--dur) var(--ease);
+}
+.training-item__delete-btn:hover {
+  color: var(--danger);
+}
+
 .training-item__chevron {
   color: var(--text-muted);
   transition: transform var(--dur) var(--ease);
   width: 18px; height: 18px;
+  flex-shrink: 0;
 }
 
 .training-item.expanded .training-item__chevron {
@@ -1005,6 +1030,143 @@ ul, ol { list-style: none; }
 }
 
 .training-item.expanded .training-item__body { display: block; }
+
+/* Per-day schedule list */
+.schedule-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.schedule-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--r-md);
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  transition: background var(--dur) var(--ease),
+              border-color var(--dur) var(--ease);
+}
+
+.schedule-row.active {
+  background: var(--accent-dim);
+  border-color: var(--border-focus);
+}
+
+.schedule-day-label {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  cursor: pointer;
+  flex: 0 0 140px;
+  user-select: none;
+}
+
+.schedule-day-label input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.schedule-day-name {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.time-input {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: var(--sp-1) var(--sp-3);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  flex: 1;
+  opacity: 0.35;
+  pointer-events: none;
+  transition: opacity var(--dur) var(--ease),
+              border-color var(--dur) var(--ease);
+}
+
+.time-input:not(.disabled):focus-within {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px var(--accent-dim);
+}
+
+.schedule-row.active .time-input {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.time-input .time-h,
+.time-input .time-m {
+  width: 26px;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  font-family: var(--font);
+  font-weight: 600;
+  text-align: center;
+  outline: none;
+  padding: 0;
+}
+
+.time-input .time-h::placeholder,
+.time-input .time-m::placeholder {
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.time-sep {
+  color: var(--text-muted);
+  font-weight: 700;
+  font-size: 0.9rem;
+  line-height: 1;
+  padding: 0 1px;
+}
+
+/* Attendee tag with remove button */
+.attendee-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 6px 3px 10px;
+  border-radius: 100px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: var(--surface-2);
+  color: var(--text-secondary);
+  letter-spacing: 0.01em;
+}
+
+.attendee-tag__remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-radius: 50%;
+  padding: 0;
+  flex-shrink: 0;
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+
+.attendee-tag__remove:hover {
+  background: var(--danger-dim);
+  color: var(--danger);
+}
+
+.attendee-tag__remove i { width: 10px; height: 10px; }
 
 /* --------------------------------------------------
    Group cards grid
