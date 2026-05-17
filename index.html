@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TriKick — Менеджер тренировок</title>
+
+  <!-- Satoshi via Fontshare -->
+  <link rel="preconnect" href="https://api.fontshare.com" />
+  <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,600,700&display=swap" rel="stylesheet" />
+
+  <!-- Lucide icons -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- App shell -->
+  <div class="app" id="app">
+
+    <!-- Sidebar (desktop) -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar__logo">
+        <span class="sidebar__logo-icon">⟡</span>
+        <span class="sidebar__logo-text">TriKick</span>
+      </div>
+
+      <nav class="sidebar__nav">
+        <a class="nav-item active" data-page="home" href="#">
+          <i data-lucide="layout-dashboard"></i>
+          <span>Главная</span>
+        </a>
+        <a class="nav-item" data-page="students" href="#">
+          <i data-lucide="users"></i>
+          <span>Ученики</span>
+        </a>
+        <a class="nav-item" data-page="groups" href="#">
+          <i data-lucide="layers"></i>
+          <span>Группы</span>
+        </a>
+        <a class="nav-item" data-page="trainings" href="#">
+          <i data-lucide="calendar-check"></i>
+          <span>Тренировки</span>
+        </a>
+      </nav>
+
+      <div class="sidebar__footer">
+        <button class="theme-toggle" id="themeToggle" title="Сменить тему">
+          <i data-lucide="sun"></i>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main content -->
+    <main class="main" id="main">
+      <!-- Pages are rendered here by app.js -->
+      <div id="page-home" class="page active"></div>
+      <div id="page-students" class="page"></div>
+      <div id="page-groups" class="page"></div>
+      <div id="page-trainings" class="page"></div>
+    </main>
+
+    <!-- Bottom nav (mobile) -->
+    <nav class="bottom-nav" id="bottomNav">
+      <a class="nav-item active" data-page="home" href="#">
+        <i data-lucide="layout-dashboard"></i>
+        <span>Главная</span>
+      </a>
+      <a class="nav-item" data-page="students" href="#">
+        <i data-lucide="users"></i>
+        <span>Ученики</span>
+      </a>
+      <a class="nav-item" data-page="groups" href="#">
+        <i data-lucide="layers"></i>
+        <span>Группы</span>
+      </a>
+      <a class="nav-item" data-page="trainings" href="#">
+        <i data-lucide="calendar-check"></i>
+        <span>Тренировки</span>
+      </a>
+    </nav>
+
+  </div>
+
+  <!-- Toast container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Modal container -->
+  <div class="modal-overlay" id="modalOverlay"></div>
+
+  <!-- Drawer container -->
+  <div class="drawer-overlay" id="drawerOverlay">
+    <div class="drawer" id="drawer"></div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="data.js"></script>
+  <script src="logic.js"></script>
+  <script src="ui.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
