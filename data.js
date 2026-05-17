@@ -10,13 +10,25 @@
    Constants
 ───────────────────────────────────────────────── */
 const STORAGE_KEYS = {
-  STUDENTS:  'tk_students',
-  TRAININGS: 'tk_trainings',
-  GROUPS:    'tk_groups',
+  STUDENTS:  'tc_students',
+  TRAININGS: 'tc_trainings',
+  GROUPS:    'tc_groups',
 };
 
 /** Subscription types */
 const SUB_TYPES = { '1': 1, '4': 4, '8': 8 };
+
+/* Migrate data from old tk_ keys (TriKick → TrickCoin rename) */
+(function migrateStorageKeys() {
+  const map = { tk_students: 'tc_students', tk_trainings: 'tc_trainings', tk_groups: 'tc_groups', tk_theme: 'tc_theme' };
+  for (const [oldKey, newKey] of Object.entries(map)) {
+    const val = localStorage.getItem(oldKey);
+    if (val !== null && localStorage.getItem(newKey) === null) {
+      localStorage.setItem(newKey, val);
+      localStorage.removeItem(oldKey);
+    }
+  }
+})();
 
 /* ────────────────────────────────────────────────
    Groups (dynamic, stored in localStorage)
