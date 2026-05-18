@@ -1302,7 +1302,7 @@ document.addEventListener('click', e => {
 ───────────────────────────────────────────────── */
 
 function initTheme() {
-  const saved = localStorage.getItem('tk_theme') ?? 'dark';
+  const saved = localStorage.getItem('tc_theme') ?? 'dark';
   document.documentElement.dataset.theme = saved;
   updateThemeIcon(saved);
 }
@@ -1320,7 +1320,7 @@ document.getElementById('themeToggle')?.addEventListener('click', () => {
   const current = document.documentElement.dataset.theme;
   const next    = current === 'dark' ? 'light' : 'dark';
   document.documentElement.dataset.theme = next;
-  localStorage.setItem('tk_theme', next);
+  localStorage.setItem('tc_theme', next);
   updateThemeIcon(next);
 });
 
@@ -1359,7 +1359,7 @@ async function init() {
   // Initial page
   await navigate('home');
 
-  console.log('🥋 TriKick app ready');
+  console.log('🪙 TrickCoin app ready');
 }
 
 // Start when DOM is ready
