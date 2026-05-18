@@ -970,10 +970,12 @@ async function openEditGroupModal(groupId) {
    Modal: Add student
 ───────────────────────────────────────────────── */
 
-function openAddStudentModal() {
+async function openAddStudentModal() {
+  const allGroups = await DB.getGroups();
+
   UI.openModal({
     title: 'Новый ученик',
-    body: UI.renderAddStudentModal(),
+    body: UI.renderStudentModal(allGroups, null),
     footer: `
       <button class="btn btn--secondary" id="cancelAddStudent">Отмена</button>
       <button class="btn btn--primary"   id="saveAddStudent">Сохранить</button>
@@ -983,12 +985,12 @@ function openAddStudentModal() {
 
       modal.querySelector('#cancelAddStudent')?.addEventListener('click', UI.closeModal);
 
-      // Live update subscription fields when groups change
+      // Live-update subscription fields when group selection changes
       modal.querySelectorAll('input[name="groups"]').forEach(cb => {
         cb.addEventListener('change', () => {
           const selected = [...modal.querySelectorAll('input[name="groups"]:checked')]
             .map(c => c.value);
-          modal.querySelector('#subFields').innerHTML = UI.renderSubFields(selected);
+          modal.querySelector('#subFields').innerHTML = UI.renderSubFields(selected, allGroups);
         });
       });
 
@@ -1000,17 +1002,12 @@ function openAddStudentModal() {
         }
 
         const groups = [...modal.querySelectorAll('input[name="groups"]:checked')].map(c => c.value);
-        if (!groups.length) {
-          UI.showToast({ type: 'warn', title: 'Выберите хотя бы одну группу' });
-          return;
-        }
 
         const student = await DB.createStudent({ name, groups });
 
-        // Add subscriptions
+        // Add subscriptions for each selected group
         const startDate = modal.querySelector('#subStartDate')?.value;
         const subSelects = modal.querySelectorAll('[data-group-sub]');
-
         for (const sel of subSelects) {
           if (sel.value) {
             await DB.addSubscription(student.id, {
@@ -1024,6 +1021,44 @@ function openAddStudentModal() {
         UI.closeModal();
         UI.showToast({ type: 'success', title: 'Ученик добавлен', msg: student.name });
         await renderStudents();
+      });
+    }
+  });
+}
+
+async function openEditStudentModal(studentId) {
+  const [student, allGroups] = await Promise.all([
+    DB.getStudentById(studentId),
+    DB.getGroups(),
+  ]);
+  if (!student) return;
+
+  UI.openModal({
+    title: 'Редактировать ученика',
+    body: UI.renderStudentModal(allGroups, student),
+    footer: `
+      <button class="btn btn--secondary" id="cancelEditStudent">Отмена</button>
+      <button class="btn btn--primary"   id="saveEditStudent">Сохранить</button>
+    `,
+    onOpen: modal => {
+      lucide.createIcons({ nodes: [modal] });
+
+      modal.querySelector('#cancelEditStudent')?.addEventListener('click', UI.closeModal);
+
+      modal.querySelector('#saveEditStudent')?.addEventListener('click', async () => {
+        const name = modal.querySelector('#studentName').value.trim();
+        if (!name) {
+          UI.showToast({ type: 'error', title: 'Введите имя ученика' });
+          return;
+        }
+
+        const groups = [...modal.querySelectorAll('input[name="groups"]:checked')].map(c => c.value);
+
+        await DB.updateStudent(studentId, { name, groups });
+
+        UI.closeModal();
+        UI.showToast({ type: 'success', title: 'Изменения сохранены', msg: name });
+        await navigate(AppState.currentPage);
       });
     }
   });
@@ -1172,9 +1207,20 @@ async function openStudentDrawer(studentId) {
 
   UI.openDrawer({
     title: student.name,
+    headerActions: `
+      <button class="btn btn--ghost btn--sm" id="editStudentBtn" title="Редактировать">
+        <i data-lucide="pencil"></i>
+      </button>
+    `,
     body: UI.renderStudentDetail(student, allGroups),
     onOpen: drawer => {
       lucide.createIcons({ nodes: [drawer] });
+
+      // Edit student
+      drawer.querySelector('#editStudentBtn')?.addEventListener('click', () => {
+        UI.closeDrawer();
+        openEditStudentModal(studentId);
+      });
 
       // Renew (new subscription)
       drawer.querySelectorAll('[data-action="renew-sub"]').forEach(btn => {
@@ -1189,6 +1235,40 @@ async function openStudentDrawer(studentId) {
         btn.addEventListener('click', () => {
           UI.closeDrawer();
           openExtendSubModal(btn.dataset.studentId, btn.dataset.group);
+        });
+      });
+
+      // Deduct session manually
+      drawer.querySelectorAll('[data-action="deduct-session"]').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const { sub, status } = await DB.deductSession(btn.dataset.studentId, btn.dataset.group);
+          if (!sub) return;
+
+          await DB.recordVisit(btn.dataset.studentId, {
+            date:       new Date().toISOString().slice(0, 10),
+            groupId:    btn.dataset.group,
+            trainingId: null,
+          });
+
+          const msg = status === 'expired'
+            ? 'Занятие списано — абонемент закончился'
+            : `Осталось: ${sub.remaining} из ${sub.total}`;
+          const type = status === 'expired' ? 'warn' : 'success';
+
+          UI.showToast({ type, title: 'Занятие списано', msg });
+          UI.closeDrawer();
+          await openStudentDrawer(studentId);
+        });
+      });
+
+      // Delete subscription
+      drawer.querySelectorAll('[data-action="delete-sub"]').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          if (!confirm('Удалить этот абонемент?')) return;
+          await DB.deleteSubscription(btn.dataset.studentId, btn.dataset.subId);
+          UI.closeDrawer();
+          UI.showToast({ type: 'success', title: 'Абонемент удалён' });
+          await openStudentDrawer(studentId);
         });
       });
 
@@ -1264,6 +1344,9 @@ function initNavigation() {
 async function init() {
   // Seed demo data if first run
   await DB.seedDemoData();
+
+  // Run group migration (writes isIndividual flags) before any sync getters are used
+  await DB.getGroups();
 
   // Theme
   initTheme();

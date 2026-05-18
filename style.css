@@ -20,6 +20,10 @@
   --warning-dim:     rgba(245, 158, 11, 0.12);
   --danger-dim:      rgba(239, 68,  68, 0.12);
 
+  /* Individual session colour */
+  --ind:             #b47aff;
+  --ind-dim:         rgba(180, 122, 255, 0.13);
+
   /* Sidebar width */
   --sidebar-w: 220px;
 
@@ -491,6 +495,7 @@ ul, ol { list-style: none; }
 .badge--danger  { background: var(--danger-dim);  color: var(--danger);  }
 .badge--neutral { background: var(--surface-2);   color: var(--text-secondary); }
 .badge--accent  { background: var(--accent-dim);  color: var(--accent-light); }
+.badge--ind     { background: var(--ind-dim);     color: var(--ind); }
 
 /* Dot indicator */
 .badge::before {
@@ -1003,11 +1008,13 @@ ul, ol { list-style: none; }
   opacity: 1;
 }
 
-.training-item__delete-btn {
+.training-item__delete-btn,
+.sub-card__delete {
   color: var(--text-muted);
   transition: color var(--dur) var(--ease);
 }
-.training-item__delete-btn:hover {
+.training-item__delete-btn:hover,
+.sub-card__delete:hover {
   color: var(--danger);
 }
 

@@ -42,7 +42,10 @@ function getSubStatus(student, groupId) {
 
   if (days !== null && days < 0) return { label: 'Истёк срок',    type: 'expired' };
   if (sub.remaining === 0)       return { label: 'Нужно продлить', type: 'expired' };
-  if (sub.remaining <= 2 || (days !== null && days <= 7)) return { label: 'Заканчивается', type: 'ending' };
+  // Single-visit subscriptions are always "active" until used — no "ending" threshold
+  if (sub.type !== '1' && (sub.remaining <= 2 || (days !== null && days <= 7))) {
+    return { label: 'Заканчивается', type: 'ending' };
+  }
   return { label: 'Активен', type: 'active' };
 }
 
@@ -70,8 +73,9 @@ function getSubProgress(sub) {
   if (!sub || sub.total === 0) return { pct: 0, cls: 'danger' };
   const pct = Math.round((sub.remaining / sub.total) * 100);
   let cls = 'ok';
-  if (sub.remaining <= 1) cls = 'danger';
-  else if (sub.remaining <= 2) cls = 'warn';
+  if (sub.remaining === 0) cls = 'danger';
+  else if (sub.remaining === 1 && sub.total > 1) cls = 'danger';
+  else if (sub.remaining === 2 && sub.total > 2) cls = 'warn';
   return { pct, cls };
 }
 

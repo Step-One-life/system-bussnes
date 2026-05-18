@@ -25,6 +25,10 @@ const SUB_TYPES = { '1': 1, '4': 4, '8': 8 };
 async function getGroups() {
   const groups = _read(STORAGE_KEYS.GROUPS, []);
   let migrated = false;
+
+  // Pre-load student names once for migration heuristic
+  let studentNames = null;
+
   for (const g of groups) {
     // Migrate old schedule format { days[], time } → { schedule: [{ day, time }] }
     if (!g.schedule && Array.isArray(g.days)) {
@@ -33,10 +37,21 @@ async function getGroups() {
       delete g.time;
       migrated = true;
     }
-    // Migrate: add isIndividual flag
+    // Ensure isIndividual flag is set
     if (g.isIndividual === undefined) {
       g.isIndividual = g.name === 'Индивидуальные';
       migrated = true;
+    }
+    // Upgrade: detect old per-student individual groups (name = student name, no schedule)
+    // Handles groups created before the isIndividual concept existed (explicitly false)
+    if (!g.isIndividual && !(g.schedule?.length)) {
+      if (studentNames === null) {
+        studentNames = _read(STORAGE_KEYS.STUDENTS, []).map(s => s.name);
+      }
+      if (studentNames.includes(g.name)) {
+        g.isIndividual = true;
+        migrated = true;
+      }
     }
   }
   if (migrated) _write(STORAGE_KEYS.GROUPS, groups);
@@ -463,6 +478,21 @@ async function extendSubscription(studentId, groupId, days) {
 }
 
 /**
+ * Delete a subscription by its id from a student's subscription list.
+ * @param {string} studentId
+ * @param {string} subId
+ * @returns {Promise<boolean>}
+ */
+async function deleteSubscription(studentId, subId) {
+  const student = await getStudentById(studentId);
+  if (!student) return false;
+  const filtered = student.subscriptions.filter(s => s.id !== subId);
+  if (filtered.length === student.subscriptions.length) return false;
+  await updateStudent(studentId, { subscriptions: filtered });
+  return true;
+}
+
+/**
  * Delete a training by id.
  * @param {string} id
  * @returns {Promise<boolean>}
@@ -586,6 +616,8 @@ async function clearAllData() {
 window.DB = {
   // GROUPS as a live getter — excludes individual groups (those are managed via Индивидуальные page)
   get GROUPS() { return _read(STORAGE_KEYS.GROUPS, []).filter(g => !g.isIndividual).map(g => g.name); },
+  // INDIVIDUAL_GROUP_NAMES — names of groups flagged as individual (sync, for renderTrainingItem)
+  get INDIVIDUAL_GROUP_NAMES() { return _read(STORAGE_KEYS.GROUPS, []).filter(g => g.isIndividual).map(g => g.name); },
 
   SUB_TYPES,
 
@@ -609,6 +641,7 @@ window.DB = {
   deductSession,
   getActiveSubscription,
   extendSubscription,
+  deleteSubscription,
   restoreSession,
 
   // visits

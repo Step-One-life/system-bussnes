@@ -91,16 +91,19 @@ function closeModal() {
  * Open the side drawer.
  * @param {{ title: string, body: string, onOpen?: Function }} opts
  */
-function openDrawer({ title, body, onOpen }) {
+function openDrawer({ title, body, onOpen, headerActions = '' }) {
   const overlay = document.getElementById('drawerOverlay');
   const drawer  = document.getElementById('drawer');
 
   drawer.innerHTML = `
     <div class="drawer__header">
       <span class="drawer__title">${title}</span>
-      <button class="btn btn--ghost btn--sm" id="drawerClose">
-        <i data-lucide="x"></i>
-      </button>
+      <div style="display:flex;gap:var(--sp-1);align-items:center">
+        ${headerActions}
+        <button class="btn btn--ghost btn--sm" id="drawerClose">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
     </div>
     <div class="drawer__body">${body}</div>
   `;
@@ -263,13 +266,25 @@ function animateCountUp() {
  * @returns {string} HTML <tr>
  */
 function renderStudentRow(student) {
-  const status = Logic.getOverallSubStatus(student);
+  const status    = Logic.getOverallSubStatus(student);
   const lastVisit = DB.getLastVisitDate(student);
+  const indNames  = DB.INDIVIDUAL_GROUP_NAMES;
 
-  // Collect all active subs
+  // Group badges — hide individual group names, show generic badge instead
+  const regularBadges = student.groups
+    .filter(g => !indNames.includes(g))
+    .map(g => `<span class="badge badge--accent">${g}</span>`)
+    .join('');
+  const hasInd    = student.groups.some(g => indNames.includes(g));
+  const groupsHtml = regularBadges + (hasInd ? '<span class="badge badge--ind">Индивидуальное занятие</span>' : '');
+
+  // Subscription summary — replace individual groupId with "Инд."
   const activeSubs = student.subscriptions.filter(s => s.isActive);
   const subText = activeSubs.length
-    ? activeSubs.map(s => `${s.groupId}: ${s.remaining}/${s.total}`).join(', ')
+    ? activeSubs.map(s => {
+        const label = indNames.includes(s.groupId) ? 'Инд.' : s.groupId;
+        return `${label}: ${s.remaining}/${s.total}`;
+      }).join(', ')
     : 'Нет активных';
 
   return `
@@ -279,7 +294,7 @@ function renderStudentRow(student) {
       </td>
       <td>
         <div class="flex gap-2" style="flex-wrap:wrap">
-          ${student.groups.map(g => `<span class="badge badge--accent">${g}</span>`).join('')}
+          ${groupsHtml || '<span class="text-muted text-sm">—</span>'}
         </div>
       </td>
       <td class="text-sm text-secondary">${subText}</td>
@@ -312,6 +327,10 @@ function renderStudentDetail(student, allGroups = []) {
 
   const renderSubCard = groupId => {
     const activeSub  = student.subscriptions.find(s => s.groupId === groupId && s.isActive);
+    // Also consider inactive subs (to allow deleting expired ones)
+    const anySub     = activeSub ?? student.subscriptions
+      .filter(s => s.groupId === groupId)
+      .sort((a, b) => b.createdAt?.localeCompare(a.createdAt ?? '') ?? 0)[0];
     const status     = Logic.getSubStatus(student, groupId);
     const isInd      = indNames.includes(groupId);
     const isRazovoe  = activeSub?.type === '1';
@@ -326,14 +345,35 @@ function renderStudentDetail(student, allGroups = []) {
            <i data-lucide="clock"></i> Продлить срок
          </button>`;
 
+    const cardLabel   = isInd ? 'Индивидуальная тренировка' : groupId;
+    const deleteBtn   = anySub
+      ? `<button class="btn btn--ghost btn--sm sub-card__delete"
+                 data-action="delete-sub"
+                 data-student-id="${student.id}"
+                 data-sub-id="${anySub.id}"
+                 title="Удалить абонемент">
+           <i data-lucide="trash-2"></i>
+         </button>`
+      : '';
+
     return `
       <div class="card" style="padding:var(--sp-4)">
         <div class="flex items-center gap-3" style="margin-bottom:var(--sp-3)">
-          <span class="font-semibold text-sm">${groupId}</span>
+          <span class="font-semibold text-sm">${cardLabel}</span>
           <span class="ml-auto">${renderBadge(status)}</span>
+          ${deleteBtn}
         </div>
         ${renderProgressBar(activeSub)}
         <div style="margin-top:var(--sp-3); display:flex; gap:var(--sp-2); flex-wrap:wrap; align-items:center">
+          ${activeSub && activeSub.remaining > 0
+            ? `<button class="btn btn--primary btn--sm" data-action="deduct-session"
+                       data-student-id="${student.id}" data-group="${groupId}">
+                 <i data-lucide="minus-circle"></i> Списать занятие
+               </button>`
+            : `<button class="btn btn--primary btn--sm" disabled style="opacity:.4;cursor:not-allowed">
+                 <i data-lucide="minus-circle"></i> Списать занятие
+               </button>`
+          }
           <button class="btn btn--secondary btn--sm" data-action="renew-sub"
                   data-student-id="${student.id}" data-group="${groupId}">
             <i data-lucide="refresh-cw"></i> Новый абонемент
@@ -357,12 +397,15 @@ function renderStudentDetail(student, allGroups = []) {
     ? [...student.visitHistory]
         .sort((a, b) => b.date.localeCompare(a.date))
         .slice(0, 15)
-        .map(v => `
+        .map(v => {
+          const visitLabel = indNames.includes(v.groupId) ? 'Индивидуальная тренировка' : v.groupId;
+          return `
           <div class="flex items-center gap-3 text-sm" style="padding:var(--sp-2) 0; border-bottom:1px solid var(--border)">
             <span class="text-secondary">${Logic.formatDateShort(v.date)}</span>
-            <span class="badge badge--accent">${v.groupId}</span>
+            <span class="badge badge--accent">${visitLabel}</span>
           </div>
-        `).join('')
+        `;
+        }).join('')
     : `<p class="text-muted text-sm">Посещений пока нет</p>`;
 
   return `
@@ -407,8 +450,10 @@ function renderStudentDetail(student, allGroups = []) {
  * @returns {string} HTML
  */
 function renderTrainingItem(training, allStudents) {
-  // If the groupId is absent from the regular groups list, it's an individual session
-  const isInd      = !DB.GROUPS.includes(training.groupId);
+  // Individual: groupId matches a group with isIndividual:true, or is absent from all known groups
+  const regGroups  = DB.GROUPS;
+  const indGroups  = DB.INDIVIDUAL_GROUP_NAMES;
+  const isInd      = indGroups.includes(training.groupId) || !regGroups.includes(training.groupId);
   const clientName = isInd ? (allStudents.find(s => s.id === training.attendees[0])?.name ?? null) : null;
   const groupLabel = clientName
     ? `Индивидуальная тренировка с ${clientName}`
@@ -528,13 +573,15 @@ function renderGroupCard(group, stats) {
  * @returns {string} HTML
  */
 function renderWarningItem(w) {
-  const isDanger = w.status.type === 'expired';
+  const isDanger   = w.status.type === 'expired';
+  const indNames   = DB.INDIVIDUAL_GROUP_NAMES;
+  const groupLabel = indNames.includes(w.groupId) ? 'Индивидуальная тренировка' : w.groupId;
   return `
     <div class="warning-item ${isDanger ? 'warning-item--danger' : ''}"
          data-student-id="${w.student.id}">
       <div>
         <div class="warning-item__name">${w.student.name}</div>
-        <div class="warning-item__detail">${w.groupId} · ${w.status.label}</div>
+        <div class="warning-item__detail">${groupLabel} · ${w.status.label}</div>
       </div>
       <button class="btn btn--primary btn--sm ml-auto"
               data-action="renew-sub" data-student-id="${w.student.id}" data-group="${w.groupId}">
@@ -549,49 +596,92 @@ function renderWarningItem(w) {
 ───────────────────────────────────────────────── */
 
 /**
- * Render the "Add student" modal body.
+ * Render the "Add / Edit student" modal body.
+ * @param {object[]} allGroups  — full group objects
+ * @param {object|null} student — if provided, pre-fills fields for editing
  * @returns {string}
  */
-function renderAddStudentModal() {
-  const groupCheckboxes = DB.GROUPS.map(g => `
-    <div class="checkbox-item">
-      <input type="checkbox" id="grp-${g}" name="groups" value="${g}" />
-      <label for="grp-${g}">${g}</label>
+function renderStudentModal(allGroups = [], student = null) {
+  const regularGroups = allGroups.filter(g => !g.isIndividual);
+  // Prefer the canonical "Индивидуальные" group; fall back to first individual found
+  const indGroup      = allGroups.find(g => g.isIndividual && g.name === 'Индивидуальные')
+                     ?? allGroups.find(g => g.isIndividual)
+                     ?? null;
+  const currentGroups = student?.groups ?? [];
+  // For pre-check: student is in "ind" if they belong to ANY individual group
+  const studentInInd  = indGroup && allGroups
+    .filter(g => g.isIndividual)
+    .some(g => currentGroups.includes(g.name));
+
+  const groupCheckboxes = regularGroups.length
+    ? regularGroups.map(g => `
+        <div class="checkbox-item">
+          <input type="checkbox" id="grp-${g.name}" name="groups" value="${g.name}"
+                 ${currentGroups.includes(g.name) ? 'checked' : ''} />
+          <label for="grp-${g.name}">${g.name}</label>
+        </div>
+      `).join('')
+    : '<span class="text-muted text-sm">Нет групп — добавьте их в разделе «Группы»</span>';
+
+  const indCheckbox = indGroup ? `
+    <div class="form-group" style="margin-top:var(--sp-4)">
+      <label class="form-label">Индивидуальные занятия</label>
+      <div class="checkbox-group">
+        <div class="checkbox-item">
+          <input type="checkbox" id="grp-ind" name="groups" value="${indGroup.name}"
+                 ${studentInInd ? 'checked' : ''} />
+          <label for="grp-ind">Записать в индивидуальные занятия</label>
+        </div>
+      </div>
     </div>
-  `).join('');
+  ` : '';
 
   return `
     <div class="form-group">
       <label class="form-label">Имя и фамилия</label>
-      <input class="form-input" id="studentName" placeholder="Алексей Иванов" required />
+      <input class="form-input" id="studentName"
+             placeholder="Алексей Иванов"
+             value="${student ? student.name : ''}" required />
     </div>
     <div class="form-group">
       <label class="form-label">Группы</label>
       <div class="checkbox-group">${groupCheckboxes}</div>
     </div>
-    <div id="subFields"></div>
+    ${indCheckbox}
+    ${student ? '' : '<div id="subFields"></div>'}
   `;
+}
+
+/** @deprecated use renderStudentModal */
+function renderAddStudentModal(allGroups = []) {
+  return renderStudentModal(allGroups, null);
 }
 
 /**
  * Render subscription fields for each selected group.
- * @param {string[]} groups
+ * @param {string[]} groupIds
+ * @param {object[]} allGroups — used to resolve individual label
  * @returns {string}
  */
-function renderSubFields(groups) {
-  if (!groups.length) return '';
+function renderSubFields(groupIds, allGroups = []) {
+  if (!groupIds.length) return '';
 
-  const fields = groups.map(g => `
-    <div class="form-group">
-      <label class="form-label">Абонемент — ${g}</label>
-      <select class="form-select" data-group-sub="${g}">
-        <option value="">— не добавлять —</option>
-        <option value="1">Разовое посещение</option>
-        <option value="4">4 занятия</option>
-        <option value="8">8 занятий</option>
-      </select>
-    </div>
-  `).join('');
+  const indNames = allGroups.filter(g => g.isIndividual).map(g => g.name);
+
+  const fields = groupIds.map(g => {
+    const label = indNames.includes(g) ? 'Индивидуальная тренировка' : g;
+    return `
+      <div class="form-group">
+        <label class="form-label">Абонемент — ${label}</label>
+        <select class="form-select" data-group-sub="${g}">
+          <option value="">— не добавлять —</option>
+          <option value="1">Разовое посещение</option>
+          <option value="4">4 занятия</option>
+          <option value="8">8 занятий</option>
+        </select>
+      </div>
+    `;
+  }).join('');
 
   return `
     <div class="form-group">
@@ -946,6 +1036,7 @@ window.UI = {
   renderTrainingItem,
   renderGroupCard,
   renderWarningItem,
+  renderStudentModal,
   renderAddStudentModal,
   renderSubFields,
   renderAddTrainingModal,
