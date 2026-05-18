@@ -310,6 +310,57 @@ function renderStudentRow(student) {
 }
 
 /* ────────────────────────────────────────────────
+   Student card (mobile-first grid)
+───────────────────────────────────────────────── */
+
+/**
+ * Render a mobile-friendly card for a student.
+ * @param {Student} student
+ * @returns {string} HTML
+ */
+function renderStudentCard(student) {
+  const status    = Logic.getOverallSubStatus(student);
+  const lastVisit = DB.getLastVisitDate(student);
+  const indNames  = DB.INDIVIDUAL_GROUP_NAMES;
+
+  const regularBadges = student.groups
+    .filter(g => !indNames.includes(g))
+    .map(g => `<span class="badge badge--accent">${g}</span>`)
+    .join('');
+  const hasInd     = student.groups.some(g => indNames.includes(g));
+  const groupsHtml = regularBadges + (hasInd ? '<span class="badge badge--ind">Инд.</span>' : '');
+
+  const activeSubs = student.subscriptions.filter(s => s.isActive);
+  const subText    = activeSubs.length
+    ? activeSubs.map(s => {
+        const label = indNames.includes(s.groupId) ? 'Инд.' : s.groupId;
+        return `${label}: ${s.remaining}/${s.total}`;
+      }).join(' · ')
+    : 'Нет активных';
+
+  const initials = student.name.trim().split(/\s+/).map(w => w[0]).join('').slice(0, 2).toUpperCase();
+
+  return `
+    <div class="student-card" data-student-id="${student.id}">
+      <div class="student-card__top">
+        <div class="student-card__avatar">${initials}</div>
+        <div class="student-card__info">
+          <div class="student-card__name">${student.name}</div>
+          <div class="student-card__groups">
+            ${groupsHtml || '<span class="text-muted" style="font-size:0.78rem">Без группы</span>'}
+          </div>
+        </div>
+        <div class="student-card__status">${renderBadge(status)}</div>
+      </div>
+      <div class="student-card__bottom">
+        <span class="student-card__sub">${subText}</span>
+        <span class="student-card__visit">${lastVisit ? Logic.formatDateShort(lastVisit) : '—'}</span>
+      </div>
+    </div>
+  `;
+}
+
+/* ────────────────────────────────────────────────
    Student drawer body
 ───────────────────────────────────────────────── */
 
@@ -394,7 +445,8 @@ function renderStudentDetail(student, allGroups = []) {
 
   // Visit history
   const historyHtml = student.visitHistory.length
-    ? [...student.visitHistory]
+    ? student.visitHistory
+        .map((v, i) => ({ ...v, _i: i }))
         .sort((a, b) => b.date.localeCompare(a.date))
         .slice(0, 15)
         .map(v => {
@@ -403,6 +455,11 @@ function renderStudentDetail(student, allGroups = []) {
           <div class="flex items-center gap-3 text-sm" style="padding:var(--sp-2) 0; border-bottom:1px solid var(--border)">
             <span class="text-secondary">${Logic.formatDateShort(v.date)}</span>
             <span class="badge badge--accent">${visitLabel}</span>
+            <button class="btn btn--ghost btn--sm visit-delete-btn" style="margin-left:auto;color:var(--text-muted);padding:2px 6px"
+                    data-action="delete-visit" data-visit-index="${v._i}"
+                    title="Удалить посещение">
+              <i data-lucide="x" style="width:13px;height:13px"></i>
+            </button>
           </div>
         `;
         }).join('')
@@ -1032,6 +1089,7 @@ window.UI = {
   renderKPIGrid,
   animateCountUp,
   renderStudentRow,
+  renderStudentCard,
   renderStudentDetail,
   renderTrainingItem,
   renderGroupCard,

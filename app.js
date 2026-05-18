@@ -387,32 +387,18 @@ async function renderStudents(filter = AppState.studentsFilter) {
       </select>
     </div>
 
-    <div class="table-wrap">
-      ${students.length ? `
-        <table class="table">
-          <thead>
-            <tr>
-              <th>Имя</th>
-              <th>Группы</th>
-              <th>Абонемент</th>
-              <th>Статус</th>
-              <th>Последнее посещение</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            ${students.map(s => UI.renderStudentRow(s)).join('')}
-          </tbody>
-        </table>
-      ` : UI.renderEmptyState({
+    ${students.length
+      ? `<div class="students-grid">
+           ${students.map(s => UI.renderStudentCard(s)).join('')}
+         </div>`
+      : UI.renderEmptyState({
           icon: 'users',
           title: 'Ученики не найдены',
           text: filter.group || filter.search || filter.status
             ? 'Попробуйте изменить фильтры'
             : 'Добавьте первого ученика',
         })
-      }
-    </div>
+    }
   `;
 
   lucide.createIcons({ nodes: [el] });
@@ -434,15 +420,9 @@ async function renderStudents(filter = AppState.studentsFilter) {
   // Add student
   el.querySelector('#addStudentBtn')?.addEventListener('click', openAddStudentModal);
 
-  // Row clicks → student drawer
-  el.querySelectorAll('[data-action="view-student"]').forEach(btn => {
-    btn.addEventListener('click', e => {
-      e.stopPropagation();
-      openStudentDrawer(btn.dataset.id);
-    });
-  });
-  el.querySelectorAll('tbody tr').forEach(row => {
-    row.addEventListener('click', () => openStudentDrawer(row.dataset.studentId));
+  // Card clicks → student drawer
+  el.querySelectorAll('.student-card').forEach(card => {
+    card.addEventListener('click', () => openStudentDrawer(card.dataset.studentId));
   });
 }
 
@@ -1279,6 +1259,28 @@ async function openStudentDrawer(studentId) {
         UI.closeDrawer();
         UI.showToast({ type: 'success', title: 'Ученик удалён' });
         await navigate(AppState.currentPage);
+      });
+
+      // Delete visit from history
+      drawer.querySelectorAll('[data-action="delete-visit"]').forEach(btn => {
+        btn.addEventListener('click', async e => {
+          e.stopPropagation();
+          await DB.removeVisitAt(studentId, Number(btn.dataset.visitIndex));
+          await openStudentDrawer(studentId);
+        });
+      });
+
+      // FAB — add training
+      const drawerBody = drawer.querySelector('.drawer__body');
+      const fabEl = document.createElement('div');
+      fabEl.className = 'drawer-fab';
+      fabEl.innerHTML = `<button class="drawer-fab__btn" title="Добавить тренировку"><i data-lucide="plus"></i></button>`;
+      drawerBody.appendChild(fabEl);
+      lucide.createIcons({ nodes: [fabEl] });
+      fabEl.querySelector('.drawer-fab__btn').addEventListener('click', async () => {
+        const allStudents = await DB.getStudents();
+        UI.closeDrawer();
+        openAddTrainingModal(allStudents);
       });
     }
   });

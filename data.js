@@ -436,6 +436,31 @@ async function removeVisit(studentId, trainingId) {
   await updateStudent(studentId, { visitHistory });
 }
 
+async function removeVisitAt(studentId, index) {
+  const student = await getStudentById(studentId);
+  if (!student) return;
+
+  const visit = student.visitHistory[index];
+  if (!visit) return;
+
+  // 1. Remove from student visit history
+  const visitHistory = student.visitHistory.filter((_, i) => i !== index);
+  await updateStudent(studentId, { visitHistory });
+
+  // 2. Remove from training attendees if linked
+  if (visit.trainingId) {
+    const trainings = _read(STORAGE_KEYS.TRAININGS, []);
+    const tIdx = trainings.findIndex(t => t.id === visit.trainingId);
+    if (tIdx !== -1) {
+      trainings[tIdx].attendees = trainings[tIdx].attendees.filter(id => id !== studentId);
+      _write(STORAGE_KEYS.TRAININGS, trainings);
+    }
+  }
+
+  // 3. Restore the deducted session back to the subscription
+  await restoreSession(studentId, visit.groupId);
+}
+
 /**
  * Extend the expiry date of the active (or most recent) subscription for a group.
  * @param {string} studentId
@@ -648,6 +673,7 @@ window.DB = {
   recordVisit,
   getLastVisitDate,
   removeVisit,
+  removeVisitAt,
 
   // trainings
   getTrainings,

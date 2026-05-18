@@ -1241,6 +1241,142 @@ ul, ol { list-style: none; }
 .group-stat__value--danger { color: var(--danger); }
 
 /* --------------------------------------------------
+   Drawer FAB (floating action button)
+   -------------------------------------------------- */
+.drawer-fab {
+  position: sticky;
+  bottom: var(--sp-5);
+  display: flex;
+  justify-content: flex-end;
+  margin-top: var(--sp-4);
+  pointer-events: none;
+}
+
+.drawer-fab__btn {
+  width: 46px; height: 46px;
+  border-radius: 50%;
+  background: rgba(1, 105, 111, 0.18);
+  border: 1px solid rgba(1, 105, 111, 0.35);
+  color: var(--accent-light);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+  pointer-events: all;
+  transition: background var(--dur) var(--ease),
+              transform var(--dur) var(--ease),
+              box-shadow var(--dur) var(--ease);
+}
+
+.drawer-fab__btn:hover {
+  background: var(--accent);
+  color: #fff;
+  transform: scale(1.08);
+  box-shadow: 0 6px 20px var(--accent-glow);
+}
+
+.drawer-fab__btn:active {
+  transform: scale(0.93);
+}
+
+.drawer-fab__btn i { width: 20px; height: 20px; }
+
+/* --------------------------------------------------
+   Student cards grid
+   -------------------------------------------------- */
+.students-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: var(--sp-3);
+}
+
+.student-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: var(--sp-4);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  transition: transform var(--dur) var(--ease),
+              box-shadow var(--dur) var(--ease),
+              border-color var(--dur) var(--ease);
+}
+
+.student-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--border-focus);
+}
+
+.student-card:active {
+  transform: scale(0.98);
+  box-shadow: none;
+}
+
+.student-card__top {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-3);
+}
+
+.student-card__avatar {
+  width: 42px; height: 42px;
+  border-radius: var(--r-md);
+  background: var(--accent-dim);
+  color: var(--accent-light);
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+.student-card__info {
+  flex: 1;
+  min-width: 0;
+}
+
+.student-card__name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.student-card__groups {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1);
+  margin-top: var(--sp-1);
+}
+
+.student-card__status {
+  flex-shrink: 0;
+}
+
+.student-card__bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: var(--sp-2);
+  border-top: 1px solid var(--border);
+  font-size: 0.78rem;
+}
+
+.student-card__sub  { color: var(--text-secondary); }
+.student-card__visit { color: var(--text-muted); }
+
+@media (max-width: 768px) {
+  .students-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* --------------------------------------------------
    Warning list (home page)
    -------------------------------------------------- */
 .warning-list {
