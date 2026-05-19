@@ -1809,7 +1809,130 @@ ul, ol { list-style: none; }
   text-align: right;
 }
 
-/* Charts grid */
+/* ── Period selector ── */
+.fin-period-selector {
+  display: flex;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 4px;
+  gap: 4px;
+  margin-bottom: var(--sp-5);
+  width: fit-content;
+}
+
+.fin-period-btn {
+  padding: 6px var(--sp-4);
+  border-radius: var(--r-md);
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font);
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--dur) var(--ease);
+  white-space: nowrap;
+}
+
+.fin-period-btn:hover { background: var(--surface-2); color: var(--text-primary); }
+
+.fin-period-btn--active {
+  background: var(--accent);
+  color: #fff;
+  font-weight: 600;
+}
+
+/* ── Hero summary ── */
+.fin-hero {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  padding: var(--sp-6);
+  margin-bottom: var(--sp-4);
+}
+
+.fin-hero__item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.fin-hero__item--main {
+  flex: 1.4;
+  padding-left: var(--sp-4);
+  border-left: 2px solid var(--border);
+}
+
+.fin-hero__label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+.fin-hero__value {
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.fin-hero__value--main {
+  font-size: 1.8rem;
+}
+
+.fin-hero__op {
+  font-size: 1.4rem;
+  font-weight: 300;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  padding: 0 var(--sp-1);
+}
+
+/* ── Stat pills row ── */
+.fin-pills {
+  display: flex;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-6);
+  flex-wrap: wrap;
+}
+
+.fin-pill {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: var(--sp-3) var(--sp-4);
+  flex: 1;
+  min-width: 120px;
+}
+
+.fin-pill__icon {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.fin-pill__label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  flex: 1;
+}
+
+.fin-pill__value {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+/* ── Charts grid ── */
 .fin-charts-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -1819,17 +1942,32 @@ ul, ol { list-style: none; }
 .fin-chart-card {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--r-lg);
-  padding: var(--sp-5);
+  border-radius: var(--r-xl);
+  padding: var(--sp-5) var(--sp-5) var(--sp-4);
+}
+
+.fin-chart-card--wide {
+  grid-column: span 2;
 }
 
 .fin-chart-card__title {
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--text-secondary);
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
   margin-bottom: var(--sp-4);
+}
+
+.fin-chart-card__canvas-wrap {
+  position: relative;
+}
+
+.fin-chart-card__canvas-wrap--sm {
+  max-height: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Prime time indicator in training modals */
@@ -2106,8 +2244,22 @@ ul, ol { list-style: none; }
   .form-row-2, .form-row-3 { grid-template-columns: 1fr; }
 
   .fin-charts-grid { grid-template-columns: 1fr !important; }
-  .fin-charts-grid .fin-chart-card[style*="span 2"] { grid-column: span 1 !important; }
+  .fin-chart-card--wide { grid-column: span 1 !important; }
   .fin-modal-grid { grid-template-columns: 1fr !important; }
+
+  .fin-period-selector { width: 100%; }
+  .fin-period-btn { flex: 1; text-align: center; padding: 6px var(--sp-2); font-size: 0.78rem; }
+
+  .fin-hero { flex-direction: column; gap: var(--sp-4); padding: var(--sp-5); }
+  .fin-hero__item--main { padding-left: 0; border-left: none; border-top: 1px solid var(--border); padding-top: var(--sp-4); width: 100%; }
+  .fin-hero__op { display: none; }
+  .fin-hero__value { font-size: 1.2rem; }
+  .fin-hero__value--main { font-size: 1.5rem; }
+
+  .fin-pills { gap: var(--sp-2); }
+  .fin-pill { min-width: calc(50% - var(--sp-1)); }
+
+  .fin-chart-card__canvas-wrap--sm { max-height: 200px; }
 
   .modal__body { padding: var(--sp-4); gap: var(--sp-4); }
   .modal__header { padding: var(--sp-4) var(--sp-5); }

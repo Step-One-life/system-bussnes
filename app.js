@@ -1811,56 +1811,76 @@ async function renderFinanceStats(el) {
   const totalIncome = filtered.reduce((s, p) => s + p.client_amount, 0);
   const totalHall   = filtered.reduce((s, p) => s + (hallMap[p.hall_cost_id]?.hall_amount ?? 0), 0);
   const netIncome   = totalIncome - totalHall;
+  const margin      = totalIncome > 0 ? Math.round((netIncome / totalIncome) * 100) : 0;
+  const avgCheck    = filtered.length > 0 ? Math.round(totalIncome / filtered.length) : 0;
   const activeCount = filtered.filter(p => p.status === 'active').length;
+  const netColor    = netIncome >= 0 ? 'var(--success)' : 'var(--danger)';
+  const marginColor = margin >= 50 ? 'var(--success)' : margin >= 20 ? 'var(--warning)' : 'var(--danger)';
 
-  const periodBtns = [
-    ['month', 'Месяц'], ['quarter', 'Квартал'], ['year', 'Год'], ['all', 'Всё время'],
-  ].map(([v, l]) =>
-    `<button class="btn btn--${period === v ? 'primary' : 'secondary'} btn--sm" data-period="${v}">${l}</button>`
+  const periodLabels = { month: 'Месяц', quarter: 'Квартал', year: 'Год', all: 'Всё время' };
+  const periodBtns   = Object.entries(periodLabels).map(([v, l]) =>
+    `<button class="fin-period-btn ${period === v ? 'fin-period-btn--active' : ''}" data-period="${v}">${l}</button>`
   ).join('');
 
   el.innerHTML = `
-    <div style="display:flex; gap:var(--sp-2); flex-wrap:wrap; margin-bottom:var(--sp-5)">${periodBtns}</div>
+    <div class="fin-period-selector">${periodBtns}</div>
 
-    <div class="kpi-grid" style="margin-bottom:var(--sp-6)">
-      <div class="kpi-card kpi-card--ok">
-        <div class="kpi-card__icon"><i data-lucide="trending-up"></i></div>
-        <div class="kpi-card__label">Доход от клиентов</div>
-        <div class="kpi-card__value">${totalIncome.toLocaleString('ru')} ₽</div>
+    <div class="fin-hero">
+      <div class="fin-hero__item">
+        <span class="fin-hero__label">Доход</span>
+        <span class="fin-hero__value" style="color:var(--success)">${totalIncome.toLocaleString('ru')} ₽</span>
       </div>
-      <div class="kpi-card kpi-card--danger">
-        <div class="kpi-card__icon"><i data-lucide="home"></i></div>
-        <div class="kpi-card__label">Расходы на зал</div>
-        <div class="kpi-card__value">${totalHall.toLocaleString('ru')} ₽</div>
+      <div class="fin-hero__op">−</div>
+      <div class="fin-hero__item">
+        <span class="fin-hero__label">Расход зала</span>
+        <span class="fin-hero__value" style="color:var(--danger)">${totalHall.toLocaleString('ru')} ₽</span>
       </div>
-      <div class="kpi-card ${netIncome >= 0 ? 'kpi-card--accent' : 'kpi-card--danger'}">
-        <div class="kpi-card__icon"><i data-lucide="wallet"></i></div>
-        <div class="kpi-card__label">Чистый доход</div>
-        <div class="kpi-card__value">${netIncome.toLocaleString('ru')} ₽</div>
+      <div class="fin-hero__op">=</div>
+      <div class="fin-hero__item fin-hero__item--main">
+        <span class="fin-hero__label">Чистый доход</span>
+        <span class="fin-hero__value fin-hero__value--main" style="color:${netColor}">${netIncome >= 0 ? '+' : ''}${netIncome.toLocaleString('ru')} ₽</span>
       </div>
-      <div class="kpi-card kpi-card--accent">
-        <div class="kpi-card__icon"><i data-lucide="ticket"></i></div>
-        <div class="kpi-card__label">Активных записей</div>
-        <div class="kpi-card__value">${activeCount}</div>
+    </div>
+
+    <div class="fin-pills">
+      <div class="fin-pill">
+        <span class="fin-pill__icon">📊</span>
+        <span class="fin-pill__label">Маржа</span>
+        <span class="fin-pill__value" style="color:${marginColor}">${margin}%</span>
+      </div>
+      <div class="fin-pill">
+        <span class="fin-pill__icon">🧾</span>
+        <span class="fin-pill__label">Записей</span>
+        <span class="fin-pill__value">${filtered.length}</span>
+      </div>
+      <div class="fin-pill">
+        <span class="fin-pill__icon">✅</span>
+        <span class="fin-pill__label">Активных</span>
+        <span class="fin-pill__value">${activeCount}</span>
+      </div>
+      <div class="fin-pill">
+        <span class="fin-pill__icon">💳</span>
+        <span class="fin-pill__label">Средний чек</span>
+        <span class="fin-pill__value">${avgCheck.toLocaleString('ru')} ₽</span>
       </div>
     </div>
 
     <div class="fin-charts-grid">
-      <div class="fin-chart-card" style="grid-column: span 2">
-        <div class="fin-chart-card__title">Доходы по месяцам</div>
-        <canvas id="chartMonthly"></canvas>
+      <div class="fin-chart-card fin-chart-card--wide">
+        <div class="fin-chart-card__title">Динамика по месяцам</div>
+        <div class="fin-chart-card__canvas-wrap"><canvas id="chartMonthly"></canvas></div>
       </div>
       <div class="fin-chart-card">
-        <div class="fin-chart-card__title">Типы оплат клиентов</div>
-        <canvas id="chartClientTypes"></canvas>
+        <div class="fin-chart-card__title">Оплаты клиентов</div>
+        <div class="fin-chart-card__canvas-wrap fin-chart-card__canvas-wrap--sm"><canvas id="chartClientTypes"></canvas></div>
       </div>
       <div class="fin-chart-card">
-        <div class="fin-chart-card__title">Типы оплат зала</div>
-        <canvas id="chartHallTypes"></canvas>
+        <div class="fin-chart-card__title">Оплаты зала</div>
+        <div class="fin-chart-card__canvas-wrap fin-chart-card__canvas-wrap--sm"><canvas id="chartHallTypes"></canvas></div>
       </div>
-      <div class="fin-chart-card" style="grid-column: span 2">
+      <div class="fin-chart-card fin-chart-card--wide">
         <div class="fin-chart-card__title">Топ клиентов по доходу</div>
-        <canvas id="chartTopClients"></canvas>
+        <div class="fin-chart-card__canvas-wrap"><canvas id="chartTopClients"></canvas></div>
       </div>
     </div>
   `;
@@ -1886,11 +1906,21 @@ function _finPeriodStart(period) {
 
 function _buildFinCharts(filtered, allPayments, hallMap, studentMap) {
   const dark      = document.documentElement.dataset.theme === 'dark';
-  const gridColor = dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
-  const textColor = dark ? '#8a9099' : '#5a6270';
-  const COLORS    = ['#01696f','#22c55e','#f59e0b','#ef4444','#b47aff','#3b82f6','#06b6d4','#84cc16'];
+  const gridColor = dark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
+  const textColor = dark ? '#6b7280' : '#6b7280';
+  const COLORS    = ['#01696f','#22c55e','#f59e0b','#b47aff','#3b82f6','#06b6d4','#f97316','#84cc16'];
 
-  // Chart 1: Monthly breakdown (all payments, not filtered)
+  const baseOpts = (extra = {}) => ({
+    responsive: true,
+    maintainAspectRatio: true,
+    plugins: {
+      legend: { labels: { color: textColor, font: { size: 11, family: 'Satoshi, sans-serif' }, boxWidth: 10, padding: 14 } },
+      tooltip: { backgroundColor: dark ? '#1a1e24' : '#fff', titleColor: dark ? '#f0f2f5' : '#111', bodyColor: textColor, borderColor: dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)', borderWidth: 1, padding: 10, cornerRadius: 8 },
+    },
+    ...extra,
+  });
+
+  // Chart 1: Monthly breakdown
   const monthly = {};
   allPayments.forEach(p => {
     const m = p.paid_at.slice(0, 7);
@@ -1902,23 +1932,28 @@ function _buildFinCharts(filtered, allPayments, hallMap, studentMap) {
   const ctx1   = document.getElementById('chartMonthly');
   if (ctx1 && months.length) {
     _finCharts.monthly = new Chart(ctx1, {
-      type: 'line',
+      type: 'bar',
       data: {
         labels: months.map(m => {
           const [y, mo] = m.split('-');
           return new Date(+y, +mo - 1, 1).toLocaleString('ru', { month: 'short', year: '2-digit' });
         }),
         datasets: [
-          { label: 'Доход',      data: months.map(m => monthly[m].income),                  borderColor: '#22c55e', backgroundColor: 'rgba(34,197,94,0.08)',  fill: true, tension: 0.4 },
-          { label: 'Расход зала', data: months.map(m => monthly[m].hall),                   borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.08)',  fill: true, tension: 0.4 },
-          { label: 'Чистый',     data: months.map(m => monthly[m].income - monthly[m].hall), borderColor: '#01696f', backgroundColor: 'rgba(1,105,111,0.08)', fill: true, tension: 0.4 },
+          { label: 'Доход',       data: months.map(m => monthly[m].income),                   backgroundColor: 'rgba(34,197,94,0.75)',  borderRadius: 6, borderSkipped: false },
+          { label: 'Расход зала', data: months.map(m => monthly[m].hall),                    backgroundColor: 'rgba(239,68,68,0.6)',   borderRadius: 6, borderSkipped: false },
+          { label: 'Чистый',      data: months.map(m => monthly[m].income - monthly[m].hall), backgroundColor: 'rgba(1,105,111,0.85)', borderRadius: 6, borderSkipped: false },
         ],
       },
-      options: { responsive: true, plugins: { legend: { labels: { color: textColor } } }, scales: { x: { ticks: { color: textColor }, grid: { color: gridColor } }, y: { ticks: { color: textColor }, grid: { color: gridColor } } } },
+      options: baseOpts({
+        scales: {
+          x: { ticks: { color: textColor, font: { size: 10 } }, grid: { color: gridColor }, border: { display: false } },
+          y: { ticks: { color: textColor, font: { size: 10 } }, grid: { color: gridColor }, border: { display: false } },
+        },
+      }),
     });
   }
 
-  // Chart 2: Client payment type distribution
+  // Chart 2: Client payment types
   const clientTypes = {};
   filtered.forEach(p => {
     const l = DB.FIN_LABELS[p.client_payment_type] ?? p.client_payment_type;
@@ -1928,12 +1963,12 @@ function _buildFinCharts(filtered, allPayments, hallMap, studentMap) {
   if (ctx2 && Object.keys(clientTypes).length) {
     _finCharts.clientTypes = new Chart(ctx2, {
       type: 'doughnut',
-      data: { labels: Object.keys(clientTypes), datasets: [{ data: Object.values(clientTypes), backgroundColor: COLORS }] },
-      options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { color: textColor, font: { size: 11 } } } } },
+      data: { labels: Object.keys(clientTypes), datasets: [{ data: Object.values(clientTypes), backgroundColor: COLORS, borderWidth: 0, hoverOffset: 6 }] },
+      options: baseOpts({ cutout: '60%', plugins: { legend: { position: 'bottom', labels: { color: textColor, font: { size: 11 }, boxWidth: 10, padding: 10 } } } }),
     });
   }
 
-  // Chart 3: Hall payment type distribution
+  // Chart 3: Hall payment types
   const hallTypes = {};
   filtered.forEach(p => {
     const hc = hallMap[p.hall_cost_id];
@@ -1945,25 +1980,36 @@ function _buildFinCharts(filtered, allPayments, hallMap, studentMap) {
   if (ctx3 && Object.keys(hallTypes).length) {
     _finCharts.hallTypes = new Chart(ctx3, {
       type: 'doughnut',
-      data: { labels: Object.keys(hallTypes), datasets: [{ data: Object.values(hallTypes), backgroundColor: [...COLORS].reverse() }] },
-      options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { color: textColor, font: { size: 11 } } } } },
+      data: { labels: Object.keys(hallTypes), datasets: [{ data: Object.values(hallTypes), backgroundColor: [...COLORS].slice(2), borderWidth: 0, hoverOffset: 6 }] },
+      options: baseOpts({ cutout: '60%', plugins: { legend: { position: 'bottom', labels: { color: textColor, font: { size: 11 }, boxWidth: 10, padding: 10 } } } }),
     });
   }
 
-  // Chart 4: Top clients by income
+  // Chart 4: Top clients
   const byClient = {};
   filtered.forEach(p => {
     if (!p.student_id) return;
     const name = studentMap[p.student_id]?.name ?? 'Неизвестен';
     byClient[name] = (byClient[name] ?? 0) + p.client_amount;
   });
-  const top10 = Object.entries(byClient).sort((a, b) => b[1] - a[1]).slice(0, 10);
+  const top10 = Object.entries(byClient).sort((a, b) => b[1] - a[1]).slice(0, 8);
   const ctx4  = document.getElementById('chartTopClients');
   if (ctx4 && top10.length) {
+    const barColors = top10.map((_, i) => COLORS[i % COLORS.length]);
     _finCharts.topClients = new Chart(ctx4, {
       type: 'bar',
-      data: { labels: top10.map(([n]) => n), datasets: [{ label: 'Доход', data: top10.map(([, v]) => v), backgroundColor: '#01696f', borderRadius: 6 }] },
-      options: { responsive: true, indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { ticks: { color: textColor }, grid: { color: gridColor } }, y: { ticks: { color: textColor }, grid: { color: gridColor } } } },
+      data: {
+        labels: top10.map(([n]) => n),
+        datasets: [{ label: 'Доход', data: top10.map(([, v]) => v), backgroundColor: barColors, borderRadius: 6, borderSkipped: false }],
+      },
+      options: baseOpts({
+        indexAxis: 'y',
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { ticks: { color: textColor, font: { size: 10 } }, grid: { color: gridColor }, border: { display: false } },
+          y: { ticks: { color: textColor, font: { size: 11 } }, grid: { display: false }, border: { display: false } },
+        },
+      }),
     });
   }
 }
