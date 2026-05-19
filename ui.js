@@ -396,8 +396,8 @@ function renderStudentDetail(student, allGroups = []) {
            <i data-lucide="clock"></i> Продлить срок
          </button>`;
 
-    const cardLabel   = isInd ? 'Индивидуальная тренировка' : groupId;
-    const deleteBtn   = anySub
+    const cardLabel  = isInd ? 'Индивидуальная тренировка' : groupId;
+    const deleteBtn  = anySub
       ? `<button class="btn btn--ghost btn--sm sub-card__delete"
                  data-action="delete-sub"
                  data-student-id="${student.id}"
@@ -407,10 +407,21 @@ function renderStudentDetail(student, allGroups = []) {
          </button>`
       : '';
 
+    const payBtn = activeSub && !activeSub.finPaymentId
+      ? `<button class="sub-pay-btn" data-action="mark-paid"
+                 data-sub-id="${activeSub.id}" data-group="${groupId}"
+                 title="Не оплачено — нажмите, чтобы отметить оплату">
+           <i data-lucide="banknote"></i>
+         </button>`
+      : activeSub?.finPaymentId
+      ? `<span class="sub-paid-mark" title="Оплачено"><i data-lucide="circle-check-big"></i></span>`
+      : '';
+
     return `
       <div class="card" style="padding:var(--sp-4)">
         <div class="flex items-center gap-3" style="margin-bottom:var(--sp-3)">
           <span class="font-semibold text-sm">${cardLabel}</span>
+          ${payBtn}
           <span class="ml-auto">${renderBadge(status)}</span>
           ${deleteBtn}
         </div>
@@ -781,6 +792,8 @@ function renderAddTrainingModal(students, defaultGroup = null) {
         <input class="form-input" type="time" id="trainingTime" value="18:00" />
       </div>
     </div>
+    <div class="conflict-hint" id="trainingConflictHint"></div>
+    <div id="primeHint" class="prime-hint"></div>
     <div class="form-group">
       <label class="form-label">Ученики</label>
       <div class="checkbox-group" id="attendeeList">
@@ -1058,6 +1071,8 @@ function renderIndividualSessionModal(students, indGroupId) {
         <input class="form-input" type="time" id="indSessionTime" value="18:00" />
       </div>
     </div>
+    <div class="conflict-hint" id="trainingConflictHint"></div>
+    <div id="primeHint" class="prime-hint"></div>
     <div class="form-group" id="indSubTypeGroup" style="display:none">
       <label class="form-label">Абонемент</label>
       <select class="form-select" id="indSubType">

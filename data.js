@@ -232,14 +232,15 @@ async function addSubscription(studentId, subData) {
   expiresDate.setDate(expiresDate.getDate() + 35);
 
   const sub = {
-    id:        uuid(),
-    groupId:   subData.groupId,
-    type:      subData.type,
+    id:           uuid(),
+    groupId:      subData.groupId,
+    type:         subData.type,
     total,
-    remaining: total,
-    createdAt: subData.createdAt || new Date().toISOString().slice(0, 10),
-    expiresAt: expiresDate.toISOString().slice(0, 10),
-    isActive:  true,
+    remaining:    total,
+    createdAt:    subData.createdAt || new Date().toISOString().slice(0, 10),
+    expiresAt:    expiresDate.toISOString().slice(0, 10),
+    isActive:     true,
+    finPaymentId: null,
   };
 
   const subscriptions = [...student.subscriptions, sub];
@@ -368,6 +369,7 @@ async function createTraining(data) {
     groupId:   data.groupId,
     attendees: data.attendees || [],
     note:      data.note || '',
+    isPrime:   data.isPrime ?? false,
     createdAt: new Date().toISOString(),
   };
 
@@ -636,6 +638,159 @@ async function clearAllData() {
 }
 
 /* ────────────────────────────────────────────────
+   Finance — Constants
+───────────────────────────────────────────────── */
+
+const FIN_SESSIONS = {
+  single_individual: 1, single_group: 1,
+  individual_sub_4:  4, group_sub_4:  4,
+  individual_sub_8:  8, group_sub_8:  8,
+};
+
+const FIN_LABELS = {
+  single_individual: 'Разовая инди',
+  single_group:      'Разовая групп.',
+  individual_sub_4:  'Инди ×4',
+  individual_sub_8:  'Инди ×8',
+  group_sub_4:       'Групп. ×4',
+  group_sub_8:       'Групп. ×8',
+};
+
+const PRICING_DEFAULTS = {
+  client_single_individual_price: 0,
+  client_single_group_price:      0,
+  client_individual_sub_4_price:  0,
+  client_individual_sub_8_price:  0,
+  client_group_sub_4_price:       0,
+  client_group_sub_8_price:       0,
+  hall_single_individual_regular_price: 0,
+  hall_single_individual_prime_price:   0,
+  hall_single_group_regular_price:      0,
+  hall_single_group_prime_price:        0,
+  hall_individual_sub_4_regular_price:  0,
+  hall_individual_sub_4_prime_price:    0,
+  hall_individual_sub_8_regular_price:  0,
+  hall_individual_sub_8_prime_price:    0,
+  hall_group_sub_4_regular_price:       0,
+  hall_group_sub_4_prime_price:         0,
+  hall_group_sub_8_regular_price:       0,
+  hall_group_sub_8_prime_price:         0,
+};
+
+/* ────────────────────────────────────────────────
+   Finance — Pricing config
+───────────────────────────────────────────────── */
+
+async function getPricing() {
+  return { ...PRICING_DEFAULTS, ..._read('tk_pricing', {}) };
+}
+
+async function savePricing(data) {
+  _write('tk_pricing', { ...data, updated_at: new Date().toISOString() });
+}
+
+/* ────────────────────────────────────────────────
+   Finance — Payments (Поток 1: клиент → тренер)
+───────────────────────────────────────────────── */
+
+async function getPayments() {
+  return [..._read('tk_payments', [])].sort((a, b) => new Date(b.paid_at) - new Date(a.paid_at));
+}
+
+async function createPayment(data) {
+  const payments = _read('tk_payments', []);
+  const sessions = FIN_SESSIONS[data.client_payment_type] ?? 1;
+  const payment = {
+    id:                  uuid(),
+    student_id:          data.student_id || null,
+    client_payment_type: data.client_payment_type,
+    client_amount:       parseFloat(data.client_amount) || 0,
+    sessions_total:      sessions,
+    sessions_remaining:  sessions,
+    paid_at:             data.paid_at || new Date().toISOString().slice(0, 10),
+    status:              'active',
+    notes:               data.notes || '',
+    hall_cost_id:        data.hall_cost_id || null,
+  };
+  payments.push(payment);
+  _write('tk_payments', payments);
+  return payment;
+}
+
+async function updatePayment(id, changes) {
+  const payments = _read('tk_payments', []);
+  const idx = payments.findIndex(p => p.id === id);
+  if (idx === -1) return null;
+  payments[idx] = { ...payments[idx], ...changes };
+  _write('tk_payments', payments);
+  return payments[idx];
+}
+
+async function deletePayment(id) {
+  const payments = _read('tk_payments', []);
+  const p = payments.find(x => x.id === id);
+  if (!p) return false;
+  if (p.hall_cost_id) await deleteHallCost(p.hall_cost_id);
+  _write('tk_payments', payments.filter(x => x.id !== id));
+  return true;
+}
+
+/* ────────────────────────────────────────────────
+   Finance — Hall costs (Поток 2: тренер → зал)
+───────────────────────────────────────────────── */
+
+async function getHallCosts() {
+  return [..._read('tk_hall_costs', [])].sort((a, b) => new Date(b.paid_at) - new Date(a.paid_at));
+}
+
+async function createHallCost(data) {
+  const costs    = _read('tk_hall_costs', []);
+  const sessions = FIN_SESSIONS[data.hall_payment_type] ?? 1;
+  const cost = {
+    id:                 uuid(),
+    student_id:         data.student_id || null,
+    hall_payment_type:  data.hall_payment_type,
+    time_slot:          data.time_slot || 'regular',
+    training_time:      data.training_time || '',
+    hall_amount:        parseFloat(data.hall_amount) || 0,
+    sessions_total:     sessions,
+    sessions_remaining: sessions,
+    paid_at:            data.paid_at || new Date().toISOString().slice(0, 10),
+    status:             'active',
+    notes:              data.notes || '',
+  };
+  costs.push(cost);
+  _write('tk_hall_costs', costs);
+  return cost;
+}
+
+async function linkPaymentToSub(studentId, subId, paymentId) {
+  const student = await getStudentById(studentId);
+  if (!student) return;
+  const subs = student.subscriptions.map(s =>
+    s.id === subId ? { ...s, finPaymentId: paymentId } : s
+  );
+  await updateStudent(studentId, { subscriptions: subs });
+}
+
+async function updateHallCost(id, changes) {
+  const costs = _read('tk_hall_costs', []);
+  const idx = costs.findIndex(c => c.id === id);
+  if (idx === -1) return null;
+  costs[idx] = { ...costs[idx], ...changes };
+  _write('tk_hall_costs', costs);
+  return costs[idx];
+}
+
+async function deleteHallCost(id) {
+  const costs    = _read('tk_hall_costs', []);
+  const filtered = costs.filter(c => c.id !== id);
+  if (filtered.length === costs.length) return false;
+  _write('tk_hall_costs', filtered);
+  return true;
+}
+
+/* ────────────────────────────────────────────────
    Exports (global, since we're not using modules)
 ───────────────────────────────────────────────── */
 window.DB = {
@@ -685,4 +840,25 @@ window.DB = {
   // dev
   seedDemoData,
   clearAllData,
+
+  // finance — constants
+  FIN_SESSIONS,
+  FIN_LABELS,
+
+  // finance — pricing
+  getPricing,
+  savePricing,
+
+  // finance — payments
+  getPayments,
+  createPayment,
+  updatePayment,
+  deletePayment,
+  linkPaymentToSub,
+
+  // finance — hall costs
+  getHallCosts,
+  createHallCost,
+  updateHallCost,
+  deleteHallCost,
 };

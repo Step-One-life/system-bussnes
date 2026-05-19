@@ -43,7 +43,7 @@ function getSubStatus(student, groupId) {
   if (days !== null && days < 0) return { label: 'Истёк срок',    type: 'expired' };
   if (sub.remaining === 0)       return { label: 'Нужно продлить', type: 'expired' };
   // Single-visit subscriptions are always "active" until used — no "ending" threshold
-  if (sub.type !== '1' && (sub.remaining <= 2 || (days !== null && days <= 7))) {
+  if (sub.type !== '1' && (sub.remaining <= 1 || (days !== null && days <= 7))) {
     return { label: 'Заканчивается', type: 'ending' };
   }
   return { label: 'Активен', type: 'active' };
@@ -338,6 +338,71 @@ function subTypeLabel(type) {
 /* ────────────────────────────────────────────────
    Exports
 ───────────────────────────────────────────────── */
+/* ────────────────────────────────────────────────
+   Training conflict detection
+───────────────────────────────────────────────── */
+
+function timeToMinutes(time) {
+  const [h, m] = time.split(':').map(Number);
+  return h * 60 + (m || 0);
+}
+
+function minutesToTime(mins) {
+  return `${String(Math.floor(mins / 60)).padStart(2, '0')}:${String(mins % 60).padStart(2, '0')}`;
+}
+
+/**
+ * Returns true if the training start time falls in prime-time.
+ * Weekdays (Mon–Fri): 17:00–19:59
+ * Weekends (Sat–Sun): 10:00–19:59
+ * @param {string} date — ISO date (YYYY-MM-DD)
+ * @param {string} time — "HH:MM"
+ */
+function isPrimeTime(date, time) {
+  if (!date || !time) return false;
+  const d = new Date(date + 'T00:00:00');
+  const dow = d.getDay(); // 0=Sun, 6=Sat
+  const [h, m] = time.split(':').map(Number);
+  const mins = h * 60 + (m || 0);
+  const isWeekend = dow === 0 || dow === 6;
+  return isWeekend ? (mins >= 600 && mins <= 1199) : (mins >= 1020 && mins <= 1199);
+}
+
+/**
+ * Returns list of trainings that overlap with the proposed slot.
+ * @param {string} date       — ISO date (YYYY-MM-DD)
+ * @param {string} time       — "HH:MM", empty string → no check
+ * @param {string} groupId    — group name (used to get duration)
+ * @param {string} [excludeId] — training id to ignore (for edit flows)
+ */
+async function checkTrainingConflict(date, time, groupId, excludeId = null) {
+  if (!time) return [];
+
+  const [allTrainings, allGroups] = await Promise.all([
+    DB.getTrainings(),
+    DB.getGroups(),
+  ]);
+
+  const groupMap   = Object.fromEntries(allGroups.map(g => [g.name, g]));
+  const newDur     = groupMap[groupId]?.duration ?? 60;
+  const newStart   = timeToMinutes(time);
+  const newEnd     = newStart + newDur;
+
+  return allTrainings
+    .filter(t => t.date === date && t.id !== excludeId && t.time)
+    .filter(t => {
+      const dur   = groupMap[t.groupId]?.duration ?? 60;
+      const start = timeToMinutes(t.time);
+      const end   = start + dur;
+      return newStart < end && start < newEnd;
+    })
+    .map(t => {
+      const dur = groupMap[t.groupId]?.duration ?? 60;
+      const end = timeToMinutes(t.time) + dur;
+      return { groupId: t.groupId, start: t.time, end: minutesToTime(end) };
+    });
+}
+
 window.Logic = {
   getDaysRemaining,
   getSubStatus,
@@ -357,4 +422,8 @@ window.Logic = {
   formatSchedule,
   getIndividualKPIs,
   getIndividualWarnings,
+  checkTrainingConflict,
+  timeToMinutes,
+  minutesToTime,
+  isPrimeTime,
 };

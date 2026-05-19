@@ -1241,6 +1241,46 @@ ul, ol { list-style: none; }
 .group-stat__value--danger { color: var(--danger); }
 
 /* --------------------------------------------------
+   Training type picker cards
+   -------------------------------------------------- */
+.training-type-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-3);
+  padding: var(--sp-8) var(--sp-4);
+  background: var(--surface-2);
+  border: 2px solid var(--border);
+  border-radius: var(--r-xl);
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-family: var(--font);
+  transition: background var(--dur) var(--ease),
+              border-color var(--dur) var(--ease),
+              color var(--dur) var(--ease),
+              transform var(--dur) var(--ease);
+}
+
+.training-type-card i {
+  width: 32px; height: 32px;
+  color: var(--accent-light);
+  transition: color var(--dur) var(--ease);
+}
+
+.training-type-card:hover {
+  background: var(--accent-dim);
+  border-color: var(--accent);
+  color: var(--accent-light);
+}
+
+.training-type-card:active {
+  transform: scale(0.96);
+}
+
+/* --------------------------------------------------
    Drawer FAB (floating action button)
    -------------------------------------------------- */
 .drawer-fab {
@@ -1563,6 +1603,335 @@ ul, ol { list-style: none; }
   .search-input { min-width: 100%; }
 }
 
+/* =====================================================
+   Finance Module
+   ===================================================== */
+
+/* Tab bar */
+.fin-tabs {
+  display: flex;
+  gap: var(--sp-2);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: var(--sp-2);
+  margin-bottom: var(--sp-6);
+}
+
+.fin-tab {
+  flex: 1;
+  padding: var(--sp-2) var(--sp-4);
+  border-radius: var(--r-md);
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+
+.fin-tab:hover { background: var(--surface-2); }
+
+.fin-tab--active {
+  background: var(--accent);
+  color: #fff;
+}
+
+/* Sections (pricing tab) */
+.fin-section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: var(--sp-5);
+  margin-bottom: var(--sp-5);
+}
+
+.fin-section__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--sp-5);
+}
+
+.fin-section__title {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.fin-section__badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.fin-section__badge--income  { background: var(--success-dim); color: var(--success); }
+.fin-section__badge--expense { background: var(--danger-dim);  color: var(--danger);  }
+
+/* Price rows */
+.price-group { margin-bottom: var(--sp-4); }
+
+.price-group__subtitle {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin-bottom: var(--sp-2);
+}
+
+.price-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--sp-2) 0;
+  border-bottom: 1px solid var(--border);
+  gap: var(--sp-3);
+}
+
+.price-row:last-child { border-bottom: none; }
+
+.price-row__label {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  flex: 1;
+  min-width: 0;
+}
+
+.price-row__input-wrap {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+/* Hall price rows — two columns (regular + prime) */
+.price-row--hall {
+  align-items: center;
+}
+
+.hall-price-header {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-1);
+  padding-bottom: var(--sp-1);
+}
+
+.hall-price-header > span:first-child { flex: 1; }
+
+.hall-slot-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  min-width: 148px;
+  text-align: left;
+}
+
+.hall-slot-label--prime { color: #f59e0b; }
+
+.price-input {
+  width: 96px;
+  padding: 5px var(--sp-2);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  color: var(--text-primary);
+  font-family: var(--font);
+  font-size: 0.875rem;
+  text-align: right;
+  transition: border-color var(--dur) var(--ease);
+}
+
+.price-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.price-row__currency {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+.price-per {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  min-width: 88px;
+  text-align: right;
+}
+
+/* Charts grid */
+.fin-charts-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-4);
+}
+
+.fin-chart-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: var(--sp-5);
+}
+
+.fin-chart-card__title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--sp-4);
+}
+
+/* Prime time indicator in training modals */
+.prime-hint {
+  min-height: 1.5rem;
+  margin-top: var(--sp-1);
+  margin-bottom: var(--sp-1);
+}
+
+/* Prime badge in records table */
+.badge--prime {
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+}
+
+/* Time slot toggle */
+.timeslot-toggle {
+  display: flex;
+  gap: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  overflow: hidden;
+}
+
+.timeslot-btn {
+  flex: 1;
+  padding: var(--sp-2) var(--sp-3);
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font);
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+
+.timeslot-btn + .timeslot-btn { border-left: 1px solid var(--border); }
+
+.timeslot-btn--active {
+  background: var(--accent);
+  color: #fff;
+}
+
+/* Add payment modal */
+.fin-modal-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-4);
+  margin-top: var(--sp-4);
+}
+
+.fin-modal-section {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: var(--sp-4);
+}
+
+.fin-modal-section--income  { border-top: 3px solid var(--success); }
+.fin-modal-section--expense { border-top: 3px solid var(--danger);  }
+
+.fin-modal-section__label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin-bottom: var(--sp-3);
+}
+
+/* Payment status on subscription cards */
+/* ── Conflict hint inside training modals ── */
+.conflict-hint {
+  display: none;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-3);
+  margin-bottom: var(--sp-3);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--danger) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--danger) 30%, transparent);
+  color: var(--danger);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1.4;
+}
+.conflict-hint.is-visible {
+  display: flex;
+}
+.conflict-hint::before {
+  content: '⚠';
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+.sub-pay-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: var(--danger-dim);
+  color: var(--danger);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background var(--dur) var(--ease), transform var(--dur) var(--ease);
+  animation: pulse-red 2s ease-in-out infinite;
+}
+
+.sub-pay-btn i { width: 15px; height: 15px; }
+
+.sub-pay-btn:hover {
+  background: var(--danger);
+  color: #fff;
+  animation: none;
+  transform: scale(1.1);
+}
+
+@keyframes pulse-red {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); }
+  50%       { box-shadow: 0 0 0 5px rgba(239,68,68,0.25); }
+}
+
+.sub-paid-mark {
+  display: inline-flex;
+  align-items: center;
+  color: var(--success);
+  opacity: 0.7;
+  flex-shrink: 0;
+}
+
+.sub-paid-mark i { width: 15px; height: 15px; }
+
+.fin-preview {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: var(--sp-3) var(--sp-4);
+  margin-top: var(--sp-4);
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
 @media (max-width: 480px) {
   .kpi-grid {
     grid-template-columns: 1fr 1fr;
@@ -1572,4 +1941,9 @@ ul, ol { list-style: none; }
   .kpi-card__value { font-size: 1.7rem; }
 
   .page-title { font-size: 1.25rem; }
+
+  .fin-charts-grid { grid-template-columns: 1fr !important; }
+  .fin-charts-grid .fin-chart-card[style*="span 2"] { grid-column: span 1 !important; }
+  .fin-modal-grid { grid-template-columns: 1fr !important; }
+}
 }

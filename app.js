@@ -12,7 +12,9 @@
 const AppState = {
   currentPage: 'home',
   studentsFilter: { group: '', status: '', search: '' },
-  groupView: null,  // currently viewed group in Groups section
+  groupView:     null,
+  financeTab:    'pricing',
+  financePeriod: 'all',
 };
 
 /* ────────────────────────────────────────────────
@@ -50,6 +52,7 @@ async function navigate(page) {
     case 'groups':     await renderGroups();     break;
     case 'trainings':  await renderTrainings();  break;
     case 'individual': await renderIndividual(); break;
+    case 'finance':    await renderFinance();    break;
   }
 
   // Re-create lucide icons
@@ -62,16 +65,46 @@ async function navigate(page) {
 
 async function renderHome() {
   const el = document.getElementById('page-home');
-  el.innerHTML = '<div class="page-header"><h1 class="page-title">Главная</h1></div>' +
+  el.innerHTML = `
+    <div class="page-header">
+      <h1 class="page-title">Главная</h1>
+      <button class="btn btn--primary" id="homeAddTrainingBtn">
+        <i data-lucide="plus"></i> Записать тренировку
+      </button>
+    </div>` +
     '<div id="kpi-area"></div>' +
-    '<div id="warnings-area"></div>' +
-    '<div id="recent-trainings-area"></div>';
+    '<div id="today-trainings-area"></div>' +
+    '<div id="warnings-area"></div>';
+
+  el.querySelector('#homeAddTrainingBtn')?.addEventListener('click', () => openTrainingTypeModal());
+  lucide.createIcons({ nodes: [el.querySelector('.page-header')] });
 
   // KPIs
   const kpis = await Logic.getKPIs();
   document.getElementById('kpi-area').innerHTML = UI.renderKPIGrid(kpis);
   lucide.createIcons({ nodes: [document.getElementById('kpi-area')] });
   UI.animateCountUp();
+
+  // Today's trainings
+  const today     = new Date().toISOString().slice(0, 10);
+  const trainings = await DB.getTrainings();
+  const students  = await DB.getStudents();
+  const todayList = trainings.filter(t => t.date === today);
+  const tArea     = document.getElementById('today-trainings-area');
+
+  tArea.innerHTML = `
+    <div class="section-title">Тренировки сегодня</div>
+    ${todayList.length
+      ? `<div style="display:flex; flex-direction:column; gap:var(--sp-3); margin-bottom:var(--sp-6)">
+           ${todayList.map(t => UI.renderTrainingItem(t, students)).join('')}
+         </div>`
+      : `<div class="card" style="text-align:center; color:var(--text-muted); padding:var(--sp-5); margin-bottom:var(--sp-6)">
+           Тренировок на сегодня нет
+         </div>`
+    }
+  `;
+  lucide.createIcons({ nodes: [tArea] });
+  setupTrainingToggles(tArea);
 
   // Warnings
   const warnings = await Logic.getWarningStudents();
@@ -93,24 +126,6 @@ async function renderHome() {
       </div>
     `;
   }
-
-  // Recent trainings
-  const trainings = await DB.getTrainings();
-  const students  = await DB.getStudents();
-  const recent    = trainings.slice(0, 3);
-  const tArea     = document.getElementById('recent-trainings-area');
-
-  tArea.innerHTML = `
-    <div class="section-title mt-6">Последние тренировки</div>
-    ${recent.length
-      ? `<div style="display:flex; flex-direction:column; gap:var(--sp-3)">
-           ${recent.map(t => UI.renderTrainingItem(t, students)).join('')}
-         </div>`
-      : UI.renderEmptyState({ icon: 'calendar', title: 'Тренировок пока нет' })
-    }
-  `;
-  lucide.createIcons({ nodes: [tArea] });
-  setupTrainingToggles(tArea);
 }
 
 /* ────────────────────────────────────────────────
@@ -287,6 +302,37 @@ async function openCreateIndividualSessionModal(indGroupId) {
         }
       };
 
+      const conflictHint = modal.querySelector('#trainingConflictHint');
+      const _liveCheckInd = async () => {
+        const date = modal.querySelector('#indSessionDate').value;
+        const time = modal.querySelector('#indSessionTime').value;
+        if (!date || !time) { conflictHint.classList.remove('is-visible'); return; }
+        const conflicts = await Logic.checkTrainingConflict(date, time, indGroupId);
+        if (conflicts.length) {
+          const detail = conflicts.map(c => `«${c.groupId}» ${c.start}–${c.end}`).join(', ');
+          conflictHint.textContent = `Конфликт: ${detail}`;
+          conflictHint.classList.add('is-visible');
+        } else {
+          conflictHint.classList.remove('is-visible');
+        }
+      };
+
+      modal.querySelector('#indSessionDate')?.addEventListener('change', _liveCheckInd);
+      modal.querySelector('#indSessionTime')?.addEventListener('change', _liveCheckInd);
+
+      const primeHintInd = modal.querySelector('#primeHint');
+      const _updatePrimeHintInd = () => {
+        const date = modal.querySelector('#indSessionDate').value;
+        const time = modal.querySelector('#indSessionTime').value;
+        if (!primeHintInd) return;
+        primeHintInd.innerHTML = time ? (Logic.isPrimeTime(date, time)
+          ? '<span class="badge badge--prime">⭐ Prime</span>'
+          : '<span class="badge badge--neutral">Обычное</span>') : '';
+      };
+      modal.querySelector('#indSessionDate')?.addEventListener('change', _updatePrimeHintInd);
+      modal.querySelector('#indSessionTime')?.addEventListener('change', _updatePrimeHintInd);
+      _updatePrimeHintInd();
+
       clientSelect.addEventListener('change', refreshClientInfo);
       modal.querySelector('#cancelIndSession')?.addEventListener('click', UI.closeModal);
 
@@ -301,6 +347,13 @@ async function openCreateIndividualSessionModal(indGroupId) {
           return;
         }
 
+        const conflicts = await Logic.checkTrainingConflict(date, time, indGroupId);
+        if (conflicts.length) {
+          const detail = conflicts.map(c => `«${c.groupId}» ${c.start}–${c.end}`).join(', ');
+          UI.showToast({ type: 'error', title: 'Конфликт расписания', msg: detail });
+          return;
+        }
+
         // Ensure student is linked to individual group
         const student = await DB.getStudentById(studentId);
         if (!student.groups.includes(indGroupId)) {
@@ -311,11 +364,12 @@ async function openCreateIndividualSessionModal(indGroupId) {
         const activeSub = student.subscriptions.find(s => s.groupId === indGroupId && s.isActive);
         if (!activeSub) {
           const subType = modal.querySelector('#indSubType')?.value || '1';
-          await DB.addSubscription(studentId, { groupId: indGroupId, type: subType, createdAt: date });
+          const newSub  = await DB.addSubscription(studentId, { groupId: indGroupId, type: subType, createdAt: date });
+          await _autoCreatePayment(studentId, newSub);
         }
 
         // Create training and mark attendance
-        const training = await DB.createTraining({ date, time, groupId: indGroupId, attendees: [studentId], note });
+        const training = await DB.createTraining({ date, time, groupId: indGroupId, attendees: [studentId], note, isPrime: Logic.isPrimeTime(date, time) });
         const results  = await Logic.markAttendance(training, [studentId]);
 
         UI.closeModal();
@@ -329,7 +383,7 @@ async function openCreateIndividualSessionModal(indGroupId) {
           }
         }
 
-        await renderIndividual();
+        await navigate(AppState.currentPage);
       });
     },
   });
@@ -605,7 +659,7 @@ async function renderTrainings() {
   lucide.createIcons({ nodes: [el] });
   setupTrainingToggles(el);
 
-  el.querySelector('#addTrainingBtn')?.addEventListener('click', () => openAddTrainingModal(students));
+  el.querySelector('#addTrainingBtn')?.addEventListener('click', () => openTrainingTypeModal());
 }
 
 /* ────────────────────────────────────────────────
@@ -985,16 +1039,16 @@ async function openAddStudentModal() {
 
         const student = await DB.createStudent({ name, groups });
 
-        // Add subscriptions for each selected group
-        const startDate = modal.querySelector('#subStartDate')?.value;
+        const startDate  = modal.querySelector('#subStartDate')?.value;
         const subSelects = modal.querySelectorAll('[data-group-sub]');
         for (const sel of subSelects) {
           if (sel.value) {
-            await DB.addSubscription(student.id, {
+            const sub = await DB.addSubscription(student.id, {
               groupId:   sel.dataset.groupSub,
               type:      sel.value,
               createdAt: startDate || new Date().toISOString().slice(0, 10),
             });
+            await _autoCreatePayment(student.id, sub);
           }
         }
 
@@ -1048,9 +1102,52 @@ async function openEditStudentModal(studentId) {
    Modal: Add training
 ───────────────────────────────────────────────── */
 
+/* ────────────────────────────────────────────────
+   Modal: Training type picker (step 1)
+───────────────────────────────────────────────── */
+
+async function openTrainingTypeModal() {
+  UI.openModal({
+    title: 'Новая тренировка',
+    body: `
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:var(--sp-4)">
+        <button class="training-type-card" id="pickGroup">
+          <i data-lucide="users"></i>
+          <span>Групповая</span>
+        </button>
+        <button class="training-type-card" id="pickInd">
+          <i data-lucide="user"></i>
+          <span>Индивидуальная</span>
+        </button>
+      </div>
+    `,
+    footer: `<button class="btn btn--secondary" id="cancelTypePick">Отмена</button>`,
+    onOpen: modal => {
+      lucide.createIcons({ nodes: [modal] });
+      modal.querySelector('#cancelTypePick').addEventListener('click', UI.closeModal);
+
+      modal.querySelector('#pickGroup').addEventListener('click', async () => {
+        UI.closeModal();
+        const students = await DB.getStudents();
+        openAddTrainingModal(students);
+      });
+
+      modal.querySelector('#pickInd').addEventListener('click', async () => {
+        UI.closeModal();
+        const indGroup = await ensureIndividualGroup();
+        openCreateIndividualSessionModal(indGroup.name);
+      });
+    },
+  });
+}
+
+/* ────────────────────────────────────────────────
+   Modal: Add group training (step 2a)
+───────────────────────────────────────────────── */
+
 function openAddTrainingModal(students) {
   UI.openModal({
-    title: 'Записать тренировку',
+    title: 'Групповая тренировка',
     body: UI.renderAddTrainingModal(students),
     footer: `
       <button class="btn btn--secondary" id="cancelAddTraining">Отмена</button>
@@ -1061,13 +1158,44 @@ function openAddTrainingModal(students) {
 
       modal.querySelector('#cancelAddTraining')?.addEventListener('click', UI.closeModal);
 
-      // Update attendee list when group changes
+      const conflictHint = modal.querySelector('#trainingConflictHint');
+      const _liveCheck = async () => {
+        const date    = modal.querySelector('#trainingDate').value;
+        const time    = modal.querySelector('#trainingTime').value;
+        const groupId = modal.querySelector('#trainingGroup').value;
+        if (!date || !time || !groupId) { conflictHint.classList.remove('is-visible'); return; }
+        const conflicts = await Logic.checkTrainingConflict(date, time, groupId);
+        if (conflicts.length) {
+          const detail = conflicts.map(c => `«${c.groupId}» ${c.start}–${c.end}`).join(', ');
+          conflictHint.textContent = `Конфликт: ${detail}`;
+          conflictHint.classList.add('is-visible');
+        } else {
+          conflictHint.classList.remove('is-visible');
+        }
+      };
+
       modal.querySelector('#trainingGroup')?.addEventListener('change', e => {
         const groupId = e.target.value;
         const filtered = students.filter(s => s.groups.includes(groupId));
         modal.querySelector('#attendeeList').innerHTML =
           UI.renderAttendeeCheckboxes(filtered);
+        _liveCheck();
       });
+      modal.querySelector('#trainingDate')?.addEventListener('change', _liveCheck);
+      modal.querySelector('#trainingTime')?.addEventListener('change', _liveCheck);
+
+      const primeHint = modal.querySelector('#primeHint');
+      const _updatePrimeHint = () => {
+        const date = modal.querySelector('#trainingDate').value;
+        const time = modal.querySelector('#trainingTime').value;
+        if (!primeHint) return;
+        primeHint.innerHTML = time ? (Logic.isPrimeTime(date, time)
+          ? '<span class="badge badge--prime">⭐ Prime</span>'
+          : '<span class="badge badge--neutral">Обычное</span>') : '';
+      };
+      modal.querySelector('#trainingDate')?.addEventListener('change', _updatePrimeHint);
+      modal.querySelector('#trainingTime')?.addEventListener('change', _updatePrimeHint);
+      _updatePrimeHint();
 
       modal.querySelector('#saveAddTraining')?.addEventListener('click', async () => {
         const groupId = modal.querySelector('#trainingGroup').value;
@@ -1080,19 +1208,22 @@ function openAddTrainingModal(students) {
           return;
         }
 
+        const conflicts = await Logic.checkTrainingConflict(date, time, groupId);
+        if (conflicts.length) {
+          const detail = conflicts.map(c => `«${c.groupId}» ${c.start}–${c.end}`).join(', ');
+          UI.showToast({ type: 'error', title: 'Конфликт расписания', msg: detail });
+          return;
+        }
+
         const attendees = [...modal.querySelectorAll('input[name="attendees"]:checked')]
           .map(c => c.value);
 
-        // Create training
-        const training = await DB.createTraining({ date, time, groupId, attendees, note });
-
-        // Mark attendance & deduct sessions
-        const results = await Logic.markAttendance(training, attendees);
+        const training = await DB.createTraining({ date, time, groupId, attendees, note, isPrime: Logic.isPrimeTime(date, time) });
+        const results  = await Logic.markAttendance(training, attendees);
 
         UI.closeModal();
         UI.showToast({ type: 'success', title: 'Тренировка записана', msg: `${groupId} · ${attendees.length} чел.` });
 
-        // Show warnings for problematic subscriptions
         for (const r of results) {
           if (r.status === 'expired') {
             UI.showToast({ type: 'error', title: `${r.name}`, msg: 'Абонемент закончился — нужно продлить' });
@@ -1103,7 +1234,7 @@ function openAddTrainingModal(students) {
           }
         }
 
-        await renderTrainings();
+        await navigate(AppState.currentPage);
       });
     }
   });
@@ -1130,12 +1261,12 @@ async function openRenewSubModal(studentId, groupId) {
         const type = modal.querySelector('#renewSubType').value;
         const date = modal.querySelector('#renewSubDate').value;
 
-        await DB.addSubscription(studentId, { groupId, type, createdAt: date });
+        const sub = await DB.addSubscription(studentId, { groupId, type, createdAt: date });
+        await _autoCreatePayment(studentId, sub);
 
         UI.closeModal();
         UI.showToast({ type: 'success', title: 'Абонемент продлён', msg: `${student.name} · ${groupId}` });
 
-        // Refresh current page
         await navigate(AppState.currentPage);
       });
     }
@@ -1261,6 +1392,11 @@ async function openStudentDrawer(studentId) {
         await navigate(AppState.currentPage);
       });
 
+      // Mark subscription as paid
+      drawer.querySelectorAll('[data-action="mark-paid"]').forEach(btn => {
+        btn.addEventListener('click', () => openMarkPaidModal(studentId, btn.dataset.subId, btn.dataset.group));
+      });
+
       // Delete visit from history
       drawer.querySelectorAll('[data-action="delete-visit"]').forEach(btn => {
         btn.addEventListener('click', async e => {
@@ -1277,10 +1413,9 @@ async function openStudentDrawer(studentId) {
       fabEl.innerHTML = `<button class="drawer-fab__btn" title="Добавить тренировку"><i data-lucide="plus"></i></button>`;
       drawerBody.appendChild(fabEl);
       lucide.createIcons({ nodes: [fabEl] });
-      fabEl.querySelector('.drawer-fab__btn').addEventListener('click', async () => {
-        const allStudents = await DB.getStudents();
+      fabEl.querySelector('.drawer-fab__btn').addEventListener('click', () => {
         UI.closeDrawer();
-        openAddTrainingModal(allStudents);
+        openTrainingTypeModal();
       });
     }
   });
@@ -1296,6 +1431,870 @@ document.addEventListener('click', e => {
     openRenewSubModal(btn.dataset.studentId, btn.dataset.group);
   }
 });
+
+/* ────────────────────────────────────────────────
+   Modal: Mark subscription as paid
+───────────────────────────────────────────────── */
+
+async function openMarkPaidModal(studentId, subId, groupId) {
+  const [student, pricing] = await Promise.all([
+    DB.getStudentById(studentId),
+    DB.getPricing(),
+  ]);
+  if (!student) return;
+
+  const sub = student.subscriptions.find(s => s.id === subId);
+  if (!sub) return;
+
+  const isInd       = DB.INDIVIDUAL_GROUP_NAMES.includes(groupId);
+  const paymentType = _subPaymentType(sub.type, isInd);
+  const defaultAmt  = paymentType ? (pricing[`client_${paymentType}_price`] ?? 0) : 0;
+  const typeLabel   = paymentType ? (DB.FIN_LABELS[paymentType] ?? paymentType) : '—';
+  const today       = new Date().toISOString().slice(0, 10);
+
+  UI.openModal({
+    title: 'Отметить оплату',
+    body: `
+      <div style="margin-bottom:var(--sp-4)">
+        <div class="text-sm text-secondary" style="margin-bottom:var(--sp-1)">Клиент</div>
+        <div class="font-semibold">${student.name}</div>
+      </div>
+      <div style="margin-bottom:var(--sp-4)">
+        <div class="text-sm text-secondary" style="margin-bottom:var(--sp-1)">Тип</div>
+        <div class="font-semibold">${typeLabel}</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Сумма оплаты (₽)</label>
+        <input class="form-input" type="number" min="0" id="markPaidAmt" value="${defaultAmt}" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Дата оплаты</label>
+        <input class="form-input" type="date" id="markPaidDate" value="${sub.createdAt ?? today}" />
+      </div>
+    `,
+    footer: `
+      <button class="btn btn--secondary" id="cancelMarkPaid">Отмена</button>
+      <button class="btn btn--primary"   id="saveMarkPaid">
+        <i data-lucide="banknote"></i> Отметить оплачено
+      </button>
+    `,
+    onOpen: modal => {
+      lucide.createIcons({ nodes: [modal] });
+      modal.querySelector('#cancelMarkPaid').addEventListener('click', UI.closeModal);
+      modal.querySelector('#saveMarkPaid').addEventListener('click', async () => {
+        const amt  = parseFloat(modal.querySelector('#markPaidAmt').value) || 0;
+        const date = modal.querySelector('#markPaidDate').value;
+        const payment = await DB.createPayment({
+          student_id:          studentId,
+          client_payment_type: paymentType ?? 'single_individual',
+          client_amount:       amt,
+          paid_at:             date,
+        });
+        await DB.linkPaymentToSub(studentId, subId, payment.id);
+        UI.closeModal();
+        UI.showToast({ type: 'success', title: 'Оплата отмечена', msg: student.name });
+        await openStudentDrawer(studentId);
+      });
+    },
+  });
+}
+
+/* ────────────────────────────────────────────────
+   Page: Finance
+───────────────────────────────────────────────── */
+
+let _finCharts = {};
+
+/* ── Finance helpers ── */
+
+function _subPaymentType(subType, isIndividual) {
+  if (subType === '1') return isIndividual ? 'single_individual' : 'single_group';
+  if (subType === '4') return isIndividual ? 'individual_sub_4'  : 'group_sub_4';
+  if (subType === '8') return isIndividual ? 'individual_sub_8'  : 'group_sub_8';
+  return null;
+}
+
+async function _autoCreatePayment(studentId, sub) {
+  const paymentType = _subPaymentType(sub.type, DB.INDIVIDUAL_GROUP_NAMES.includes(sub.groupId));
+  if (!paymentType) return;
+  const pricing      = await DB.getPricing();
+  const clientAmount = pricing[`client_${paymentType}_price`] ?? 0;
+  const payment = await DB.createPayment({
+    student_id:          studentId,
+    client_payment_type: paymentType,
+    client_amount:       clientAmount,
+    paid_at:             sub.createdAt || new Date().toISOString().slice(0, 10),
+  });
+  await DB.linkPaymentToSub(studentId, sub.id, payment.id);
+}
+
+async function renderFinance() {
+  const el  = document.getElementById('page-finance');
+  const tab = AppState.financeTab;
+
+  el.innerHTML = `
+    <div class="page-header">
+      <h1 class="page-title">Финансы</h1>
+    </div>
+    <div class="fin-tabs">
+      <button class="fin-tab ${tab === 'pricing'  ? 'fin-tab--active' : ''}" data-tab="pricing">Настройки цен</button>
+      <button class="fin-tab ${tab === 'records'  ? 'fin-tab--active' : ''}" data-tab="records">Записи</button>
+      <button class="fin-tab ${tab === 'stats'    ? 'fin-tab--active' : ''}" data-tab="stats">Статистика</button>
+    </div>
+    <div id="fin-content"></div>
+  `;
+
+  el.querySelectorAll('.fin-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      AppState.financeTab = btn.dataset.tab;
+      renderFinance();
+    });
+  });
+
+  const content = el.querySelector('#fin-content');
+  if (tab === 'pricing')      await renderFinancePricing(content);
+  else if (tab === 'records') await renderFinanceRecords(content);
+  else if (tab === 'stats')   await renderFinanceStats(content);
+
+  lucide.createIcons({ nodes: [el] });
+}
+
+/* ── Tab 1: Настройки цен ── */
+
+async function renderFinancePricing(el) {
+  const p = await DB.getPricing();
+
+  const makeRow = (label, key, divisor = 1) => {
+    const val = p[key] ?? 0;
+    const perSession = divisor > 1
+      ? `<span class="price-per" data-divisor="${divisor}">≈ ${Math.round(val / divisor)} ₽/зан.</span>`
+      : '';
+    return `
+      <div class="price-row">
+        <span class="price-row__label">${label}</span>
+        <div class="price-row__input-wrap">
+          <input class="price-input" type="number" min="0" name="${key}" value="${val}" />
+          <span class="price-row__currency">₽</span>
+          ${perSession}
+        </div>
+      </div>`;
+  };
+
+  const makeHallRow = (label, keyBase, divisor = 1) => {
+    const rKey = `${keyBase}_regular_price`;
+    const pKey = `${keyBase}_prime_price`;
+    const rVal = p[rKey] ?? 0;
+    const pVal = p[pKey] ?? 0;
+    const rPer = divisor > 1 ? `<span class="price-per" data-divisor="${divisor}">≈ ${Math.round(rVal / divisor)} ₽/зан.</span>` : '';
+    const pPer = divisor > 1 ? `<span class="price-per" data-divisor="${divisor}">≈ ${Math.round(pVal / divisor)} ₽/зан.</span>` : '';
+    return `
+      <div class="price-row price-row--hall">
+        <span class="price-row__label">${label}</span>
+        <div class="price-row__input-wrap">
+          <input class="price-input" type="number" min="0" name="${rKey}" value="${rVal}" />
+          <span class="price-row__currency">₽</span>
+          ${rPer}
+        </div>
+        <div class="price-row__input-wrap">
+          <input class="price-input price-input--prime" type="number" min="0" name="${pKey}" value="${pVal}" />
+          <span class="price-row__currency">₽</span>
+          ${pPer}
+        </div>
+      </div>`;
+  };
+
+  el.innerHTML = `
+    <div class="fin-section">
+      <div class="fin-section__header">
+        <h3 class="fin-section__title">Что платят клиенты мне</h3>
+        <span class="fin-section__badge fin-section__badge--income">Доход</span>
+      </div>
+      <div class="price-group">
+        <div class="price-group__subtitle">Разовые занятия</div>
+        ${makeRow('Разовая индивидуальная', 'client_single_individual_price')}
+        ${makeRow('Разовая групповая',       'client_single_group_price')}
+      </div>
+      <div class="price-group">
+        <div class="price-group__subtitle">Индивидуальные абонементы</div>
+        ${makeRow('Инди абонемент 4 занятия', 'client_individual_sub_4_price', 4)}
+        ${makeRow('Инди абонемент 8 занятий', 'client_individual_sub_8_price', 8)}
+      </div>
+      <div class="price-group">
+        <div class="price-group__subtitle">Групповые абонементы</div>
+        ${makeRow('Групп. абонемент 4 занятия', 'client_group_sub_4_price', 4)}
+        ${makeRow('Групп. абонемент 8 занятий', 'client_group_sub_8_price', 8)}
+      </div>
+    </div>
+
+    <div class="fin-section">
+      <div class="fin-section__header">
+        <h3 class="fin-section__title">Что я плачу залу</h3>
+        <span class="fin-section__badge fin-section__badge--expense">Расход</span>
+      </div>
+      <div class="hall-price-header">
+        <span></span>
+        <span class="hall-slot-label">Обычное</span>
+        <span class="hall-slot-label hall-slot-label--prime">⭐ Prime</span>
+      </div>
+      <div class="price-group">
+        <div class="price-group__subtitle">Разовый вход</div>
+        ${makeHallRow('Разовый вход — инди',     'hall_single_individual')}
+        ${makeHallRow('Разовый вход — групповой', 'hall_single_group')}
+      </div>
+      <div class="price-group">
+        <div class="price-group__subtitle">Абонементы тренера (инди)</div>
+        ${makeHallRow('Инди абонемент 4 занятия', 'hall_individual_sub_4', 4)}
+        ${makeHallRow('Инди абонемент 8 занятий', 'hall_individual_sub_8', 8)}
+      </div>
+      <div class="price-group">
+        <div class="price-group__subtitle">Абонементы тренера (групповые)</div>
+        ${makeHallRow('Групп. абонемент 4 занятия', 'hall_group_sub_4', 4)}
+        ${makeHallRow('Групп. абонемент 8 занятий', 'hall_group_sub_8', 8)}
+      </div>
+    </div>
+
+    <div style="display:flex; justify-content:flex-end; margin-top:var(--sp-2)">
+      <button class="btn btn--primary" id="savePricingBtn">
+        <i data-lucide="save"></i> Сохранить цены
+      </button>
+    </div>
+  `;
+
+  el.querySelectorAll('.price-input').forEach(input => {
+    input.addEventListener('input', () => {
+      const perEl = input.closest('.price-row__input-wrap')?.querySelector('.price-per');
+      if (perEl) {
+        const d = parseInt(perEl.dataset.divisor, 10);
+        perEl.textContent = `≈ ${Math.round((parseFloat(input.value) || 0) / d)} ₽/зан.`;
+      }
+    });
+  });
+
+  el.querySelector('#savePricingBtn').addEventListener('click', async () => {
+    const newPricing = {};
+    el.querySelectorAll('.price-input').forEach(i => { newPricing[i.name] = parseFloat(i.value) || 0; });
+    await DB.savePricing(newPricing);
+    UI.showToast({ type: 'success', title: 'Цены сохранены', msg: 'Применятся к следующим записям' });
+  });
+}
+
+/* ── Tab 2: Записи ── */
+
+async function renderFinanceRecords(el) {
+  const [payments, hallCosts, students] = await Promise.all([
+    DB.getPayments(), DB.getHallCosts(), DB.getStudents(),
+  ]);
+
+  const studentMap = Object.fromEntries(students.map(s  => [s.id,  s]));
+  const hallMap    = Object.fromEntries(hallCosts.map(c  => [c.id,  c]));
+
+  const rows = payments.map(p => {
+    const student  = p.student_id    ? studentMap[p.student_id]    : null;
+    const hallCost = p.hall_cost_id  ? hallMap[p.hall_cost_id]     : null;
+    const net      = p.client_amount - (hallCost?.hall_amount ?? 0);
+
+    return `
+      <tr>
+        <td class="font-medium">${student?.name ?? '—'}</td>
+        <td class="text-sm text-secondary">${Logic.formatDateShort(p.paid_at)}</td>
+        <td><span class="badge badge--neutral">${DB.FIN_LABELS[p.client_payment_type] ?? p.client_payment_type}</span></td>
+        <td style="color:var(--success)" class="font-medium">+${p.client_amount.toLocaleString('ru')} ₽</td>
+        <td>${hallCost ? `<span class="badge badge--neutral">${DB.FIN_LABELS[hallCost.hall_payment_type] ?? hallCost.hall_payment_type}</span>${hallCost.time_slot === 'prime' ? ' <span class="badge badge--prime">Prime</span>' : ''}` : '—'}</td>
+        <td style="color:var(--danger)">${hallCost ? '−' + hallCost.hall_amount.toLocaleString('ru') + ' ₽' : '—'}</td>
+        <td style="color:${net >= 0 ? 'var(--success)' : 'var(--danger)'}" class="font-medium">${net >= 0 ? '+' : ''}${net.toLocaleString('ru')} ₽</td>
+        <td class="text-sm text-secondary">${p.sessions_remaining}/${p.sessions_total}</td>
+        <td>${_finStatusBadge(p.status)}</td>
+        <td style="white-space:nowrap">
+          <button class="btn btn--ghost btn--sm" data-action="edit-payment" data-id="${p.id}" title="Редактировать">
+            <i data-lucide="pencil"></i>
+          </button>
+          <button class="btn btn--ghost btn--sm" data-action="delete-payment" data-id="${p.id}" title="Удалить">
+            <i data-lucide="trash-2"></i>
+          </button>
+        </td>
+      </tr>`;
+  }).join('');
+
+  el.innerHTML = `
+    <div style="display:flex; justify-content:flex-end; margin-bottom:var(--sp-4)">
+      <button class="btn btn--primary" id="addPaymentBtn">
+        <i data-lucide="plus"></i> Добавить запись
+      </button>
+    </div>
+    <div class="table-wrap">
+      ${payments.length ? `
+        <table class="table">
+          <thead><tr>
+            <th>Клиент</th><th>Дата</th><th>Тип (клиент)</th><th>Оплата</th>
+            <th>Тип (зал)</th><th>Расход</th><th>Чистый</th><th>Занятий</th><th>Статус</th><th></th>
+          </tr></thead>
+          <tbody>${rows}</tbody>
+        </table>` :
+        UI.renderEmptyState({ icon: 'receipt', title: 'Записей пока нет', text: 'Добавьте первую финансовую запись' })
+      }
+    </div>
+  `;
+
+  lucide.createIcons({ nodes: [el] });
+
+  el.querySelector('#addPaymentBtn')?.addEventListener('click', () => openAddPaymentModal(students));
+
+  el.querySelectorAll('[data-action="edit-payment"]').forEach(btn => {
+    btn.addEventListener('click', () => openEditPaymentModal(btn.dataset.id, students, hallCosts));
+  });
+
+  el.querySelectorAll('[data-action="delete-payment"]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      if (!confirm('Удалить эту запись?')) return;
+      await DB.deletePayment(btn.dataset.id);
+      UI.showToast({ type: 'success', title: 'Запись удалена' });
+      await renderFinance();
+    });
+  });
+}
+
+function _finStatusBadge(status) {
+  const map = { active: ['badge--active', 'Активен'], used: ['badge--neutral', 'Исполь.'], expired: ['badge--danger', 'Истёк'] };
+  const [cls, label] = map[status] ?? ['badge--neutral', status];
+  return `<span class="badge ${cls}">${label}</span>`;
+}
+
+/* ── Tab 3: Статистика ── */
+
+async function renderFinanceStats(el) {
+  Object.values(_finCharts).forEach(c => c?.destroy());
+  _finCharts = {};
+
+  const period = AppState.financePeriod;
+  const [payments, hallCosts, students] = await Promise.all([
+    DB.getPayments(), DB.getHallCosts(), DB.getStudents(),
+  ]);
+
+  const studentMap = Object.fromEntries(students.map(s => [s.id, s]));
+  const hallMap    = Object.fromEntries(hallCosts.map(c => [c.id, c]));
+
+  const start    = _finPeriodStart(period);
+  const filtered = start ? payments.filter(p => p.paid_at >= start) : payments;
+
+  const totalIncome = filtered.reduce((s, p) => s + p.client_amount, 0);
+  const totalHall   = filtered.reduce((s, p) => s + (hallMap[p.hall_cost_id]?.hall_amount ?? 0), 0);
+  const netIncome   = totalIncome - totalHall;
+  const activeCount = filtered.filter(p => p.status === 'active').length;
+
+  const periodBtns = [
+    ['month', 'Месяц'], ['quarter', 'Квартал'], ['year', 'Год'], ['all', 'Всё время'],
+  ].map(([v, l]) =>
+    `<button class="btn btn--${period === v ? 'primary' : 'secondary'} btn--sm" data-period="${v}">${l}</button>`
+  ).join('');
+
+  el.innerHTML = `
+    <div style="display:flex; gap:var(--sp-2); flex-wrap:wrap; margin-bottom:var(--sp-5)">${periodBtns}</div>
+
+    <div class="kpi-grid" style="margin-bottom:var(--sp-6)">
+      <div class="kpi-card kpi-card--ok">
+        <div class="kpi-card__icon"><i data-lucide="trending-up"></i></div>
+        <div class="kpi-card__label">Доход от клиентов</div>
+        <div class="kpi-card__value">${totalIncome.toLocaleString('ru')} ₽</div>
+      </div>
+      <div class="kpi-card kpi-card--danger">
+        <div class="kpi-card__icon"><i data-lucide="home"></i></div>
+        <div class="kpi-card__label">Расходы на зал</div>
+        <div class="kpi-card__value">${totalHall.toLocaleString('ru')} ₽</div>
+      </div>
+      <div class="kpi-card ${netIncome >= 0 ? 'kpi-card--accent' : 'kpi-card--danger'}">
+        <div class="kpi-card__icon"><i data-lucide="wallet"></i></div>
+        <div class="kpi-card__label">Чистый доход</div>
+        <div class="kpi-card__value">${netIncome.toLocaleString('ru')} ₽</div>
+      </div>
+      <div class="kpi-card kpi-card--accent">
+        <div class="kpi-card__icon"><i data-lucide="ticket"></i></div>
+        <div class="kpi-card__label">Активных записей</div>
+        <div class="kpi-card__value">${activeCount}</div>
+      </div>
+    </div>
+
+    <div class="fin-charts-grid">
+      <div class="fin-chart-card" style="grid-column: span 2">
+        <div class="fin-chart-card__title">Доходы по месяцам</div>
+        <canvas id="chartMonthly"></canvas>
+      </div>
+      <div class="fin-chart-card">
+        <div class="fin-chart-card__title">Типы оплат клиентов</div>
+        <canvas id="chartClientTypes"></canvas>
+      </div>
+      <div class="fin-chart-card">
+        <div class="fin-chart-card__title">Типы оплат зала</div>
+        <canvas id="chartHallTypes"></canvas>
+      </div>
+      <div class="fin-chart-card" style="grid-column: span 2">
+        <div class="fin-chart-card__title">Топ клиентов по доходу</div>
+        <canvas id="chartTopClients"></canvas>
+      </div>
+    </div>
+  `;
+
+  el.querySelectorAll('[data-period]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      AppState.financePeriod = btn.dataset.period;
+      renderFinance();
+    });
+  });
+
+  lucide.createIcons({ nodes: [el] });
+  _buildFinCharts(filtered, payments, hallMap, studentMap);
+}
+
+function _finPeriodStart(period) {
+  const now = new Date();
+  if (period === 'month')   return new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10);
+  if (period === 'quarter') return new Date(now.getFullYear(), Math.floor(now.getMonth() / 3) * 3, 1).toISOString().slice(0, 10);
+  if (period === 'year')    return new Date(now.getFullYear(), 0, 1).toISOString().slice(0, 10);
+  return null;
+}
+
+function _buildFinCharts(filtered, allPayments, hallMap, studentMap) {
+  const dark      = document.documentElement.dataset.theme === 'dark';
+  const gridColor = dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
+  const textColor = dark ? '#8a9099' : '#5a6270';
+  const COLORS    = ['#01696f','#22c55e','#f59e0b','#ef4444','#b47aff','#3b82f6','#06b6d4','#84cc16'];
+
+  // Chart 1: Monthly breakdown (all payments, not filtered)
+  const monthly = {};
+  allPayments.forEach(p => {
+    const m = p.paid_at.slice(0, 7);
+    if (!monthly[m]) monthly[m] = { income: 0, hall: 0 };
+    monthly[m].income += p.client_amount;
+    monthly[m].hall   += hallMap[p.hall_cost_id]?.hall_amount ?? 0;
+  });
+  const months = Object.keys(monthly).sort();
+  const ctx1   = document.getElementById('chartMonthly');
+  if (ctx1 && months.length) {
+    _finCharts.monthly = new Chart(ctx1, {
+      type: 'line',
+      data: {
+        labels: months.map(m => {
+          const [y, mo] = m.split('-');
+          return new Date(+y, +mo - 1, 1).toLocaleString('ru', { month: 'short', year: '2-digit' });
+        }),
+        datasets: [
+          { label: 'Доход',      data: months.map(m => monthly[m].income),                  borderColor: '#22c55e', backgroundColor: 'rgba(34,197,94,0.08)',  fill: true, tension: 0.4 },
+          { label: 'Расход зала', data: months.map(m => monthly[m].hall),                   borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.08)',  fill: true, tension: 0.4 },
+          { label: 'Чистый',     data: months.map(m => monthly[m].income - monthly[m].hall), borderColor: '#01696f', backgroundColor: 'rgba(1,105,111,0.08)', fill: true, tension: 0.4 },
+        ],
+      },
+      options: { responsive: true, plugins: { legend: { labels: { color: textColor } } }, scales: { x: { ticks: { color: textColor }, grid: { color: gridColor } }, y: { ticks: { color: textColor }, grid: { color: gridColor } } } },
+    });
+  }
+
+  // Chart 2: Client payment type distribution
+  const clientTypes = {};
+  filtered.forEach(p => {
+    const l = DB.FIN_LABELS[p.client_payment_type] ?? p.client_payment_type;
+    clientTypes[l] = (clientTypes[l] ?? 0) + p.client_amount;
+  });
+  const ctx2 = document.getElementById('chartClientTypes');
+  if (ctx2 && Object.keys(clientTypes).length) {
+    _finCharts.clientTypes = new Chart(ctx2, {
+      type: 'doughnut',
+      data: { labels: Object.keys(clientTypes), datasets: [{ data: Object.values(clientTypes), backgroundColor: COLORS }] },
+      options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { color: textColor, font: { size: 11 } } } } },
+    });
+  }
+
+  // Chart 3: Hall payment type distribution
+  const hallTypes = {};
+  filtered.forEach(p => {
+    const hc = hallMap[p.hall_cost_id];
+    if (!hc) return;
+    const l = DB.FIN_LABELS[hc.hall_payment_type] ?? hc.hall_payment_type;
+    hallTypes[l] = (hallTypes[l] ?? 0) + hc.hall_amount;
+  });
+  const ctx3 = document.getElementById('chartHallTypes');
+  if (ctx3 && Object.keys(hallTypes).length) {
+    _finCharts.hallTypes = new Chart(ctx3, {
+      type: 'doughnut',
+      data: { labels: Object.keys(hallTypes), datasets: [{ data: Object.values(hallTypes), backgroundColor: [...COLORS].reverse() }] },
+      options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { color: textColor, font: { size: 11 } } } } },
+    });
+  }
+
+  // Chart 4: Top clients by income
+  const byClient = {};
+  filtered.forEach(p => {
+    if (!p.student_id) return;
+    const name = studentMap[p.student_id]?.name ?? 'Неизвестен';
+    byClient[name] = (byClient[name] ?? 0) + p.client_amount;
+  });
+  const top10 = Object.entries(byClient).sort((a, b) => b[1] - a[1]).slice(0, 10);
+  const ctx4  = document.getElementById('chartTopClients');
+  if (ctx4 && top10.length) {
+    _finCharts.topClients = new Chart(ctx4, {
+      type: 'bar',
+      data: { labels: top10.map(([n]) => n), datasets: [{ label: 'Доход', data: top10.map(([, v]) => v), backgroundColor: '#01696f', borderRadius: 6 }] },
+      options: { responsive: true, indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { ticks: { color: textColor }, grid: { color: gridColor } }, y: { ticks: { color: textColor }, grid: { color: gridColor } } } },
+    });
+  }
+}
+
+/* ── Modal: Edit payment record ── */
+
+async function openEditPaymentModal(paymentId, students, allHallCosts) {
+  const [payments, pricing] = await Promise.all([DB.getPayments(), DB.getPricing()]);
+  const payment  = payments.find(p => p.id === paymentId);
+  if (!payment) return;
+
+  const hallCost = payment.hall_cost_id ? allHallCosts.find(c => c.id === payment.hall_cost_id) : null;
+
+  const typeOptions = [
+    ['single_individual', 'Разовая инди'],
+    ['single_group',      'Разовая групповая'],
+    ['individual_sub_4',  'Инди абонемент ×4'],
+    ['individual_sub_8',  'Инди абонемент ×8'],
+    ['group_sub_4',       'Групп. абонемент ×4'],
+    ['group_sub_8',       'Групп. абонемент ×8'],
+  ].map(([v, l]) => `<option value="${v}" ${payment.client_payment_type === v ? 'selected' : ''}>${l}</option>`).join('');
+
+  const hallTypeOptions = [
+    ['single_individual', 'Разовая инди'],
+    ['single_group',      'Разовая групповая'],
+    ['individual_sub_4',  'Инди абонемент ×4'],
+    ['individual_sub_8',  'Инди абонемент ×8'],
+    ['group_sub_4',       'Групп. абонемент ×4'],
+    ['group_sub_8',       'Групп. абонемент ×8'],
+  ].map(([v, l]) => `<option value="${v}" ${hallCost?.hall_payment_type === v ? 'selected' : ''}>${l}</option>`).join('');
+
+  const initSlot = hallCost?.time_slot ?? 'regular';
+
+  UI.openModal({
+    title: 'Редактировать запись',
+    body: `
+      <div class="form-group">
+        <label class="form-label">Клиент</label>
+        <select class="form-select" id="epStudent">
+          <option value="">— без клиента —</option>
+          ${students.map(s => `<option value="${s.id}" ${payment.student_id === s.id ? 'selected' : ''}>${s.name}</option>`).join('')}
+        </select>
+      </div>
+
+      <div class="fin-modal-grid">
+        <div class="fin-modal-section fin-modal-section--income">
+          <div class="fin-modal-section__label">Клиент платит мне</div>
+          <div class="form-group">
+            <label class="form-label">Тип оплаты</label>
+            <select class="form-select" id="epClientType">${typeOptions}</select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Сумма (₽)</label>
+            <input class="form-input" type="number" min="0" id="epClientAmt" value="${payment.client_amount}" />
+          </div>
+        </div>
+
+        <div class="fin-modal-section fin-modal-section--expense">
+          <div class="fin-modal-section__label">Я плачу залу</div>
+          <div class="form-group">
+            <label class="form-label">Тип оплаты зала</label>
+            <select class="form-select" id="epHallType">
+              <option value="">— не указывать —</option>
+              ${hallTypeOptions}
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Время</label>
+            <div class="timeslot-toggle" id="epTimeSlot">
+              <button class="timeslot-btn ${initSlot === 'regular' ? 'timeslot-btn--active' : ''}" data-slot="regular" type="button">Обычное</button>
+              <button class="timeslot-btn ${initSlot === 'prime'   ? 'timeslot-btn--active' : ''}" data-slot="prime"   type="button">⭐ Prime</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Сумма (₽)</label>
+            <input class="form-input" type="number" min="0" id="epHallAmt" value="${hallCost?.hall_amount ?? 0}" />
+          </div>
+        </div>
+      </div>
+
+      <div class="fin-preview">
+        Чистый доход: <strong id="epNet" style="color:var(--success)">0 ₽</strong>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:var(--sp-4); margin-top:var(--sp-4)">
+        <div class="form-group">
+          <label class="form-label">Дата</label>
+          <input class="form-input" type="date" id="epDate" value="${payment.paid_at}" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Время тренировки</label>
+          <input class="form-input" type="time" id="epTrainingTime" value="${hallCost?.training_time ?? ''}" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Примечание</label>
+          <input class="form-input" type="text" id="epNotes" value="${payment.notes ?? ''}" placeholder="Необязательно" />
+        </div>
+      </div>
+    `,
+    footer: `
+      <button class="btn btn--secondary" id="cancelEp">Отмена</button>
+      <button class="btn btn--primary"   id="saveEp">Сохранить</button>
+    `,
+    onOpen: modal => {
+      lucide.createIcons({ nodes: [modal] });
+
+      const clientTypeEl = modal.querySelector('#epClientType');
+      const clientAmtEl  = modal.querySelector('#epClientAmt');
+      const hallTypeEl   = modal.querySelector('#epHallType');
+      const hallAmtEl    = modal.querySelector('#epHallAmt');
+      const netEl        = modal.querySelector('#epNet');
+      const slotToggle   = modal.querySelector('#epTimeSlot');
+      let   currentSlot  = initSlot;
+
+      const hallPrice  = (type, slot) => pricing[`hall_${type}_${slot}_price`] ?? 0;
+
+      const updateNet = () => {
+        const net = (parseFloat(clientAmtEl.value) || 0) - (parseFloat(hallAmtEl.value) || 0);
+        netEl.textContent = `${net >= 0 ? '+' : ''}${net.toLocaleString('ru')} ₽`;
+        netEl.style.color = net >= 0 ? 'var(--success)' : 'var(--danger)';
+      };
+
+      slotToggle.querySelectorAll('.timeslot-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          currentSlot = btn.dataset.slot;
+          slotToggle.querySelectorAll('.timeslot-btn').forEach(b => b.classList.toggle('timeslot-btn--active', b === btn));
+          if (hallTypeEl.value) { hallAmtEl.value = hallPrice(hallTypeEl.value, currentSlot); updateNet(); }
+        });
+      });
+
+      hallTypeEl.addEventListener('change', () => {
+        hallAmtEl.value = hallTypeEl.value ? hallPrice(hallTypeEl.value, currentSlot) : 0;
+        updateNet();
+      });
+      [clientAmtEl, hallAmtEl].forEach(i => i.addEventListener('input', updateNet));
+      updateNet();
+
+      const epDateEl = modal.querySelector('#epDate');
+      const epTimeEl = modal.querySelector('#epTrainingTime');
+      const autoDetectSlotEp = () => {
+        if (!epTimeEl.value) return;
+        currentSlot = Logic.isPrimeTime(epDateEl.value, epTimeEl.value) ? 'prime' : 'regular';
+        slotToggle.querySelectorAll('.timeslot-btn').forEach(b =>
+          b.classList.toggle('timeslot-btn--active', b.dataset.slot === currentSlot)
+        );
+        if (hallTypeEl.value) { hallAmtEl.value = hallPrice(hallTypeEl.value, currentSlot); updateNet(); }
+      };
+      epDateEl.addEventListener('change', autoDetectSlotEp);
+      epTimeEl.addEventListener('change', autoDetectSlotEp);
+      if (epTimeEl.value) autoDetectSlotEp();
+
+      modal.querySelector('#cancelEp').addEventListener('click', UI.closeModal);
+
+      modal.querySelector('#saveEp').addEventListener('click', async () => {
+        const clientAmt = parseFloat(clientAmtEl.value) || 0;
+        const hallAmt   = parseFloat(hallAmtEl.value)   || 0;
+        const date      = modal.querySelector('#epDate').value;
+        const notes     = modal.querySelector('#epNotes').value.trim();
+        const studentId = modal.querySelector('#epStudent').value || null;
+        const hallType  = hallTypeEl.value;
+
+        if (!date) { UI.showToast({ type: 'error', title: 'Укажите дату' }); return; }
+
+        // Update or create hall cost
+        let hallCostId = payment.hall_cost_id;
+        if (hallType) {
+          if (hallCostId) {
+            await DB.updateHallCost(hallCostId, { hall_payment_type: hallType, time_slot: currentSlot, training_time: epTimeEl.value, hall_amount: hallAmt, paid_at: date, notes, student_id: studentId });
+          } else {
+            const hc = await DB.createHallCost({ student_id: studentId, hall_payment_type: hallType, time_slot: currentSlot, training_time: epTimeEl.value, hall_amount: hallAmt, paid_at: date, notes });
+            hallCostId = hc.id;
+          }
+        } else if (hallCostId) {
+          await DB.deleteHallCost(hallCostId);
+          hallCostId = null;
+        }
+
+        await DB.updatePayment(paymentId, {
+          student_id:          studentId,
+          client_payment_type: clientTypeEl.value,
+          client_amount:       clientAmt,
+          paid_at:             date,
+          notes,
+          hall_cost_id:        hallCostId,
+        });
+
+        UI.closeModal();
+        UI.showToast({ type: 'success', title: 'Запись обновлена' });
+        AppState.financeTab = 'records';
+        await renderFinance();
+      });
+    },
+  });
+}
+
+/* ── Modal: Add payment record ── */
+
+async function openAddPaymentModal(students) {
+  const pricing = await DB.getPricing();
+
+  const typeOptions = [
+    ['single_individual', 'Разовая инди'],
+    ['single_group',      'Разовая групповая'],
+    ['individual_sub_4', 'Инди абонемент ×4'],
+    ['individual_sub_8', 'Инди абонемент ×8'],
+    ['group_sub_4',      'Групп. абонемент ×4'],
+    ['group_sub_8',      'Групп. абонемент ×8'],
+  ].map(([v, l]) => `<option value="${v}">${l}</option>`).join('');
+
+  const today = new Date().toISOString().slice(0, 10);
+
+  UI.openModal({
+    title: 'Добавить финансовую запись',
+    body: `
+      <div class="form-group">
+        <label class="form-label">Клиент</label>
+        <select class="form-select" id="payStudent">
+          <option value="">— без клиента —</option>
+          ${students.map(s => `<option value="${s.id}">${s.name}</option>`).join('')}
+        </select>
+      </div>
+
+      <div class="fin-modal-grid">
+        <div class="fin-modal-section fin-modal-section--income">
+          <div class="fin-modal-section__label">Клиент платит мне</div>
+          <div class="form-group">
+            <label class="form-label">Тип оплаты</label>
+            <select class="form-select" id="payClientType">${typeOptions}</select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Сумма (₽)</label>
+            <input class="form-input" type="number" min="0" id="payClientAmt" value="0" />
+          </div>
+        </div>
+
+        <div class="fin-modal-section fin-modal-section--expense">
+          <div class="fin-modal-section__label">Я плачу залу</div>
+          <div class="form-group">
+            <label class="form-label">Тип оплаты зала</label>
+            <select class="form-select" id="payHallType">
+              <option value="">— не указывать —</option>
+              ${typeOptions}
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Время</label>
+            <div class="timeslot-toggle" id="payTimeSlot">
+              <button class="timeslot-btn timeslot-btn--active" data-slot="regular" type="button">Обычное</button>
+              <button class="timeslot-btn" data-slot="prime" type="button">⭐ Prime</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Сумма (₽)</label>
+            <input class="form-input" type="number" min="0" id="payHallAmt" value="0" />
+          </div>
+        </div>
+      </div>
+
+      <div class="fin-preview">
+        Чистый доход: <strong id="payNet" style="color:var(--success)">0 ₽</strong>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:var(--sp-4); margin-top:var(--sp-4)">
+        <div class="form-group">
+          <label class="form-label">Дата</label>
+          <input class="form-input" type="date" id="payDate" value="${today}" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Время тренировки</label>
+          <input class="form-input" type="time" id="payTrainingTime" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Примечание</label>
+          <input class="form-input" type="text" id="payNotes" placeholder="Необязательно" />
+        </div>
+      </div>
+    `,
+    footer: `
+      <button class="btn btn--secondary" id="cancelPayment">Отмена</button>
+      <button class="btn btn--primary"   id="savePayment">Сохранить</button>
+    `,
+    onOpen: modal => {
+      lucide.createIcons({ nodes: [modal] });
+
+      const clientTypeEl  = modal.querySelector('#payClientType');
+      const clientAmtEl   = modal.querySelector('#payClientAmt');
+      const hallTypeEl    = modal.querySelector('#payHallType');
+      const hallAmtEl     = modal.querySelector('#payHallAmt');
+      const netEl         = modal.querySelector('#payNet');
+      const slotToggle    = modal.querySelector('#payTimeSlot');
+      let   currentSlot   = 'regular';
+
+      slotToggle.querySelectorAll('.timeslot-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          currentSlot = btn.dataset.slot;
+          slotToggle.querySelectorAll('.timeslot-btn').forEach(b => b.classList.toggle('timeslot-btn--active', b === btn));
+          if (hallTypeEl.value) { hallAmtEl.value = hallPrice(hallTypeEl.value, currentSlot); updateNet(); }
+        });
+      });
+
+      const clientPrice = type => pricing[`client_${type}_price`] ?? 0;
+      const hallPrice   = (type, slot) => pricing[`hall_${type}_${slot}_price`] ?? 0;
+
+      const updateNet = () => {
+        const net = (parseFloat(clientAmtEl.value) || 0) - (parseFloat(hallAmtEl.value) || 0);
+        netEl.textContent = `${net >= 0 ? '+' : ''}${net.toLocaleString('ru')} ₽`;
+        netEl.style.color = net >= 0 ? 'var(--success)' : 'var(--danger)';
+      };
+
+      clientTypeEl.addEventListener('change', () => { clientAmtEl.value = clientPrice(clientTypeEl.value); updateNet(); });
+      hallTypeEl.addEventListener('change',   () => { hallAmtEl.value = hallTypeEl.value ? hallPrice(hallTypeEl.value, currentSlot) : 0; updateNet(); });
+      [clientAmtEl, hallAmtEl].forEach(i => i.addEventListener('input', updateNet));
+
+      clientAmtEl.value = clientPrice(clientTypeEl.value);
+      updateNet();
+
+      const payDateEl = modal.querySelector('#payDate');
+      const payTimeEl = modal.querySelector('#payTrainingTime');
+      const autoDetectSlotPay = () => {
+        if (!payTimeEl.value) return;
+        currentSlot = Logic.isPrimeTime(payDateEl.value, payTimeEl.value) ? 'prime' : 'regular';
+        slotToggle.querySelectorAll('.timeslot-btn').forEach(b =>
+          b.classList.toggle('timeslot-btn--active', b.dataset.slot === currentSlot)
+        );
+        if (hallTypeEl.value) { hallAmtEl.value = hallPrice(hallTypeEl.value, currentSlot); updateNet(); }
+      };
+      payDateEl.addEventListener('change', autoDetectSlotPay);
+      payTimeEl.addEventListener('change', autoDetectSlotPay);
+
+      modal.querySelector('#cancelPayment').addEventListener('click', UI.closeModal);
+
+      modal.querySelector('#savePayment').addEventListener('click', async () => {
+        const clientAmt = parseFloat(clientAmtEl.value) || 0;
+        const hallAmt   = parseFloat(hallAmtEl.value)   || 0;
+        const date      = modal.querySelector('#payDate').value;
+
+        if (!date) { UI.showToast({ type: 'error', title: 'Укажите дату' }); return; }
+
+        const net = clientAmt - hallAmt;
+        if (net < 0 && clientAmt > 0) {
+          if (!confirm(`Расход на зал (${hallAmt} ₽) превышает оплату клиента (${clientAmt} ₽).\nЧистый доход: ${net} ₽. Продолжить?`)) return;
+        }
+
+        const studentId = modal.querySelector('#payStudent').value || null;
+        const notes     = modal.querySelector('#payNotes').value.trim();
+        const hallType  = hallTypeEl.value;
+
+        let hallCostId = null;
+        if (hallType) {
+          const hc = await DB.createHallCost({ student_id: studentId, hall_payment_type: hallType, time_slot: currentSlot, training_time: payTimeEl.value, hall_amount: hallAmt, paid_at: date, notes });
+          hallCostId = hc.id;
+        }
+
+        await DB.createPayment({ student_id: studentId, client_payment_type: clientTypeEl.value, client_amount: clientAmt, paid_at: date, notes, hall_cost_id: hallCostId });
+
+        UI.closeModal();
+        UI.showToast({ type: 'success', title: 'Запись добавлена' });
+        AppState.financeTab = 'records';
+        await renderFinance();
+      });
+    },
+  });
+}
 
 /* ────────────────────────────────────────────────
    Theme toggle
