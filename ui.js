@@ -782,7 +782,7 @@ function renderAddTrainingModal(students, defaultGroup = null) {
         ${groupOptions}
       </select>
     </div>
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:var(--sp-4)">
+    <div class="form-row-2">
       <div class="form-group">
         <label class="form-label">Дата</label>
         <input class="form-input" type="date" id="trainingDate" value="${new Date().toISOString().slice(0,10)}" />
@@ -1060,7 +1060,7 @@ function renderIndividualSessionModal(students, indGroupId) {
       </select>
       <div id="indClientSubInfo"></div>
     </div>
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:var(--sp-4)">
+    <div class="form-row-2">
       <div class="form-group">
         <label class="form-label">Дата</label>
         <input class="form-input" type="date" id="indSessionDate"

@@ -414,6 +414,9 @@ async function renderStudents(filter = AppState.studentsFilter) {
   const groupOptions = DB.GROUPS.map(g =>
     `<option value="${g}" ${filter.group === g ? 'selected' : ''}>${g}</option>`
   ).join('');
+  const indGroupOptions = DB.INDIVIDUAL_GROUP_NAMES.map(g =>
+    `<option value="${g}" ${filter.group === g ? 'selected' : ''}>👤 Индивидуальные</option>`
+  ).join('');
 
   el.innerHTML = `
     <div class="page-header">
@@ -432,6 +435,7 @@ async function renderStudents(filter = AppState.studentsFilter) {
       <select class="filter-select" id="groupFilter">
         <option value="">Все группы</option>
         ${groupOptions}
+        ${indGroupOptions ? `<option disabled>──────────</option>${indGroupOptions}` : ''}
       </select>
       <select class="filter-select" id="statusFilter">
         <option value="">Все статусы</option>
@@ -1110,7 +1114,7 @@ async function openTrainingTypeModal() {
   UI.openModal({
     title: 'Новая тренировка',
     body: `
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:var(--sp-4)">
+      <div class="form-row-2">
         <button class="training-type-card" id="pickGroup">
           <i data-lucide="users"></i>
           <span>Групповая</span>
@@ -2016,7 +2020,7 @@ async function openEditPaymentModal(paymentId, students, allHallCosts) {
         Чистый доход: <strong id="epNet" style="color:var(--success)">0 ₽</strong>
       </div>
 
-      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:var(--sp-4); margin-top:var(--sp-4)">
+      <div class="form-row-3">
         <div class="form-group">
           <label class="form-label">Дата</label>
           <input class="form-input" type="date" id="epDate" value="${payment.paid_at}" />
@@ -2194,7 +2198,7 @@ async function openAddPaymentModal(students) {
         Чистый доход: <strong id="payNet" style="color:var(--success)">0 ₽</strong>
       </div>
 
-      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:var(--sp-4); margin-top:var(--sp-4)">
+      <div class="form-row-3">
         <div class="form-group">
           <label class="form-label">Дата</label>
           <input class="form-input" type="date" id="payDate" value="${today}" />
