@@ -200,37 +200,29 @@ async function renderIndividual() {
     ` : ''}
 
     <div class="section-title">Клиенты</div>
-    <div class="table-wrap" style="margin-bottom:var(--sp-6)">
+    <div style="margin-bottom:var(--sp-6)">
       ${clients.length ? `
-        <table class="table">
-          <thead><tr>
-            <th>Имя</th>
-            <th>Абонемент</th>
-            <th>Статус</th>
-            <th>Последнее занятие</th>
-            <th></th>
-          </tr></thead>
-          <tbody>
-            ${clients.map(s => {
-              const sub    = s.subscriptions.find(sub => sub.groupId === indGroupId && sub.isActive);
-              const status = Logic.getSubStatus(s, indGroupId);
-              const lv     = DB.getLastVisitDate(s);
-              return `
-                <tr data-student-id="${s.id}">
-                  <td class="font-medium">${s.name}</td>
-                  <td>${UI.renderProgressBar(sub)}</td>
-                  <td>${UI.renderBadge(status)}</td>
-                  <td class="text-sm text-secondary">${lv ? Logic.formatDateShort(lv) : '—'}</td>
-                  <td>
-                    <button class="btn btn--ghost btn--sm" data-action="view-student" data-id="${s.id}">
-                      <i data-lucide="chevron-right"></i>
-                    </button>
-                  </td>
-                </tr>
-              `;
-            }).join('')}
-          </tbody>
-        </table>
+        <div class="ind-clients-list">
+          ${clients.map(s => {
+            const sub     = s.subscriptions.find(sub => sub.groupId === indGroupId && sub.isActive);
+            const status  = Logic.getSubStatus(s, indGroupId);
+            const lv      = DB.getLastVisitDate(s);
+            const initials = s.name.split(' ').filter(Boolean).map(w => w[0]).slice(0, 2).join('').toUpperCase();
+            return `
+              <div class="ind-client-card" data-student-id="${s.id}">
+                <div class="ind-client-card__avatar">${initials}</div>
+                <div class="ind-client-card__main">
+                  <div class="ind-client-card__name">${s.name}</div>
+                  ${UI.renderProgressBar(sub)}
+                  <div class="ind-client-card__visit">${lv ? 'Занятие: ' + Logic.formatDateShort(lv) : 'Занятий ещё не было'}</div>
+                </div>
+                <div class="ind-client-card__side">
+                  ${UI.renderBadge(status)}
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
       ` : UI.renderEmptyState({ icon: 'user-round', title: 'Нет клиентов', text: 'Нажмите «Записать занятие», чтобы добавить клиента' })}
     </div>
 
@@ -246,11 +238,8 @@ async function renderIndividual() {
   UI.animateCountUp();
   setupTrainingToggles(el);
 
-  el.querySelectorAll('[data-action="view-student"]').forEach(btn => {
-    btn.addEventListener('click', e => { e.stopPropagation(); openStudentDrawer(btn.dataset.id); });
-  });
-  el.querySelectorAll('tbody tr').forEach(row => {
-    row.addEventListener('click', () => openStudentDrawer(row.dataset.studentId));
+  el.querySelectorAll('.ind-client-card').forEach(card => {
+    card.addEventListener('click', () => openStudentDrawer(card.dataset.studentId));
   });
 
   el.querySelector('#addIndSessionBtn')?.addEventListener('click', () => {

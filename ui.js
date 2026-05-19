@@ -1083,7 +1083,7 @@ function renderIndividualSessionModal(students, indGroupId) {
     </div>
     <div class="form-group">
       <label class="form-label">Комментарий (необязательно)</label>
-      <textarea class="form-textarea" id="indSessionNote"
+      <textarea class="form-textarea" id="indSessionNote" rows="2"
                 placeholder="Например: работали над акробатикой..."></textarea>
     </div>
   `;

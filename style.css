@@ -681,7 +681,9 @@ ul, ol { list-style: none; }
   width: 100%;
   max-width: 520px;
   max-height: 88vh;
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   animation: modalIn 280ms var(--ease) both;
   overscroll-behavior: contain;
 }
@@ -692,11 +694,12 @@ ul, ol { list-style: none; }
 }
 
 .modal__header {
-  padding: var(--sp-6);
+  padding: var(--sp-5) var(--sp-6);
   border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-shrink: 0;
 }
 
 .modal__title {
@@ -706,7 +709,7 @@ ul, ol { list-style: none; }
 }
 
 .modal__close {
-  width: 32px; height: 32px;
+  width: 36px; height: 36px;
   border-radius: var(--r-sm);
   background: var(--surface-2);
   border: none;
@@ -714,6 +717,7 @@ ul, ol { list-style: none; }
   display: flex; align-items: center; justify-content: center;
   cursor: pointer;
   transition: all var(--dur) var(--ease);
+  flex-shrink: 0;
 }
 .modal__close:hover { background: var(--danger-dim); color: var(--danger); }
 .modal__close i { width: 16px; height: 16px; }
@@ -723,6 +727,10 @@ ul, ol { list-style: none; }
   display: flex;
   flex-direction: column;
   gap: var(--sp-5);
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+  overscroll-behavior: contain;
 }
 
 .modal__footer {
@@ -731,6 +739,7 @@ ul, ol { list-style: none; }
   display: flex;
   justify-content: flex-end;
   gap: var(--sp-3);
+  flex-shrink: 0;
 }
 
 /* --------------------------------------------------
@@ -1466,6 +1475,78 @@ ul, ol { list-style: none; }
 .warning-item__detail {
   font-size: 0.78rem;
   color: var(--text-secondary);
+}
+
+/* --------------------------------------------------
+   Individual sessions — client card list
+   -------------------------------------------------- */
+.ind-clients-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.ind-client-card {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-4);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  cursor: pointer;
+  transition: transform var(--dur) var(--ease),
+              border-color var(--dur) var(--ease),
+              box-shadow var(--dur) var(--ease);
+  min-height: 60px;
+}
+
+.ind-client-card:hover {
+  border-color: var(--border-focus);
+  box-shadow: var(--shadow-sm);
+}
+
+.ind-client-card:active { transform: scale(0.98); }
+
+.ind-client-card__avatar {
+  width: 40px; height: 40px;
+  border-radius: var(--r-md);
+  background: var(--accent-dim);
+  color: var(--accent-light);
+  font-weight: 700;
+  font-size: 0.85rem;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+.ind-client-card__main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.ind-client-card__name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ind-client-card__visit {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.ind-client-card__side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--sp-1);
+  flex-shrink: 0;
 }
 
 /* --------------------------------------------------
@@ -2263,7 +2344,10 @@ ul, ol { list-style: none; }
 
   .modal__body { padding: var(--sp-4); gap: var(--sp-4); }
   .modal__header { padding: var(--sp-4) var(--sp-5); }
-  .modal__footer { padding: var(--sp-3) var(--sp-4); }
+  .modal__footer {
+    padding: var(--sp-3) var(--sp-4);
+    padding-bottom: max(var(--sp-3), env(safe-area-inset-bottom));
+  }
 
   .btn { font-size: 0.82rem; padding: 10px var(--sp-4); }
 
