@@ -1594,15 +1594,19 @@ async function renderFinancePricing(el) {
     return `
       <div class="price-row price-row--hall">
         <span class="price-row__label">${label}</span>
-        <div class="price-row__input-wrap">
-          <input class="price-input" type="number" min="0" name="${rKey}" value="${rVal}" />
-          <span class="price-row__currency">₽</span>
-          ${rPer}
-        </div>
-        <div class="price-row__input-wrap">
-          <input class="price-input price-input--prime" type="number" min="0" name="${pKey}" value="${pVal}" />
-          <span class="price-row__currency">₽</span>
-          ${pPer}
+        <div class="price-row__hall-inputs">
+          <div class="price-row__input-wrap">
+            <span class="hall-slot-mini">Обычное</span>
+            <input class="price-input" type="number" min="0" name="${rKey}" value="${rVal}" />
+            <span class="price-row__currency">₽</span>
+            ${rPer}
+          </div>
+          <div class="price-row__input-wrap">
+            <span class="hall-slot-mini hall-slot-mini--prime">⭐ Prime</span>
+            <input class="price-input price-input--prime" type="number" min="0" name="${pKey}" value="${pVal}" />
+            <span class="price-row__currency">₽</span>
+            ${pPer}
+          </div>
         </div>
       </div>`;
   };
@@ -1634,11 +1638,6 @@ async function renderFinancePricing(el) {
       <div class="fin-section__header">
         <h3 class="fin-section__title">Что я плачу залу</h3>
         <span class="fin-section__badge fin-section__badge--expense">Расход</span>
-      </div>
-      <div class="hall-price-header">
-        <span></span>
-        <span class="hall-slot-label">Обычное</span>
-        <span class="hall-slot-label hall-slot-label--prime">⭐ Prime</span>
       </div>
       <div class="price-group">
         <div class="price-group__subtitle">Разовый вход</div>
@@ -1689,34 +1688,61 @@ async function renderFinanceRecords(el) {
     DB.getPayments(), DB.getHallCosts(), DB.getStudents(),
   ]);
 
-  const studentMap = Object.fromEntries(students.map(s  => [s.id,  s]));
-  const hallMap    = Object.fromEntries(hallCosts.map(c  => [c.id,  c]));
+  const studentMap = Object.fromEntries(students.map(s => [s.id, s]));
+  const hallMap    = Object.fromEntries(hallCosts.map(c => [c.id, c]));
 
-  const rows = payments.map(p => {
-    const student  = p.student_id    ? studentMap[p.student_id]    : null;
-    const hallCost = p.hall_cost_id  ? hallMap[p.hall_cost_id]     : null;
+  const cards = payments.map(p => {
+    const student  = p.student_id   ? studentMap[p.student_id]  : null;
+    const hallCost = p.hall_cost_id ? hallMap[p.hall_cost_id]   : null;
     const net      = p.client_amount - (hallCost?.hall_amount ?? 0);
+    const netColor = net >= 0 ? 'var(--success)' : 'var(--danger)';
 
     return `
-      <tr>
-        <td class="font-medium">${student?.name ?? '—'}</td>
-        <td class="text-sm text-secondary">${Logic.formatDateShort(p.paid_at)}</td>
-        <td><span class="badge badge--neutral">${DB.FIN_LABELS[p.client_payment_type] ?? p.client_payment_type}</span></td>
-        <td style="color:var(--success)" class="font-medium">+${p.client_amount.toLocaleString('ru')} ₽</td>
-        <td>${hallCost ? `<span class="badge badge--neutral">${DB.FIN_LABELS[hallCost.hall_payment_type] ?? hallCost.hall_payment_type}</span>${hallCost.time_slot === 'prime' ? ' <span class="badge badge--prime">Prime</span>' : ''}` : '—'}</td>
-        <td style="color:var(--danger)">${hallCost ? '−' + hallCost.hall_amount.toLocaleString('ru') + ' ₽' : '—'}</td>
-        <td style="color:${net >= 0 ? 'var(--success)' : 'var(--danger)'}" class="font-medium">${net >= 0 ? '+' : ''}${net.toLocaleString('ru')} ₽</td>
-        <td class="text-sm text-secondary">${p.sessions_remaining}/${p.sessions_total}</td>
-        <td>${_finStatusBadge(p.status)}</td>
-        <td style="white-space:nowrap">
-          <button class="btn btn--ghost btn--sm" data-action="edit-payment" data-id="${p.id}" title="Редактировать">
-            <i data-lucide="pencil"></i>
-          </button>
-          <button class="btn btn--ghost btn--sm" data-action="delete-payment" data-id="${p.id}" title="Удалить">
-            <i data-lucide="trash-2"></i>
-          </button>
-        </td>
-      </tr>`;
+      <div class="fin-record" data-id="${p.id}">
+        <div class="fin-record__header">
+          <div class="fin-record__meta">
+            <span class="fin-record__name">${student?.name ?? '—'}</span>
+            <span class="fin-record__date">${Logic.formatDateShort(p.paid_at)}</span>
+          </div>
+          <div class="fin-record__summary">
+            <span class="fin-record__income">+${p.client_amount.toLocaleString('ru')} ₽</span>
+            ${hallCost ? `<span class="fin-record__expense">−${hallCost.hall_amount.toLocaleString('ru')} ₽</span>` : ''}
+            <span class="fin-record__net" style="color:${netColor}">${net >= 0 ? '+' : ''}${net.toLocaleString('ru')} ₽</span>
+          </div>
+          <i data-lucide="chevron-down" class="fin-record__chevron"></i>
+        </div>
+        <div class="fin-record__body">
+          <div class="fin-record__row">
+            <span class="fin-record__row-label">Клиент платит</span>
+            <span><span class="badge badge--neutral">${DB.FIN_LABELS[p.client_payment_type] ?? p.client_payment_type}</span> <span style="color:var(--success)">+${p.client_amount.toLocaleString('ru')} ₽</span></span>
+          </div>
+          ${hallCost ? `
+          <div class="fin-record__row">
+            <span class="fin-record__row-label">Расход залу</span>
+            <span>
+              <span class="badge badge--neutral">${DB.FIN_LABELS[hallCost.hall_payment_type] ?? hallCost.hall_payment_type}</span>
+              ${hallCost.time_slot === 'prime' ? '<span class="badge badge--prime">Prime</span>' : ''}
+              <span style="color:var(--danger)">−${hallCost.hall_amount.toLocaleString('ru')} ₽</span>
+            </span>
+          </div>` : ''}
+          <div class="fin-record__row">
+            <span class="fin-record__row-label">Чистый доход</span>
+            <strong style="color:${netColor}">${net >= 0 ? '+' : ''}${net.toLocaleString('ru')} ₽</strong>
+          </div>
+          <div class="fin-record__row">
+            <span class="fin-record__row-label">Занятий</span>
+            <span>${p.sessions_remaining}/${p.sessions_total} · ${_finStatusBadge(p.status)}</span>
+          </div>
+          <div class="fin-record__actions">
+            <button class="btn btn--secondary btn--sm" data-action="edit-payment" data-id="${p.id}">
+              <i data-lucide="pencil"></i> Изменить
+            </button>
+            <button class="btn btn--ghost btn--sm fin-record__delete-btn" data-action="delete-payment" data-id="${p.id}">
+              <i data-lucide="trash-2"></i>
+            </button>
+          </div>
+        </div>
+      </div>`;
   }).join('');
 
   el.innerHTML = `
@@ -1725,30 +1751,32 @@ async function renderFinanceRecords(el) {
         <i data-lucide="plus"></i> Добавить запись
       </button>
     </div>
-    <div class="table-wrap">
-      ${payments.length ? `
-        <table class="table">
-          <thead><tr>
-            <th>Клиент</th><th>Дата</th><th>Тип (клиент)</th><th>Оплата</th>
-            <th>Тип (зал)</th><th>Расход</th><th>Чистый</th><th>Занятий</th><th>Статус</th><th></th>
-          </tr></thead>
-          <tbody>${rows}</tbody>
-        </table>` :
-        UI.renderEmptyState({ icon: 'receipt', title: 'Записей пока нет', text: 'Добавьте первую финансовую запись' })
-      }
-    </div>
+    ${payments.length
+      ? `<div class="fin-records-list">${cards}</div>`
+      : UI.renderEmptyState({ icon: 'receipt', title: 'Записей пока нет', text: 'Добавьте первую финансовую запись' })
+    }
   `;
 
   lucide.createIcons({ nodes: [el] });
 
+  el.querySelectorAll('.fin-record__header').forEach(header => {
+    header.addEventListener('click', () => {
+      header.closest('.fin-record').classList.toggle('is-open');
+    });
+  });
+
   el.querySelector('#addPaymentBtn')?.addEventListener('click', () => openAddPaymentModal(students));
 
   el.querySelectorAll('[data-action="edit-payment"]').forEach(btn => {
-    btn.addEventListener('click', () => openEditPaymentModal(btn.dataset.id, students, hallCosts));
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      openEditPaymentModal(btn.dataset.id, students, hallCosts);
+    });
   });
 
   el.querySelectorAll('[data-action="delete-payment"]').forEach(btn => {
-    btn.addEventListener('click', async () => {
+    btn.addEventListener('click', async e => {
+      e.stopPropagation();
       if (!confirm('Удалить эту запись?')) return;
       await DB.deletePayment(btn.dataset.id);
       UI.showToast({ type: 'success', title: 'Запись удалена' });
