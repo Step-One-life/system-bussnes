@@ -1247,6 +1247,7 @@ ul, ol { list-style: none; }
 }
 
 .group-card:hover::before { opacity: 1; }
+.group-card:active { transform: scale(0.98); box-shadow: none; }
 
 .group-card__name {
   font-size: 1.05rem;
@@ -2352,4 +2353,10 @@ ul, ol { list-style: none; }
   .btn { font-size: 0.82rem; padding: 10px var(--sp-4); }
 
   .page-header .btn { font-size: 0.78rem; padding: 8px var(--sp-3); }
+
+  /* Icon-only ghost buttons in cards get bigger tap area */
+  .group-card .btn--ghost.btn--sm,
+  .ind-client-card .btn--ghost.btn--sm {
+    min-width: 36px; min-height: 36px;
+  }
 }

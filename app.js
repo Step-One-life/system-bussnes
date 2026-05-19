@@ -530,19 +530,24 @@ async function renderGroupDetail(groupId) {
 
   el.innerHTML = `
     <div class="page-header">
-      <div>
+      <div style="min-width:0; flex:1">
         <button class="btn btn--ghost btn--sm" id="backToGroups" style="margin-bottom:var(--sp-2)">
           <i data-lucide="arrow-left"></i> Все группы
         </button>
-        <h1 class="page-title">${groupId}</h1>
+        <h1 class="page-title" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${groupId}</h1>
         <div class="page-subtitle">${stats.total} учеников${schedule ? ' · ' + schedule : ''}</div>
       </div>
-      <button class="btn btn--secondary" id="editGroupBtn">
+      <button class="btn btn--secondary btn--sm" id="editGroupBtn" style="flex-shrink:0">
         <i data-lucide="pencil"></i> Редактировать
       </button>
     </div>
 
     <div class="kpi-grid" style="margin-bottom:var(--sp-6)">
+      <div class="kpi-card kpi-card--accent">
+        <div class="kpi-card__icon"><i data-lucide="users"></i></div>
+        <div class="kpi-card__label">Всего</div>
+        <div class="kpi-card__value">${stats.total}</div>
+      </div>
       <div class="kpi-card kpi-card--ok">
         <div class="kpi-card__icon"><i data-lucide="check-circle"></i></div>
         <div class="kpi-card__label">Активных</div>
@@ -555,44 +560,34 @@ async function renderGroupDetail(groupId) {
       </div>
       <div class="kpi-card kpi-card--danger">
         <div class="kpi-card__icon"><i data-lucide="alert-circle"></i></div>
-        <div class="kpi-card__label">Нужно продлить</div>
+        <div class="kpi-card__label">Продлить</div>
         <div class="kpi-card__value">${stats.expired}</div>
       </div>
     </div>
 
-    <div class="table-wrap">
+    <div>
       ${students.length ? `
-        <table class="table">
-          <thead>
-            <tr>
-              <th>Имя</th>
-              <th>Статус</th>
-              <th>Абонемент</th>
-              <th>Последнее посещение</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            ${students.map(s => {
-              const st  = Logic.getSubStatus(s, groupId);
-              const sub = s.subscriptions.find(sub => sub.groupId === groupId && sub.isActive);
-              const lv  = DB.getLastVisitDate(s);
-              return `
-                <tr data-student-id="${s.id}" style="cursor:pointer">
-                  <td class="font-medium">${s.name}</td>
-                  <td>${UI.renderBadge(st)}</td>
-                  <td>${UI.renderProgressBar(sub)}</td>
-                  <td class="text-sm text-secondary">${lv ? Logic.formatDateShort(lv) : '—'}</td>
-                  <td>
-                    <button class="btn btn--ghost btn--sm" data-action="view-student" data-id="${s.id}">
-                      <i data-lucide="chevron-right"></i>
-                    </button>
-                  </td>
-                </tr>
-              `;
-            }).join('')}
-          </tbody>
-        </table>
+        <div class="ind-clients-list">
+          ${students.map(s => {
+            const st      = Logic.getSubStatus(s, groupId);
+            const sub     = s.subscriptions.find(sub => sub.groupId === groupId && sub.isActive);
+            const lv      = DB.getLastVisitDate(s);
+            const initials = s.name.split(' ').filter(Boolean).map(w => w[0]).slice(0, 2).join('').toUpperCase();
+            return `
+              <div class="ind-client-card" data-student-id="${s.id}">
+                <div class="ind-client-card__avatar">${initials}</div>
+                <div class="ind-client-card__main">
+                  <div class="ind-client-card__name">${s.name}</div>
+                  ${UI.renderProgressBar(sub)}
+                  <div class="ind-client-card__visit">${lv ? 'Посещение: ' + Logic.formatDateShort(lv) : 'Посещений ещё не было'}</div>
+                </div>
+                <div class="ind-client-card__side">
+                  ${UI.renderBadge(st)}
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
       ` : UI.renderEmptyState({ icon: 'users', title: 'В группе нет учеников' })}
     </div>
   `;
@@ -606,12 +601,8 @@ async function renderGroupDetail(groupId) {
 
   el.querySelector('#editGroupBtn')?.addEventListener('click', () => openEditGroupModal(groupId));
 
-  el.querySelectorAll('[data-action="view-student"], tbody tr').forEach(el => {
-    el.addEventListener('click', e => {
-      e.stopPropagation();
-      const id = el.dataset.id || el.dataset.studentId;
-      if (id) openStudentDrawer(id);
-    });
+  el.querySelectorAll('.ind-client-card').forEach(card => {
+    card.addEventListener('click', () => openStudentDrawer(card.dataset.studentId));
   });
 }
 
