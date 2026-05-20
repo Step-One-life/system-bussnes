@@ -1,0 +1,41 @@
+- generic [ref=e4]:
+  - complementary [ref=e5]:
+    - generic [ref=e6]:
+      - generic [ref=e7]: ⟡
+      - generic [ref=e8]: TriKick
+    - navigation [ref=e9]:
+      - link "Главная" [ref=e10] [cursor=pointer]:
+        - /url: /
+      - link "Тренировки" [ref=e11] [cursor=pointer]:
+        - /url: /trainings
+      - link "Ученики" [ref=e12] [cursor=pointer]:
+        - /url: /students
+      - link "Индивидуальные" [ref=e13] [cursor=pointer]:
+        - /url: /individual
+      - link "Группы" [ref=e14] [cursor=pointer]:
+        - /url: /groups
+      - link "Финансы" [ref=e15] [cursor=pointer]:
+        - /url: /finance
+    - button "☀" [ref=e17] [cursor=pointer]
+  - main [ref=e18]:
+    - generic [ref=e19]:
+      - heading "Финансы" [level=1] [ref=e22]
+      - generic [ref=e23]:
+        - button "Записи" [ref=e24] [cursor=pointer]
+        - button "Статистика" [ref=e25] [cursor=pointer]
+        - button "Настройка цен" [ref=e26] [cursor=pointer]
+      - generic [ref=e27]:
+        - generic [ref=e28]:
+          - generic [ref=e29]:
+            - img "search" [ref=e31]:
+              - img [ref=e32]
+            - textbox "Поиск по имени, типу, дате…" [ref=e34]
+          - button "plus Добавить запись" [ref=e36] [cursor=pointer]:
+            - img "plus" [ref=e38]:
+              - img [ref=e39]
+            - generic [ref=e42]: Добавить запись
+        - generic [ref=e43]:
+          - img "inbox" [ref=e45]:
+            - img [ref=e46]
+          - generic [ref=e48]: Записей пока нет
+          - paragraph [ref=e49]: Добавьте первую финансовую запись

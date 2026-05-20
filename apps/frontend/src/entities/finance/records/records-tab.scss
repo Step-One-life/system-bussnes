@@ -1,0 +1,125 @@
+.fin-records-toolbar {
+  display: flex;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-4);
+
+  .ant-input-affix-wrapper {
+    flex: 1;
+  }
+}
+
+.fin-records-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.fin-record {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  transition: border-color var(--dur) var(--ease);
+
+  &.is-open {
+    border-color: var(--accent);
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-3);
+    padding: var(--sp-3) var(--sp-4);
+    cursor: pointer;
+  }
+
+  &__meta {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 120px;
+  }
+
+  &__name {
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+
+  &__date {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+  }
+
+  &__summary {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-3);
+    margin-left: auto;
+    flex-wrap: wrap;
+  }
+
+  &__income {
+    font-size: 0.85rem;
+    color: var(--success);
+  }
+
+  &__expense {
+    font-size: 0.85rem;
+    color: var(--danger);
+  }
+
+  &__net {
+    font-size: 0.9rem;
+    font-weight: 700;
+  }
+
+  &__chevron {
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    transition: transform var(--dur) var(--ease);
+  }
+
+  &.is-open &__chevron {
+    transform: rotate(180deg);
+  }
+
+  &__body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-2);
+    padding: 0 var(--sp-4) var(--sp-4);
+    border-top: 1px solid var(--border);
+    padding-top: var(--sp-3);
+  }
+
+  &__row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sp-3);
+    font-size: 0.85rem;
+  }
+
+  &__row-label {
+    color: var(--text-muted);
+  }
+
+  &__row-value {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-2);
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    margin-top: var(--sp-2);
+  }
+}
+
+@media (max-width: 640px) {
+  .fin-records-toolbar {
+    flex-direction: column;
+  }
+}

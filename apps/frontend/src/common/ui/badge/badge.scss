@@ -1,0 +1,52 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 100px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+
+  &::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0.8;
+  }
+
+  &--active {
+    background: var(--success-dim);
+    color: var(--success);
+  }
+
+  &--warn,
+  &--ending {
+    background: var(--warning-dim);
+    color: var(--warning);
+  }
+
+  &--danger,
+  &--expired {
+    background: var(--danger-dim);
+    color: var(--danger);
+  }
+
+  &--neutral,
+  &--none {
+    background: var(--surface-2);
+    color: var(--text-secondary);
+  }
+
+  &--accent {
+    background: var(--accent-dim);
+    color: var(--accent-light);
+  }
+
+  &--ind {
+    background: var(--ind-dim);
+    color: var(--ind);
+  }
+}

@@ -1,0 +1,85 @@
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--sp-4);
+}
+
+.kpi-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: var(--sp-5) var(--sp-6);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  position: relative;
+  overflow: hidden;
+  transition:
+    transform var(--dur) var(--ease),
+    box-shadow var(--dur) var(--ease);
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+
+  &--clickable {
+    cursor: pointer;
+
+    &:active {
+      transform: scale(0.97);
+    }
+  }
+
+  &__label {
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    /* отступ под absolute-иконку, чтобы текст не залезал под неё */
+    padding-right: 44px;
+  }
+
+  &__value {
+    font-size: 2.2rem;
+    font-weight: 700;
+    letter-spacing: -0.04em;
+    line-height: 1;
+    color: var(--text-primary);
+  }
+
+  &__icon {
+    position: absolute;
+    right: var(--sp-5);
+    top: var(--sp-5);
+    width: 36px;
+    height: 36px;
+    border-radius: var(--r-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+  }
+
+  &--accent &__icon {
+    background: var(--accent-dim);
+    color: var(--accent-light);
+  }
+
+  &--warn &__icon {
+    background: var(--warning-dim);
+    color: var(--warning);
+  }
+
+  &--danger &__icon {
+    background: var(--danger-dim);
+    color: var(--danger);
+  }
+
+  &--ok &__icon {
+    background: var(--success-dim);
+    color: var(--success);
+  }
+}

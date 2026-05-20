@@ -1,0 +1,76 @@
+.fin-modal-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-3);
+}
+
+.fin-modal-section {
+  background: var(--surface-2);
+  border-radius: var(--r-md);
+  padding: var(--sp-4);
+
+  &--income {
+    border-top: 3px solid var(--success);
+  }
+
+  &--expense {
+    border-top: 3px solid var(--danger);
+  }
+
+  &__label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    margin-bottom: var(--sp-3);
+  }
+}
+
+.fin-preview {
+  text-align: center;
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  padding: var(--sp-3) 0;
+}
+
+.fin-modal-row-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: var(--sp-3);
+}
+
+.timeslot-toggle {
+  display: flex;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  overflow: hidden;
+}
+
+.timeslot-btn {
+  flex: 1;
+  padding: 6px var(--sp-3);
+  border: none;
+  background: var(--surface-2);
+  color: var(--text-secondary);
+  font-family: var(--font);
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
+
+  & + .timeslot-btn {
+    border-left: 1px solid var(--border);
+  }
+
+  &--active {
+    background: var(--accent);
+    color: #fff;
+  }
+}
+
+@media (max-width: 640px) {
+  .fin-modal-grid,
+  .fin-modal-row-3 {
+    grid-template-columns: 1fr;
+  }
+}

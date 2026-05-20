@@ -1,0 +1,26 @@
+{
+  "name": "system-business",
+  "version": "1.0.0",
+  "private": true,
+  "engines": {
+    "node": ">=22 <23",
+    "npm": ">=11"
+  },
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace apps/frontend",
+    "dev:backend": "npm run start:dev --workspace apps/backend",
+    "build": "npm run build --workspace apps/frontend",
+    "build:shared": "npm run build --workspace @trikick/shared",
+    "build:backend": "npm run build --workspace apps/backend",
+    "build:frontend": "npm run build --workspace apps/frontend",
+    "build:all": "npm run build:shared && npm run build:backend && npm run build:frontend",
+    "start:backend": "npm run start:prod --workspace apps/backend",
+    "migrate": "npm run migrate --workspace apps/backend",
+    "migrate:undo": "npm run migrate:undo --workspace apps/backend",
+    "seed": "npm run seed --workspace apps/backend"
+  }
+}

@@ -1,0 +1,64 @@
+- generic [ref=e4]:
+  - complementary [ref=e5]:
+    - generic [ref=e6]:
+      - generic [ref=e7]: ⟡
+      - generic [ref=e8]: TriKick
+    - navigation [ref=e9]:
+      - link "appstore Главная" [ref=e10] [cursor=pointer]:
+        - /url: /
+        - img "appstore" [ref=e12]:
+          - img [ref=e13]
+        - generic [ref=e15]: Главная
+      - link "calendar Тренировки" [ref=e16] [cursor=pointer]:
+        - /url: /trainings
+        - img "calendar" [ref=e18]:
+          - img [ref=e19]
+        - generic [ref=e21]: Тренировки
+      - link "team Ученики" [ref=e23] [cursor=pointer]:
+        - /url: /students
+        - img "team" [ref=e25]:
+          - img [ref=e26]
+        - generic [ref=e28]: Ученики
+      - link "user Индивидуальные" [ref=e29] [cursor=pointer]:
+        - /url: /individual
+        - img "user" [ref=e31]:
+          - img [ref=e32]
+        - generic [ref=e34]: Индивидуальные
+      - link "group Группы" [ref=e35] [cursor=pointer]:
+        - /url: /groups
+        - img "group" [ref=e37]:
+          - img [ref=e38]
+        - generic [ref=e41]: Группы
+      - link "wallet Финансы" [ref=e43] [cursor=pointer]:
+        - /url: /finance
+        - img "wallet" [ref=e45]:
+          - img [ref=e46]
+        - generic [ref=e48]: Финансы
+    - generic [ref=e49]:
+      - generic [ref=e50]:
+        - generic [ref=e51]: ДТ
+        - generic [ref=e52]:
+          - generic [ref=e53]: Демо Тренер
+          - generic [ref=e54]: demo@trikick.ru
+      - generic [ref=e55]:
+        - button "☀" [ref=e56] [cursor=pointer]
+        - button "logout" [ref=e57] [cursor=pointer]:
+          - img "logout" [ref=e59]:
+            - img [ref=e60]
+  - main [ref=e62]:
+    - generic [ref=e63]:
+      - generic [ref=e64]:
+        - heading "Главная" [level=1] [ref=e66]
+        - generic [ref=e67]:
+          - button "check-square Отметить за сегодня" [ref=e68] [cursor=pointer]:
+            - img "check-square" [ref=e70]:
+              - img [ref=e71]
+            - generic [ref=e74]: Отметить за сегодня
+          - button "plus Записать тренировку" [ref=e75] [cursor=pointer]:
+            - img "plus" [ref=e77]:
+              - img [ref=e78]
+            - generic [ref=e81]: Записать тренировку
+      - generic [ref=e82]: Тренировки сегодня
+      - generic [ref=e84]: Тренировок на сегодня нет
+      - generic [ref=e85]: Статус абонементов
+      - generic [ref=e86]: ✓ Все абонементы в порядке

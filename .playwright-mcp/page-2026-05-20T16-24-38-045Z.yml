@@ -1,0 +1,97 @@
+- generic [ref=e4]:
+  - main [ref=e5]:
+    - generic [ref=e6]:
+      - heading "Финансы" [level=1] [ref=e9]
+      - generic [ref=e10]:
+        - button "Записи" [ref=e11] [cursor=pointer]
+        - button "Статистика" [active] [ref=e12] [cursor=pointer]
+        - button "Настройка цен" [ref=e13] [cursor=pointer]
+      - generic [ref=e75]:
+        - generic [ref=e76]:
+          - button "Месяц" [ref=e77] [cursor=pointer]
+          - button "Квартал" [ref=e78] [cursor=pointer]
+          - button "Год" [ref=e79] [cursor=pointer]
+          - button "Всё время" [ref=e80] [cursor=pointer]
+        - generic [ref=e81]:
+          - generic [ref=e82]:
+            - generic [ref=e83]: Доход
+            - generic [ref=e84]: 0 ₽
+          - generic [ref=e85]:
+            - generic [ref=e86]: Расход зала
+            - generic [ref=e87]: 0 ₽
+          - generic [ref=e88]:
+            - generic [ref=e89]: Чистый доход
+            - generic [ref=e90]: +0 ₽
+        - generic [ref=e91]:
+          - generic [ref=e92]:
+            - generic [ref=e93]: 📊
+            - generic [ref=e94]: Маржа
+            - generic [ref=e95]: 0%
+          - generic [ref=e96]:
+            - generic [ref=e97]: 🧾
+            - generic [ref=e98]: Записей
+            - generic [ref=e99]: "0"
+          - generic [ref=e100]:
+            - generic [ref=e101]: ✅
+            - generic [ref=e102]: Активных
+            - generic [ref=e103]: "0"
+          - generic [ref=e104]:
+            - generic [ref=e105]: 💳
+            - generic [ref=e106]: Средний чек
+            - generic [ref=e107]: 0 ₽
+        - generic [ref=e108]:
+          - generic [ref=e109]:
+            - generic [ref=e110]: Динамика по месяцам
+            - generic [ref=e112]:
+              - img "inbox" [ref=e114]:
+                - img [ref=e115]
+              - generic [ref=e117]: Нет данных
+          - generic [ref=e118]:
+            - generic [ref=e119]: Оплаты клиентов
+            - generic [ref=e121]:
+              - img "inbox" [ref=e123]:
+                - img [ref=e124]
+              - generic [ref=e126]: Нет данных
+          - generic [ref=e127]:
+            - generic [ref=e128]: Оплаты зала
+            - generic [ref=e130]:
+              - img "inbox" [ref=e132]:
+                - img [ref=e133]
+              - generic [ref=e135]: Нет данных
+          - generic [ref=e136]:
+            - generic [ref=e137]: Топ клиентов по доходу
+            - generic [ref=e139]:
+              - img "inbox" [ref=e141]:
+                - img [ref=e142]
+              - generic [ref=e144]: Нет данных
+  - navigation [ref=e37]:
+    - link "appstore Главная" [ref=e38] [cursor=pointer]:
+      - /url: /
+      - img "appstore" [ref=e40]:
+        - img [ref=e41]
+      - generic [ref=e43]: Главная
+    - link "calendar Тренировки" [ref=e44] [cursor=pointer]:
+      - /url: /trainings
+      - img "calendar" [ref=e46]:
+        - img [ref=e47]
+      - generic [ref=e49]: Тренировки
+    - link "team Ученики" [ref=e50] [cursor=pointer]:
+      - /url: /students
+      - img "team" [ref=e52]:
+        - img [ref=e53]
+      - generic [ref=e55]: Ученики
+    - link "user Инд." [ref=e56] [cursor=pointer]:
+      - /url: /individual
+      - img "user" [ref=e58]:
+        - img [ref=e59]
+      - generic [ref=e61]: Инд.
+    - link "group Группы" [ref=e62] [cursor=pointer]:
+      - /url: /groups
+      - img "group" [ref=e64]:
+        - img [ref=e65]
+      - generic [ref=e68]: Группы
+    - link "wallet Финансы" [ref=e69] [cursor=pointer]:
+      - /url: /finance
+      - img "wallet" [ref=e71]:
+        - img [ref=e72]
+      - generic [ref=e74]: Финансы

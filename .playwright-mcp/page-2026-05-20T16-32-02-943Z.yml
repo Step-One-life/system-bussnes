@@ -1,0 +1,262 @@
+- generic [ref=e1]:
+  - generic [ref=e4]:
+    - complementary [ref=e5]:
+      - generic [ref=e6]:
+        - generic [ref=e7]: ⟡
+        - generic [ref=e8]: TriKick
+      - navigation [ref=e9]:
+        - link "appstore Главная" [ref=e10] [cursor=pointer]:
+          - /url: /
+          - img "appstore" [ref=e12]:
+            - img [ref=e13]
+          - generic [ref=e15]: Главная
+        - link "calendar Тренировки" [ref=e16] [cursor=pointer]:
+          - /url: /trainings
+          - img "calendar" [ref=e18]:
+            - img [ref=e19]
+          - generic [ref=e21]: Тренировки
+        - link "team Ученики" [ref=e23] [cursor=pointer]:
+          - /url: /students
+          - img "team" [ref=e25]:
+            - img [ref=e26]
+          - generic [ref=e28]: Ученики
+        - link "user Индивидуальные" [ref=e29] [cursor=pointer]:
+          - /url: /individual
+          - img "user" [ref=e31]:
+            - img [ref=e32]
+          - generic [ref=e34]: Индивидуальные
+        - link "group Группы" [ref=e35] [cursor=pointer]:
+          - /url: /groups
+          - img "group" [ref=e37]:
+            - img [ref=e38]
+          - generic [ref=e41]: Группы
+        - link "wallet Финансы" [ref=e43] [cursor=pointer]:
+          - /url: /finance
+          - img "wallet" [ref=e45]:
+            - img [ref=e46]
+          - generic [ref=e48]: Финансы
+      - generic [ref=e49]:
+        - generic [ref=e50]:
+          - generic [ref=e51]: ДТ
+          - generic [ref=e52]:
+            - generic [ref=e53]: Демо Тренер
+            - generic [ref=e54]: demo@trikick.ru
+        - generic [ref=e55]:
+          - button "☀" [ref=e56] [cursor=pointer]
+          - button "logout" [ref=e57] [cursor=pointer]:
+            - img "logout" [ref=e59]:
+              - img [ref=e60]
+    - main [ref=e62]:
+      - generic [ref=e63]:
+        - generic [ref=e64]:
+          - generic [ref=e65]:
+            - heading "Ученики" [level=1] [ref=e66]
+            - generic [ref=e67]: 9 чел.
+          - button "user-add Добавить ученика" [ref=e68] [cursor=pointer]:
+            - img "user-add" [ref=e70]:
+              - img [ref=e71]
+            - generic [ref=e73]: Добавить ученика
+        - generic [ref=e74]:
+          - generic [ref=e75]:
+            - img "search" [ref=e77]:
+              - img [ref=e78]
+            - textbox "Поиск по имени…" [ref=e80]
+          - generic [ref=e82] [cursor=pointer]:
+            - generic [ref=e83]:
+              - generic: Все группы
+              - combobox [ref=e84]
+            - img "down" [ref=e86]:
+              - img [ref=e87]
+          - generic [ref=e89] [cursor=pointer]:
+            - generic [ref=e90]:
+              - generic: Все статусы
+              - combobox [ref=e91]
+            - img "down" [ref=e93]:
+              - img [ref=e94]
+        - generic [ref=e103]:
+          - generic [ref=e104] [cursor=pointer]:
+            - generic [ref=e105]:
+              - generic [ref=e106]: МГ
+              - generic [ref=e107]:
+                - generic [ref=e108]: Михаил Горбачев
+                - generic [ref=e110]: Трикинг
+              - generic [ref=e112]: Активен
+            - generic [ref=e113]:
+              - generic [ref=e114]: "Трикинг: 8/8"
+              - generic [ref=e115]: —
+          - generic [ref=e116] [cursor=pointer]:
+            - generic [ref=e117]:
+              - generic [ref=e118]: АИ
+              - generic [ref=e119]:
+                - generic [ref=e120]: Алексей Иванов
+                - generic [ref=e121]:
+                  - generic [ref=e122]: Трикинг
+                  - generic [ref=e123]: Инд.
+              - generic [ref=e125]: Активен
+            - generic [ref=e126]:
+              - generic [ref=e127]: "Инд.: 4/4 · Трикинг: 5/8"
+              - generic [ref=e128]: 19 мая
+          - generic [ref=e129] [cursor=pointer]:
+            - generic [ref=e130]:
+              - generic [ref=e131]: СМ
+              - generic [ref=e132]:
+                - generic [ref=e133]: Сергей Морозов
+                - generic [ref=e135]: Трикинг
+              - generic [ref=e137]: Заканчивается
+            - generic [ref=e138]:
+              - generic [ref=e139]: "Трикинг: 1/8"
+              - generic [ref=e140]: 19 мая
+          - generic [ref=e141] [cursor=pointer]:
+            - generic [ref=e142]:
+              - generic [ref=e143]: ИС
+              - generic [ref=e144]:
+                - generic [ref=e145]: Иван Сидоров
+                - generic [ref=e146]:
+                  - generic [ref=e147]: Тхэквондо
+                  - generic [ref=e148]: Взрослые
+              - generic [ref=e150]: Активен
+            - generic [ref=e151]:
+              - generic [ref=e152]: "Взрослые: 4/4 · Тхэквондо: 8/8"
+              - generic [ref=e153]: 18 мая
+          - generic [ref=e154] [cursor=pointer]:
+            - generic [ref=e155]:
+              - generic [ref=e156]: МС
+              - generic [ref=e157]:
+                - generic [ref=e158]: Мария Смирнова
+                - generic [ref=e160]: Тхэквондо
+              - generic [ref=e162]: Активен
+            - generic [ref=e163]:
+              - generic [ref=e164]: "Тхэквондо: 8/8"
+              - generic [ref=e165]: 18 мая
+          - generic [ref=e166] [cursor=pointer]:
+            - generic [ref=e167]:
+              - generic [ref=e168]: ОН
+              - generic [ref=e169]:
+                - generic [ref=e170]: Ольга Новикова
+                - generic [ref=e172]: Взрослые
+              - generic [ref=e174]: Нужно продлить
+            - generic [ref=e175]:
+              - generic [ref=e176]: Нет активных
+              - generic [ref=e177]: 17 мая
+          - generic [ref=e178] [cursor=pointer]:
+            - generic [ref=e179]:
+              - generic [ref=e180]: АП
+              - generic [ref=e181]:
+                - generic [ref=e182]: Анна Петрова
+                - generic [ref=e184]: Трикинг
+              - generic [ref=e186]: Заканчивается
+            - generic [ref=e187]:
+              - generic [ref=e188]: "Трикинг: 1/4"
+              - generic [ref=e189]: 19 мая
+          - generic [ref=e190] [cursor=pointer]:
+            - generic [ref=e191]:
+              - generic [ref=e192]: ЕВ
+              - generic [ref=e193]:
+                - generic [ref=e194]: Екатерина Волкова
+                - generic [ref=e196]: Инд.
+              - generic [ref=e198]: Активен
+            - generic [ref=e199]:
+              - generic [ref=e200]: "Инд.: 4/4"
+              - generic [ref=e201]: 13 мая
+          - generic [ref=e202] [cursor=pointer]:
+            - generic [ref=e203]:
+              - generic [ref=e204]: ДК
+              - generic [ref=e205]:
+                - generic [ref=e206]: Дмитрий Козлов
+                - generic [ref=e208]: Взрослые
+              - generic [ref=e210]: Активен
+            - generic [ref=e211]:
+              - generic [ref=e212]: "Взрослые: 2/4"
+              - generic [ref=e213]: 17 мая
+  - dialog "Алексей Иванов" [ref=e215]:
+    - generic [ref=e216]:
+      - generic [ref=e217]:
+        - button "Close" [ref=e218] [cursor=pointer]:
+          - img "close" [ref=e219]:
+            - img [ref=e220]
+        - generic [ref=e222]: Алексей Иванов
+      - button "edit" [ref=e224] [cursor=pointer]:
+        - img "edit" [ref=e226]:
+          - img [ref=e227]
+    - generic [ref=e229]:
+      - generic [ref=e230]:
+        - text: "Последнее посещение:"
+        - strong [ref=e231]: 19 мая
+      - generic [ref=e232]: Групповые занятия
+      - generic [ref=e233]:
+        - generic [ref=e234]:
+          - generic [ref=e235]: Трикинг
+          - generic [ref=e237]: Активен
+          - button "delete" [ref=e238] [cursor=pointer]:
+            - img "delete" [ref=e240]:
+              - img [ref=e241]
+        - generic [ref=e243]:
+          - generic [ref=e244]:
+            - generic [ref=e245]: 8 занятий
+            - generic [ref=e246]: 5/8 занятий
+          - generic [ref=e249]:
+            - generic [ref=e250]: до 4 июня
+            - generic [ref=e251]: 16 дн.
+        - generic [ref=e252]:
+          - button "minus-circle Списать занятие" [ref=e253] [cursor=pointer]:
+            - img "minus-circle" [ref=e255]:
+              - img [ref=e256]
+            - generic [ref=e259]: Списать занятие
+          - button "reload Новый абонемент" [ref=e260] [cursor=pointer]:
+            - img "reload" [ref=e262]:
+              - img [ref=e263]
+            - generic [ref=e265]: Новый абонемент
+          - button "dollar Отметить оплату" [ref=e266] [cursor=pointer]:
+            - img "dollar" [ref=e268]:
+              - img [ref=e269]
+            - generic [ref=e271]: Отметить оплату
+          - button "clock-circle Продлить срок" [ref=e272] [cursor=pointer]:
+            - img "clock-circle" [ref=e274]:
+              - img [ref=e275]
+            - generic [ref=e278]: Продлить срок
+      - generic [ref=e279]:
+        - img "user" [ref=e280]:
+          - img [ref=e281]
+        - text: Индивидуальные
+      - generic [ref=e283]:
+        - generic [ref=e284]:
+          - generic [ref=e285]: Индивидуальная тренировка
+          - generic [ref=e287]: Активен
+          - button "delete" [ref=e288] [cursor=pointer]:
+            - img "delete" [ref=e290]:
+              - img [ref=e291]
+        - generic [ref=e293]:
+          - generic [ref=e294]:
+            - generic [ref=e295]: 4 занятия
+            - generic [ref=e296]: 4/4 занятий
+          - generic [ref=e299]:
+            - generic [ref=e300]: до 14 июня
+            - generic [ref=e301]: 26 дн.
+        - generic [ref=e302]:
+          - button "minus-circle Списать занятие" [ref=e303] [cursor=pointer]:
+            - img "minus-circle" [ref=e305]:
+              - img [ref=e306]
+            - generic [ref=e309]: Списать занятие
+          - button "reload Новый абонемент" [ref=e310] [cursor=pointer]:
+            - img "reload" [ref=e312]:
+              - img [ref=e313]
+            - generic [ref=e315]: Новый абонемент
+          - button "dollar Отметить оплату" [ref=e316] [cursor=pointer]:
+            - img "dollar" [ref=e318]:
+              - img [ref=e319]
+            - generic [ref=e321]: Отметить оплату
+          - button "clock-circle Продлить срок" [ref=e322] [cursor=pointer]:
+            - img "clock-circle" [ref=e324]:
+              - img [ref=e325]
+            - generic [ref=e328]: Продлить срок
+      - generic [ref=e329]: История посещений
+      - generic [ref=e331]:
+        - generic [ref=e332]: 19 мая
+        - generic [ref=e333]: Трикинг
+        - button "close" [ref=e334] [cursor=pointer]:
+          - img "close" [ref=e336]:
+            - img [ref=e337]
+      - button "delete Удалить ученика" [ref=e340] [cursor=pointer]:
+        - img "delete" [ref=e342]:
+          - img [ref=e343]
+        - generic [ref=e345]: Удалить ученика

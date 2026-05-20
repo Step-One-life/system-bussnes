@@ -1,0 +1,155 @@
+- generic [ref=e1]:
+  - generic [ref=e4]:
+    - complementary [ref=e5]:
+      - generic [ref=e6]:
+        - generic [ref=e7]: ⟡
+        - generic [ref=e8]: TriKick
+      - navigation [ref=e9]:
+        - link "Главная" [ref=e10] [cursor=pointer]:
+          - /url: /
+        - link "Тренировки" [ref=e11] [cursor=pointer]:
+          - /url: /trainings
+        - link "Ученики" [ref=e12] [cursor=pointer]:
+          - /url: /students
+        - link "Индивидуальные" [ref=e13] [cursor=pointer]:
+          - /url: /individual
+        - link "Группы" [ref=e14] [cursor=pointer]:
+          - /url: /groups
+        - link "Финансы" [ref=e15] [cursor=pointer]:
+          - /url: /finance
+      - button "☀" [ref=e17] [cursor=pointer]
+    - main [ref=e18]:
+      - generic [ref=e19]:
+        - generic [ref=e20]:
+          - generic [ref=e21]:
+            - heading "Тренировки" [level=1] [ref=e22]
+            - generic [ref=e23]: 6 записей
+          - generic [ref=e24]:
+            - generic [ref=e25]:
+              - button "unordered-list" [ref=e26] [cursor=pointer]:
+                - img "unordered-list" [ref=e27]:
+                  - img [ref=e28]
+              - button "calendar" [ref=e30] [cursor=pointer]:
+                - img "calendar" [ref=e31]:
+                  - img [ref=e32]
+            - button "plus Записать тренировку" [ref=e34] [cursor=pointer]:
+              - img "plus" [ref=e36]:
+                - img [ref=e37]
+              - generic [ref=e40]: Записать тренировку
+        - generic [ref=e144]:
+          - generic [ref=e145]:
+            - generic [ref=e146]:
+              - button "left" [ref=e147] [cursor=pointer]:
+                - img "left" [ref=e149]:
+                  - img [ref=e150]
+              - generic [ref=e152]: 18 мая – 24 мая 2026 г.
+              - button "right" [ref=e153] [cursor=pointer]:
+                - img "right" [ref=e155]:
+                  - img [ref=e156]
+            - button "Сегодня" [ref=e158] [cursor=pointer]:
+              - generic [ref=e159]: Сегодня
+          - generic [ref=e160]:
+            - generic [ref=e161]:
+              - generic [ref=e163]:
+                - generic [ref=e164]: Пн
+                - generic [ref=e165]: "18"
+              - generic [ref=e166]:
+                - generic [ref=e167]: Вт
+                - generic [ref=e168]: "19"
+              - generic [ref=e169]:
+                - generic [ref=e170]: Ср
+                - generic [ref=e171]: "20"
+              - generic [ref=e172]:
+                - generic [ref=e173]: Чт
+                - generic [ref=e174]: "21"
+              - generic [ref=e175]:
+                - generic [ref=e176]: Пт
+                - generic [ref=e177]: "22"
+              - generic [ref=e178]:
+                - generic [ref=e179]: Сб
+                - generic [ref=e180]: "23"
+              - generic [ref=e181]:
+                - generic [ref=e182]: Вс
+                - generic [ref=e183]: "24"
+            - generic [ref=e185]:
+              - generic [ref=e186]:
+                - generic [ref=e187]: 10:00
+                - generic [ref=e188]: 11:00
+                - generic [ref=e189]: 12:00
+                - generic [ref=e190]: 13:00
+                - generic [ref=e191]: 14:00
+                - generic [ref=e192]: 15:00
+                - generic [ref=e193]: 16:00
+                - generic [ref=e194]: 17:00
+                - generic [ref=e195]: 18:00
+                - generic [ref=e196]: 19:00
+                - generic [ref=e197]: 20:00
+                - generic [ref=e198]: 21:00
+                - generic [ref=e199]: 22:00
+              - generic [ref=e200]:
+                - button "Тхэквондо 18:00 · 2 чел." [ref=e214] [cursor=pointer]:
+                  - generic [ref=e215]: Тхэквондо
+                  - generic [ref=e216]: 18:00 · 2 чел.
+                - button "Трикинг 19:00" [ref=e217] [cursor=pointer]:
+                  - generic [ref=e218]: Трикинг
+                  - generic [ref=e219]: 19:00
+              - generic [ref=e220]:
+                - button "Трикинг 19:00 · 3 чел." [ref=e234] [cursor=pointer]:
+                  - generic [ref=e235]: Трикинг
+                  - generic [ref=e236]: 19:00 · 3 чел.
+                - button "Взрослые 20:00" [ref=e237] [cursor=pointer]:
+                  - generic [ref=e238]: Взрослые
+                  - generic [ref=e239]: 20:00
+              - generic [ref=e240]:
+                - button "Трикинг 19:00" [ref=e254] [cursor=pointer]:
+                  - generic [ref=e255]: Трикинг
+                  - generic [ref=e256]: 19:00
+                - button "Тхэквондо 17:00" [ref=e257] [cursor=pointer]:
+                  - generic [ref=e258]: Тхэквондо
+                  - generic [ref=e259]: 17:00
+              - button "Взрослые 20:00" [ref=e274] [cursor=pointer]:
+                - generic [ref=e275]: Взрослые
+                - generic [ref=e276]: 20:00
+              - generic [ref=e277]:
+                - button "Трикинг 19:00" [ref=e291] [cursor=pointer]:
+                  - generic [ref=e292]: Трикинг
+                  - generic [ref=e293]: 19:00
+                - button "Тхэквондо 17:00" [ref=e294] [cursor=pointer]:
+                  - generic [ref=e295]: Тхэквондо
+                  - generic [ref=e296]: 17:00
+  - generic [ref=e346]:
+    - dialog "Групповая тренировка":
+      - generic [ref=e347]:
+        - button "Close" [active] [ref=e348] [cursor=pointer]:
+          - generic "Close" [ref=e349]:
+            - img "close" [ref=e350]:
+              - img [ref=e351]
+        - generic [ref=e354]: Групповая тренировка
+        - generic [ref=e356]:
+          - generic [ref=e358]:
+            - generic "Группа" [ref=e360]
+            - generic [ref=e364] [cursor=pointer]:
+              - generic [ref=e365]:
+                - generic: Выберите группу
+                - combobox [ref=e366]
+              - img "down" [ref=e368]:
+                - img [ref=e369]
+          - generic [ref=e371]:
+            - generic [ref=e373]:
+              - generic "Дата" [ref=e375]
+              - textbox [ref=e379]: 2026-05-20
+            - generic [ref=e381]:
+              - generic "Время" [ref=e383]
+              - textbox [ref=e387]: 18:00
+          - generic [ref=e389]: ⭐ Prime
+          - generic [ref=e391]:
+            - generic "Ученики" [ref=e393]
+            - paragraph [ref=e397]: Сначала выберите группу
+          - generic [ref=e399]:
+            - generic "Комментарий (необязательно)" [ref=e401]
+            - 'textbox "Например: работали над флипами..." [ref=e405]'
+        - generic [ref=e406]:
+          - button "Отмена" [ref=e407] [cursor=pointer]:
+            - generic [ref=e408]: Отмена
+          - button "Сохранить и списать" [ref=e409] [cursor=pointer]:
+            - generic [ref=e410]: Сохранить и списать

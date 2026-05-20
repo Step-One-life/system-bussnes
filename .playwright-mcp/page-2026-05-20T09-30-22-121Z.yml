@@ -1,0 +1,116 @@
+- generic [ref=e4]:
+  - complementary [ref=e5]:
+    - generic [ref=e6]:
+      - generic [ref=e7]: ⟡
+      - generic [ref=e8]: TriKick
+    - navigation [ref=e9]:
+      - link "Главная" [ref=e10] [cursor=pointer]:
+        - /url: /
+      - link "Тренировки" [ref=e11] [cursor=pointer]:
+        - /url: /trainings
+      - link "Ученики" [ref=e12] [cursor=pointer]:
+        - /url: /students
+      - link "Индивидуальные" [ref=e13] [cursor=pointer]:
+        - /url: /individual
+      - link "Группы" [ref=e14] [cursor=pointer]:
+        - /url: /groups
+      - link "Финансы" [ref=e15] [cursor=pointer]:
+        - /url: /finance
+    - button "☀" [ref=e17] [cursor=pointer]
+  - main [ref=e18]:
+    - generic [ref=e19]:
+      - generic [ref=e20]:
+        - generic [ref=e21]:
+          - heading "Тренировки" [level=1] [ref=e22]
+          - generic [ref=e23]: 6 записей
+        - generic [ref=e24]:
+          - generic [ref=e25]:
+            - button "unordered-list" [ref=e26] [cursor=pointer]:
+              - img "unordered-list" [ref=e27]:
+                - img [ref=e28]
+            - button "calendar" [ref=e30] [cursor=pointer]:
+              - img "calendar" [ref=e31]:
+                - img [ref=e32]
+          - button "plus Записать тренировку" [ref=e34] [cursor=pointer]:
+            - img "plus" [ref=e36]:
+              - img [ref=e37]
+            - generic [ref=e40]: Записать тренировку
+      - generic [ref=e41]:
+        - generic [ref=e43] [cursor=pointer]:
+          - generic [ref=e44]:
+            - generic [ref=e45]: Вт
+            - generic [ref=e46]: "19"
+            - generic [ref=e47]: май
+          - generic [ref=e48]:
+            - generic [ref=e49]: Трикинг
+            - generic [ref=e50]: 19:00 · 3 чел.
+          - button "user-add" [ref=e51]:
+            - img "user-add" [ref=e53]:
+              - img [ref=e54]
+          - img "down" [ref=e56]:
+            - img [ref=e57]
+        - generic [ref=e60] [cursor=pointer]:
+          - generic [ref=e61]:
+            - generic [ref=e62]: Пн
+            - generic [ref=e63]: "18"
+            - generic [ref=e64]: май
+          - generic [ref=e65]:
+            - generic [ref=e66]: Тхэквондо
+            - generic [ref=e67]: 18:00 · 2 чел.
+          - button "user-add" [ref=e68]:
+            - img "user-add" [ref=e70]:
+              - img [ref=e71]
+          - img "down" [ref=e73]:
+            - img [ref=e74]
+        - generic [ref=e77] [cursor=pointer]:
+          - generic [ref=e78]:
+            - generic [ref=e79]: Вс
+            - generic [ref=e80]: "17"
+            - generic [ref=e81]: май
+          - generic [ref=e82]:
+            - generic [ref=e83]: Взрослые
+            - generic [ref=e84]: 20:00 · 3 чел.
+          - button "user-add" [ref=e85]:
+            - img "user-add" [ref=e87]:
+              - img [ref=e88]
+          - img "down" [ref=e90]:
+            - img [ref=e91]
+        - generic [ref=e94] [cursor=pointer]:
+          - generic [ref=e95]:
+            - generic [ref=e96]: Пт
+            - generic [ref=e97]: "15"
+            - generic [ref=e98]: май
+          - generic [ref=e99]:
+            - generic [ref=e100]: Трикинг
+            - generic [ref=e101]: 17:00 · 2 чел.
+          - button "user-add" [ref=e102]:
+            - img "user-add" [ref=e104]:
+              - img [ref=e105]
+          - img "down" [ref=e107]:
+            - img [ref=e108]
+        - generic [ref=e111] [cursor=pointer]:
+          - generic [ref=e112]:
+            - generic [ref=e113]: Ср
+            - generic [ref=e114]: "13"
+            - generic [ref=e115]: май
+          - generic [ref=e116]:
+            - generic [ref=e117]: Индивидуальная тренировка с Екатерина Волкова
+            - generic [ref=e118]: 19:00
+          - button "user-add" [ref=e119]:
+            - img "user-add" [ref=e121]:
+              - img [ref=e122]
+          - img "down" [ref=e124]:
+            - img [ref=e125]
+        - generic [ref=e128] [cursor=pointer]:
+          - generic [ref=e129]:
+            - generic [ref=e130]: Вс
+            - generic [ref=e131]: "10"
+            - generic [ref=e132]: май
+          - generic [ref=e133]:
+            - generic [ref=e134]: Тхэквондо
+            - generic [ref=e135]: 18:00 · 2 чел.
+          - button "user-add" [ref=e136]:
+            - img "user-add" [ref=e138]:
+              - img [ref=e139]
+          - img "down" [ref=e141]:
+            - img [ref=e142]

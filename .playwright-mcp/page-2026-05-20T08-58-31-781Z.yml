@@ -1,0 +1,88 @@
+- generic [ref=e4]:
+  - complementary [ref=e5]:
+    - generic [ref=e6]:
+      - generic [ref=e7]: ⟡
+      - generic [ref=e8]: TriKick
+    - navigation [ref=e9]:
+      - link "Главная" [ref=e10] [cursor=pointer]:
+        - /url: /
+      - link "Тренировки" [ref=e11] [cursor=pointer]:
+        - /url: /trainings
+      - link "Ученики" [ref=e12] [cursor=pointer]:
+        - /url: /students
+      - link "Индивидуальные" [ref=e13] [cursor=pointer]:
+        - /url: /individual
+      - link "Группы" [ref=e14] [cursor=pointer]:
+        - /url: /groups
+      - link "Финансы" [ref=e15] [cursor=pointer]:
+        - /url: /finance
+    - button "☀" [ref=e17] [cursor=pointer]
+  - main [ref=e18]:
+    - generic [ref=e19]:
+      - generic [ref=e20]:
+        - heading "Группы" [level=1] [ref=e22]
+        - button "plus Создать группу" [ref=e23] [cursor=pointer]:
+          - img "plus" [ref=e25]:
+            - img [ref=e26]
+          - generic [ref=e29]: Создать группу
+      - generic [ref=e30]:
+        - generic [ref=e31] [cursor=pointer]:
+          - generic [ref=e32]:
+            - generic [ref=e33]: Трикинг
+            - button "edit" [ref=e34]:
+              - img "edit" [ref=e36]:
+                - img [ref=e37]
+          - generic [ref=e39]: Пн, Ср, Пт 19:00 · 90 мин
+          - generic [ref=e40]:
+            - generic [ref=e41]:
+              - generic [ref=e42]: Всего учеников
+              - generic [ref=e43]: "3"
+            - generic [ref=e44]:
+              - generic [ref=e45]: Активный абонемент
+              - generic [ref=e46]: "2"
+            - generic [ref=e47]:
+              - generic [ref=e48]: Заканчивается
+              - generic [ref=e49]: "1"
+            - generic [ref=e50]:
+              - generic [ref=e51]: Нужно продлить
+              - generic [ref=e52]: "0"
+        - generic [ref=e53] [cursor=pointer]:
+          - generic [ref=e54]:
+            - generic [ref=e55]: Взрослые
+            - button "edit" [ref=e56]:
+              - img "edit" [ref=e58]:
+                - img [ref=e59]
+          - generic [ref=e61]: Вт, Чт 20:00 · 60 мин
+          - generic [ref=e62]:
+            - generic [ref=e63]:
+              - generic [ref=e64]: Всего учеников
+              - generic [ref=e65]: "3"
+            - generic [ref=e66]:
+              - generic [ref=e67]: Активный абонемент
+              - generic [ref=e68]: "2"
+            - generic [ref=e69]:
+              - generic [ref=e70]: Заканчивается
+              - generic [ref=e71]: "0"
+            - generic [ref=e72]:
+              - generic [ref=e73]: Нужно продлить
+              - generic [ref=e74]: "1"
+        - generic [ref=e75] [cursor=pointer]:
+          - generic [ref=e76]:
+            - generic [ref=e77]: Тхэквондо
+            - button "edit" [ref=e78]:
+              - img "edit" [ref=e80]:
+                - img [ref=e81]
+          - generic [ref=e83]: Пн, Ср, Пт 17:00 · 60 мин
+          - generic [ref=e84]:
+            - generic [ref=e85]:
+              - generic [ref=e86]: Всего учеников
+              - generic [ref=e87]: "2"
+            - generic [ref=e88]:
+              - generic [ref=e89]: Активный абонемент
+              - generic [ref=e90]: "2"
+            - generic [ref=e91]:
+              - generic [ref=e92]: Заканчивается
+              - generic [ref=e93]: "0"
+            - generic [ref=e94]:
+              - generic [ref=e95]: Нужно продлить
+              - generic [ref=e96]: "0"

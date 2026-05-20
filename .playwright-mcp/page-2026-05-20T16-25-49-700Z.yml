@@ -1,0 +1,208 @@
+- generic [ref=e1]:
+  - generic [ref=e4]:
+    - complementary [ref=e5]:
+      - generic [ref=e6]:
+        - generic [ref=e7]: ⟡
+        - generic [ref=e8]: TriKick
+      - navigation [ref=e9]:
+        - link "appstore Главная" [ref=e10] [cursor=pointer]:
+          - /url: /
+          - img "appstore" [ref=e12]:
+            - img [ref=e13]
+          - generic [ref=e15]: Главная
+        - link "calendar Тренировки" [ref=e16] [cursor=pointer]:
+          - /url: /trainings
+          - img "calendar" [ref=e18]:
+            - img [ref=e19]
+          - generic [ref=e21]: Тренировки
+        - link "team Ученики" [ref=e23] [cursor=pointer]:
+          - /url: /students
+          - img "team" [ref=e25]:
+            - img [ref=e26]
+          - generic [ref=e28]: Ученики
+        - link "user Индивидуальные" [ref=e29] [cursor=pointer]:
+          - /url: /individual
+          - img "user" [ref=e31]:
+            - img [ref=e32]
+          - generic [ref=e34]: Индивидуальные
+        - link "group Группы" [ref=e35] [cursor=pointer]:
+          - /url: /groups
+          - img "group" [ref=e37]:
+            - img [ref=e38]
+          - generic [ref=e41]: Группы
+        - link "wallet Финансы" [ref=e43] [cursor=pointer]:
+          - /url: /finance
+          - img "wallet" [ref=e45]:
+            - img [ref=e46]
+          - generic [ref=e48]: Финансы
+      - generic [ref=e49]:
+        - generic [ref=e50]:
+          - generic [ref=e51]: ДТ
+          - generic [ref=e52]:
+            - generic [ref=e53]: Демо Тренер
+            - generic [ref=e54]: demo@trikick.ru
+        - generic [ref=e55]:
+          - button "☀" [ref=e56] [cursor=pointer]
+          - button "logout" [ref=e57] [cursor=pointer]:
+            - img "logout" [ref=e59]:
+              - img [ref=e60]
+    - main [ref=e62]:
+      - generic [ref=e63]:
+        - generic [ref=e64]:
+          - heading "Группы" [level=1] [ref=e66]
+          - button "plus Создать группу" [ref=e67] [cursor=pointer]:
+            - img "plus" [ref=e69]:
+              - img [ref=e70]
+            - generic [ref=e73]: Создать группу
+        - generic [ref=e81]:
+          - generic [ref=e82] [cursor=pointer]:
+            - generic [ref=e83]:
+              - generic [ref=e84]: Взрослые
+              - button "edit" [ref=e85]:
+                - img "edit" [ref=e87]:
+                  - img [ref=e88]
+            - generic [ref=e90]: Вт, Чт 20:00 · 60 мин
+            - generic [ref=e91]:
+              - generic [ref=e92]:
+                - generic [ref=e93]: Всего учеников
+                - generic [ref=e94]: "3"
+              - generic [ref=e95]:
+                - generic [ref=e96]: Активный абонемент
+                - generic [ref=e97]: "2"
+              - generic [ref=e98]:
+                - generic [ref=e99]: Заканчивается
+                - generic [ref=e100]: "0"
+              - generic [ref=e101]:
+                - generic [ref=e102]: Нужно продлить
+                - generic [ref=e103]: "1"
+          - generic [ref=e104] [cursor=pointer]:
+            - generic [ref=e105]:
+              - generic [ref=e106]: Трикинг
+              - button "edit" [ref=e107]:
+                - img "edit" [ref=e109]:
+                  - img [ref=e110]
+            - generic [ref=e112]: Пн, Ср, Пт 19:00 · 90 мин
+            - generic [ref=e113]:
+              - generic [ref=e114]:
+                - generic [ref=e115]: Всего учеников
+                - generic [ref=e116]: "4"
+              - generic [ref=e117]:
+                - generic [ref=e118]: Активный абонемент
+                - generic [ref=e119]: "2"
+              - generic [ref=e120]:
+                - generic [ref=e121]: Заканчивается
+                - generic [ref=e122]: "2"
+              - generic [ref=e123]:
+                - generic [ref=e124]: Нужно продлить
+                - generic [ref=e125]: "0"
+          - generic [ref=e126] [cursor=pointer]:
+            - generic [ref=e127]:
+              - generic [ref=e128]: Тхэквондо
+              - button "edit" [ref=e129]:
+                - img "edit" [ref=e131]:
+                  - img [ref=e132]
+            - generic [ref=e134]: Пн, Ср, Пт 17:00 · 60 мин
+            - generic [ref=e135]:
+              - generic [ref=e136]:
+                - generic [ref=e137]: Всего учеников
+                - generic [ref=e138]: "2"
+              - generic [ref=e139]:
+                - generic [ref=e140]: Активный абонемент
+                - generic [ref=e141]: "2"
+              - generic [ref=e142]:
+                - generic [ref=e143]: Заканчивается
+                - generic [ref=e144]: "0"
+              - generic [ref=e145]:
+                - generic [ref=e146]: Нужно продлить
+                - generic [ref=e147]: "0"
+  - generic [ref=e148]:
+    - dialog "Создать группу":
+      - generic [ref=e149]:
+        - button "Close" [active] [ref=e150] [cursor=pointer]:
+          - generic "Close" [ref=e151]:
+            - img "close" [ref=e152]:
+              - img [ref=e153]
+        - generic [ref=e156]: Создать группу
+        - generic [ref=e158]:
+          - generic [ref=e160]:
+            - generic "Название группы" [ref=e162]
+            - 'textbox "Например: Дети" [ref=e166]'
+          - generic [ref=e168]:
+            - generic "Расписание" [ref=e170]
+            - generic [ref=e174]:
+              - generic [ref=e175]:
+                - generic [ref=e176] [cursor=pointer]:
+                  - checkbox "Понедельник" [ref=e178]
+                  - generic [ref=e179]: Понедельник
+                - generic [ref=e181]:
+                  - textbox "Время" [disabled] [ref=e182]
+                  - generic:
+                    - img:
+                      - img
+              - generic [ref=e183]:
+                - generic [ref=e184] [cursor=pointer]:
+                  - checkbox "Вторник" [ref=e186]
+                  - generic [ref=e187]: Вторник
+                - generic [ref=e189]:
+                  - textbox "Время" [disabled] [ref=e190]
+                  - generic:
+                    - img:
+                      - img
+              - generic [ref=e191]:
+                - generic [ref=e192] [cursor=pointer]:
+                  - checkbox "Среда" [ref=e194]
+                  - generic [ref=e195]: Среда
+                - generic [ref=e197]:
+                  - textbox "Время" [disabled] [ref=e198]
+                  - generic:
+                    - img:
+                      - img
+              - generic [ref=e199]:
+                - generic [ref=e200] [cursor=pointer]:
+                  - checkbox "Четверг" [ref=e202]
+                  - generic [ref=e203]: Четверг
+                - generic [ref=e205]:
+                  - textbox "Время" [disabled] [ref=e206]
+                  - generic:
+                    - img:
+                      - img
+              - generic [ref=e207]:
+                - generic [ref=e208] [cursor=pointer]:
+                  - checkbox "Пятница" [ref=e210]
+                  - generic [ref=e211]: Пятница
+                - generic [ref=e213]:
+                  - textbox "Время" [disabled] [ref=e214]
+                  - generic:
+                    - img:
+                      - img
+              - generic [ref=e215]:
+                - generic [ref=e216] [cursor=pointer]:
+                  - checkbox "Суббота" [ref=e218]
+                  - generic [ref=e219]: Суббота
+                - generic [ref=e221]:
+                  - textbox "Время" [disabled] [ref=e222]
+                  - generic:
+                    - img:
+                      - img
+              - generic [ref=e223]:
+                - generic [ref=e224] [cursor=pointer]:
+                  - checkbox "Воскресенье" [ref=e226]
+                  - generic [ref=e227]: Воскресенье
+                - generic [ref=e229]:
+                  - textbox "Время" [disabled] [ref=e230]
+                  - generic:
+                    - img:
+                      - img
+          - generic [ref=e232]:
+            - generic "Длительность занятия" [ref=e234]
+            - generic [ref=e238] [cursor=pointer]:
+              - generic "60 мин" [ref=e239]:
+                - text: 60 мин
+                - combobox [ref=e240]
+              - img "down" [ref=e242]:
+                - img [ref=e243]
+        - generic [ref=e245]:
+          - button "Отмена" [ref=e246] [cursor=pointer]:
+            - generic [ref=e247]: Отмена
+          - button "Создать" [ref=e248] [cursor=pointer]:
+            - generic [ref=e249]: Создать

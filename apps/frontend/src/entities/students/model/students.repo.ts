@@ -1,0 +1,253 @@
+import find from 'lodash/find'
+import isEmpty from 'lodash/isEmpty'
+import map from 'lodash/map'
+
+import { apiClient } from 'common/services/api/api-client'
+import { getGroupMaps } from 'common/services/api/group-map'
+
+import type { DeductStatus, Student, StudentInput, Subscription, SubscriptionInput } from './types'
+
+/**
+ * Raw student shape returned by the backend. Groups are objects, visits live
+ * under `visits`, and every `groupId` is a UUID — we normalise all of this to
+ * the frontend domain model (group NAMES as identifiers).
+ */
+interface RawGroup {
+  id: string
+  name: string
+}
+
+interface RawSubscription extends Omit<Subscription, 'groupId'> {
+  groupId: string
+}
+
+interface RawVisit {
+  date: string
+  groupId: string
+  trainingId: string | null
+}
+
+interface RawStudent {
+  id: string
+  name: string
+  groups?: RawGroup[]
+  subscriptions?: RawSubscription[]
+  visits?: RawVisit[]
+  createdAt: string
+}
+
+/** Convert a backend student into the frontend domain model. */
+function toStudent(raw: RawStudent, byId: Map<string, string>): Student {
+  return {
+    id: raw.id,
+    name: raw.name,
+    groups: map(raw.groups ?? [], (g) => g.name),
+    subscriptions: map(raw.subscriptions ?? [], (s) => ({
+      ...s,
+      groupId: byId.get(s.groupId) ?? s.groupId,
+    })),
+    visitHistory: map(raw.visits ?? [], (v) => ({
+      date: v.date,
+      groupId: byId.get(v.groupId) ?? v.groupId,
+      trainingId: v.trainingId ?? '',
+    })),
+    createdAt: raw.createdAt,
+  }
+}
+
+/* ── Students ── */
+
+export async function getStudents(): Promise<Student[]> {
+  const [raw, maps] = await Promise.all([
+    apiClient.get<RawStudent[]>('/students'),
+    getGroupMaps(),
+  ])
+  return map(raw, (r) => toStudent(r, maps.byId))
+}
+
+export async function getStudentById(id: string): Promise<Student | null> {
+  try {
+    const [raw, maps] = await Promise.all([
+      apiClient.get<RawStudent>(`/students/${id}`),
+      getGroupMaps(),
+    ])
+    return toStudent(raw, maps.byId)
+  } catch {
+    return null
+  }
+}
+
+export async function createStudent(data: StudentInput): Promise<Student> {
+  const { byName, byId } = await getGroupMaps()
+  const groupIds = map(data.groups ?? [], (name) => byName.get(name) ?? name)
+  const raw = await apiClient.post<RawStudent>('/students', {
+    name: data.name.trim(),
+    groups: groupIds,
+  })
+  return toStudent(raw, byId)
+}
+
+export async function updateStudent(
+  id: string,
+  changes: Partial<Student>,
+): Promise<Student | null> {
+  const { byName, byId } = await getGroupMaps()
+  const body: Record<string, unknown> = {}
+  if (changes.name !== undefined) body.name = changes.name
+  if (changes.groups !== undefined) {
+    body.groups = map(changes.groups, (name) => byName.get(name) ?? name)
+  }
+  const raw = await apiClient.patch<RawStudent>(`/students/${id}`, body)
+  return toStudent(raw, byId)
+}
+
+export async function deleteStudent(id: string): Promise<boolean> {
+  await apiClient.delete(`/students/${id}`)
+  return true
+}
+
+/* ── Subscriptions ── */
+
+export async function addSubscription(
+  studentId: string,
+  subData: SubscriptionInput,
+): Promise<Subscription | null> {
+  const { byName } = await getGroupMaps()
+  const groupId = byName.get(subData.groupId) ?? subData.groupId
+  const raw = await apiClient.post<RawStudent>(`/students/${studentId}/subscriptions`, {
+    groupId,
+    type: subData.type,
+    createdAt: subData.createdAt,
+    sessionDuration: subData.sessionDuration,
+  })
+  const student = toStudent(raw, (await getGroupMaps()).byId)
+  // The newest subscription for this group is the one just created.
+  const forGroup = filterByGroup(student.subscriptions, subData.groupId)
+  return forGroup.at(-1) ?? null
+}
+
+function filterByGroup(subs: Subscription[], groupName: string): Subscription[] {
+  return subs.filter((s) => s.groupId === groupName)
+}
+
+/** Find the active subscription id (or the latest one) for a group on a student. */
+function pickSubForGroup(student: Student, groupName: string): Subscription | null {
+  const active = find(student.subscriptions, (s) => s.groupId === groupName && s.isActive)
+  if (active) return active
+  const all = filterByGroup(student.subscriptions, groupName)
+  if (isEmpty(all)) return null
+  return [...all].sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+  )[0]
+}
+
+export async function deductSession(
+  studentId: string,
+  groupId: string,
+  sessionDuration: number | null = null,
+): Promise<{ sub: Subscription | null; status: DeductStatus }> {
+  const student = await getStudentById(studentId)
+  if (!student) return { sub: null, status: 'none' }
+
+  const target = find(
+    student.subscriptions,
+    (s) =>
+      s.groupId === groupId &&
+      s.isActive &&
+      (sessionDuration === null || (s.sessionDuration ?? 60) === sessionDuration),
+  )
+  if (!target) return { sub: null, status: 'none' }
+
+  const raw = await apiClient.post<RawStudent>(
+    `/students/${studentId}/subscriptions/${target.id}/deduct`,
+  )
+  const updated = toStudent(raw, (await getGroupMaps()).byId)
+  const sub = find(updated.subscriptions, (s) => s.id === target.id) ?? null
+
+  let status: DeductStatus = 'ok'
+  if (!sub) status = 'none'
+  else if (!sub.isActive) status = 'expired'
+  else if (sub.remaining <= 2) status = 'ending'
+
+  return { sub, status }
+}
+
+export async function getActiveSubscription(
+  studentId: string,
+  groupId: string,
+): Promise<Subscription | null> {
+  const student = await getStudentById(studentId)
+  if (!student) return null
+  return find(student.subscriptions, (s) => s.groupId === groupId && s.isActive) ?? null
+}
+
+export async function restoreSession(
+  studentId: string,
+  groupId: string,
+): Promise<Subscription | null> {
+  // The backend restores a session as a side effect of removing a training
+  // attendee; there is no standalone endpoint. Callers that remove attendees
+  // via the training repo already trigger the restore server-side, so this is
+  // a no-op kept for signature compatibility.
+  void studentId
+  void groupId
+  return null
+}
+
+export async function extendSubscription(
+  studentId: string,
+  groupId: string,
+  days: number,
+): Promise<Subscription | null> {
+  const student = await getStudentById(studentId)
+  if (!student) return null
+
+  const target = pickSubForGroup(student, groupId)
+  if (!target) return null
+
+  const raw = await apiClient.post<RawStudent>(
+    `/students/${studentId}/subscriptions/${target.id}/extend`,
+    { days },
+  )
+  const updated = toStudent(raw, (await getGroupMaps()).byId)
+  return find(updated.subscriptions, (s) => s.id === target.id) ?? null
+}
+
+export async function deleteSubscription(studentId: string, subId: string): Promise<boolean> {
+  await apiClient.delete(`/students/${studentId}/subscriptions/${subId}`)
+  return true
+}
+
+export async function linkPaymentToSub(
+  studentId: string,
+  subId: string,
+  paymentId: string,
+): Promise<void> {
+  // The backend has no endpoint to link a payment to a subscription, so this
+  // is a no-op. `subscription.finPaymentId` therefore stays null on the client.
+  void studentId
+  void subId
+  void paymentId
+}
+
+/* ── Visit history ── */
+
+export async function recordVisit(
+  studentId: string,
+  visit: { date: string; groupId: string; trainingId: string },
+): Promise<void> {
+  // Visits are created server-side when a student is added as a training
+  // attendee (POST /trainings/:id/attendees). No standalone endpoint exists.
+  void studentId
+  void visit
+}
+
+export function getLastVisitDate(student: Student): string | null {
+  if (isEmpty(student.visitHistory)) return null
+  return map(student.visitHistory, (v) => v.date).sort().at(-1) ?? null
+}
+
+export async function removeVisit(studentId: string, trainingId: string): Promise<void> {
+  // Removing a visit is done server-side via DELETE /trainings/:id/attendees/:studentId.
+  await apiClient.delete(`/trainings/${trainingId}/attendees/${studentId}`)
+}

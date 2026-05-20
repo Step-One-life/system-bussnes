@@ -1,0 +1,131 @@
+- generic [ref=e4]:
+  - complementary [ref=e5]:
+    - generic [ref=e6]:
+      - generic [ref=e7]: ⟡
+      - generic [ref=e8]: TriKick
+    - navigation [ref=e9]:
+      - link "Главная" [ref=e10] [cursor=pointer]:
+        - /url: /
+      - link "Тренировки" [ref=e11] [cursor=pointer]:
+        - /url: /trainings
+      - link "Ученики" [ref=e12] [cursor=pointer]:
+        - /url: /students
+      - link "Индивидуальные" [ref=e13] [cursor=pointer]:
+        - /url: /individual
+      - link "Группы" [ref=e14] [cursor=pointer]:
+        - /url: /groups
+      - link "Финансы" [ref=e15] [cursor=pointer]:
+        - /url: /finance
+    - button "☀" [ref=e17] [cursor=pointer]
+  - main [ref=e18]:
+    - generic [ref=e19]:
+      - generic [ref=e20]:
+        - generic [ref=e21]:
+          - heading "Ученики" [level=1] [ref=e22]
+          - generic [ref=e23]: 8 чел.
+        - button "user-add Добавить ученика" [ref=e24] [cursor=pointer]:
+          - img "user-add" [ref=e26]:
+            - img [ref=e27]
+          - generic [ref=e29]: Добавить ученика
+      - generic [ref=e30]:
+        - generic [ref=e31]:
+          - img "search" [ref=e33]:
+            - img [ref=e34]
+          - textbox "Поиск по имени…" [ref=e36]
+        - generic [ref=e38] [cursor=pointer]:
+          - generic [ref=e39]:
+            - generic: Все группы
+            - combobox [ref=e40]
+          - img "down" [ref=e42]:
+            - img [ref=e43]
+        - generic [ref=e45] [cursor=pointer]:
+          - generic [ref=e46]:
+            - generic: Все статусы
+            - combobox [ref=e47]
+          - img "down" [ref=e49]:
+            - img [ref=e50]
+      - generic [ref=e52]:
+        - generic [ref=e53] [cursor=pointer]:
+          - generic [ref=e54]:
+            - generic [ref=e55]: АИ
+            - generic [ref=e56]:
+              - generic [ref=e57]: Алексей Иванов
+              - generic [ref=e58]:
+                - generic [ref=e59]: Трикинг
+                - generic [ref=e60]: Инд.
+            - generic [ref=e62]: Активен
+          - generic [ref=e63]:
+            - generic [ref=e64]: "Трикинг: 5/8 · Инд.: 4/4"
+            - generic [ref=e65]: 19 мая
+        - generic [ref=e66] [cursor=pointer]:
+          - generic [ref=e67]:
+            - generic [ref=e68]: МС
+            - generic [ref=e69]:
+              - generic [ref=e70]: Мария Смирнова
+              - generic [ref=e72]: Тхэквондо
+            - generic [ref=e74]: Активен
+          - generic [ref=e75]:
+            - generic [ref=e76]: "Тхэквондо: 8/8"
+            - generic [ref=e77]: 18 мая
+        - generic [ref=e78] [cursor=pointer]:
+          - generic [ref=e79]:
+            - generic [ref=e80]: ДК
+            - generic [ref=e81]:
+              - generic [ref=e82]: Дмитрий Козлов
+              - generic [ref=e84]: Взрослые
+            - generic [ref=e86]: Активен
+          - generic [ref=e87]:
+            - generic [ref=e88]: "Взрослые: 2/4"
+            - generic [ref=e89]: 17 мая
+        - generic [ref=e90] [cursor=pointer]:
+          - generic [ref=e91]:
+            - generic [ref=e92]: АП
+            - generic [ref=e93]:
+              - generic [ref=e94]: Анна Петрова
+              - generic [ref=e96]: Трикинг
+            - generic [ref=e98]: Заканчивается
+          - generic [ref=e99]:
+            - generic [ref=e100]: "Трикинг: 1/4"
+            - generic [ref=e101]: 19 мая
+        - generic [ref=e102] [cursor=pointer]:
+          - generic [ref=e103]:
+            - generic [ref=e104]: ИС
+            - generic [ref=e105]:
+              - generic [ref=e106]: Иван Сидоров
+              - generic [ref=e107]:
+                - generic [ref=e108]: Тхэквондо
+                - generic [ref=e109]: Взрослые
+            - generic [ref=e111]: Активен
+          - generic [ref=e112]:
+            - generic [ref=e113]: "Тхэквондо: 8/8 · Взрослые: 4/4"
+            - generic [ref=e114]: 18 мая
+        - generic [ref=e115] [cursor=pointer]:
+          - generic [ref=e116]:
+            - generic [ref=e117]: ОН
+            - generic [ref=e118]:
+              - generic [ref=e119]: Ольга Новикова
+              - generic [ref=e121]: Взрослые
+            - generic [ref=e123]: Нужно продлить
+          - generic [ref=e124]:
+            - generic [ref=e125]: Нет активных
+            - generic [ref=e126]: 17 мая
+        - generic [ref=e127] [cursor=pointer]:
+          - generic [ref=e128]:
+            - generic [ref=e129]: СМ
+            - generic [ref=e130]:
+              - generic [ref=e131]: Сергей Морозов
+              - generic [ref=e133]: Трикинг
+            - generic [ref=e135]: Активен
+          - generic [ref=e136]:
+            - generic [ref=e137]: "Трикинг: 2/8"
+            - generic [ref=e138]: 19 мая
+        - generic [ref=e139] [cursor=pointer]:
+          - generic [ref=e140]:
+            - generic [ref=e141]: ЕВ
+            - generic [ref=e142]:
+              - generic [ref=e143]: Екатерина Волкова
+              - generic [ref=e145]: Инд.
+            - generic [ref=e147]: Активен
+          - generic [ref=e148]:
+            - generic [ref=e149]: "Инд.: 4/4"
+            - generic [ref=e150]: —

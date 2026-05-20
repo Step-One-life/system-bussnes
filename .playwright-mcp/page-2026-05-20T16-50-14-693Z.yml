@@ -1,0 +1,29 @@
+- generic [ref=e5]:
+  - generic [ref=e6]:
+    - generic [ref=e7]: ⟡
+    - generic [ref=e8]: TriKick
+  - generic [ref=e9]: Вход в систему
+  - generic [ref=e10]:
+    - generic [ref=e12]:
+      - generic "Email" [ref=e14]
+      - generic [ref=e18]:
+        - img "mail" [ref=e20]:
+          - img [ref=e21]
+        - textbox "Email" [ref=e23]:
+          - /placeholder: trainer@example.com
+    - generic [ref=e25]:
+      - generic "Пароль" [ref=e27]
+      - generic [ref=e31]:
+        - img "lock" [ref=e33]:
+          - img [ref=e34]
+        - textbox "Пароль" [ref=e36]:
+          - /placeholder: ••••••••
+        - button "Show" [ref=e38] [cursor=pointer]:
+          - img "eye-invisible" [ref=e39]:
+            - img [ref=e40]
+    - button "Войти" [ref=e43] [cursor=pointer]:
+      - generic [ref=e44]: Войти
+  - generic [ref=e45]:
+    - text: Нет аккаунта?
+    - link "Зарегистрироваться" [ref=e46] [cursor=pointer]:
+      - /url: /register

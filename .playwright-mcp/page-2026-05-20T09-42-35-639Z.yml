@@ -1,0 +1,69 @@
+- generic [ref=e4]:
+  - complementary [ref=e5]:
+    - generic [ref=e6]:
+      - generic [ref=e7]: ⟡
+      - generic [ref=e8]: TriKick
+    - navigation [ref=e9]:
+      - link "Главная" [ref=e10] [cursor=pointer]:
+        - /url: /
+      - link "Тренировки" [ref=e11] [cursor=pointer]:
+        - /url: /trainings
+      - link "Ученики" [ref=e12] [cursor=pointer]:
+        - /url: /students
+      - link "Индивидуальные" [ref=e13] [cursor=pointer]:
+        - /url: /individual
+      - link "Группы" [ref=e14] [cursor=pointer]:
+        - /url: /groups
+      - link "Финансы" [ref=e15] [cursor=pointer]:
+        - /url: /finance
+    - button "☀" [ref=e17] [cursor=pointer]
+  - main [ref=e18]:
+    - generic [ref=e19]:
+      - generic [ref=e20]:
+        - heading "Главная" [level=1] [ref=e22]
+        - generic [ref=e23]:
+          - button "check-square Отметить за сегодня" [ref=e24] [cursor=pointer]:
+            - img "check-square" [ref=e26]:
+              - img [ref=e27]
+            - generic [ref=e30]: Отметить за сегодня
+          - button "plus Записать тренировку" [ref=e31] [cursor=pointer]:
+            - img "plus" [ref=e33]:
+              - img [ref=e34]
+            - generic [ref=e37]: Записать тренировку
+      - generic [ref=e38]:
+        - generic [ref=e39] [cursor=pointer]:
+          - img "team" [ref=e41]:
+            - img [ref=e42]
+          - generic [ref=e44]: Всего учеников
+          - generic [ref=e45]: "2"
+        - generic [ref=e46] [cursor=pointer]:
+          - img "calendar" [ref=e48]:
+            - img [ref=e49]
+          - generic [ref=e51]: Тренировок в этом месяце
+          - generic [ref=e52]: "2"
+        - generic [ref=e53] [cursor=pointer]:
+          - img "warning" [ref=e55]:
+            - img [ref=e56]
+          - generic [ref=e58]: Заканчивается абонемент
+          - generic [ref=e59]: "0"
+        - generic [ref=e60] [cursor=pointer]:
+          - img "alert" [ref=e62]:
+            - img [ref=e63]
+          - generic [ref=e65]: Нужно продлить
+          - generic [ref=e66]: "0"
+      - generic [ref=e67]: Тренировки сегодня
+      - generic [ref=e69]: Тренировок на сегодня нет
+      - generic [ref=e70]: Требуют внимания
+      - generic [ref=e71]:
+        - generic [ref=e72] [cursor=pointer]:
+          - generic [ref=e73]:
+            - generic [ref=e74]: Анна Петрова
+            - generic [ref=e75]: Трикинг · Заканчивается
+          - button "Продлить" [ref=e76]:
+            - generic [ref=e77]: Продлить
+        - generic [ref=e78] [cursor=pointer]:
+          - generic [ref=e79]:
+            - generic [ref=e80]: Ольга Новикова
+            - generic [ref=e81]: Взрослые · Нужно продлить
+          - button "Продлить" [ref=e82]:
+            - generic [ref=e83]: Продлить

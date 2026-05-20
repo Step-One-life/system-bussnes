@@ -1,0 +1,34 @@
+.view-toggle {
+  display: flex;
+  gap: 0;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 3px;
+
+  &__btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border: none;
+    border-radius: calc(var(--r-md) - 2px);
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition:
+      background var(--dur) var(--ease),
+      color var(--dur) var(--ease);
+
+    &:hover {
+      color: var(--text-primary);
+    }
+
+    &--active {
+      background: var(--accent);
+      color: #fff;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+    }
+  }
+}

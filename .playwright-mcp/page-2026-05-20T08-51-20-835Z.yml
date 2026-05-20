@@ -1,0 +1,43 @@
+- generic [ref=e4]:
+  - complementary [ref=e5]:
+    - generic [ref=e6]:
+      - generic [ref=e7]: ⟡
+      - generic [ref=e8]: TriKick
+    - navigation [ref=e9]:
+      - link "Главная" [ref=e10] [cursor=pointer]:
+        - /url: /
+      - link "Тренировки" [ref=e11] [cursor=pointer]:
+        - /url: /trainings
+      - link "Ученики" [ref=e12] [cursor=pointer]:
+        - /url: /students
+      - link "Индивидуальные" [ref=e13] [cursor=pointer]:
+        - /url: /individual
+      - link "Группы" [ref=e14] [cursor=pointer]:
+        - /url: /groups
+      - link "Финансы" [ref=e15] [cursor=pointer]:
+        - /url: /finance
+    - button "☀" [ref=e17] [cursor=pointer]
+  - main [ref=e18]:
+    - generic [ref=e19]:
+      - heading "Главная" [level=1] [ref=e20]
+      - generic [ref=e21]:
+        - generic [ref=e22]:
+          - img "team" [ref=e24]:
+            - img [ref=e25]
+          - generic [ref=e27]: Всего учеников
+          - generic [ref=e28]: "3"
+        - generic [ref=e29]:
+          - img "calendar" [ref=e31]:
+            - img [ref=e32]
+          - generic [ref=e34]: Тренировок в этом месяце
+          - generic [ref=e35]: "3"
+        - generic [ref=e36]:
+          - img "warning" [ref=e38]:
+            - img [ref=e39]
+          - generic [ref=e41]: Заканчивается абонемент
+          - generic [ref=e42]: "0"
+        - generic [ref=e43]:
+          - img "alert" [ref=e45]:
+            - img [ref=e46]
+          - generic [ref=e48]: Нужно продлить
+          - generic [ref=e49]: "0"

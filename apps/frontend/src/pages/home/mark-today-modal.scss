@@ -1,0 +1,75 @@
+.mark-today {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-5);
+}
+
+.mark-group {
+  &__head {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-3);
+    margin-bottom: var(--sp-3);
+  }
+
+  &__name {
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+
+  &__time {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-2);
+  }
+}
+
+.mark-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-2) var(--sp-3);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  cursor: pointer;
+  transition:
+    background var(--dur) var(--ease),
+    border-color var(--dur) var(--ease);
+
+  &--checked {
+    background: var(--accent-dim);
+    border-color: var(--border-focus);
+  }
+
+  &__info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  &__name {
+    font-weight: 500;
+    font-size: 0.88rem;
+  }
+
+  &__sub {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+  }
+}
+
+.mark-empty {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  padding: var(--sp-2) 0;
+  text-align: center;
+}

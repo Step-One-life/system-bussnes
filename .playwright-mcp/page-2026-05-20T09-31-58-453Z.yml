@@ -1,0 +1,92 @@
+- generic [ref=e4]:
+  - complementary [ref=e5]:
+    - generic [ref=e6]:
+      - generic [ref=e7]: ⟡
+      - generic [ref=e8]: TriKick
+    - navigation [ref=e9]:
+      - link "Главная" [ref=e10] [cursor=pointer]:
+        - /url: /
+      - link "Тренировки" [ref=e11] [cursor=pointer]:
+        - /url: /trainings
+      - link "Ученики" [ref=e12] [cursor=pointer]:
+        - /url: /students
+      - link "Индивидуальные" [ref=e13] [cursor=pointer]:
+        - /url: /individual
+      - link "Группы" [ref=e14] [cursor=pointer]:
+        - /url: /groups
+      - link "Финансы" [ref=e15] [cursor=pointer]:
+        - /url: /finance
+    - button "☀" [ref=e17] [cursor=pointer]
+  - main [ref=e18]:
+    - generic [ref=e19]:
+      - generic [ref=e20]:
+        - generic [ref=e21]:
+          - heading "Индивидуальные занятия" [level=1] [ref=e22]
+          - generic [ref=e23]: 2 клиентов
+        - button "plus Записать занятие" [ref=e24] [cursor=pointer]:
+          - img "plus" [ref=e26]:
+            - img [ref=e27]
+          - generic [ref=e30]: Записать занятие
+      - generic [ref=e31]:
+        - generic [ref=e32]:
+          - img "team" [ref=e34]:
+            - img [ref=e35]
+          - generic [ref=e37]: Всего клиентов
+          - generic [ref=e38]: "0"
+        - generic [ref=e39]:
+          - img "calendar" [ref=e41]:
+            - img [ref=e42]
+          - generic [ref=e44]: Занятий за месяц
+          - generic [ref=e45]: "0"
+        - generic [ref=e46]:
+          - img "calendar" [ref=e48]:
+            - img [ref=e49]
+          - generic [ref=e51]: За эту неделю
+          - generic [ref=e52]: "0"
+        - generic [ref=e53]:
+          - img "exclamation-circle" [ref=e55]:
+            - img [ref=e56]
+          - generic [ref=e59]: Требуют внимания
+          - generic [ref=e60]: "0"
+      - generic [ref=e61]: Клиенты
+      - generic [ref=e63]:
+        - generic [ref=e64]:
+          - generic [ref=e65]: АИ
+          - generic [ref=e66]:
+            - generic [ref=e67]: Алексей Иванов
+            - generic [ref=e68]:
+              - generic [ref=e69]:
+                - generic [ref=e70]: 4 занятия
+                - generic [ref=e71]: 4/4 занятий
+              - generic [ref=e74]:
+                - generic [ref=e75]: до 14 июня
+                - generic [ref=e76]: 26 дн.
+            - generic [ref=e77]: "Занятие: 19 мая"
+          - generic [ref=e79]: Активен
+        - generic [ref=e80]:
+          - generic [ref=e81]: ЕВ
+          - generic [ref=e82]:
+            - generic [ref=e83]: Екатерина Волкова
+            - generic [ref=e84]:
+              - generic [ref=e85]:
+                - generic [ref=e86]: 4 занятия
+                - generic [ref=e87]: 4/4 занятий
+              - generic [ref=e90]:
+                - generic [ref=e91]: до 17 июня
+                - generic [ref=e92]: 29 дн.
+            - generic [ref=e93]: Занятий ещё не было
+          - generic [ref=e95]: Активен
+      - generic [ref=e96]: Последние занятия
+      - generic [ref=e99] [cursor=pointer]:
+        - generic [ref=e100]:
+          - generic [ref=e101]: Ср
+          - generic [ref=e102]: "13"
+          - generic [ref=e103]: май
+        - generic [ref=e104]:
+          - generic [ref=e105]: Индивидуальная тренировка с Екатерина Волкова
+          - generic [ref=e106]: 19:00
+        - button "user-add" [ref=e107]:
+          - img "user-add" [ref=e109]:
+            - img [ref=e110]
+        - img "down" [ref=e112]:
+          - img [ref=e113]

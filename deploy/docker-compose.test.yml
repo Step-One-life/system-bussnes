@@ -1,0 +1,67 @@
+# TriKick — TEST stack (backend + MySQL в контейнерах).
+# Тестовый стенд на 94.19.63.62, домен trick.ozma-split.com.
+# Читает trikick.test.env рядом.
+#
+# Уникальность (проверено на сервере 94.19.63.62):
+#   контейнеры trikick-test-*, сеть trikick-test-network,
+#   том trikick-test-mysql-data,
+#   порты host: 8095 (backend), 3317 (mysql) — свободны.
+
+services:
+  trikick-test-db:
+    image: mysql:8.0
+    container_name: trikick-test-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - trikick-test-mysql-data:/var/lib/mysql
+    ports:
+      - '127.0.0.1:3317:3306'
+    networks:
+      - trikick-test-network
+    healthcheck:
+      test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost', '-p${DB_ROOT_PASSWORD}']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  trikick-test-backend:
+    image: trikick-test-backend:latest
+    container_name: trikick-test-backend
+    restart: unless-stopped
+    depends_on:
+      trikick-test-db:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 3021
+      DB_HOST: trikick-test-db
+      DB_PORT: 3306
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN}
+      CORS_ORIGIN: ${CORS_ORIGIN}
+    ports:
+      - '127.0.0.1:8095:3021'
+    networks:
+      - trikick-test-network
+
+networks:
+  trikick-test-network:
+    name: trikick-test-network
+    driver: bridge
+    ipam:
+      # Явная подсеть из свободного диапазона (10.221.0.0/24) —
+      # дефолтные пулы Docker на хосте исчерпаны.
+      config:
+        - subnet: 10.221.0.0/24
+
+volumes:
+  trikick-test-mysql-data:
+    name: trikick-test-mysql-data

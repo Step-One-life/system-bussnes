@@ -1,0 +1,8 @@
+**/node_modules
+**/dist
+**/.env
+**/.env.host
+.git
+legacy
+.playwright-mcp
+*.log

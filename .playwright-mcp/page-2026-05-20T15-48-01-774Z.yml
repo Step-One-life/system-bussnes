@@ -1,0 +1,49 @@
+- generic [ref=e4]:
+  - main [ref=e5]:
+    - generic [ref=e6]:
+      - generic [ref=e7]:
+        - heading "Главная" [level=1] [ref=e9]
+        - generic [ref=e10]:
+          - button "check-square Отметить за сегодня" [ref=e11] [cursor=pointer]:
+            - img "check-square" [ref=e13]:
+              - img [ref=e14]
+            - generic [ref=e17]: Отметить за сегодня
+          - button "plus Записать тренировку" [ref=e18] [cursor=pointer]:
+            - img "plus" [ref=e20]:
+              - img [ref=e21]
+            - generic [ref=e24]: Записать тренировку
+      - generic [ref=e25]: Тренировки сегодня
+      - generic [ref=e27]: Тренировок на сегодня нет
+      - generic [ref=e28]: Статус абонементов
+      - generic [ref=e29]: ✓ Все абонементы в порядке
+  - navigation [ref=e30]:
+    - link "appstore Главная" [ref=e31] [cursor=pointer]:
+      - /url: /
+      - img "appstore" [ref=e33]:
+        - img [ref=e34]
+      - generic [ref=e36]: Главная
+    - link "calendar Тренировки" [ref=e37] [cursor=pointer]:
+      - /url: /trainings
+      - img "calendar" [ref=e39]:
+        - img [ref=e40]
+      - generic [ref=e42]: Тренировки
+    - link "team Ученики" [ref=e43] [cursor=pointer]:
+      - /url: /students
+      - img "team" [ref=e45]:
+        - img [ref=e46]
+      - generic [ref=e48]: Ученики
+    - link "user Инд." [ref=e49] [cursor=pointer]:
+      - /url: /individual
+      - img "user" [ref=e51]:
+        - img [ref=e52]
+      - generic [ref=e54]: Инд.
+    - link "group Группы" [ref=e55] [cursor=pointer]:
+      - /url: /groups
+      - img "group" [ref=e57]:
+        - img [ref=e58]
+      - generic [ref=e61]: Группы
+    - link "wallet Финансы" [ref=e62] [cursor=pointer]:
+      - /url: /finance
+      - img "wallet" [ref=e64]:
+        - img [ref=e65]
+      - generic [ref=e67]: Финансы

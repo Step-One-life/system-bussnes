@@ -1,0 +1,86 @@
+- generic [ref=e4]:
+  - complementary [ref=e5]:
+    - generic [ref=e6]:
+      - generic [ref=e7]: ⟡
+      - generic [ref=e8]: TriKick
+    - navigation [ref=e9]:
+      - link "Главная" [ref=e10] [cursor=pointer]:
+        - /url: /
+      - link "Тренировки" [ref=e11] [cursor=pointer]:
+        - /url: /trainings
+      - link "Ученики" [ref=e12] [cursor=pointer]:
+        - /url: /students
+      - link "Индивидуальные" [ref=e13] [cursor=pointer]:
+        - /url: /individual
+      - link "Группы" [ref=e14] [cursor=pointer]:
+        - /url: /groups
+      - link "Финансы" [ref=e15] [cursor=pointer]:
+        - /url: /finance
+    - button "☀" [ref=e17] [cursor=pointer]
+  - main [ref=e18]:
+    - generic [ref=e19]:
+      - heading "Финансы" [level=1] [ref=e22]
+      - generic [ref=e23]:
+        - button "Записи" [ref=e24] [cursor=pointer]
+        - button "Статистика" [active] [ref=e25] [cursor=pointer]
+        - button "Настройка цен" [ref=e26] [cursor=pointer]
+      - generic [ref=e360]:
+        - generic [ref=e361]:
+          - button "Месяц" [ref=e362] [cursor=pointer]
+          - button "Квартал" [ref=e363] [cursor=pointer]
+          - button "Год" [ref=e364] [cursor=pointer]
+          - button "Всё время" [ref=e365] [cursor=pointer]
+        - generic [ref=e366]:
+          - generic [ref=e367]:
+            - generic [ref=e368]: Доход
+            - generic [ref=e369]: 0 ₽
+          - generic [ref=e370]: −
+          - generic [ref=e371]:
+            - generic [ref=e372]: Расход зала
+            - generic [ref=e373]: 0 ₽
+          - generic [ref=e374]: =
+          - generic [ref=e375]:
+            - generic [ref=e376]: Чистый доход
+            - generic [ref=e377]: +0 ₽
+        - generic [ref=e378]:
+          - generic [ref=e379]:
+            - generic [ref=e380]: 📊
+            - generic [ref=e381]: Маржа
+            - generic [ref=e382]: 0%
+          - generic [ref=e383]:
+            - generic [ref=e384]: 🧾
+            - generic [ref=e385]: Записей
+            - generic [ref=e386]: "0"
+          - generic [ref=e387]:
+            - generic [ref=e388]: ✅
+            - generic [ref=e389]: Активных
+            - generic [ref=e390]: "0"
+          - generic [ref=e391]:
+            - generic [ref=e392]: 💳
+            - generic [ref=e393]: Средний чек
+            - generic [ref=e394]: 0 ₽
+        - generic [ref=e395]:
+          - generic [ref=e396]:
+            - generic [ref=e397]: Динамика по месяцам
+            - generic [ref=e399]:
+              - img "inbox" [ref=e401]:
+                - img [ref=e402]
+              - generic [ref=e404]: Нет данных
+          - generic [ref=e405]:
+            - generic [ref=e406]: Оплаты клиентов
+            - generic [ref=e408]:
+              - img "inbox" [ref=e410]:
+                - img [ref=e411]
+              - generic [ref=e413]: Нет данных
+          - generic [ref=e414]:
+            - generic [ref=e415]: Оплаты зала
+            - generic [ref=e417]:
+              - img "inbox" [ref=e419]:
+                - img [ref=e420]
+              - generic [ref=e422]: Нет данных
+          - generic [ref=e423]:
+            - generic [ref=e424]: Топ клиентов по доходу
+            - generic [ref=e426]:
+              - img "inbox" [ref=e428]:
+                - img [ref=e429]
+              - generic [ref=e431]: Нет данных

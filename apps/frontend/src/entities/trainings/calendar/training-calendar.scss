@@ -1,0 +1,252 @@
+.cal-week {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+
+  &__topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sp-2);
+    flex-wrap: wrap;
+  }
+
+  &__nav {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-1);
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    text-align: center;
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__canvas {
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    background: var(--surface);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+.cal-head,
+.cal-body {
+  display: grid;
+  grid-template-columns: 48px repeat(7, minmax(80px, 1fr));
+  min-width: 610px;
+}
+
+.cal-head {
+  border-bottom: 2px solid var(--border);
+  background: var(--surface);
+
+  &__corner {
+    border-right: 1px solid var(--border);
+  }
+
+  &__day {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--sp-2) var(--sp-1);
+    border-right: 1px solid var(--border);
+    gap: 2px;
+
+    &:last-child {
+      border-right: none;
+    }
+
+    &--today .cal-head__num {
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--accent);
+      color: #fff;
+      border-radius: 50%;
+    }
+
+    &--today .cal-head__dow {
+      color: var(--accent);
+    }
+  }
+
+  &__dow {
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+  }
+
+  &__num {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1;
+  }
+}
+
+.cal-body-wrap {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  max-height: min(480px, calc(100vh - 300px));
+}
+
+.cal-gutter {
+  position: relative;
+  border-right: 1px solid var(--border);
+
+  &__label {
+    position: absolute;
+    right: 6px;
+    font-size: 0.6rem;
+    color: var(--text-muted);
+    transform: translateY(-50%);
+    white-space: nowrap;
+    line-height: 1;
+  }
+}
+
+.cal-col {
+  position: relative;
+  border-right: 1px solid var(--border);
+
+  &:last-child {
+    border-right: none;
+  }
+
+  &--today {
+    background: color-mix(in srgb, var(--accent) 4%, transparent);
+  }
+
+  &__line {
+    position: absolute;
+    left: 0;
+    right: 0;
+    border-top: 1px solid var(--border);
+    opacity: 0.5;
+  }
+}
+
+.cal-block {
+  position: absolute;
+  left: 3px;
+  right: 3px;
+  border-radius: 6px;
+  padding: 4px 6px;
+  overflow: hidden;
+  cursor: pointer;
+  z-index: 2;
+  border: none;
+  text-align: left;
+  font-family: var(--font);
+  transition:
+    filter var(--dur) var(--ease),
+    box-shadow var(--dur) var(--ease);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  -webkit-tap-highlight-color: transparent;
+
+  &:hover {
+    filter: brightness(0.9);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  }
+
+  &:active {
+    filter: brightness(0.85);
+  }
+
+  &--group {
+    background: var(--accent);
+    color: #fff;
+  }
+
+  &--ind {
+    background: #a855f7;
+    color: #fff;
+  }
+
+  &__name {
+    font-size: 0.68rem;
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.2;
+  }
+
+  &__time {
+    font-size: 0.63rem;
+    opacity: 0.85;
+    line-height: 1.2;
+    margin-top: 2px;
+  }
+}
+
+@media (max-width: 680px) {
+  .cal-head,
+  .cal-body {
+    grid-template-columns: 32px repeat(7, 1fr);
+    min-width: 0;
+  }
+
+  .cal-head {
+    &__day {
+      padding: 5px 1px;
+      gap: 1px;
+
+      &--today .cal-head__num {
+        width: 22px;
+        height: 22px;
+        font-size: 0.75rem;
+      }
+    }
+
+    &__dow {
+      font-size: 0.55rem;
+      letter-spacing: 0;
+    }
+
+    &__num {
+      font-size: 0.85rem;
+    }
+  }
+
+  .cal-gutter__label {
+    font-size: 0.52rem;
+    right: 3px;
+  }
+
+  .cal-block {
+    left: 1px;
+    right: 1px;
+    border-radius: 4px;
+    padding: 2px 3px;
+
+    &__name {
+      font-size: 0.6rem;
+    }
+
+    &__time {
+      font-size: 0.56rem;
+      margin-top: 1px;
+    }
+  }
+
+  .cal-week__label {
+    font-size: 0.82rem;
+  }
+}

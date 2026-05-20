@@ -1,0 +1,61 @@
+- generic [ref=e4]:
+  - complementary [ref=e5]:
+    - generic [ref=e6]:
+      - generic [ref=e7]: ⟡
+      - generic [ref=e8]: TriKick
+    - navigation [ref=e9]:
+      - link "Главная" [ref=e10] [cursor=pointer]:
+        - /url: /
+      - link "Тренировки" [ref=e11] [cursor=pointer]:
+        - /url: /trainings
+      - link "Ученики" [ref=e12] [cursor=pointer]:
+        - /url: /students
+      - link "Индивидуальные" [ref=e13] [cursor=pointer]:
+        - /url: /individual
+      - link "Группы" [ref=e14] [cursor=pointer]:
+        - /url: /groups
+      - link "Финансы" [ref=e15] [cursor=pointer]:
+        - /url: /finance
+    - generic [ref=e16]:
+      - generic [ref=e17]:
+        - generic [ref=e18]: ДТ
+        - generic [ref=e19]:
+          - generic [ref=e20]: Демо Тренер
+          - generic [ref=e21]: demo@trikick.ru
+      - generic [ref=e22]:
+        - button "☀" [ref=e23] [cursor=pointer]
+        - button "logout" [ref=e24] [cursor=pointer]:
+          - img "logout" [ref=e26]:
+            - img [ref=e27]
+  - main [ref=e29]:
+    - generic [ref=e30]:
+      - generic [ref=e31]:
+        - generic [ref=e32]:
+          - heading "Ученики" [level=1] [ref=e33]
+          - generic [ref=e34]: 0 чел.
+        - button "user-add Добавить ученика" [ref=e35] [cursor=pointer]:
+          - img "user-add" [ref=e37]:
+            - img [ref=e38]
+          - generic [ref=e40]: Добавить ученика
+      - generic [ref=e41]:
+        - generic [ref=e42]:
+          - img "search" [ref=e44]:
+            - img [ref=e45]
+          - textbox "Поиск по имени…" [ref=e47]
+        - generic [ref=e49] [cursor=pointer]:
+          - generic [ref=e50]:
+            - generic: Все группы
+            - combobox [ref=e51]
+          - img "down" [ref=e53]:
+            - img [ref=e54]
+        - generic [ref=e56] [cursor=pointer]:
+          - generic [ref=e57]:
+            - generic: Все статусы
+            - combobox [ref=e58]
+          - img "down" [ref=e60]:
+            - img [ref=e61]
+      - generic [ref=e63]:
+        - img "inbox" [ref=e65]:
+          - img [ref=e66]
+        - generic [ref=e68]: Ученики не найдены
+        - paragraph [ref=e69]: Добавьте первого ученика

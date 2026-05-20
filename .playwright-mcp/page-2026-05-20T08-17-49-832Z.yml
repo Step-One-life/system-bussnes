@@ -1,0 +1,21 @@
+- generic [ref=e3]:
+  - complementary [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]: ⟡
+      - generic [ref=e7]: TriKick
+    - navigation [ref=e8]:
+      - link "Главная" [ref=e9] [cursor=pointer]:
+        - /url: /
+      - link "Тренировки" [ref=e10] [cursor=pointer]:
+        - /url: /trainings
+      - link "Ученики" [ref=e11] [cursor=pointer]:
+        - /url: /students
+      - link "Индивидуальные" [ref=e12] [cursor=pointer]:
+        - /url: /individual
+      - link "Группы" [ref=e13] [cursor=pointer]:
+        - /url: /groups
+      - link "Финансы" [active] [ref=e14] [cursor=pointer]:
+        - /url: /finance
+    - button "☀" [ref=e16] [cursor=pointer]
+  - main [ref=e17]:
+    - heading "Финансы" [level=1] [ref=e19]

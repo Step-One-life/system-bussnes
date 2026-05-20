@@ -1,0 +1,117 @@
+- generic [ref=e1]:
+  - generic [ref=e4]:
+    - complementary [ref=e5]:
+      - generic [ref=e6]:
+        - generic [ref=e7]: ⟡
+        - generic [ref=e8]: TriKick
+      - navigation [ref=e9]:
+        - link "Главная" [ref=e10] [cursor=pointer]:
+          - /url: /
+        - link "Тренировки" [ref=e11] [cursor=pointer]:
+          - /url: /trainings
+        - link "Ученики" [ref=e12] [cursor=pointer]:
+          - /url: /students
+        - link "Индивидуальные" [ref=e13] [cursor=pointer]:
+          - /url: /individual
+        - link "Группы" [ref=e14] [cursor=pointer]:
+          - /url: /groups
+        - link "Финансы" [ref=e15] [cursor=pointer]:
+          - /url: /finance
+      - button "☀" [ref=e17] [cursor=pointer]
+    - main [ref=e18]:
+      - generic [ref=e19]:
+        - heading "Финансы" [level=1] [ref=e22]
+        - generic [ref=e23]:
+          - button "Записи" [ref=e24] [cursor=pointer]
+          - button "Статистика" [ref=e25] [cursor=pointer]
+          - button "Настройка цен" [ref=e26] [cursor=pointer]
+        - generic [ref=e27]:
+          - generic [ref=e28]:
+            - generic [ref=e29]:
+              - img "search" [ref=e31]:
+                - img [ref=e32]
+              - textbox "Поиск по имени, типу, дате…" [ref=e34]
+            - button "plus Добавить запись" [ref=e36] [cursor=pointer]:
+              - img "plus" [ref=e38]:
+                - img [ref=e39]
+              - generic [ref=e42]: Добавить запись
+          - generic [ref=e43]:
+            - img "inbox" [ref=e45]:
+              - img [ref=e46]
+            - generic [ref=e48]: Записей пока нет
+            - paragraph [ref=e49]: Добавьте первую финансовую запись
+  - generic [ref=e50]:
+    - dialog "Добавить финансовую запись":
+      - generic [ref=e51]:
+        - button "Close" [active] [ref=e52] [cursor=pointer]:
+          - generic "Close" [ref=e53]:
+            - img "close" [ref=e54]:
+              - img [ref=e55]
+        - generic [ref=e58]: Добавить финансовую запись
+        - generic [ref=e60]:
+          - generic [ref=e62]:
+            - generic "Клиент" [ref=e64]
+            - generic [ref=e68] [cursor=pointer]:
+              - generic "— без клиента —" [ref=e69]:
+                - text: — без клиента —
+                - combobox [ref=e70]
+              - img "down" [ref=e72]:
+                - img [ref=e73]
+          - generic [ref=e75]:
+            - generic [ref=e76]:
+              - generic [ref=e77]: Клиент платит мне
+              - generic [ref=e79]:
+                - generic "Тип оплаты" [ref=e81]
+                - generic [ref=e85] [cursor=pointer]:
+                  - generic "Разовая Индив." [ref=e86]:
+                    - text: Разовая Индив.
+                    - combobox [ref=e87]
+                  - img "down" [ref=e89]:
+                    - img [ref=e90]
+              - generic [ref=e93]:
+                - generic "Сумма (₽)" [ref=e95]
+                - spinbutton [ref=e100]: "0"
+            - generic [ref=e101]:
+              - generic [ref=e102]: Я плачу залу
+              - generic [ref=e104]:
+                - generic "Тип оплаты зала" [ref=e106]
+                - generic [ref=e110] [cursor=pointer]:
+                  - generic "— не указывать —" [ref=e111]:
+                    - text: — не указывать —
+                    - combobox [ref=e112]
+                  - img "down" [ref=e114]:
+                    - img [ref=e115]
+              - generic [ref=e118]:
+                - generic "Время" [ref=e120]
+                - generic [ref=e124]:
+                  - button "Обычное" [ref=e125] [cursor=pointer]
+                  - button "⭐ Prime" [ref=e126] [cursor=pointer]
+              - generic [ref=e128]:
+                - generic "Сумма (₽)" [ref=e130]
+                - spinbutton [ref=e135]: "0"
+          - generic [ref=e136]:
+            - text: "Чистый доход:"
+            - strong [ref=e137]: +0 ₽
+          - generic [ref=e138]:
+            - generic [ref=e140]:
+              - generic "Дата" [ref=e142]
+              - generic [ref=e147]:
+                - textbox "Select date" [ref=e148]: 20.05.2026
+                - generic:
+                  - img:
+                    - img
+            - generic [ref=e150]:
+              - generic "Время тренировки" [ref=e152]
+              - generic [ref=e157]:
+                - textbox "Select time" [ref=e158]
+                - generic:
+                  - img:
+                    - img
+            - generic [ref=e160]:
+              - generic "Примечание" [ref=e162]
+              - textbox "Необязательно" [ref=e166]
+        - generic [ref=e167]:
+          - button "Отмена" [ref=e168] [cursor=pointer]:
+            - generic [ref=e169]: Отмена
+          - button "Сохранить" [ref=e170] [cursor=pointer]:
+            - generic [ref=e171]: Сохранить

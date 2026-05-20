@@ -1,0 +1,125 @@
+.fin-section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: var(--sp-5);
+  margin-bottom: var(--sp-5);
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--sp-5);
+  }
+
+  &__title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0;
+  }
+
+  &__badge {
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 999px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+
+    &--income {
+      background: var(--success-dim);
+      color: var(--success);
+    }
+
+    &--expense {
+      background: var(--danger-dim);
+      color: var(--danger);
+    }
+  }
+}
+
+.price-group {
+  margin-bottom: var(--sp-4);
+
+  &__subtitle {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    margin-bottom: var(--sp-2);
+  }
+}
+
+.price-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--sp-2) 0;
+  border-bottom: 1px solid var(--border);
+  gap: var(--sp-3);
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &__label {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__input-wrap {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+  }
+
+  &--hall {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--sp-2);
+  }
+
+  &__hall-inputs {
+    display: flex;
+    gap: var(--sp-5);
+    flex-wrap: wrap;
+  }
+
+  &__currency {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+  }
+}
+
+.hall-slot-mini {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  min-width: 54px;
+
+  &--prime {
+    color: var(--warning);
+  }
+}
+
+.price-input {
+  width: 110px;
+}
+
+.price-per {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  min-width: 88px;
+  text-align: right;
+}
+
+.fin-pricing-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: var(--sp-2);
+}

@@ -1,0 +1,51 @@
+- generic [ref=e4]:
+  - complementary [ref=e5]:
+    - generic [ref=e6]:
+      - generic [ref=e7]: ⟡
+      - generic [ref=e8]: TriKick
+    - navigation [ref=e9]:
+      - link "Главная" [ref=e10] [cursor=pointer]:
+        - /url: /
+      - link "Тренировки" [ref=e11] [cursor=pointer]:
+        - /url: /trainings
+      - link "Ученики" [ref=e12] [cursor=pointer]:
+        - /url: /students
+      - link "Индивидуальные" [ref=e13] [cursor=pointer]:
+        - /url: /individual
+      - link "Группы" [ref=e14] [cursor=pointer]:
+        - /url: /groups
+      - link "Финансы" [ref=e15] [cursor=pointer]:
+        - /url: /finance
+    - generic [ref=e16]:
+      - generic [ref=e17]:
+        - generic [ref=e18]: ДТ
+        - generic [ref=e19]:
+          - generic [ref=e20]: Демо Тренер
+          - generic [ref=e21]: demo@trikick.ru
+      - generic [ref=e22]:
+        - button "☀" [ref=e23] [cursor=pointer]
+        - button "logout" [ref=e24] [cursor=pointer]:
+          - img "logout" [ref=e26]:
+            - img [ref=e27]
+  - main [ref=e29]:
+    - generic [ref=e30]:
+      - heading "Финансы" [level=1] [ref=e33]
+      - generic [ref=e34]:
+        - button "Записи" [ref=e35] [cursor=pointer]
+        - button "Статистика" [ref=e36] [cursor=pointer]
+        - button "Настройка цен" [ref=e37] [cursor=pointer]
+      - generic [ref=e38]:
+        - generic [ref=e39]:
+          - generic [ref=e40]:
+            - img "search" [ref=e42]:
+              - img [ref=e43]
+            - textbox "Поиск по имени, типу, дате…" [ref=e45]
+          - button "plus Добавить запись" [ref=e47] [cursor=pointer]:
+            - img "plus" [ref=e49]:
+              - img [ref=e50]
+            - generic [ref=e53]: Добавить запись
+        - generic [ref=e54]:
+          - img "inbox" [ref=e56]:
+            - img [ref=e57]
+          - generic [ref=e59]: Записей пока нет
+          - paragraph [ref=e60]: Добавьте первую финансовую запись

@@ -1,0 +1,88 @@
+/* Адаптивные правила — перенесены/адаптированы из legacy/style.css @media.
+   Брейкпоинты legacy: 768px (планшет/моб), 680px (календарь), 480px (узкий). */
+
+/* Полная/короткая подпись кнопки — короткая видна только на узком экране */
+.btn-label--short {
+  display: none;
+}
+
+/* ── ≤768px ───────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .page-header {
+    margin-bottom: var(--sp-5);
+    /* Заголовок сверху, действия — отдельной строкой под ним,
+       чтобы кнопки не наезжали на заголовок на узких экранах */
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--sp-3);
+  }
+
+  /* Блок действий растягивается на всю ширину, кнопки делят место */
+  .page-header__actions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .page-header__actions .ant-btn {
+    font-size: 0.82rem;
+    flex: 1;
+    min-width: 0;
+  }
+
+  /* view-toggle не растягиваем — он компактный */
+  .page-header__actions .view-toggle {
+    flex: 0 0 auto;
+  }
+}
+
+/* ── ≤480px ───────────────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .btn-label--full {
+    display: none;
+  }
+  .btn-label--short {
+    display: inline;
+  }
+
+  .page-title {
+    font-size: 1.2rem;
+  }
+
+  .page-header__actions .ant-btn {
+    font-size: 0.8rem;
+    padding-inline: var(--sp-3);
+  }
+
+  /* KPI — 2 в ряд, компактнее */
+  .kpi-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--sp-2);
+  }
+
+  .kpi-card {
+    padding: var(--sp-4);
+  }
+
+  .kpi-card__value {
+    font-size: 1.7rem;
+  }
+
+  /* Иконку KPI — в правый нижний угол, текст больше не упирается в неё */
+  .kpi-card__icon {
+    top: auto;
+    bottom: var(--sp-4);
+    right: var(--sp-4);
+    width: 30px;
+    height: 30px;
+  }
+
+  .kpi-card__label {
+    padding-right: 0;
+  }
+
+  /* Формы в модалках — в одну колонку */
+  .form-row-2,
+  .form-row-3 {
+    grid-template-columns: 1fr;
+  }
+}

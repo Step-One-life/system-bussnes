@@ -1,0 +1,17 @@
+const fs = require('fs')
+const path = require('path')
+
+// Конфиг — обычный .js, его не транспилирует nest build. В dev он лежит
+// в src/config, в Docker-образе мы кладём его рядом — в dist/config.
+// Ищем оба варианта относительно этого файла, а не от cwd.
+const configCandidates = [
+  path.join(__dirname, 'dist', 'config', 'sequelize-cli.config.js'),
+  path.join(__dirname, 'src', 'config', 'sequelize-cli.config.js'),
+]
+const config = configCandidates.find((p) => fs.existsSync(p)) || configCandidates[1]
+
+module.exports = {
+  config,
+  'migrations-path': path.join(__dirname, 'database', 'migrations'),
+  'seeders-path': path.join(__dirname, 'database', 'seeders'),
+}

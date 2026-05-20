@@ -1,0 +1,44 @@
+.fin-tabs {
+  display: flex;
+  gap: var(--sp-2);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: var(--sp-2);
+  margin-bottom: var(--sp-6);
+}
+
+.fin-tab {
+  flex: 1;
+  min-width: 0;
+  padding: var(--sp-2) var(--sp-4);
+  border-radius: var(--r-md);
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: center;
+  transition:
+    background var(--dur) var(--ease),
+    color var(--dur) var(--ease);
+
+  &:hover {
+    background: var(--surface-2);
+  }
+
+  &--active {
+    background: var(--accent);
+    color: #fff;
+  }
+}
+
+/* На мобиле — вкладки делят ширину поровну, текст переносится при нехватке */
+@media (max-width: 768px) {
+  .fin-tab {
+    padding: var(--sp-2) var(--sp-1);
+    font-size: 0.8rem;
+  }
+}

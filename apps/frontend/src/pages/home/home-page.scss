@@ -1,0 +1,52 @@
+.section-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--sp-4);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+
+  &::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+}
+
+/* "Отметить за сегодня" — зелёная кнопка как legacy .btn--mark */
+.btn-mark.ant-btn {
+  background: var(--success);
+  border-color: var(--success);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(34, 197, 94, 0.25);
+
+  &:hover,
+  &:focus {
+    background: #16a34a !important;
+    border-color: #16a34a !important;
+    color: #fff !important;
+    box-shadow: 0 4px 16px rgba(34, 197, 94, 0.35);
+  }
+
+  &:active {
+    background: #15803d !important;
+    border-color: #15803d !important;
+  }
+}
+
+.home-empty-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: var(--sp-5);
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+
+  &--ok {
+    color: var(--success);
+    padding: var(--sp-6);
+  }
+}

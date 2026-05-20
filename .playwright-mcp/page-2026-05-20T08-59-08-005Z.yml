@@ -1,0 +1,94 @@
+- generic [ref=e4]:
+  - complementary [ref=e5]:
+    - generic [ref=e6]:
+      - generic [ref=e7]: ⟡
+      - generic [ref=e8]: TriKick
+    - navigation [ref=e9]:
+      - link "Главная" [ref=e10] [cursor=pointer]:
+        - /url: /
+      - link "Тренировки" [ref=e11] [cursor=pointer]:
+        - /url: /trainings
+      - link "Ученики" [ref=e12] [cursor=pointer]:
+        - /url: /students
+      - link "Индивидуальные" [ref=e13] [cursor=pointer]:
+        - /url: /individual
+      - link "Группы" [ref=e14] [cursor=pointer]:
+        - /url: /groups
+      - link "Финансы" [ref=e15] [cursor=pointer]:
+        - /url: /finance
+    - button "☀" [ref=e17] [cursor=pointer]
+  - main [ref=e18]:
+    - generic [ref=e97]:
+      - generic [ref=e98]:
+        - generic [ref=e99]:
+          - button "arrow-left Все группы" [ref=e100] [cursor=pointer]:
+            - img "arrow-left" [ref=e102]:
+              - img [ref=e103]
+            - generic [ref=e105]: Все группы
+          - heading "Трикинг" [level=1] [ref=e106]
+          - generic [ref=e107]: 3 учеников · Пн, Ср, Пт 19:00 · 90 мин
+        - button "edit Редактировать" [ref=e108] [cursor=pointer]:
+          - img "edit" [ref=e110]:
+            - img [ref=e111]
+          - generic [ref=e113]: Редактировать
+      - generic [ref=e114]:
+        - generic [ref=e115]:
+          - img "team" [ref=e117]:
+            - img [ref=e118]
+          - generic [ref=e120]: Всего
+          - generic [ref=e121]: "3"
+        - generic [ref=e122]:
+          - img "check-circle" [ref=e124]:
+            - img [ref=e125]
+          - generic [ref=e128]: Активных
+          - generic [ref=e129]: "2"
+        - generic [ref=e130]:
+          - img "warning" [ref=e132]:
+            - img [ref=e133]
+          - generic [ref=e135]: Заканчивается
+          - generic [ref=e136]: "1"
+        - generic [ref=e137]:
+          - img "alert" [ref=e139]:
+            - img [ref=e140]
+          - generic [ref=e142]: Продлить
+          - generic [ref=e143]: "0"
+      - generic [ref=e144]:
+        - generic [ref=e145] [cursor=pointer]:
+          - generic [ref=e146]: АИ
+          - generic [ref=e147]:
+            - generic [ref=e148]: Алексей Иванов
+            - generic [ref=e149]:
+              - generic [ref=e150]:
+                - generic [ref=e151]: 8 занятий
+                - generic [ref=e152]: 5/8 занятий
+              - generic [ref=e155]:
+                - generic [ref=e156]: до 4 июня
+                - generic [ref=e157]: 16 дн.
+            - generic [ref=e158]: "Посещение: 19 мая"
+          - generic [ref=e159]: Активен
+        - generic [ref=e160] [cursor=pointer]:
+          - generic [ref=e161]: АП
+          - generic [ref=e162]:
+            - generic [ref=e163]: Анна Петрова
+            - generic [ref=e164]:
+              - generic [ref=e165]:
+                - generic [ref=e166]: 4 занятия
+                - generic [ref=e167]: 1/4 занятий
+              - generic [ref=e170]:
+                - generic [ref=e171]: до 16 июня
+                - generic [ref=e172]: 28 дн.
+            - generic [ref=e173]: "Посещение: 19 мая"
+          - generic [ref=e174]: Заканчивается
+        - generic [ref=e175] [cursor=pointer]:
+          - generic [ref=e176]: СМ
+          - generic [ref=e177]:
+            - generic [ref=e178]: Сергей Морозов
+            - generic [ref=e179]:
+              - generic [ref=e180]:
+                - generic [ref=e181]: 8 занятий
+                - generic [ref=e182]: 2/8 занятий
+              - generic [ref=e185]:
+                - generic [ref=e186]: до 30 мая
+                - generic [ref=e187]: 11 дн.
+            - generic [ref=e188]: "Посещение: 19 мая"
+          - generic [ref=e189]: Активен

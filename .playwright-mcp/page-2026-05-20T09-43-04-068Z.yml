@@ -1,0 +1,127 @@
+- generic [ref=e1]:
+  - generic [ref=e4]:
+    - complementary [ref=e5]:
+      - generic [ref=e6]:
+        - generic [ref=e7]: ⟡
+        - generic [ref=e8]: TriKick
+      - navigation [ref=e9]:
+        - link "Главная" [ref=e10] [cursor=pointer]:
+          - /url: /
+        - link "Тренировки" [ref=e11] [cursor=pointer]:
+          - /url: /trainings
+        - link "Ученики" [ref=e12] [cursor=pointer]:
+          - /url: /students
+        - link "Индивидуальные" [ref=e13] [cursor=pointer]:
+          - /url: /individual
+        - link "Группы" [ref=e14] [cursor=pointer]:
+          - /url: /groups
+        - link "Финансы" [ref=e15] [cursor=pointer]:
+          - /url: /finance
+      - button "☀" [ref=e17] [cursor=pointer]
+    - main [ref=e18]:
+      - generic [ref=e19]:
+        - generic [ref=e20]:
+          - heading "Главная" [level=1] [ref=e22]
+          - generic [ref=e23]:
+            - button "check-square Отметить за сегодня" [ref=e24] [cursor=pointer]:
+              - img "check-square" [ref=e26]:
+                - img [ref=e27]
+              - generic [ref=e30]: Отметить за сегодня
+            - button "plus Записать тренировку" [ref=e31] [cursor=pointer]:
+              - img "plus" [ref=e33]:
+                - img [ref=e34]
+              - generic [ref=e37]: Записать тренировку
+        - generic [ref=e38]:
+          - generic [ref=e39] [cursor=pointer]:
+            - img "team" [ref=e41]:
+              - img [ref=e42]
+            - generic [ref=e44]: Всего учеников
+            - generic [ref=e45]: "8"
+          - generic [ref=e46] [cursor=pointer]:
+            - img "calendar" [ref=e48]:
+              - img [ref=e49]
+            - generic [ref=e51]: Тренировок в этом месяце
+            - generic [ref=e52]: "6"
+          - generic [ref=e53] [cursor=pointer]:
+            - img "warning" [ref=e55]:
+              - img [ref=e56]
+            - generic [ref=e58]: Заканчивается абонемент
+            - generic [ref=e59]: "1"
+          - generic [ref=e60] [cursor=pointer]:
+            - img "alert" [ref=e62]:
+              - img [ref=e63]
+            - generic [ref=e65]: Нужно продлить
+            - generic [ref=e66]: "1"
+        - generic [ref=e67]: Тренировки сегодня
+        - generic [ref=e69]: Тренировок на сегодня нет
+        - generic [ref=e70]: Требуют внимания
+        - generic [ref=e71]:
+          - generic [ref=e72] [cursor=pointer]:
+            - generic [ref=e73]:
+              - generic [ref=e74]: Анна Петрова
+              - generic [ref=e75]: Трикинг · Заканчивается
+            - button "Продлить" [ref=e76]:
+              - generic [ref=e77]: Продлить
+          - generic [ref=e78] [cursor=pointer]:
+            - generic [ref=e79]:
+              - generic [ref=e80]: Ольга Новикова
+              - generic [ref=e81]: Взрослые · Нужно продлить
+            - button "Продлить" [ref=e82]:
+              - generic [ref=e83]: Продлить
+  - generic [ref=e84]:
+    - dialog "Все ученики (8)":
+      - generic [ref=e85]:
+        - button "Close" [active] [ref=e86] [cursor=pointer]:
+          - generic "Close" [ref=e87]:
+            - img "close" [ref=e88]:
+              - img [ref=e89]
+        - generic [ref=e92]: Все ученики (8)
+        - generic [ref=e94]:
+          - generic [ref=e95] [cursor=pointer]:
+            - generic [ref=e96]: АИ
+            - generic [ref=e97]:
+              - generic [ref=e98]: Алексей Иванов
+              - generic [ref=e99]: Трикинг
+            - generic [ref=e100]: Активен
+          - generic [ref=e101] [cursor=pointer]:
+            - generic [ref=e102]: МС
+            - generic [ref=e103]:
+              - generic [ref=e104]: Мария Смирнова
+              - generic [ref=e105]: Тхэквондо
+            - generic [ref=e106]: Активен
+          - generic [ref=e107] [cursor=pointer]:
+            - generic [ref=e108]: ДК
+            - generic [ref=e109]:
+              - generic [ref=e110]: Дмитрий Козлов
+              - generic [ref=e111]: Взрослые
+            - generic [ref=e112]: Активен
+          - generic [ref=e113] [cursor=pointer]:
+            - generic [ref=e114]: АП
+            - generic [ref=e115]:
+              - generic [ref=e116]: Анна Петрова
+              - generic [ref=e117]: Трикинг
+            - generic [ref=e118]: Заканчивается
+          - generic [ref=e119] [cursor=pointer]:
+            - generic [ref=e120]: ИС
+            - generic [ref=e121]:
+              - generic [ref=e122]: Иван Сидоров
+              - generic [ref=e123]: Тхэквондо, Взрослые
+            - generic [ref=e124]: Активен
+          - generic [ref=e125] [cursor=pointer]:
+            - generic [ref=e126]: ОН
+            - generic [ref=e127]:
+              - generic [ref=e128]: Ольга Новикова
+              - generic [ref=e129]: Взрослые
+            - generic [ref=e130]: Нужно продлить
+          - generic [ref=e131] [cursor=pointer]:
+            - generic [ref=e132]: СМ
+            - generic [ref=e133]:
+              - generic [ref=e134]: Сергей Морозов
+              - generic [ref=e135]: Трикинг
+            - generic [ref=e136]: Активен
+          - generic [ref=e137] [cursor=pointer]:
+            - generic [ref=e138]: ЕВ
+            - generic [ref=e139]:
+              - generic [ref=e140]: Екатерина Волкова
+              - generic [ref=e141]: Нет групп
+            - generic [ref=e142]: Активен

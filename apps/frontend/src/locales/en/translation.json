@@ -1,0 +1,419 @@
+{
+  "app": {
+    "name": "TriKick"
+  },
+  "nav": {
+    "home": "Главная",
+    "trainings": "Тренировки",
+    "students": "Ученики",
+    "individual": "Индивидуальные",
+    "individualShort": "Инд.",
+    "groups": "Группы",
+    "finance": "Финансы"
+  },
+  "common": {
+    "themeToggle": "Сменить тему",
+    "logout": "Выйти",
+    "cancel": "Отмена",
+    "save": "Сохранить",
+    "create": "Создать",
+    "delete": "Удалить",
+    "add": "Добавить",
+    "edit": "Редактировать",
+    "extend": "Продлить",
+    "error": "Ошибка",
+    "continue": "Продолжить",
+    "dash": "—",
+    "remove": "Убрать",
+    "date": "Дата",
+    "time": "Время",
+    "notePlaceholder": "Необязательно"
+  },
+  "groups": {
+    "create": "Создать группу",
+    "empty": "Групп пока нет",
+    "emptyText": "Создайте первую группу",
+    "deleted": "Группа удалена",
+    "created": "Группа создана",
+    "updated": "Группа обновлена",
+    "nameRequired": "Введите название группы",
+    "detail": {
+      "allGroups": "Все группы",
+      "subtitle": "{{count}} учеников{{schedule}}",
+      "total": "Всего",
+      "active": "Активных",
+      "ending": "Заканчивается",
+      "expired": "Продлить",
+      "noStudents": "В группе нет учеников",
+      "visit": "Посещение: {{date}}",
+      "noVisits": "Посещений ещё не было"
+    },
+    "card": {
+      "totalStudents": "Всего учеников",
+      "activeSub": "Активный абонемент",
+      "ending": "Заканчивается",
+      "needRenew": "Нужно продлить"
+    },
+    "form": {
+      "deleteTitle": "Удалить группу?",
+      "deleteDescription": "Ученики останутся в системе.",
+      "editTitle": "Редактировать группу",
+      "createTitle": "Создать группу",
+      "nameLabel": "Название группы",
+      "namePlaceholder": "Например: Дети",
+      "scheduleLabel": "Расписание",
+      "durationLabel": "Длительность занятия",
+      "durationOption": "{{minutes}} мин",
+      "timePlaceholder": "Время"
+    }
+  },
+  "students": {
+    "add": "Добавить ученика",
+    "count": "{{count}} чел.",
+    "notFound": "Ученики не найдены",
+    "tryFilters": "Попробуйте изменить фильтры",
+    "addFirst": "Добавьте первого ученика",
+    "noGroup": "Без группы",
+    "indShort": "Инд.",
+    "nameRequired": "Введите имя ученика",
+    "added": "Ученик добавлен",
+    "updated": "Ученик обновлён",
+    "filter": {
+      "searchPlaceholder": "Поиск по имени…",
+      "allGroups": "Все группы",
+      "allStatuses": "Все статусы",
+      "statusActive": "Активен",
+      "statusEnding": "Заканчивается",
+      "statusExpired": "Нужно продлить"
+    },
+    "form": {
+      "editTitle": "Редактировать ученика",
+      "createTitle": "Добавить ученика",
+      "nameLabel": "Имя и фамилия",
+      "namePlaceholder": "Алексей Иванов",
+      "groupsLabel": "Группы",
+      "noGroups": "Нет групп — добавьте их в разделе «Группы»",
+      "indLabel": "Индивидуальные занятия",
+      "indCheckbox": "Записать в индивидуальные занятия",
+      "subStartLabel": "Дата начала абонемента",
+      "subForGroup": "Абонемент — {{group}}",
+      "subNone": "— не добавлять —"
+    },
+    "sub": {
+      "single": "Разовое посещение",
+      "sub4": "4 занятия",
+      "sub8": "8 занятий"
+    },
+    "drawer": {
+      "lastVisit": "Последнее посещение:",
+      "groupSessions": "Групповые занятия",
+      "noGroupSessions": "Нет групповых занятий",
+      "individual": "Индивидуальные",
+      "visitHistory": "История посещений",
+      "deleteTitle": "Удалить ученика «{{name}}»?",
+      "deleteStudent": "Удалить ученика"
+    },
+    "subCard": {
+      "indTraining": "Индивидуальная тренировка",
+      "deleteSubTitle": "Удалить абонемент?",
+      "deductSession": "Списать занятие",
+      "newSub": "Новый абонемент",
+      "markPaid": "Отметить оплату",
+      "askNextTraining": "Узнать о следующей тренировке",
+      "extendTerm": "Продлить срок"
+    },
+    "visits": {
+      "empty": "Посещений пока нет",
+      "indTraining": "Индивидуальная тренировка"
+    },
+    "actions": {
+      "sessionDeducted": "Занятие списано",
+      "subExpired": "Занятие списано — абонемент закончился",
+      "remaining": "Осталось: {{remaining}} из {{total}}",
+      "subDeleted": "Абонемент удалён",
+      "studentDeleted": "Ученик удалён"
+    }
+  },
+  "subscriptions": {
+    "extend": {
+      "title": "Продлить срок абонемента",
+      "termExtended": "Срок продлён",
+      "termExtendedMsg": "{{name}} · +{{days}} дн.",
+      "student": "Ученик:",
+      "group": "Группа:",
+      "currentTerm": "Текущий срок:",
+      "extendBy": "Продлить срок на",
+      "daysOption": "{{days}} дней"
+    },
+    "renew": {
+      "title": "Продлить абонемент",
+      "subRenewed": "Абонемент продлён",
+      "student": "Ученик:",
+      "group": "Группа:",
+      "typeLabel": "Тип абонемента",
+      "dateLabel": "Дата начала"
+    }
+  },
+  "trainings": {
+    "title": "Тренировки",
+    "record": "Записать тренировку",
+    "recordsCount": "{{count}} записей",
+    "empty": "Тренировок пока нет",
+    "emptyText": "Запишите первую тренировку",
+    "viewList": "Список",
+    "viewWeek": "Неделя",
+    "removedFromTraining": "Убран с тренировки",
+    "seriesDeleted": "Серия удалена",
+    "trainingDeleted": "Тренировка удалена",
+    "type": {
+      "title": "Новая тренировка",
+      "group": "Групповая",
+      "individual": "Индивидуальная"
+    },
+    "item": {
+      "indWith": "Индивидуальная тренировка с {{name}}",
+      "weekly": "Еженедельно",
+      "addStudent": "Добавить ученика",
+      "removeFromTraining": "Убрать с тренировки",
+      "deleted": "Удалён",
+      "noAttendees": "Нет записей об учениках",
+      "deleteTitle": "Удалить тренировку?",
+      "deleteDescription": "Занятия будут возвращены ученикам.",
+      "deleteTraining": "Удалить тренировку"
+    },
+    "calendar": {
+      "today": "Сегодня",
+      "attendeesCount": "{{count}} чел."
+    },
+    "group": {
+      "title": "Групповая тренировка",
+      "saveAndDeduct": "Сохранить и списать",
+      "groupLabel": "Группа",
+      "groupPlaceholder": "Выберите группу",
+      "dateLabel": "Дата",
+      "timeLabel": "Время",
+      "studentsLabel": "Ученики",
+      "pickGroupFirst": "Сначала выберите группу",
+      "noStudents": "В этой группе нет учеников",
+      "noteLabel": "Комментарий (необязательно)",
+      "notePlaceholder": "Например: работали над флипами...",
+      "fillGroupAndDate": "Заполните группу и дату",
+      "scheduleConflict": "Конфликт расписания",
+      "recorded": "Тренировка записана",
+      "recordedMsg": "{{group}} · {{count}} чел."
+    },
+    "individual": {
+      "title": "Записать индивидуальное занятие",
+      "recordAndDeduct": "Записать и списать",
+      "durationLabel": "Длительность",
+      "duration60": "1 час",
+      "duration90": "1.5 часа",
+      "clientLabel": "Клиент",
+      "clientPlaceholder": "— выберите клиента —",
+      "noSubOption": "{{name}} — нет абонемента",
+      "noActiveSub60": "Нет активного абонемента на 1ч — выберите тип занятия",
+      "noActiveSub90": "Нет активного абонемента на 1.5ч — выберите тип занятия",
+      "dateLabel": "Дата",
+      "timeLabel": "Время",
+      "newSubLabel": "Новый абонемент",
+      "weekly": "Еженедельно",
+      "weeklyHint": "Добавить в расписание на 7 недель вперёд",
+      "noteLabel": "Комментарий (необязательно)",
+      "notePlaceholder": "Например: работали над акробатикой...",
+      "pickClientAndDate": "Выберите клиента и дату",
+      "scheduleConflict": "Конфликт расписания",
+      "recorded": "Занятие записано",
+      "recordedRecurringMsg": "{{name}} · добавлено на 7 недель"
+    },
+    "addTo": {
+      "saving": "Добавить на тренировку — {{group}}",
+      "fromGroup": "Из группы",
+      "newStudent": "Новый ученик",
+      "groupStudents": "Ученики группы «{{group}}»",
+      "allAdded": "Все ученики группы уже записаны на эту тренировку",
+      "nameLabel": "Имя и фамилия",
+      "namePlaceholder": "Алексей Иванов",
+      "subLabel": "Абонемент",
+      "subNone": "— без абонемента —",
+      "pickAtLeastOne": "Выберите хотя бы одного ученика",
+      "added": "Добавлено",
+      "addedMsg": "{{count}} чел. на тренировку",
+      "subExpired": "Абонемент закончился — нужно продлить",
+      "remaining": "Осталось {{count}} занятий",
+      "noActiveSub": "Нет активного абонемента",
+      "nameRequired": "Введите имя ученика",
+      "studentAdded": "Ученик добавлен",
+      "studentAddedMsg": "{{name}} записан на тренировку"
+    },
+    "cal": {
+      "indWith": "Инд. с {{name}}",
+      "noStudents": "Нет учеников",
+      "attendance": "Посещаемость",
+      "noGroupStudents": "В группе нет учеников",
+      "deleteTitle": "Удалить тренировку?",
+      "deleteDescription": "Занятия будут возвращены ученикам.",
+      "studentRemoved": "Ученик убран",
+      "attendanceSaved": "Посещаемость сохранена",
+      "recordDeleted": "Запись удалена"
+    },
+    "hint": {
+      "prime": "⭐ Prime",
+      "regular": "Обычное",
+      "conflict": "Конфликт: {{detail}}"
+    }
+  },
+  "individual": {
+    "title": "Индивидуальные занятия",
+    "subtitle": "{{count}} клиентов",
+    "record": "Записать занятие",
+    "removedFromTraining": "Убран с тренировки",
+    "seriesDeleted": "Серия удалена",
+    "trainingDeleted": "Тренировка удалена",
+    "kpiClients": "Всего клиентов",
+    "kpiMonth": "Занятий за месяц",
+    "kpiWeek": "За эту неделю",
+    "kpiAttention": "Требуют внимания",
+    "attention": "Требуют внимания",
+    "indTraining": "Индивидуальная тренировка",
+    "clients": "Клиенты",
+    "session": "Занятие: {{date}}",
+    "noSessions": "Занятий ещё не было",
+    "noClients": "Нет клиентов",
+    "noClientsText": "Нажмите «Записать занятие», чтобы добавить клиента",
+    "recentSessions": "Последние занятия"
+  },
+  "finance": {
+    "tabs": {
+      "records": "Записи",
+      "stats": "Статистика",
+      "pricing": "Настройка цен"
+    },
+    "records": {
+      "searchPlaceholder": "Поиск по имени, типу, дате…",
+      "add": "Добавить запись",
+      "empty": "Записей пока нет",
+      "emptyText": "Добавьте первую финансовую запись",
+      "notFound": "Ничего не найдено",
+      "notFoundText": "Попробуйте изменить запрос",
+      "deleted": "Запись удалена"
+    },
+    "card": {
+      "statusActive": "Активен",
+      "statusClosed": "Закрыт",
+      "clientPays": "Клиент платит",
+      "hallExpense": "Расход залу",
+      "netIncome": "Чистый доход",
+      "sessions": "Занятий",
+      "prime": "Prime",
+      "edit": "Изменить",
+      "deleteTitle": "Удалить эту запись?"
+    },
+    "form": {
+      "addTitle": "Добавить финансовую запись",
+      "editTitle": "Редактировать запись",
+      "recordAdded": "Запись добавлена",
+      "recordUpdated": "Запись обновлена",
+      "dateRequired": "Укажите дату",
+      "expenseExceedsTitle": "Расход превышает оплату",
+      "expenseExceedsContent": "Расход на зал ({{hall}} ₽) превышает оплату клиента ({{client}} ₽). Чистый доход: {{net}} ₽. Продолжить?",
+      "clientLabel": "Клиент",
+      "studentNone": "— без клиента —",
+      "incomeSection": "Клиент платит мне",
+      "expenseSection": "Я плачу залу",
+      "paymentTypeLabel": "Тип оплаты",
+      "amountLabel": "Сумма (₽)",
+      "hallTypeLabel": "Тип оплаты зала",
+      "hallTypeNone": "— не указывать —",
+      "timeLabel": "Время",
+      "timeRegular": "Обычное",
+      "timePrime": "⭐ Prime",
+      "netIncome": "Чистый доход:",
+      "dateLabel": "Дата",
+      "trainingTimeLabel": "Время тренировки",
+      "noteLabel": "Примечание",
+      "notePlaceholder": "Необязательно"
+    },
+    "markPaid": {
+      "title": "Отметить оплату",
+      "markPaidBtn": "Отметить оплачено",
+      "dateRequired": "Укажите дату",
+      "paid": "Оплата отмечена",
+      "client": "Клиент",
+      "type": "Тип",
+      "amountLabel": "Сумма оплаты (₽)",
+      "dateLabel": "Дата оплаты"
+    },
+    "pricing": {
+      "clientTitle": "Что платят клиенты мне",
+      "incomeBadge": "Доход",
+      "hallTitle": "Что я плачу залу",
+      "expenseBadge": "Расход",
+      "save": "Сохранить цены",
+      "saved": "Цены сохранены",
+      "savedMsg": "Применятся к следующим записям"
+    },
+    "priceRow": {
+      "perSession": "≈ {{amount}} ₽/зан.",
+      "regular": "Обычное",
+      "prime": "⭐ Prime"
+    },
+    "stats": {
+      "income": "Доход",
+      "hallExpense": "Расход зала",
+      "netIncome": "Чистый доход",
+      "margin": "Маржа",
+      "records": "Записей",
+      "active": "Активных",
+      "avgCheck": "Средний чек",
+      "noData": "Нет данных",
+      "monthlyChart": "Динамика по месяцам",
+      "datasetIncome": "Доход",
+      "datasetHall": "Расход зала",
+      "datasetNet": "Чистый",
+      "clientPayments": "Оплаты клиентов",
+      "hallPayments": "Оплаты зала",
+      "topClients": "Топ клиентов по доходу",
+      "periodMonth": "Месяц",
+      "periodQuarter": "Квартал",
+      "periodYear": "Год",
+      "periodAll": "Всё время"
+    }
+  },
+  "home": {
+    "markToday": "Отметить за сегодня",
+    "markTodayShort": "Отметить",
+    "recordTraining": "Записать тренировку",
+    "kpiTotal": "Всего учеников",
+    "kpiMonth": "Тренировок в этом месяце",
+    "kpiEnding": "Заканчивается абонемент",
+    "kpiExpired": "Нужно продлить",
+    "trainingsToday": "Тренировки сегодня",
+    "noTrainingsToday": "Тренировок на сегодня нет",
+    "attention": "Требуют внимания",
+    "subStatus": "Статус абонементов",
+    "indTraining": "Индивидуальная тренировка",
+    "extend": "Продлить",
+    "allSubsOk": "✓ Все абонементы в порядке",
+    "attendanceSaved": "Посещаемость сохранена",
+    "kpi": {
+      "allStudents": "Все ученики ({{count}})",
+      "noGroups": "Нет групп",
+      "noStudents": "Нет учеников",
+      "trainingsMonth": "Тренировки: {{month}}",
+      "indWith": "Инд. с {{name}}",
+      "attendeesCount": "{{count}} чел.",
+      "noMonthTrainings": "В этом месяце тренировок нет",
+      "ending": "Заканчивается абонемент",
+      "expired": "Нужно продлить",
+      "indTraining": "Индивидуальная тренировка",
+      "extend": "Продлить",
+      "noCategory": "Нет учеников в этой категории"
+    },
+    "markTodayModal": {
+      "title": "Отметить за сегодня",
+      "saveAttendance": "Сохранить посещаемость",
+      "nothingScheduled": "По расписанию групп на сегодня ничего не запланировано",
+      "noGroupStudents": "В группе нет учеников"
+    }
+  }
+}
