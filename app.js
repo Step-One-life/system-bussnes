@@ -13,7 +13,7 @@ const AppState = {
   currentPage: 'home',
   studentsFilter: { group: '', status: '', search: '' },
   groupView:     null,
-  financeTab:    'pricing',
+  financeTab:    'records',
   financePeriod: 'all',
 };
 
@@ -1521,9 +1521,9 @@ async function renderFinance() {
       <h1 class="page-title">Финансы</h1>
     </div>
     <div class="fin-tabs">
-      <button class="fin-tab ${tab === 'pricing'  ? 'fin-tab--active' : ''}" data-tab="pricing">Настройки цен</button>
       <button class="fin-tab ${tab === 'records'  ? 'fin-tab--active' : ''}" data-tab="records">Записи</button>
       <button class="fin-tab ${tab === 'stats'    ? 'fin-tab--active' : ''}" data-tab="stats">Статистика</button>
+      <button class="fin-tab ${tab === 'pricing'  ? 'fin-tab--active' : ''}" data-tab="pricing">Настройка цен</button>
     </div>
     <div id="fin-content"></div>
   `;
