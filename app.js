@@ -396,7 +396,10 @@ async function openCreateIndividualSessionModal(indGroupId) {
             createdAt: date,
             sessionDuration,
           });
-          await _autoCreatePayment(studentId, newSub);
+          await _autoCreatePayment(studentId, newSub, {
+            time,
+            isPrime: Logic.isPrimeTime(date, time),
+          });
         }
 
         // Create training and mark attendance
@@ -1550,17 +1553,51 @@ function _subPaymentType(subType, isIndividual) {
   return null;
 }
 
-async function _autoCreatePayment(studentId, sub) {
-  const paymentType = _subPaymentType(sub.type, DB.INDIVIDUAL_GROUP_NAMES.includes(sub.groupId));
+/**
+ * Auto-create a client payment + hall cost for a new subscription.
+ * @param {string} studentId
+ * @param {Subscription} sub
+ * @param {{ time?: string, isPrime?: boolean }} opts  — training time/slot for prime detection
+ */
+async function _autoCreatePayment(studentId, sub, opts = {}) {
+  const isInd       = DB.INDIVIDUAL_GROUP_NAMES.includes(sub.groupId);
+  const paymentType = _subPaymentType(sub.type, isInd);
   if (!paymentType) return;
+
   const pricing      = await DB.getPricing();
   const clientAmount = pricing[`client_${paymentType}_price`] ?? 0;
+  const paidAt       = sub.createdAt || new Date().toISOString().slice(0, 10);
+
+  // For 1.5h types, hall uses the same base pricing as 1h individual
+  const hallTypeAlias = {
+    single_individual_90: 'single_individual',
+    individual_sub_4_90:  'individual_sub_4',
+    individual_sub_8_90:  'individual_sub_8',
+  };
+  const hallType   = hallTypeAlias[paymentType] ?? paymentType;
+  const isPrime    = opts.isPrime ?? (opts.time ? Logic.isPrimeTime(paidAt, opts.time) : false);
+  const timeSlot   = isPrime ? 'prime' : 'regular';
+  const hallAmount = pricing[`hall_${hallType}_${timeSlot}_price`] ?? 0;
+
+  // Create hall cost
+  const hallCost = await DB.createHallCost({
+    student_id:        studentId,
+    hall_payment_type: hallType,
+    time_slot:         timeSlot,
+    training_time:     opts.time || '',
+    hall_amount:       hallAmount,
+    paid_at:           paidAt,
+  });
+
+  // Create client payment linked to hall cost
   const payment = await DB.createPayment({
     student_id:          studentId,
     client_payment_type: paymentType,
     client_amount:       clientAmount,
-    paid_at:             sub.createdAt || new Date().toISOString().slice(0, 10),
+    hall_cost_id:        hallCost.id,
+    paid_at:             paidAt,
   });
+
   await DB.linkPaymentToSub(studentId, sub.id, payment.id);
 }
 

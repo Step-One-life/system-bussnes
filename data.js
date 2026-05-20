@@ -648,27 +648,36 @@ async function clearAllData() {
 ───────────────────────────────────────────────── */
 
 const FIN_SESSIONS = {
-  single_individual: 1, single_group: 1,
-  individual_sub_4:  4, group_sub_4:  4,
-  individual_sub_8:  8, group_sub_8:  8,
+  single_individual:    1, single_group:    1,
+  individual_sub_4:     4, group_sub_4:     4,
+  individual_sub_8:     8, group_sub_8:     8,
+  single_individual_90: 1,
+  individual_sub_4_90:  4,
+  individual_sub_8_90:  8,
 };
 
 const FIN_LABELS = {
-  single_individual: 'Разовая инди',
-  single_group:      'Разовая групп.',
-  individual_sub_4:  'Инди ×4',
-  individual_sub_8:  'Инди ×8',
-  group_sub_4:       'Групп. ×4',
-  group_sub_8:       'Групп. ×8',
+  single_individual:    'Разовая инди',
+  single_group:         'Разовая групп.',
+  individual_sub_4:     'Инди ×4',
+  individual_sub_8:     'Инди ×8',
+  group_sub_4:          'Групп. ×4',
+  group_sub_8:          'Групп. ×8',
+  single_individual_90: 'Инди 1.5ч ×1',
+  individual_sub_4_90:  'Инди 1.5ч ×4',
+  individual_sub_8_90:  'Инди 1.5ч ×8',
 };
 
 const PRICING_DEFAULTS = {
-  client_single_individual_price: 0,
-  client_single_group_price:      0,
-  client_individual_sub_4_price:  0,
-  client_individual_sub_8_price:  0,
-  client_group_sub_4_price:       0,
-  client_group_sub_8_price:       0,
+  client_single_individual_price:    0,
+  client_single_group_price:         0,
+  client_individual_sub_4_price:     0,
+  client_individual_sub_8_price:     0,
+  client_group_sub_4_price:          0,
+  client_group_sub_8_price:          0,
+  client_single_individual_90_price: 0,
+  client_individual_sub_4_90_price:  0,
+  client_individual_sub_8_90_price:  0,
   hall_single_individual_regular_price: 0,
   hall_single_individual_prime_price:   0,
   hall_single_group_regular_price:      0,
