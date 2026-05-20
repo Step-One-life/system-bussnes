@@ -217,16 +217,16 @@ function renderProgressBar(sub) {
  */
 function renderKPIGrid(kpis) {
   const cards = [
-    { label: 'Всего учеников',           value: kpis.total,          icon: 'users',           mod: 'accent' },
-    { label: 'Тренировок в этом месяце', value: kpis.monthTrainings, icon: 'calendar-check',  mod: 'ok' },
-    { label: 'Заканчивается абонемент',  value: kpis.ending,         icon: 'alert-triangle',  mod: 'warn' },
-    { label: 'Нужно продлить',           value: kpis.expired,        icon: 'alert-circle',    mod: 'danger' },
+    { key: 'total',   label: 'Всего учеников',           value: kpis.total,          icon: 'users',           mod: 'accent' },
+    { key: 'month',   label: 'Тренировок в этом месяце', value: kpis.monthTrainings, icon: 'calendar-check',  mod: 'ok' },
+    { key: 'ending',  label: 'Заканчивается абонемент',  value: kpis.ending,         icon: 'alert-triangle',  mod: 'warn' },
+    { key: 'expired', label: 'Нужно продлить',           value: kpis.expired,        icon: 'alert-circle',    mod: 'danger' },
   ];
 
   return `
     <div class="kpi-grid">
       ${cards.map(c => `
-        <div class="kpi-card kpi-card--${c.mod}">
+        <div class="kpi-card kpi-card--${c.mod} kpi-card--clickable" data-kpi="${c.key}">
           <div class="kpi-card__icon"><i data-lucide="${c.icon}"></i></div>
           <div class="kpi-card__label">${c.label}</div>
           <div class="kpi-card__value" data-countup="${c.value}">0</div>
@@ -539,6 +539,7 @@ function renderTrainingItem(training, allStudents) {
     <div class="training-item" data-training-id="${training.id}">
       <div class="training-item__header">
         <div class="training-item__date">
+          <span class="training-item__dow">${Logic.formatDayOfWeek(training.date)}</span>
           <span class="training-item__day">${Logic.formatDay(training.date)}</span>
           <span class="training-item__mon">${Logic.formatMonth(training.date)}</span>
         </div>

@@ -7,14 +7,28 @@
 'use strict';
 
 /* ────────────────────────────────────────────────
+   Helpers
+───────────────────────────────────────────────── */
+
+function getMondayOfWeek(date) {
+  const d = new Date(date);
+  const day = d.getDay();
+  d.setDate(d.getDate() - (day === 0 ? 6 : day - 1));
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
+/* ────────────────────────────────────────────────
    State
 ───────────────────────────────────────────────── */
 const AppState = {
   currentPage: 'home',
   studentsFilter: { group: '', status: '', search: '' },
-  groupView:     null,
-  financeTab:    'records',
-  financePeriod: 'all',
+  groupView:          null,
+  financeTab:         'records',
+  financePeriod:      'all',
+  trainingsView:      'calendar',
+  calendarWeekStart:  getMondayOfWeek(new Date()),
 };
 
 /* ────────────────────────────────────────────────
@@ -63,27 +77,310 @@ async function navigate(page) {
    Page: Home
 ───────────────────────────────────────────────── */
 
+/* ────────────────────────────────────────────────
+   KPI card detail modals
+───────────────────────────────────────────────── */
+
+async function openKpiModal(type) {
+  const [students, trainings] = await Promise.all([
+    DB.getStudents(),
+    DB.getTrainings(),
+  ]);
+
+  // ── Все ученики ──
+  if (type === 'total') {
+    const rows = students.length
+      ? students.map(s => {
+          const st       = Logic.getOverallSubStatus(s);
+          const initials = s.name.trim().split(/\s+/).map(w => w[0]).join('').slice(0, 2).toUpperCase();
+          const groups   = s.groups.filter(g => !DB.INDIVIDUAL_GROUP_NAMES.includes(g));
+          const meta     = groups.length ? groups.join(', ') : 'Нет групп';
+          return `
+            <div class="kpi-list-row" data-student-id="${s.id}" style="cursor:pointer">
+              <div class="kpi-list-avatar">${initials}</div>
+              <div class="kpi-list-info">
+                <span class="kpi-list-name">${s.name}</span>
+                <span class="kpi-list-meta">${meta}</span>
+              </div>
+              <span class="badge badge--${st.type}">${st.label}</span>
+            </div>`;
+        }).join('')
+      : '<p style="color:var(--text-muted);font-size:0.875rem">Нет учеников</p>';
+
+    UI.openModal({
+      title: `Все ученики (${students.length})`,
+      body: `<div class="kpi-list">${rows}</div>`,
+      onOpen(modal) {
+        lucide.createIcons({ nodes: [modal] });
+        modal.querySelectorAll('.kpi-list-row').forEach(row => {
+          row.addEventListener('click', () => {
+            UI.closeModal();
+            openStudentDrawer(row.dataset.studentId);
+          });
+        });
+      },
+    });
+    return;
+  }
+
+  // ── Тренировки за месяц ──
+  if (type === 'month') {
+    const now   = new Date();
+    const month = now.getMonth();
+    const year  = now.getFullYear();
+    const monthName = now.toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' });
+
+    const monthList = trainings
+      .filter(t => { const d = new Date(t.date); return d.getMonth() === month && d.getFullYear() === year; })
+      .sort((a, b) => a.date.localeCompare(b.date));
+
+    const rows = monthList.length
+      ? monthList.map(t => {
+          const isInd = DB.INDIVIDUAL_GROUP_NAMES.includes(t.groupId) || !DB.GROUPS.includes(t.groupId);
+          const clientName = isInd ? (students.find(s => s.id === t.attendees[0])?.name ?? null) : null;
+          const label = clientName ? `Инд. с ${clientName}` : t.groupId;
+          const meta  = [t.time, !isInd && t.attendees.length ? `${t.attendees.length} чел.` : ''].filter(Boolean).join(' · ');
+          return `
+            <div class="kpi-list-row">
+              <div class="training-item__date" style="width:44px;height:44px;flex-shrink:0">
+                <span class="training-item__dow">${Logic.formatDayOfWeek(t.date)}</span>
+                <span class="training-item__day">${Logic.formatDay(t.date)}</span>
+                <span class="training-item__mon">${Logic.formatMonth(t.date)}</span>
+              </div>
+              <div class="kpi-list-info">
+                <span class="kpi-list-name">${label}</span>
+                ${meta ? `<span class="kpi-list-meta">${meta}</span>` : ''}
+              </div>
+            </div>`;
+        }).join('')
+      : '<p style="color:var(--text-muted);font-size:0.875rem">В этом месяце тренировок нет</p>';
+
+    UI.openModal({
+      title: `Тренировки: ${monthName}`,
+      body: `<div class="kpi-list">${rows}</div>`,
+      onOpen(modal) { lucide.createIcons({ nodes: [modal] }); },
+    });
+    return;
+  }
+
+  // ── Заканчивается / Нужно продлить ──
+  if (type === 'ending' || type === 'expired') {
+    const warnings = await Logic.getWarningStudents();
+    const filtered = warnings.filter(w => w.status.type === type);
+    const title    = type === 'ending' ? 'Заканчивается абонемент' : 'Нужно продлить';
+
+    const body = filtered.length
+      ? `<div class="warning-list">${filtered.map(w => UI.renderWarningItem(w)).join('')}</div>`
+      : `<p style="color:var(--text-muted);font-size:0.875rem;text-align:center;padding:var(--sp-4) 0">Нет учеников в этой категории</p>`;
+
+    UI.openModal({
+      title,
+      body,
+      onOpen(modal) {
+        lucide.createIcons({ nodes: [modal] });
+
+        modal.querySelectorAll('[data-action="renew-sub"]').forEach(btn => {
+          btn.addEventListener('click', e => {
+            e.stopPropagation();
+            UI.closeModal();
+            openRenewSubModal(btn.dataset.studentId, btn.dataset.group);
+          });
+        });
+
+        modal.querySelectorAll('.warning-item').forEach(item => {
+          item.addEventListener('click', e => {
+            if (e.target.closest('[data-action]')) return;
+            UI.closeModal();
+            openStudentDrawer(item.dataset.studentId);
+          });
+        });
+      },
+    });
+  }
+}
+
+/* ────────────────────────────────────────────────
+   Mark today's attendance (home screen quick action)
+───────────────────────────────────────────────── */
+
+async function openMarkTodayModal() {
+  const today    = new Date();
+  const todayStr = today.toISOString().slice(0, 10);
+  const todayDow = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'][today.getDay()];
+
+  const [groups, students, trainings] = await Promise.all([
+    DB.getGroups(),
+    DB.getStudents(),
+    DB.getTrainings(),
+  ]);
+
+  // Collect non-individual groups that have training today by schedule
+  const todayGroups = [];
+  for (const g of groups) {
+    if (g.isIndividual) continue;
+    const entry = (g.schedule ?? []).find(s => s.day === todayDow);
+    if (!entry) continue;
+    const existing = trainings.find(t => t.groupId === g.name && t.date === todayStr) ?? null;
+    todayGroups.push({
+      groupId:           g.name,
+      time:              entry.time || '',
+      existing,
+      originalAttendees: new Set(existing?.attendees ?? []),
+    });
+  }
+
+  if (!todayGroups.length) {
+    UI.showToast({ type: 'info', title: 'Сегодня групповых тренировок нет', msg: 'По расписанию групп ничего не запланировано' });
+    return;
+  }
+
+  // Build one section per group
+  const sectionsHTML = todayGroups.map((item, idx) => {
+    const { groupId, time, originalAttendees } = item;
+    const grpStudents = students.filter(s => s.groups.includes(groupId));
+
+    const rowsHTML = grpStudents.length
+      ? grpStudents.map(s => {
+          const st      = Logic.getSubStatus(s, groupId);
+          const sub     = s.subscriptions.find(sb => sb.groupId === groupId && sb.isActive) ?? null;
+          const checked = originalAttendees.has(s.id);
+          const isSingle = sub?.type === '1' || sub?.type === '1_90';
+          const subLine  = sub
+            ? (isSingle ? Logic.subTypeLabel(sub.type) : `${Logic.subTypeLabel(sub.type)} · осталось ${sub.remaining}`)
+            : '';
+          return `
+            <label class="cal-attend-row${checked ? ' cal-attend-row--checked' : ''}">
+              <input type="checkbox" class="cal-attend-cb" value="${s.id}"${checked ? ' checked' : ''}>
+              <div class="cal-attend-info">
+                <span class="cal-attend-name">${s.name}</span>
+                ${subLine ? `<span class="cal-attend-sub">${subLine}</span>` : ''}
+              </div>
+              <span class="badge badge--${st.type}">${st.label}</span>
+            </label>`;
+        }).join('')
+      : '<p style="font-size:0.875rem;color:var(--text-muted);padding:var(--sp-2) 0">В группе нет учеников</p>';
+
+    return `
+      <div class="mark-group" data-group-idx="${idx}">
+        <div class="mark-group__head">
+          <span class="mark-group__name">${groupId}</span>
+          ${time ? `<span class="mark-group__time"><i data-lucide="clock-4"></i>${time}</span>` : ''}
+          <button class="btn btn--secondary btn--sm mark-group__add-btn" data-group-idx="${idx}">
+            <i data-lucide="user-plus"></i> Добавить
+          </button>
+        </div>
+        <div class="mark-group__list">${rowsHTML}</div>
+      </div>`;
+  }).join('');
+
+  UI.openModal({
+    title: 'Отметить за сегодня',
+    body: `<div class="mark-today">${sectionsHTML}</div>`,
+    footer: `
+      <button class="btn btn--mark" id="markTodaySave" style="flex:1">
+        <i data-lucide="check"></i> Сохранить посещаемость
+      </button>
+    `,
+    onOpen(modal) {
+      // Highlight row on checkbox change
+      modal.querySelectorAll('.cal-attend-cb').forEach(cb => {
+        cb.addEventListener('change', () =>
+          cb.closest('.cal-attend-row').classList.toggle('cal-attend-row--checked', cb.checked)
+        );
+      });
+
+      lucide.createIcons({ nodes: [modal] });
+
+      // "Добавить ученика" per group — create training if needed, then open add modal
+      modal.querySelectorAll('.mark-group__add-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const idx = parseInt(btn.dataset.groupIdx);
+          const { groupId, time, existing } = todayGroups[idx];
+
+          let training = existing;
+          if (!training) {
+            training = await DB.createTraining({ groupId, date: todayStr, time, attendees: [], note: '' });
+          }
+
+          UI.closeModal();
+          openAddToTrainingModal(training.id, students);
+        });
+      });
+
+      modal.querySelector('#markTodaySave')?.addEventListener('click', async () => {
+        for (let i = 0; i < todayGroups.length; i++) {
+          const { groupId, time, existing, originalAttendees } = todayGroups[i];
+          const section  = modal.querySelector(`[data-group-idx="${i}"]`);
+          if (!section) continue;
+
+          const checked   = [...section.querySelectorAll('.cal-attend-cb:checked')].map(c => c.value);
+          const unchecked = [...section.querySelectorAll('.cal-attend-cb:not(:checked)')].map(c => c.value);
+          const toAdd     = checked.filter(id => !originalAttendees.has(id));
+          const toRemove  = unchecked.filter(id => originalAttendees.has(id));
+
+          let training = existing;
+          if (!training && checked.length > 0) {
+            training = await DB.createTraining({ groupId, date: todayStr, time, attendees: [], note: '' });
+          }
+          if (!training) continue;
+
+          if (toAdd.length) await Logic.markAttendance(training, toAdd);
+
+          for (const sid of toRemove) {
+            const t = await DB.getTrainingById(training.id);
+            if (!t) continue;
+            const stu = await DB.getStudentById(sid);
+            if (stu?.visitHistory.some(v => v.trainingId === training.id)) {
+              await DB.restoreSession(sid, groupId);
+              await DB.removeVisit(sid, training.id);
+            }
+            await DB.updateTraining(training.id, { attendees: t.attendees.filter(id => id !== sid) });
+          }
+        }
+
+        UI.closeModal();
+        UI.showToast({ type: 'success', title: 'Посещаемость сохранена' });
+        if (AppState.currentPage === 'home')      renderHome();
+        else if (AppState.currentPage === 'trainings') renderTrainings();
+      });
+    },
+  });
+}
+
 async function renderHome() {
   const el = document.getElementById('page-home');
   el.innerHTML = `
     <div class="page-header">
       <h1 class="page-title">Главная</h1>
-      <button class="btn btn--primary" id="homeAddTrainingBtn">
-        <i data-lucide="plus"></i> Записать тренировку
-      </button>
+      <div class="page-header__actions">
+        <button class="btn btn--mark" id="homeMarkTodayBtn">
+          <i data-lucide="check-square-2"></i>
+          <span class="btn-label--full">Отметить за сегодня</span>
+          <span class="btn-label--short">Отметить</span>
+        </button>
+        <button class="btn btn--primary" id="homeAddTrainingBtn">
+          <i data-lucide="plus"></i> Записать тренировку
+        </button>
+      </div>
     </div>` +
     '<div id="kpi-area"></div>' +
     '<div id="today-trainings-area"></div>' +
     '<div id="warnings-area"></div>';
 
+  el.querySelector('#homeMarkTodayBtn')?.addEventListener('click', () => openMarkTodayModal());
   el.querySelector('#homeAddTrainingBtn')?.addEventListener('click', () => openTrainingTypeModal());
   lucide.createIcons({ nodes: [el.querySelector('.page-header')] });
 
   // KPIs
   const kpis = await Logic.getKPIs();
-  document.getElementById('kpi-area').innerHTML = UI.renderKPIGrid(kpis);
-  lucide.createIcons({ nodes: [document.getElementById('kpi-area')] });
+  const kpiArea = document.getElementById('kpi-area');
+  kpiArea.innerHTML = UI.renderKPIGrid(kpis);
+  lucide.createIcons({ nodes: [kpiArea] });
   UI.animateCountUp();
+
+  kpiArea.querySelectorAll('[data-kpi]').forEach(card => {
+    card.addEventListener('click', () => openKpiModal(card.dataset.kpi));
+  });
 
   // Today's trainings
   const today     = new Date().toISOString().slice(0, 10);
@@ -118,6 +415,12 @@ async function renderHome() {
       </div>
     `;
     lucide.createIcons({ nodes: [wArea] });
+    wArea.querySelectorAll('.warning-item').forEach(item => {
+      item.addEventListener('click', e => {
+        if (e.target.closest('[data-action]')) return;
+        openStudentDrawer(item.dataset.studentId);
+      });
+    });
   } else {
     wArea.innerHTML = `
       <div class="section-title">Статус абонементов</div>
@@ -692,10 +995,13 @@ async function renderGroupDetail(groupId) {
 
 async function renderTrainings() {
   const el = document.getElementById('page-trainings');
-  const [trainings, students] = await Promise.all([
+  const [trainings, students, groups] = await Promise.all([
     DB.getTrainings(),
     DB.getStudents(),
+    DB.getGroups(),
   ]);
+
+  const isCal = AppState.trainingsView === 'calendar';
 
   el.innerHTML = `
     <div class="page-header">
@@ -703,27 +1009,439 @@ async function renderTrainings() {
         <h1 class="page-title">Тренировки</h1>
         <div class="page-subtitle">${trainings.length} записей</div>
       </div>
-      <button class="btn btn--primary" id="addTrainingBtn">
-        <i data-lucide="plus"></i> Записать тренировку
-      </button>
+      <div class="page-header__actions">
+        <div class="view-toggle">
+          <button class="view-toggle__btn${!isCal ? ' view-toggle__btn--active' : ''}"
+                  data-view="list" title="Список">
+            <i data-lucide="list"></i>
+          </button>
+          <button class="view-toggle__btn${isCal ? ' view-toggle__btn--active' : ''}"
+                  data-view="calendar" title="Неделя">
+            <i data-lucide="calendar-days"></i>
+          </button>
+        </div>
+        <button class="btn btn--primary" id="addTrainingBtn">
+          <i data-lucide="plus"></i> Записать тренировку
+        </button>
+      </div>
     </div>
 
-    <div style="display:flex; flex-direction:column; gap:var(--sp-3)">
-      ${trainings.length
-        ? trainings.map(t => UI.renderTrainingItem(t, students)).join('')
-        : UI.renderEmptyState({
-            icon: 'calendar',
-            title: 'Тренировок пока нет',
-            text: 'Запишите первую тренировку',
-          })
-      }
-    </div>
+    ${isCal
+      ? _buildCalendarHTML(trainings, students, groups)
+      : `<div style="display:flex; flex-direction:column; gap:var(--sp-3)">
+          ${trainings.length
+            ? trainings.map(t => UI.renderTrainingItem(t, students)).join('')
+            : UI.renderEmptyState({ icon: 'calendar', title: 'Тренировок пока нет', text: 'Запишите первую тренировку' })}
+        </div>`
+    }
   `;
 
   lucide.createIcons({ nodes: [el] });
-  setupTrainingToggles(el);
+
+  if (!isCal) setupTrainingToggles(el);
 
   el.querySelector('#addTrainingBtn')?.addEventListener('click', () => openTrainingTypeModal());
+
+  el.querySelectorAll('.view-toggle__btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      AppState.trainingsView = btn.dataset.view;
+      renderTrainings();
+    });
+  });
+
+  if (isCal) _setupCalendarNav(el);
+}
+
+/* ── Calendar rendering ── */
+
+// Russian day abbreviation → week column index (0 = Mon, 6 = Sun)
+const _DOW_IDX = { 'Пн': 0, 'Вт': 1, 'Ср': 2, 'Чт': 3, 'Пт': 4, 'Сб': 5, 'Вс': 6 };
+
+function _buildCalendarHTML(trainings, students, groups) {
+  const ws = AppState.calendarWeekStart;
+  const DOW = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+
+  const days = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(ws);
+    d.setDate(ws.getDate() + i);
+    return d;
+  });
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const fmt = d => d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
+  const weekLabel = `${fmt(days[0])} – ${days[6].toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })}`;
+
+  // Training records in this week, indexed by "groupId|date" for fast lookup
+  const weekTrainings = trainings.filter(t => {
+    if (!t.date) return false;
+    const d = new Date(t.date + 'T00:00:00');
+    d.setHours(0, 0, 0, 0);
+    return d >= days[0] && d <= days[6];
+  });
+  const trMap = new Map(weekTrainings.map(t => [`${t.groupId}|${t.date}`, t]));
+
+  const H_START = 10, H_END = 22, H_PX = 60;
+  const TOTAL_H = (H_END - H_START) * H_PX;
+
+  const gutterHTML = Array.from({ length: H_END - H_START + 1 }, (_, i) =>
+    `<div class="cal-gutter__label" style="top:${i * H_PX}px">${String(H_START + i).padStart(2, '0')}:00</div>`
+  ).join('');
+
+  const headHTML = days.map((d, i) => {
+    const isToday = d.getTime() === today.getTime();
+    return `<div class="cal-head__day${isToday ? ' cal-head__day--today' : ''}">
+      <span class="cal-head__dow">${DOW[i]}</span>
+      <span class="cal-head__num">${d.getDate()}</span>
+    </div>`;
+  }).join('');
+
+  // Build a block HTML element for one calendar event
+  function makeBlock({ training, groupId, date, time, groupDur, isInd, isScheduled }) {
+    if (!time) return '';
+    const [hh, mm] = time.split(':').map(Number);
+    const topPx = ((hh * 60 + (mm || 0)) - H_START * 60) * (H_PX / 60);
+    if (topPx < 0 || topPx >= TOTAL_H) return '';
+
+    const dur = training?.sessionDuration ?? groupDur ?? 60;
+    const hPx = Math.max(26, dur * (H_PX / 60));
+
+    const clientName = isInd ? (students.find(s => s.id === training?.attendees[0])?.name ?? '?') : null;
+    const label = clientName ?? groupId;
+    const meta = !isInd && training?.attendees.length
+      ? ` · ${training.attendees.length} чел.`
+      : '';
+
+    const cls = `cal-block cal-block--${isInd ? 'ind' : 'group'}`;
+
+    return `<div class="${cls}" style="top:${topPx}px; height:${hPx}px"
+                 data-training-id="${training?.id ?? ''}"
+                 data-group-id="${groupId}"
+                 data-date="${date}"
+                 data-time="${time}">
+      <div class="cal-block__name">${label}</div>
+      ${hPx >= 40 ? `<div class="cal-block__time">${time}${meta}</div>` : ''}
+    </div>`;
+  }
+
+  const colsHTML = days.map((d, dayIdx) => {
+    const dateStr = d.toISOString().split('T')[0];
+    const isToday = d.getTime() === today.getTime();
+
+    const linesHTML = Array.from({ length: H_END - H_START + 1 }, (_, i) =>
+      `<div class="cal-col__line" style="top:${i * H_PX}px"></div>`
+    ).join('');
+
+    // 1. Individual + unrecognised training records for this day
+    const dayRecorded = weekTrainings.filter(t => t.date === dateStr);
+
+    // 2. Schedule-based group sessions (add only if no matching record exists)
+    const scheduledBlocks = [];
+    for (const g of groups) {
+      if (g.isIndividual) continue;
+      for (const { day, time } of (g.schedule ?? [])) {
+        if (_DOW_IDX[day] !== dayIdx) continue;
+        if (trMap.has(`${g.name}|${dateStr}`)) continue; // already in records
+        scheduledBlocks.push({ groupId: g.name, date: dateStr, time, groupDur: g.duration ?? 60 });
+      }
+    }
+
+    const blocksHTML = [
+      ...dayRecorded.map(t => {
+        const isInd = DB.INDIVIDUAL_GROUP_NAMES.includes(t.groupId) || !DB.GROUPS.includes(t.groupId);
+        const g = groups.find(gr => gr.name === t.groupId);
+        return makeBlock({ training: t, groupId: t.groupId, date: dateStr, time: t.time, groupDur: g?.duration, isInd, isScheduled: false });
+      }),
+      ...scheduledBlocks.map(b =>
+        makeBlock({ training: null, groupId: b.groupId, date: b.date, time: b.time, groupDur: b.groupDur, isInd: false, isScheduled: true })
+      ),
+    ].join('');
+
+    return `<div class="cal-col${isToday ? ' cal-col--today' : ''}" data-date="${dateStr}"
+                 style="height:${TOTAL_H}px">
+      ${linesHTML}
+      ${blocksHTML}
+    </div>`;
+  }).join('');
+
+  return `
+    <div class="cal-week">
+      <div class="cal-week__topbar">
+        <div class="cal-week__nav">
+          <button class="btn btn--ghost btn--sm" id="calPrevWeek">
+            <i data-lucide="chevron-left"></i>
+          </button>
+          <span class="cal-week__label">${weekLabel}</span>
+          <button class="btn btn--ghost btn--sm" id="calNextWeek">
+            <i data-lucide="chevron-right"></i>
+          </button>
+        </div>
+        <button class="btn btn--secondary btn--sm" id="calToday">Сегодня</button>
+      </div>
+
+      <div class="cal-week__canvas">
+        <div class="cal-head">
+          <div class="cal-head__corner"></div>
+          ${headHTML}
+        </div>
+        <div class="cal-body-wrap">
+          <div class="cal-body">
+            <div class="cal-gutter" style="height:${TOTAL_H}px">
+              ${gutterHTML}
+            </div>
+            ${colsHTML}
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function _setupCalendarNav(el) {
+  el.querySelector('#calPrevWeek')?.addEventListener('click', () => {
+    const d = new Date(AppState.calendarWeekStart);
+    d.setDate(d.getDate() - 7);
+    AppState.calendarWeekStart = d;
+    renderTrainings();
+  });
+  el.querySelector('#calNextWeek')?.addEventListener('click', () => {
+    const d = new Date(AppState.calendarWeekStart);
+    d.setDate(d.getDate() + 7);
+    AppState.calendarWeekStart = d;
+    renderTrainings();
+  });
+  el.querySelector('#calToday')?.addEventListener('click', () => {
+    AppState.calendarWeekStart = getMondayOfWeek(new Date());
+    renderTrainings();
+  });
+  el.querySelectorAll('.cal-block').forEach(block => {
+    block.addEventListener('click', () => {
+      const { trainingId, groupId, date, time } = block.dataset;
+      openCalendarTrainingModal({ trainingId: trainingId || null, groupId, date, time });
+    });
+  });
+}
+
+/* ── Calendar training modal (attendance sheet) ── */
+
+async function openCalendarTrainingModal({ trainingId, groupId, date, time }) {
+  const [training, groups, students] = await Promise.all([
+    trainingId ? DB.getTrainingById(trainingId) : Promise.resolve(null),
+    DB.getGroups(),
+    DB.getStudents(),
+  ]);
+
+  const isInd = DB.INDIVIDUAL_GROUP_NAMES.includes(groupId) || !DB.GROUPS.includes(groupId);
+
+  if (isInd) {
+    // Individual training — show simple info + attendee remove
+    const clientName = training ? (students.find(s => s.id === training.attendees[0])?.name ?? null) : null;
+    const title = clientName ? `Инд. с ${clientName}` : groupId;
+    const dateLabel = Logic.formatDateFull(date);
+
+    const indRowsHTML = training?.attendees.length
+      ? training.attendees.map(id => {
+          const s   = students.find(st => st.id === id);
+          const name = s?.name ?? 'Удалён';
+          const sub  = s?.subscriptions.find(sb => sb.groupId === groupId && sb.isActive) ?? null;
+          const st2  = s ? Logic.getSubStatus(s, groupId) : { label: '—', type: 'none' };
+          const isSingle = sub?.type === '1' || sub?.type === '1_90';
+          const subLine  = sub
+            ? (isSingle ? Logic.subTypeLabel(sub.type) : `${Logic.subTypeLabel(sub.type)} · осталось ${sub.remaining}`)
+            : '';
+          return `
+            <div class="cal-attend-row cal-attend-row--checked">
+              <div class="cal-attend-info">
+                <span class="cal-attend-name">${name}</span>
+                ${subLine ? `<span class="cal-attend-sub">${subLine}</span>` : ''}
+              </div>
+              <span class="badge badge--${st2.type}">${st2.label}</span>
+              ${training ? `<button class="attendee-tag__remove" data-rm-sid="${id}"
+                  data-rm-tid="${training.id}" style="margin-left:var(--sp-1)">
+                <i data-lucide="x"></i>
+              </button>` : ''}
+            </div>`;
+        }).join('')
+      : '<p style="font-size:0.875rem;color:var(--text-muted)">Нет учеников</p>';
+
+    UI.openModal({
+      title,
+      body: `
+        <div style="display:flex;flex-direction:column;gap:var(--sp-4)">
+          <div style="font-size:0.875rem;color:var(--text-secondary)">
+            ${dateLabel}${time ? ' · ' + time : ''}
+          </div>
+          <div class="cal-attend-list">${indRowsHTML}</div>
+        </div>
+      `,
+      footer: `
+        <button class="btn btn--primary" id="calIndAdd">
+          <i data-lucide="user-plus"></i> Добавить
+        </button>
+        ${trainingId ? `<button class="btn btn--ghost" id="calIndDel"
+            style="margin-left:auto;color:var(--danger)"><i data-lucide="trash-2"></i></button>` : ''}
+      `,
+      onOpen(modal) {
+        modal.querySelector('#calIndAdd')?.addEventListener('click', () => {
+          UI.closeModal();
+          if (trainingId) openAddToTrainingModal(trainingId, students);
+        });
+        modal.querySelector('#calIndDel')?.addEventListener('click', async () => {
+          if (!confirm('Удалить тренировку?')) return;
+          UI.closeModal();
+          for (const sid of (training?.attendees ?? [])) {
+            const stu = await DB.getStudentById(sid);
+            if (stu?.visitHistory.some(v => v.trainingId === trainingId)) {
+              await DB.restoreSession(sid, groupId);
+              await DB.removeVisit(sid, trainingId);
+            }
+          }
+          await DB.deleteTraining(trainingId);
+          UI.showToast({ type: 'success', title: 'Тренировка удалена' });
+          renderTrainings();
+        });
+        modal.querySelectorAll('[data-rm-sid]').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            const sid = btn.dataset.rmSid, tid = btn.dataset.rmTid;
+            const t = await DB.getTrainingById(tid);
+            if (!t) return;
+            await DB.updateTraining(tid, { attendees: t.attendees.filter(id => id !== sid) });
+            await DB.restoreSession(sid, t.groupId);
+            await DB.removeVisit(sid, tid);
+            UI.closeModal();
+            UI.showToast({ type: 'info', title: 'Ученик убран' });
+            renderTrainings();
+          });
+        });
+      },
+    });
+    return;
+  }
+
+  // Group training — show all group students with attendance checkboxes
+  const group = groups.find(g => g.name === groupId);
+  const groupStudents = students.filter(s => s.groups.includes(groupId));
+  const attendeeSet = new Set(training?.attendees ?? []);
+  const dateLabel = Logic.formatDateFull(date);
+
+  const rowsHTML = groupStudents.length
+    ? groupStudents.map(s => {
+        const st  = Logic.getSubStatus(s, groupId);
+        const sub = s.subscriptions.find(sb => sb.groupId === groupId && sb.isActive) ?? null;
+        const checked = attendeeSet.has(s.id);
+
+        let subLine = '';
+        if (sub) {
+          const typeLabel = Logic.subTypeLabel(sub.type);
+          const isSingle  = sub.type === '1' || sub.type === '1_90';
+          subLine = isSingle
+            ? typeLabel
+            : `${typeLabel} · осталось ${sub.remaining}`;
+        }
+
+        return `
+          <label class="cal-attend-row${checked ? ' cal-attend-row--checked' : ''}">
+            <input type="checkbox" class="cal-attend-cb" value="${s.id}"${checked ? ' checked' : ''}>
+            <div class="cal-attend-info">
+              <span class="cal-attend-name">${s.name}</span>
+              ${subLine ? `<span class="cal-attend-sub">${subLine}</span>` : ''}
+            </div>
+            <span class="badge badge--${st.type}">${st.label}</span>
+          </label>`;
+      }).join('')
+    : '<p style="font-size:0.875rem;color:var(--text-muted)">В группе нет учеников</p>';
+
+  UI.openModal({
+    title: groupId,
+    body: `
+      <div style="display:flex;flex-direction:column;gap:var(--sp-4)">
+        <div style="font-size:0.875rem;color:var(--text-secondary)">
+          ${dateLabel}${time ? ' · ' + time : ''}
+        </div>
+        <div>
+          <div class="form-label" style="margin-bottom:var(--sp-2)">Посещаемость</div>
+          <div class="cal-attend-list">${rowsHTML}</div>
+        </div>
+      </div>
+    `,
+    footer: `
+      <button class="btn btn--primary" id="calAttendSave">
+        <i data-lucide="check"></i> Сохранить
+      </button>
+      ${trainingId
+        ? `<button class="btn btn--ghost" id="calAttendDel"
+               style="margin-left:auto;color:var(--danger)">
+             <i data-lucide="trash-2"></i>
+           </button>`
+        : ''}
+    `,
+    onOpen(modal) {
+      // Highlight row when checkbox toggled
+      modal.querySelectorAll('.cal-attend-cb').forEach(cb => {
+        cb.addEventListener('change', () =>
+          cb.closest('.cal-attend-row').classList.toggle('cal-attend-row--checked', cb.checked)
+        );
+      });
+
+      modal.querySelector('#calAttendSave')?.addEventListener('click', async () => {
+        const checkedIds   = [...modal.querySelectorAll('.cal-attend-cb:checked')].map(c => c.value);
+        const uncheckedIds = [...modal.querySelectorAll('.cal-attend-cb:not(:checked)')].map(c => c.value);
+
+        // Create training record if it doesn't exist yet
+        let currentTraining = training;
+        if (!currentTraining && checkedIds.length > 0) {
+          currentTraining = await DB.createTraining({
+            groupId,
+            date,
+            time: time || '',
+            attendees: [],
+            note: '',
+          });
+        }
+
+        if (!currentTraining) { UI.closeModal(); return; }
+
+        // Add newly checked students
+        const toAdd = checkedIds.filter(id => !attendeeSet.has(id));
+        if (toAdd.length) await Logic.markAttendance(currentTraining, toAdd);
+
+        // Remove unchecked students that were previously marked
+        const toRemove = uncheckedIds.filter(id => attendeeSet.has(id));
+        for (const sid of toRemove) {
+          const t = await DB.getTrainingById(currentTraining.id);
+          if (!t) continue;
+          const stu = await DB.getStudentById(sid);
+          if (stu?.visitHistory.some(v => v.trainingId === currentTraining.id)) {
+            await DB.restoreSession(sid, groupId);
+            await DB.removeVisit(sid, currentTraining.id);
+          }
+          await DB.updateTraining(currentTraining.id, {
+            attendees: t.attendees.filter(id => id !== sid),
+          });
+        }
+
+        UI.closeModal();
+        UI.showToast({ type: 'success', title: 'Посещаемость сохранена' });
+        renderTrainings();
+      });
+
+      modal.querySelector('#calAttendDel')?.addEventListener('click', async () => {
+        if (!confirm('Удалить запись о тренировке? Занятия будут возвращены ученикам.')) return;
+        UI.closeModal();
+        for (const sid of (training?.attendees ?? [])) {
+          const stu = await DB.getStudentById(sid);
+          if (stu?.visitHistory.some(v => v.trainingId === trainingId)) {
+            await DB.restoreSession(sid, groupId);
+            await DB.removeVisit(sid, trainingId);
+          }
+        }
+        await DB.deleteTraining(trainingId);
+        UI.showToast({ type: 'info', title: 'Запись удалена' });
+        renderTrainings();
+      });
+    },
+  });
 }
 
 /* ────────────────────────────────────────────────
@@ -761,8 +1479,10 @@ function setupTrainingToggles(container) {
       await DB.updateTraining(trainingId, {
         attendees: training.attendees.filter(id => id !== studentId),
       });
-      await DB.restoreSession(studentId, training.groupId);
-      await DB.removeVisit(studentId, trainingId);
+      if (student?.visitHistory.some(v => v.trainingId === trainingId)) {
+        await DB.restoreSession(studentId, training.groupId);
+        await DB.removeVisit(studentId, trainingId);
+      }
 
       UI.showToast({ type: 'info', title: 'Убран с тренировки', msg: name });
 

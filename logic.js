@@ -43,7 +43,7 @@ function getSubStatus(student, groupId) {
   if (days !== null && days < 0) return { label: 'Истёк срок',    type: 'expired' };
   if (sub.remaining === 0)       return { label: 'Нужно продлить', type: 'expired' };
   // Single-visit subscriptions are always "active" until used — no "ending" threshold
-  if (sub.type !== '1' && (sub.remaining <= 1 || (days !== null && days <= 7))) {
+  if (sub.type !== '1' && sub.type !== '1_90' && (sub.remaining <= 1 || (days !== null && days <= 7))) {
     return { label: 'Заканчивается', type: 'ending' };
   }
   return { label: 'Активен', type: 'active' };
@@ -300,6 +300,13 @@ function formatDay(isoDate) {
   return new Date(isoDate).getDate().toString();
 }
 
+/** Short day of week (e.g. "Пн", "Вт") from ISO date */
+function formatDayOfWeek(isoDate) {
+  if (!isoDate) return '';
+  const d = new Date(isoDate + 'T00:00:00');
+  return ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'][d.getDay()];
+}
+
 /** Format group schedule to a readable string.
  *  Groups days that share the same time: "Пн, Ср 19:00 | Сб 16:00 · 90 мин"
  */
@@ -425,6 +432,7 @@ window.Logic = {
   formatDateFull,
   formatMonth,
   formatDay,
+  formatDayOfWeek,
   subTypeLabel,
   formatSchedule,
   getIndividualKPIs,
