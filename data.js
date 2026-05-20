@@ -657,15 +657,15 @@ const FIN_SESSIONS = {
 };
 
 const FIN_LABELS = {
-  single_individual:    'Разовая инди',
+  single_individual:    'Разовая Индив.',
   single_group:         'Разовая групп.',
-  individual_sub_4:     'Инди ×4',
-  individual_sub_8:     'Инди ×8',
+  individual_sub_4:     'Индив. ×4',
+  individual_sub_8:     'Индив. ×8',
   group_sub_4:          'Групп. ×4',
   group_sub_8:          'Групп. ×8',
-  single_individual_90: 'Инди 1.5ч ×1',
-  individual_sub_4_90:  'Инди 1.5ч ×4',
-  individual_sub_8_90:  'Инди 1.5ч ×8',
+  single_individual_90: 'Индив. 1.5ч',
+  individual_sub_4_90:  'Индив. 1.5ч ×4',
+  individual_sub_8_90:  'Индив. 1.5ч ×8',
 };
 
 const PRICING_DEFAULTS = {

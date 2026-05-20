@@ -1688,16 +1688,16 @@ async function renderFinancePricing(el) {
       </div>
       <div class="price-group">
         <div class="price-group__subtitle">Разовые занятия</div>
-        ${makeRow('Разовая инди — 1 час', 'client_single_individual_price')}
+        ${makeRow('Разовая Индив. — 1 час', 'client_single_individual_price')}
         ${makeRow('Разовая групповая',       'client_single_group_price')}
       </div>
       <div class="price-group">
-        <div class="price-group__subtitle">Инди абонементы — 1 час</div>
+        <div class="price-group__subtitle">Индив. абонементы — 1 час</div>
         ${makeRow('Абонемент 4 занятия', 'client_individual_sub_4_price', 4)}
         ${makeRow('Абонемент 8 занятий', 'client_individual_sub_8_price', 8)}
       </div>
       <div class="price-group">
-        <div class="price-group__subtitle">Инди абонементы — 1.5 часа</div>
+        <div class="price-group__subtitle">Индив. абонементы — 1.5 часа</div>
         ${makeRow('Разовое 1.5ч', 'client_single_individual_90_price')}
         ${makeRow('Абонемент 4 × 1.5ч', 'client_individual_sub_4_90_price', 4)}
         ${makeRow('Абонемент 8 × 1.5ч', 'client_individual_sub_8_90_price', 8)}
@@ -1716,13 +1716,13 @@ async function renderFinancePricing(el) {
       </div>
       <div class="price-group">
         <div class="price-group__subtitle">Разовый вход</div>
-        ${makeHallRow('Разовый вход — инди',     'hall_single_individual')}
+        ${makeHallRow('Разовый вход — Индив.',    'hall_single_individual')}
         ${makeHallRow('Разовый вход — групповой', 'hall_single_group')}
       </div>
       <div class="price-group">
-        <div class="price-group__subtitle">Абонементы тренера (инди)</div>
-        ${makeHallRow('Инди абонемент 4 занятия', 'hall_individual_sub_4', 4)}
-        ${makeHallRow('Инди абонемент 8 занятий', 'hall_individual_sub_8', 8)}
+        <div class="price-group__subtitle">Абонементы тренера (Индив.)</div>
+        ${makeHallRow('Индив. абонемент 4 занятия', 'hall_individual_sub_4', 4)}
+        ${makeHallRow('Индив. абонемент 8 занятий', 'hall_individual_sub_8', 8)}
       </div>
       <div class="price-group">
         <div class="price-group__subtitle">Абонементы тренера (групповые)</div>
@@ -2099,21 +2099,24 @@ async function openEditPaymentModal(paymentId, students, allHallCosts) {
   const hallCost = payment.hall_cost_id ? allHallCosts.find(c => c.id === payment.hall_cost_id) : null;
 
   const typeOptions = [
-    ['single_individual', 'Разовая инди'],
-    ['single_group',      'Разовая групповая'],
-    ['individual_sub_4',  'Инди абонемент ×4'],
-    ['individual_sub_8',  'Инди абонемент ×8'],
-    ['group_sub_4',       'Групп. абонемент ×4'],
-    ['group_sub_8',       'Групп. абонемент ×8'],
+    ['single_individual',    'Разовая Индив.'],
+    ['single_group',         'Разовая групповая'],
+    ['individual_sub_4',     'Индив. ×4'],
+    ['individual_sub_8',     'Индив. ×8'],
+    ['single_individual_90', 'Индив. 1.5ч'],
+    ['individual_sub_4_90',  'Индив. 1.5ч ×4'],
+    ['individual_sub_8_90',  'Индив. 1.5ч ×8'],
+    ['group_sub_4',          'Групп. ×4'],
+    ['group_sub_8',          'Групп. ×8'],
   ].map(([v, l]) => `<option value="${v}" ${payment.client_payment_type === v ? 'selected' : ''}>${l}</option>`).join('');
 
   const hallTypeOptions = [
-    ['single_individual', 'Разовая инди'],
+    ['single_individual', 'Разовая Индив.'],
     ['single_group',      'Разовая групповая'],
-    ['individual_sub_4',  'Инди абонемент ×4'],
-    ['individual_sub_8',  'Инди абонемент ×8'],
-    ['group_sub_4',       'Групп. абонемент ×4'],
-    ['group_sub_8',       'Групп. абонемент ×8'],
+    ['individual_sub_4',  'Индив. ×4'],
+    ['individual_sub_8',  'Индив. ×8'],
+    ['group_sub_4',       'Групп. ×4'],
+    ['group_sub_8',       'Групп. ×8'],
   ].map(([v, l]) => `<option value="${v}" ${hallCost?.hall_payment_type === v ? 'selected' : ''}>${l}</option>`).join('');
 
   const initSlot = hallCost?.time_slot ?? 'regular';
@@ -2286,12 +2289,15 @@ async function openAddPaymentModal(students) {
   const pricing = await DB.getPricing();
 
   const typeOptions = [
-    ['single_individual', 'Разовая инди'],
-    ['single_group',      'Разовая групповая'],
-    ['individual_sub_4', 'Инди абонемент ×4'],
-    ['individual_sub_8', 'Инди абонемент ×8'],
-    ['group_sub_4',      'Групп. абонемент ×4'],
-    ['group_sub_8',      'Групп. абонемент ×8'],
+    ['single_individual',    'Разовая Индив.'],
+    ['single_group',         'Разовая групповая'],
+    ['individual_sub_4',     'Индив. ×4'],
+    ['individual_sub_8',     'Индив. ×8'],
+    ['single_individual_90', 'Индив. 1.5ч'],
+    ['individual_sub_4_90',  'Индив. 1.5ч ×4'],
+    ['individual_sub_8_90',  'Индив. 1.5ч ×8'],
+    ['group_sub_4',          'Групп. ×4'],
+    ['group_sub_8',          'Групп. ×8'],
   ].map(([v, l]) => `<option value="${v}">${l}</option>`).join('');
 
   const today = new Date().toISOString().slice(0, 10);
