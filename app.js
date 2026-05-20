@@ -1771,9 +1771,14 @@ async function renderFinanceRecords(el) {
     const hallCost = p.hall_cost_id ? hallMap[p.hall_cost_id]   : null;
     const net      = p.client_amount - (hallCost?.hall_amount ?? 0);
     const netColor = net >= 0 ? 'var(--success)' : 'var(--danger)';
+    const searchVal = [
+      student?.name ?? '',
+      DB.FIN_LABELS[p.client_payment_type] ?? p.client_payment_type,
+      Logic.formatDateShort(p.paid_at),
+    ].join(' ').toLowerCase();
 
     return `
-      <div class="fin-record" data-id="${p.id}">
+      <div class="fin-record" data-id="${p.id}" data-search="${searchVal}">
         <div class="fin-record__header">
           <div class="fin-record__meta">
             <span class="fin-record__name">${student?.name ?? '—'}</span>
@@ -1821,15 +1826,22 @@ async function renderFinanceRecords(el) {
   }).join('');
 
   el.innerHTML = `
-    <div style="display:flex; justify-content:flex-end; margin-bottom:var(--sp-4)">
+    <div class="fin-records-toolbar">
+      <div class="fin-search-wrap">
+        <i data-lucide="search" class="fin-search-icon"></i>
+        <input class="fin-search-input" id="finRecordsSearch" placeholder="Поиск по имени, типу, дате…" />
+      </div>
       <button class="btn btn--primary" id="addPaymentBtn">
         <i data-lucide="plus"></i> Добавить запись
       </button>
     </div>
     ${payments.length
-      ? `<div class="fin-records-list">${cards}</div>`
+      ? `<div class="fin-records-list" id="finRecordsList">${cards}</div>`
       : UI.renderEmptyState({ icon: 'receipt', title: 'Записей пока нет', text: 'Добавьте первую финансовую запись' })
     }
+    <div class="fin-records-empty" id="finRecordsEmpty" style="display:none">
+      ${UI.renderEmptyState({ icon: 'search-x', title: 'Ничего не найдено', text: 'Попробуйте изменить запрос' })}
+    </div>
   `;
 
   lucide.createIcons({ nodes: [el] });
@@ -1838,6 +1850,19 @@ async function renderFinanceRecords(el) {
     header.addEventListener('click', () => {
       header.closest('.fin-record').classList.toggle('is-open');
     });
+  });
+
+  el.querySelector('#finRecordsSearch')?.addEventListener('input', e => {
+    const q = e.target.value.toLowerCase().trim();
+    const records = el.querySelectorAll('.fin-record');
+    let visible = 0;
+    records.forEach(r => {
+      const match = !q || r.dataset.search.includes(q);
+      r.style.display = match ? '' : 'none';
+      if (match) visible++;
+    });
+    const emptyEl = el.querySelector('#finRecordsEmpty');
+    if (emptyEl) emptyEl.style.display = (q && visible === 0) ? '' : 'none';
   });
 
   el.querySelector('#addPaymentBtn')?.addEventListener('click', () => openAddPaymentModal(students));

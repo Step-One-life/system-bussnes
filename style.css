@@ -2129,6 +2129,52 @@ ul, ol { list-style: none; }
 
 /* Add payment modal */
 /* ── Finance Records — expandable cards ── */
+/* ── Records toolbar (search + add button) ── */
+.fin-records-toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-4);
+}
+
+.fin-search-wrap {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.fin-search-icon {
+  position: absolute;
+  left: var(--sp-3);
+  width: 16px; height: 16px;
+  color: var(--text-muted);
+  pointer-events: none;
+  flex-shrink: 0;
+}
+
+.fin-search-input {
+  width: 100%;
+  padding: var(--sp-2) var(--sp-4) var(--sp-2) calc(var(--sp-3) + 16px + var(--sp-2));
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  color: var(--text-primary);
+  font-family: var(--font);
+  font-size: 0.875rem;
+  min-height: 40px;
+  outline: none;
+  transition: border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+}
+
+.fin-search-input::placeholder { color: var(--text-muted); }
+
+.fin-search-input:focus {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px var(--accent-dim);
+  background: var(--surface);
+}
+
 .fin-records-list {
   display: flex;
   flex-direction: column;
