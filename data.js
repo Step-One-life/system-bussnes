@@ -376,6 +376,8 @@ async function createTraining(data) {
     note:            data.note || '',
     isPrime:         data.isPrime ?? false,
     sessionDuration: data.sessionDuration ?? 60,
+    recurring:       data.recurring ?? false,
+    recurringId:     data.recurringId ?? null,
     createdAt:       new Date().toISOString(),
   };
 
@@ -536,6 +538,22 @@ async function deleteTraining(id) {
   if (filtered.length === trainings.length) return false;
   _write(STORAGE_KEYS.TRAININGS, filtered);
   return true;
+}
+
+/** Delete all trainings belonging to a recurring series. */
+async function deleteRecurringSeries(recurringId) {
+  if (!recurringId) return 0;
+  const trainings = _read(STORAGE_KEYS.TRAININGS, []);
+  const remaining = trainings.filter(t => t.recurringId !== recurringId);
+  _write(STORAGE_KEYS.TRAININGS, remaining);
+  return trainings.length - remaining.length;
+}
+
+/** Get all trainings in a recurring series. */
+async function getRecurringSeries(recurringId) {
+  if (!recurringId) return [];
+  const trainings = _read(STORAGE_KEYS.TRAININGS, []);
+  return trainings.filter(t => t.recurringId === recurringId);
 }
 
 /* ────────────────────────────────────────────────
@@ -851,6 +869,8 @@ window.DB = {
   createTraining,
   updateTraining,
   deleteTraining,
+  deleteRecurringSeries,
+  getRecurringSeries,
 
   // dev
   seedDemoData,

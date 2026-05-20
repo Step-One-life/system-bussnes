@@ -2052,6 +2052,92 @@ ul, ol { list-style: none; }
   justify-content: center;
 }
 
+/* ── Recurring training toggle card ── */
+.rec-toggle-card {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--surface-2);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-md);
+  cursor: pointer;
+  transition: border-color var(--dur) var(--ease),
+              background var(--dur) var(--ease);
+  user-select: none;
+  min-height: 52px;
+}
+
+.rec-toggle-card__input { display: none; }
+
+.rec-toggle-card:has(.rec-toggle-card__input:checked) {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+}
+
+.rec-toggle-card__icon {
+  width: 18px; height: 18px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  transition: color var(--dur) var(--ease);
+}
+
+.rec-toggle-card:has(.rec-toggle-card__input:checked) .rec-toggle-card__icon {
+  color: var(--accent);
+}
+
+.rec-toggle-card__text { flex: 1; min-width: 0; }
+
+.rec-toggle-card__label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.rec-toggle-card__hint {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.rec-toggle-card__check {
+  width: 22px; height: 22px;
+  border: 2px solid var(--border);
+  border-radius: var(--r-sm);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  transition: background var(--dur) var(--ease),
+              border-color var(--dur) var(--ease);
+  color: transparent;
+}
+
+.rec-toggle-card:has(.rec-toggle-card__input:checked) .rec-toggle-card__check {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.rec-toggle-card__check i { width: 13px; height: 13px; }
+
+/* ── Recurring badge in training cards ── */
+.badge--recurring {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: var(--r-sm);
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
+  color: var(--accent-light);
+  vertical-align: middle;
+  margin-left: var(--sp-1);
+}
+
+.badge--recurring i { width: 10px; height: 10px; }
+
 /* Duration toggle (1h / 1.5h) in individual session modal */
 .dur-toggle {
   display: flex;

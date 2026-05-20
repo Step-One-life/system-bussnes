@@ -531,6 +531,9 @@ function renderTrainingItem(training, allStudents) {
     isInd ? '' : `${training.attendees.length} чел.`,
     training.note || '',
   ].filter(Boolean).join(' · ');
+  const recurringBadge = training.recurring
+    ? `<span class="badge badge--recurring"><i data-lucide="repeat-2"></i> Еженедельно</span>`
+    : '';
 
   return `
     <div class="training-item" data-training-id="${training.id}">
@@ -540,7 +543,7 @@ function renderTrainingItem(training, allStudents) {
           <span class="training-item__mon">${Logic.formatMonth(training.date)}</span>
         </div>
         <div class="training-item__info">
-          <div class="training-item__group">${groupLabel}</div>
+          <div class="training-item__group">${groupLabel} ${recurringBadge}</div>
           <div class="training-item__meta">${metaParts}</div>
         </div>
         <button class="btn btn--ghost btn--sm training-item__add-btn"
@@ -1088,6 +1091,15 @@ function renderIndividualSessionModal(students, indGroupId) {
         <option value="8">8 занятий</option>
       </select>
     </div>
+    <label class="rec-toggle-card">
+      <input type="checkbox" id="indRecurring" class="rec-toggle-card__input" />
+      <i data-lucide="repeat-2" class="rec-toggle-card__icon"></i>
+      <div class="rec-toggle-card__text">
+        <span class="rec-toggle-card__label">Еженедельно</span>
+        <span class="rec-toggle-card__hint">Добавить в расписание на 7 недель вперёд</span>
+      </div>
+      <div class="rec-toggle-card__check"><i data-lucide="check"></i></div>
+    </label>
     <div class="form-group">
       <label class="form-label">Комментарий (необязательно)</label>
       <textarea class="form-textarea" id="indSessionNote" rows="2"

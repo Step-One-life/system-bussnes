@@ -402,7 +402,10 @@ async function openCreateIndividualSessionModal(indGroupId) {
           });
         }
 
-        // Create training and mark attendance
+        const isRecurring = modal.querySelector('#indRecurring')?.checked ?? false;
+        const recurringId = isRecurring ? crypto.randomUUID() : null;
+
+        // Create current training and mark attendance
         const training = await DB.createTraining({
           date, time,
           groupId: indGroupId,
@@ -410,11 +413,36 @@ async function openCreateIndividualSessionModal(indGroupId) {
           note,
           isPrime: Logic.isPrimeTime(date, time),
           sessionDuration,
+          recurring: isRecurring,
+          recurringId,
         });
         const results = await Logic.markAttendance(training, [studentId]);
 
+        // Create 7 future instances (schedule placeholders, no session deduction)
+        if (isRecurring) {
+          for (let w = 1; w <= 7; w++) {
+            const fd = new Date(date + 'T00:00:00');
+            fd.setDate(fd.getDate() + 7 * w);
+            const futureDate = fd.toISOString().slice(0, 10);
+            await DB.createTraining({
+              date: futureDate, time,
+              groupId: indGroupId,
+              attendees: [studentId],
+              note: '',
+              isPrime: Logic.isPrimeTime(futureDate, time),
+              sessionDuration,
+              recurring: true,
+              recurringId,
+            });
+          }
+        }
+
         UI.closeModal();
-        UI.showToast({ type: 'success', title: 'Занятие записано', msg: student.name });
+        UI.showToast({
+          type: 'success',
+          title: 'Занятие записано',
+          msg: isRecurring ? `${student.name} · добавлено на 7 недель` : student.name,
+        });
 
         for (const r of results) {
           if (r.status === 'expired') {
@@ -752,15 +780,50 @@ function setupTrainingToggles(container) {
       const training = await DB.getTrainingById(trainingId);
       if (!training) return;
 
-      if (!confirm('Удалить тренировку? Занятия будут возвращены ученикам.')) return;
-
-      for (const studentId of training.attendees) {
-        await DB.restoreSession(studentId, training.groupId);
-        await DB.removeVisit(studentId, trainingId);
+      // For recurring trainings ask about scope
+      let deleteSeries = false;
+      if (training.recurring && training.recurringId) {
+        const choice = confirm(
+          'Это еженедельная тренировка.\n\n' +
+          'ОК — удалить всю серию\n' +
+          'Отмена — удалить только эту'
+        );
+        deleteSeries = choice;
+        if (!confirm(deleteSeries
+          ? 'Удалить всю серию? Занятия будут возвращены ученикам.'
+          : 'Удалить только эту тренировку?')) return;
+      } else {
+        if (!confirm('Удалить тренировку? Занятия будут возвращены ученикам.')) return;
       }
 
-      await DB.deleteTraining(trainingId);
-      UI.showToast({ type: 'success', title: 'Тренировка удалена' });
+      if (deleteSeries) {
+        // Restore sessions only for attended instances
+        const series = await DB.getRecurringSeries(training.recurringId);
+        for (const t of series) {
+          for (const sid of t.attendees) {
+            const stu = await DB.getStudentById(sid);
+            const wasAttended = stu?.visitHistory.some(v => v.trainingId === t.id);
+            if (wasAttended) {
+              await DB.restoreSession(sid, t.groupId);
+              await DB.removeVisit(sid, t.id);
+            }
+          }
+        }
+        await DB.deleteRecurringSeries(training.recurringId);
+        UI.showToast({ type: 'success', title: 'Серия удалена' });
+      } else {
+        // Single deletion — only restore if actually attended
+        for (const sid of training.attendees) {
+          const stu = await DB.getStudentById(sid);
+          const wasAttended = stu?.visitHistory.some(v => v.trainingId === trainingId);
+          if (wasAttended) {
+            await DB.restoreSession(sid, training.groupId);
+            await DB.removeVisit(sid, trainingId);
+          }
+        }
+        await DB.deleteTraining(trainingId);
+        UI.showToast({ type: 'success', title: 'Тренировка удалена' });
+      }
 
       if (AppState.currentPage === 'trainings')       await renderTrainings();
       else if (AppState.currentPage === 'home')        await renderHome();
