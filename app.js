@@ -264,9 +264,42 @@ async function openCreateIndividualSessionModal(indGroupId) {
     onOpen: modal => {
       lucide.createIcons({ nodes: [modal] });
 
+      // Duration toggle (60 = 1h, 90 = 1.5h)
+      let sessionDuration = 60;
+      const durToggle   = modal.querySelector('#indDurationToggle');
       const clientSelect = modal.querySelector('#indSessionClient');
       const subInfoEl    = modal.querySelector('#indClientSubInfo');
       const subTypeGroup = modal.querySelector('#indSubTypeGroup');
+      const subTypeSelect = modal.querySelector('#indSubType');
+
+      const subOptions = {
+        60: [
+          ['1',  'Разовое посещение'],
+          ['4',  '4 занятия'],
+          ['8',  '8 занятий'],
+        ],
+        90: [
+          ['1_90', 'Разовое 1.5ч'],
+          ['4_90', '4 занятия 1.5ч'],
+          ['8_90', '8 занятий 1.5ч'],
+        ],
+      };
+
+      const updateSubTypeOptions = () => {
+        subTypeSelect.innerHTML = subOptions[sessionDuration]
+          .map(([v, l]) => `<option value="${v}">${l}</option>`).join('');
+      };
+
+      durToggle?.querySelectorAll('.dur-toggle__btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          durToggle.querySelectorAll('.dur-toggle__btn').forEach(b => b.classList.remove('dur-toggle__btn--active'));
+          btn.classList.add('dur-toggle__btn--active');
+          sessionDuration = Number(btn.dataset.dur);
+          updateSubTypeOptions();
+          refreshClientInfo();
+        });
+      });
+      updateSubTypeOptions();
 
       const refreshClientInfo = () => {
         const studentId = clientSelect.value;
@@ -276,7 +309,9 @@ async function openCreateIndividualSessionModal(indGroupId) {
           return;
         }
         const student   = allStudents.find(s => s.id === studentId);
-        const activeSub = student?.subscriptions.find(s => s.groupId === indGroupId && s.isActive);
+        const activeSub = student?.subscriptions.find(
+          s => s.groupId === indGroupId && s.isActive && (s.sessionDuration ?? 60) === sessionDuration
+        );
 
         if (activeSub) {
           subInfoEl.innerHTML = `
@@ -286,7 +321,7 @@ async function openCreateIndividualSessionModal(indGroupId) {
           `;
           subTypeGroup.style.display = 'none';
         } else {
-          subInfoEl.innerHTML = `<p class="text-muted text-sm" style="margin-top:var(--sp-2)">Нет активного абонемента — выберите тип занятия</p>`;
+          subInfoEl.innerHTML = `<p class="text-muted text-sm" style="margin-top:var(--sp-2)">Нет активного абонемента на ${sessionDuration === 90 ? '1.5ч' : '1ч'} — выберите тип занятия</p>`;
           subTypeGroup.style.display = '';
         }
       };
@@ -349,17 +384,31 @@ async function openCreateIndividualSessionModal(indGroupId) {
           await DB.updateStudent(studentId, { groups: [...student.groups, indGroupId] });
         }
 
-        // If no active sub, create one from selected type
-        const activeSub = student.subscriptions.find(s => s.groupId === indGroupId && s.isActive);
+        // If no active sub for this duration, create one from selected type
+        const activeSub = student.subscriptions.find(
+          s => s.groupId === indGroupId && s.isActive && (s.sessionDuration ?? 60) === sessionDuration
+        );
         if (!activeSub) {
-          const subType = modal.querySelector('#indSubType')?.value || '1';
-          const newSub  = await DB.addSubscription(studentId, { groupId: indGroupId, type: subType, createdAt: date });
+          const subType = subTypeSelect?.value || (sessionDuration === 90 ? '1_90' : '1');
+          const newSub  = await DB.addSubscription(studentId, {
+            groupId: indGroupId,
+            type:    subType,
+            createdAt: date,
+            sessionDuration,
+          });
           await _autoCreatePayment(studentId, newSub);
         }
 
         // Create training and mark attendance
-        const training = await DB.createTraining({ date, time, groupId: indGroupId, attendees: [studentId], note, isPrime: Logic.isPrimeTime(date, time) });
-        const results  = await Logic.markAttendance(training, [studentId]);
+        const training = await DB.createTraining({
+          date, time,
+          groupId: indGroupId,
+          attendees: [studentId],
+          note,
+          isPrime: Logic.isPrimeTime(date, time),
+          sessionDuration,
+        });
+        const results = await Logic.markAttendance(training, [studentId]);
 
         UI.closeModal();
         UI.showToast({ type: 'success', title: 'Занятие записано', msg: student.name });
@@ -1492,9 +1541,12 @@ let _finCharts = {};
 /* ── Finance helpers ── */
 
 function _subPaymentType(subType, isIndividual) {
-  if (subType === '1') return isIndividual ? 'single_individual' : 'single_group';
-  if (subType === '4') return isIndividual ? 'individual_sub_4'  : 'group_sub_4';
-  if (subType === '8') return isIndividual ? 'individual_sub_8'  : 'group_sub_8';
+  if (subType === '1')    return isIndividual ? 'single_individual'    : 'single_group';
+  if (subType === '4')    return isIndividual ? 'individual_sub_4'     : 'group_sub_4';
+  if (subType === '8')    return isIndividual ? 'individual_sub_8'     : 'group_sub_8';
+  if (subType === '1_90') return 'single_individual_90';
+  if (subType === '4_90') return 'individual_sub_4_90';
+  if (subType === '8_90') return 'individual_sub_8_90';
   return null;
 }
 
@@ -1599,13 +1651,19 @@ async function renderFinancePricing(el) {
       </div>
       <div class="price-group">
         <div class="price-group__subtitle">Разовые занятия</div>
-        ${makeRow('Разовая индивидуальная', 'client_single_individual_price')}
+        ${makeRow('Разовая инди — 1 час', 'client_single_individual_price')}
         ${makeRow('Разовая групповая',       'client_single_group_price')}
       </div>
       <div class="price-group">
-        <div class="price-group__subtitle">Индивидуальные абонементы</div>
-        ${makeRow('Инди абонемент 4 занятия', 'client_individual_sub_4_price', 4)}
-        ${makeRow('Инди абонемент 8 занятий', 'client_individual_sub_8_price', 8)}
+        <div class="price-group__subtitle">Инди абонементы — 1 час</div>
+        ${makeRow('Абонемент 4 занятия', 'client_individual_sub_4_price', 4)}
+        ${makeRow('Абонемент 8 занятий', 'client_individual_sub_8_price', 8)}
+      </div>
+      <div class="price-group">
+        <div class="price-group__subtitle">Инди абонементы — 1.5 часа</div>
+        ${makeRow('Разовое 1.5ч', 'client_single_individual_90_price')}
+        ${makeRow('Абонемент 4 × 1.5ч', 'client_individual_sub_4_90_price', 4)}
+        ${makeRow('Абонемент 8 × 1.5ч', 'client_individual_sub_8_90_price', 8)}
       </div>
       <div class="price-group">
         <div class="price-group__subtitle">Групповые абонементы</div>

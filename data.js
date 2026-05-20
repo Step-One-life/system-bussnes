@@ -15,8 +15,8 @@ const STORAGE_KEYS = {
   GROUPS:    'tk_groups',
 };
 
-/** Subscription types */
-const SUB_TYPES = { '1': 1, '4': 4, '8': 8 };
+/** Subscription types → session count */
+const SUB_TYPES = { '1': 1, '4': 4, '8': 8, '1_90': 1, '4_90': 4, '8_90': 8 };
 
 /* ────────────────────────────────────────────────
    Groups (dynamic, stored in localStorage)
@@ -232,15 +232,16 @@ async function addSubscription(studentId, subData) {
   expiresDate.setDate(expiresDate.getDate() + 35);
 
   const sub = {
-    id:           uuid(),
-    groupId:      subData.groupId,
-    type:         subData.type,
+    id:              uuid(),
+    groupId:         subData.groupId,
+    type:            subData.type,
     total,
-    remaining:    total,
-    createdAt:    subData.createdAt || new Date().toISOString().slice(0, 10),
-    expiresAt:    expiresDate.toISOString().slice(0, 10),
-    isActive:     true,
-    finPaymentId: null,
+    remaining:       total,
+    createdAt:       subData.createdAt || new Date().toISOString().slice(0, 10),
+    expiresAt:       expiresDate.toISOString().slice(0, 10),
+    isActive:        true,
+    finPaymentId:    null,
+    sessionDuration: subData.sessionDuration ?? 60,
   };
 
   const subscriptions = [...student.subscriptions, sub];
@@ -255,12 +256,16 @@ async function addSubscription(studentId, subData) {
  * @param {string} groupId
  * @returns {Promise<{ sub: Subscription, status: 'ok'|'ending'|'expired'|'none' }>}
  */
-async function deductSession(studentId, groupId) {
+async function deductSession(studentId, groupId, sessionDuration = null) {
   const student = await getStudentById(studentId);
   if (!student) return { sub: null, status: 'none' };
 
   const subs = student.subscriptions;
-  const idx  = subs.findIndex(s => s.groupId === groupId && s.isActive);
+  const idx  = subs.findIndex(s =>
+    s.groupId === groupId &&
+    s.isActive &&
+    (sessionDuration === null || (s.sessionDuration ?? 60) === sessionDuration)
+  );
 
   if (idx === -1) return { sub: null, status: 'none' };
 
@@ -363,14 +368,15 @@ async function createTraining(data) {
   const trainings = _read(STORAGE_KEYS.TRAININGS, []);
 
   const training = {
-    id:        uuid(),
-    date:      data.date,
-    time:      data.time || '',
-    groupId:   data.groupId,
-    attendees: data.attendees || [],
-    note:      data.note || '',
-    isPrime:   data.isPrime ?? false,
-    createdAt: new Date().toISOString(),
+    id:              uuid(),
+    date:            data.date,
+    time:            data.time || '',
+    groupId:         data.groupId,
+    attendees:       data.attendees || [],
+    note:            data.note || '',
+    isPrime:         data.isPrime ?? false,
+    sessionDuration: data.sessionDuration ?? 60,
+    createdAt:       new Date().toISOString(),
   };
 
   trainings.push(training);

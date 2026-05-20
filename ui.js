@@ -1053,6 +1053,13 @@ function renderIndividualSessionModal(students, indGroupId) {
 
   return `
     <div class="form-group">
+      <label class="form-label">Длительность</label>
+      <div class="dur-toggle" id="indDurationToggle">
+        <button class="dur-toggle__btn dur-toggle__btn--active" data-dur="60">1 час</button>
+        <button class="dur-toggle__btn" data-dur="90">1.5 часа</button>
+      </div>
+    </div>
+    <div class="form-group">
       <label class="form-label">Клиент</label>
       <select class="form-select" id="indSessionClient">
         <option value="">— выберите клиента —</option>
@@ -1074,7 +1081,7 @@ function renderIndividualSessionModal(students, indGroupId) {
     <div class="conflict-hint" id="trainingConflictHint"></div>
     <div id="primeHint" class="prime-hint"></div>
     <div class="form-group" id="indSubTypeGroup" style="display:none">
-      <label class="form-label">Абонемент</label>
+      <label class="form-label">Новый абонемент</label>
       <select class="form-select" id="indSubType">
         <option value="1">Разовое посещение</option>
         <option value="4">4 занятия</option>

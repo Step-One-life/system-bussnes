@@ -100,8 +100,8 @@ async function markAttendance(training, studentIds) {
     const student = await DB.getStudentById(sid);
     if (!student) continue;
 
-    // Deduct session
-    const { sub, status } = await DB.deductSession(sid, training.groupId);
+    // Deduct session (pass duration so the right sub is consumed)
+    const { sub, status } = await DB.deductSession(sid, training.groupId, training.sessionDuration ?? null);
 
     // Record visit
     await DB.recordVisit(sid, {
@@ -331,7 +331,14 @@ function formatSchedule(group) {
 
 /** Subscription type label */
 function subTypeLabel(type) {
-  const labels = { '1': 'Разовое', '4': '4 занятия', '8': '8 занятий' };
+  const labels = {
+    '1':    'Разовое',
+    '4':    '4 занятия',
+    '8':    '8 занятий',
+    '1_90': 'Разовое 1.5ч',
+    '4_90': '4 занятия 1.5ч',
+    '8_90': '8 занятий 1.5ч',
+  };
   return labels[type] ?? type;
 }
 
