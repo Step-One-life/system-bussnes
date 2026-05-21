@@ -350,7 +350,61 @@
       "expenseBadge": "Расход",
       "save": "Сохранить цены",
       "saved": "Цены сохранены",
-      "savedMsg": "Применятся к следующим записям"
+      "savedMsg": "Применятся к следующим записям",
+      "locationLabel": "Локация",
+      "copyButton": "Скопировать цены",
+      "copyFromLabel": "Скопировать тарифы из локации",
+      "copyFromPlaceholder": "Выберите локацию-источник",
+      "copyConfirm": "Скопировать",
+      "copied": "Тарифы скопированы",
+      "copiedMsg": "Тарифы перенесены в текущую локацию",
+      "noLocations": "Сначала создайте локацию во вкладке «Локации»",
+      "noRules": "Тарифов пока нет. Добавьте тариф или скопируйте из другой локации.",
+      "addRule": "Добавить тариф",
+      "marginTitle": "Маржа (цена клиента − расход зала)",
+      "marginRegular": "Обычная",
+      "marginPrime": "Prime",
+      "ruleSaved": "Тариф сохранён",
+      "ruleDeleted": "Тариф удалён",
+      "table": {
+        "lessonKind": "Тип занятия",
+        "format": "Формат",
+        "duration": "Длительность",
+        "sessions": "Кол-во занятий",
+        "clientPrice": "Обычная цена",
+        "clientPrimePrice": "Prime-цена",
+        "hallCost": "Обычный расход",
+        "hallPrimeCost": "Prime-расход",
+        "actions": ""
+      },
+      "lessonKind": {
+        "individual": "Индивидуальное",
+        "group": "Групповое"
+      },
+      "format": {
+        "single": "Разовое",
+        "subscription": "Абонемент"
+      },
+      "ruleForm": {
+        "createTitle": "Новый тариф",
+        "editTitle": "Редактирование тарифа",
+        "titleLabel": "Название тарифа",
+        "titlePlaceholder": "Например, Индив. абонемент 4",
+        "lessonKindLabel": "Тип занятия",
+        "formatLabel": "Формат",
+        "durationLabel": "Длительность занятия",
+        "durationCustom": "Своя длительность (мин)",
+        "sessionsLabel": "Количество занятий",
+        "sessionsCustom": "Своё количество",
+        "clientPriceLabel": "Цена для клиента (обычная)",
+        "clientPrimePriceLabel": "Цена для клиента (Prime)",
+        "hallCostLabel": "Расход залу (обычный)",
+        "hallPrimeCostLabel": "Расход залу (Prime)",
+        "deleteTitle": "Удалить тариф?",
+        "titleRequired": "Укажите название тарифа"
+      },
+      "durationPreset": "{{minutes}} мин",
+      "sessionsValue": "{{count}}"
     },
     "priceRow": {
       "perSession": "≈ {{amount}} ₽/зан.",
@@ -414,6 +468,43 @@
       "saveAttendance": "Сохранить посещаемость",
       "nothingScheduled": "По расписанию групп на сегодня ничего не запланировано",
       "noGroupStudents": "В группе нет учеников"
+    }
+  },
+  "locations": {
+    "title": "Локации",
+    "addButton": "Добавить локацию",
+    "selectLabel": "Локация",
+    "selectPlaceholder": "Выберите локацию",
+    "nameRequired": "Укажите название локации",
+    "created": "Локация создана",
+    "updated": "Локация обновлена",
+    "none": "Без локации",
+    "kind": {
+      "hall": "Зал",
+      "studio": "Студия",
+      "outdoor": "Площадка",
+      "online": "Онлайн"
+    },
+    "card": {
+      "noAddress": "Адрес не указан",
+      "default": "По умолчанию",
+      "archived": "В архиве"
+    },
+    "empty": {
+      "title": "Локаций пока нет",
+      "text": "Добавьте локацию, чтобы настроить тарифы"
+    },
+    "form": {
+      "createTitle": "Новая локация",
+      "editTitle": "Редактирование локации",
+      "nameLabel": "Название",
+      "namePlaceholder": "Например, Основной зал",
+      "addressLabel": "Адрес",
+      "addressPlaceholder": "Необязательно",
+      "kindLabel": "Тип локации",
+      "defaultLabel": "Локация по умолчанию",
+      "deleteTitle": "Удалить локацию?",
+      "deleteDescription": "Тарифы локации также будут удалены"
     }
   }
 }
