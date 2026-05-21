@@ -62,3 +62,51 @@ export interface HallCostInput {
 }
 
 export type Pricing = Record<string, number> & { updated_at?: string }
+
+export type LessonKind = 'individual' | 'group'
+
+export type PricingFormat = 'single' | 'subscription'
+
+/** Тариф локации: одна строка прайс-листа. */
+export interface PricingRule {
+  id: string
+  location_id: string
+  title: string
+  lesson_kind: LessonKind
+  format: PricingFormat
+  duration_minutes: number
+  sessions_count: number
+  client_price: number
+  client_prime_price: number
+  hall_cost: number
+  hall_prime_cost: number
+  active: boolean
+  created_at: string
+}
+
+export interface PricingRuleInput {
+  location_id: string
+  title: string
+  lesson_kind: LessonKind
+  format: PricingFormat
+  duration_minutes: number
+  sessions_count: number
+  client_price?: number
+  client_prime_price?: number
+  hall_cost?: number
+  hall_prime_cost?: number
+  active?: boolean
+}
+
+export interface PricingRuleChanges {
+  title?: string
+  lesson_kind?: LessonKind
+  format?: PricingFormat
+  duration_minutes?: number
+  sessions_count?: number
+  client_price?: number
+  client_prime_price?: number
+  hall_cost?: number
+  hall_prime_cost?: number
+  active?: boolean
+}

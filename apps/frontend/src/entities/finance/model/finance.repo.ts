@@ -1,6 +1,17 @@
+import map from 'lodash/map'
+
 import { apiClient } from 'common/services/api/api-client'
 
-import type { HallCost, HallCostInput, Payment, PaymentInput, Pricing } from './types'
+import type {
+  HallCost,
+  HallCostInput,
+  Payment,
+  PaymentInput,
+  Pricing,
+  PricingRule,
+  PricingRuleChanges,
+  PricingRuleInput,
+} from './types'
 
 /**
  * The backend speaks camelCase, the frontend domain model is snake_case.
@@ -82,6 +93,100 @@ export async function savePricing(data: Pricing): Promise<void> {
   const { updated_at, ...values } = data
   void updated_at
   await apiClient.put('/finance/pricing', { data: values })
+}
+
+/* ── Pricing rules (per-location tariffs) ── */
+
+interface RawPricingRule {
+  id: string
+  locationId: string
+  title: string
+  lessonKind: PricingRule['lesson_kind']
+  format: PricingRule['format']
+  durationMinutes: number
+  sessionsCount: number
+  clientPrice: number | string
+  clientPrimePrice: number | string
+  hallCost: number | string
+  hallPrimeCost: number | string
+  active: boolean
+  createdAt: string
+}
+
+function toPricingRule(raw: RawPricingRule): PricingRule {
+  return {
+    id: raw.id,
+    location_id: raw.locationId,
+    title: raw.title,
+    lesson_kind: raw.lessonKind,
+    format: raw.format,
+    duration_minutes: raw.durationMinutes,
+    sessions_count: raw.sessionsCount,
+    client_price: Number(raw.clientPrice) || 0,
+    client_prime_price: Number(raw.clientPrimePrice) || 0,
+    hall_cost: Number(raw.hallCost) || 0,
+    hall_prime_cost: Number(raw.hallPrimeCost) || 0,
+    active: !!raw.active,
+    created_at: raw.createdAt,
+  }
+}
+
+export async function getPricingRules(locationId: string): Promise<PricingRule[]> {
+  if (!locationId) return []
+  const raw = await apiClient.get<RawPricingRule[]>('/finance/pricing-rules', {
+    locationId,
+  })
+  return map(raw, toPricingRule)
+}
+
+export async function createPricingRule(data: PricingRuleInput): Promise<PricingRule> {
+  const raw = await apiClient.post<RawPricingRule>('/finance/pricing-rules', {
+    locationId: data.location_id,
+    title: data.title,
+    lessonKind: data.lesson_kind,
+    format: data.format,
+    durationMinutes: data.duration_minutes,
+    sessionsCount: data.sessions_count,
+    clientPrice: data.client_price ?? 0,
+    clientPrimePrice: data.client_prime_price ?? 0,
+    hallCost: data.hall_cost ?? 0,
+    hallPrimeCost: data.hall_prime_cost ?? 0,
+    active: data.active ?? true,
+  })
+  return toPricingRule(raw)
+}
+
+export async function updatePricingRule(
+  id: string,
+  changes: PricingRuleChanges,
+): Promise<PricingRule | null> {
+  const body: Record<string, unknown> = {}
+  if (changes.title !== undefined) body.title = changes.title
+  if (changes.lesson_kind !== undefined) body.lessonKind = changes.lesson_kind
+  if (changes.format !== undefined) body.format = changes.format
+  if (changes.duration_minutes !== undefined) body.durationMinutes = changes.duration_minutes
+  if (changes.sessions_count !== undefined) body.sessionsCount = changes.sessions_count
+  if (changes.client_price !== undefined) body.clientPrice = changes.client_price
+  if (changes.client_prime_price !== undefined) {
+    body.clientPrimePrice = changes.client_prime_price
+  }
+  if (changes.hall_cost !== undefined) body.hallCost = changes.hall_cost
+  if (changes.hall_prime_cost !== undefined) body.hallPrimeCost = changes.hall_prime_cost
+  if (changes.active !== undefined) body.active = changes.active
+  const raw = await apiClient.patch<RawPricingRule>(`/finance/pricing-rules/${id}`, body)
+  return toPricingRule(raw)
+}
+
+export async function deletePricingRule(id: string): Promise<boolean> {
+  await apiClient.delete(`/finance/pricing-rules/${id}`)
+  return true
+}
+
+export async function copyPricingRules(
+  fromLocationId: string,
+  toLocationId: string,
+): Promise<void> {
+  await apiClient.post('/finance/pricing-rules/copy', { fromLocationId, toLocationId })
 }
 
 /* ── Payments (client → coach) ── */

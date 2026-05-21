@@ -1,16 +1,21 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import {
+  copyPricingRules,
   createHallCost,
   createPayment,
+  createPricingRule,
   deleteHallCost,
   deletePayment,
+  deletePricingRule,
   getHallCosts,
   getPayments,
   getPricing,
+  getPricingRules,
   savePricing,
   updateHallCost,
   updatePayment,
+  updatePricingRule,
 } from 'entities/finance/model/finance.repo'
 
 import type {
@@ -19,12 +24,15 @@ import type {
   Payment,
   PaymentInput,
   Pricing,
+  PricingRuleChanges,
+  PricingRuleInput,
 } from 'entities/finance/model/types'
 
 export const financeKeys = {
   payments: ['payments', 'all'] as const,
   hallCosts: ['hall-costs', 'all'] as const,
   pricing: ['pricing'] as const,
+  pricingRules: (locationId: string) => ['pricing-rules', locationId] as const,
 }
 
 export function usePayments() {
@@ -97,5 +105,54 @@ export function useSavePricing() {
   return useMutation({
     mutationFn: (data: Pricing) => savePricing(data),
     onSuccess: () => qc.invalidateQueries({ queryKey: financeKeys.pricing }),
+  })
+}
+
+/* ── Pricing rules ── */
+
+export function usePricingRules(locationId: string) {
+  return useQuery({
+    queryKey: financeKeys.pricingRules(locationId),
+    queryFn: () => getPricingRules(locationId),
+    enabled: !!locationId,
+  })
+}
+
+export function useCreatePricingRule() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (data: PricingRuleInput) => createPricingRule(data),
+    onSuccess: (rule) =>
+      qc.invalidateQueries({ queryKey: financeKeys.pricingRules(rule.location_id) }),
+  })
+}
+
+export function useUpdatePricingRule() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, changes }: { id: string; changes: PricingRuleChanges }) =>
+      updatePricingRule(id, changes),
+    onSuccess: (rule) => {
+      if (rule) qc.invalidateQueries({ queryKey: financeKeys.pricingRules(rule.location_id) })
+    },
+  })
+}
+
+export function useDeletePricingRule() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id }: { id: string; locationId: string }) => deletePricingRule(id),
+    onSuccess: (_res, { locationId }) =>
+      qc.invalidateQueries({ queryKey: financeKeys.pricingRules(locationId) }),
+  })
+}
+
+export function useCopyPricingRules() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ fromLocationId, toLocationId }: { fromLocationId: string; toLocationId: string }) =>
+      copyPricingRules(fromLocationId, toLocationId),
+    onSuccess: (_res, { toLocationId }) =>
+      qc.invalidateQueries({ queryKey: financeKeys.pricingRules(toLocationId) }),
   })
 }
