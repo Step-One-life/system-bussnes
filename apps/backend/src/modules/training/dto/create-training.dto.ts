@@ -24,6 +24,11 @@ export class CreateTrainingDto implements CreateTrainingShape {
   @IsUUID()
   groupId!: string
 
+  @ApiPropertyOptional({ format: 'uuid', nullable: true, description: 'id локации' })
+  @IsOptional()
+  @IsUUID()
+  locationId?: string | null
+
   @ApiPropertyOptional({ type: [String], description: 'id учеников' })
   @IsOptional()
   @IsArray()

@@ -25,4 +25,7 @@ export class Group extends OwnedEntity {
 
   @Column({ field: 'is_individual', type: DataType.BOOLEAN, allowNull: false, defaultValue: false })
   declare isIndividual: boolean
+
+  @Column({ field: 'location_id', type: DataType.UUID, allowNull: true })
+  declare locationId: string | null
 }

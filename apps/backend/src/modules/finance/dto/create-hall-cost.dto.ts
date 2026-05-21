@@ -23,6 +23,11 @@ export class CreateHallCostDto implements CreateHallCostShape {
   @IsUUID()
   studentId?: string | null
 
+  @ApiPropertyOptional({ format: 'uuid', nullable: true })
+  @IsOptional()
+  @IsUUID()
+  locationId?: string | null
+
   @ApiProperty({ enum: HALL_TYPES })
   @IsIn(HALL_TYPES)
   hallPaymentType!: HallPaymentType

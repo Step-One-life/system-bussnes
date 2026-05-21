@@ -1,6 +1,15 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 import { Type } from 'class-transformer'
-import { IsArray, IsBoolean, IsInt, IsNotEmpty, IsOptional, IsString, ValidateNested } from 'class-validator'
+import {
+  IsArray,
+  IsBoolean,
+  IsInt,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsUUID,
+  ValidateNested,
+} from 'class-validator'
 
 import type { CreateGroupShape } from '@trikick/shared'
 
@@ -28,4 +37,9 @@ export class CreateGroupDto implements CreateGroupShape {
   @IsOptional()
   @IsBoolean()
   isIndividual?: boolean
+
+  @ApiPropertyOptional({ format: 'uuid', nullable: true, description: 'id локации группы' })
+  @IsOptional()
+  @IsUUID()
+  locationId?: string | null
 }

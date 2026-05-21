@@ -23,6 +23,7 @@ export class PaymentsService extends OwnedCrudService<Payment> {
     const sessions = FIN_SESSIONS[dto.clientPaymentType] ?? 1
     return this.createForUser(userId, {
       studentId: dto.studentId ?? null,
+      locationId: dto.locationId ?? null,
       clientPaymentType: dto.clientPaymentType,
       clientAmount: dto.clientAmount,
       sessionsTotal: sessions,

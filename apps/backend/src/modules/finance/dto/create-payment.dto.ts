@@ -21,6 +21,11 @@ export class CreatePaymentDto implements CreatePaymentShape {
   @IsUUID()
   studentId?: string | null
 
+  @ApiPropertyOptional({ format: 'uuid', nullable: true })
+  @IsOptional()
+  @IsUUID()
+  locationId?: string | null
+
   @ApiProperty({ enum: CLIENT_TYPES })
   @IsIn(CLIENT_TYPES)
   clientPaymentType!: ClientPaymentType

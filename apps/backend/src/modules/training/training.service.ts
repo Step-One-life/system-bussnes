@@ -51,6 +51,7 @@ export class TrainingService extends OwnedCrudService<Training> {
   ): Promise<Training> {
     const training = await this.createForUser(userId, {
       groupId: dto.groupId,
+      locationId: dto.locationId ?? null,
       date: dto.date,
       time: dto.time ?? '',
       note: dto.note ?? '',

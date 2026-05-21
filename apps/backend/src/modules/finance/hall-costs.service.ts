@@ -19,6 +19,7 @@ export class HallCostsService extends OwnedCrudService<HallCost> {
     const sessions = FIN_SESSIONS[dto.hallPaymentType] ?? 1
     return this.createForUser(userId, {
       studentId: dto.studentId ?? null,
+      locationId: dto.locationId ?? null,
       hallPaymentType: dto.hallPaymentType,
       timeSlot: dto.timeSlot ?? 'regular',
       trainingTime: dto.trainingTime ?? '',

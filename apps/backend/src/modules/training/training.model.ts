@@ -16,6 +16,9 @@ export class Training extends OwnedEntity {
   @Column({ field: 'group_id', type: DataType.UUID, allowNull: false })
   declare groupId: string
 
+  @Column({ field: 'location_id', type: DataType.UUID, allowNull: true })
+  declare locationId: string | null
+
   @Column({ type: DataType.DATEONLY, allowNull: false })
   declare date: string
 

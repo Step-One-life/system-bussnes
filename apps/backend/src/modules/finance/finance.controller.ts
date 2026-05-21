@@ -17,15 +17,20 @@ import { CurrentUser } from '../../common/decorators/current-user.decorator'
 import { IdParamDto } from '../../common/dto/id-param.dto'
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard'
 import type { CurrentUserPayload } from '../../common/interfaces/current-user.interface'
+import { CopyPricingDto } from './dto/copy-pricing.dto'
 import { CreateHallCostDto, UpdateHallCostDto } from './dto/create-hall-cost.dto'
 import { CreatePaymentDto, UpdatePaymentDto } from './dto/create-payment.dto'
+import { CreatePricingRuleDto } from './dto/create-pricing-rule.dto'
 import { SavePricingDto } from './dto/save-pricing.dto'
+import { UpdatePricingRuleDto } from './dto/update-pricing-rule.dto'
 import type { FinanceStats } from './finance-stats.service'
 import { FinanceStatsService } from './finance-stats.service'
 import { HallCost } from './hall-cost.model'
 import { HallCostsService } from './hall-costs.service'
 import { Payment } from './payment.model'
 import { PaymentsService } from './payments.service'
+import { PricingRule } from './pricing-rule.model'
+import { PricingRulesService } from './pricing-rules.service'
 import { PricingService } from './pricing.service'
 
 @ApiTags('finance')
@@ -37,6 +42,7 @@ export class FinanceController {
     private readonly paymentsService: PaymentsService,
     private readonly hallCostsService: HallCostsService,
     private readonly pricingService: PricingService,
+    private readonly pricingRulesService: PricingRulesService,
     private readonly statsService: FinanceStatsService,
   ) {}
 
@@ -129,6 +135,56 @@ export class FinanceController {
     @Body() dto: SavePricingDto,
   ): Promise<Record<string, number>> {
     return this.pricingService.save(user.id, dto.data)
+  }
+
+  /* ── Pricing rules (гибкие тарифы локаций) ── */
+
+  @Get('pricing-rules')
+  @ApiOperation({ summary: 'Тарифы локаций' })
+  @ApiQuery({ name: 'locationId', required: false })
+  listPricingRules(
+    @CurrentUser() user: CurrentUserPayload,
+    @Query('locationId') locationId?: string,
+  ): Promise<PricingRule[]> {
+    return this.pricingRulesService.findEveryForUser(user.id, locationId)
+  }
+
+  @Post('pricing-rules')
+  @ApiOperation({ summary: 'Создать тариф' })
+  createPricingRule(
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() dto: CreatePricingRuleDto,
+  ): Promise<PricingRule> {
+    return this.pricingRulesService.createRule(user.id, dto)
+  }
+
+  @Post('pricing-rules/copy')
+  @ApiOperation({ summary: 'Скопировать тарифы из одной локации в другую' })
+  copyPricingRules(
+    @CurrentUser() user: CurrentUserPayload,
+    @Body() dto: CopyPricingDto,
+  ): Promise<PricingRule[]> {
+    return this.pricingRulesService.copy(user.id, dto)
+  }
+
+  @Patch('pricing-rules/:id')
+  @ApiOperation({ summary: 'Обновить тариф' })
+  updatePricingRule(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param() { id }: IdParamDto,
+    @Body() dto: UpdatePricingRuleDto,
+  ): Promise<PricingRule> {
+    return this.pricingRulesService.updateForUser(user.id, id, dto)
+  }
+
+  @Delete('pricing-rules/:id')
+  @HttpCode(204)
+  @ApiOperation({ summary: 'Удалить тариф' })
+  removePricingRule(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param() { id }: IdParamDto,
+  ): Promise<void> {
+    return this.pricingRulesService.removeForUser(user.id, id)
   }
 
   /* ── Stats ── */

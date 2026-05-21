@@ -16,6 +16,9 @@ export class Payment extends OwnedEntity {
   @Column({ field: 'student_id', type: DataType.UUID, allowNull: true })
   declare studentId: string | null
 
+  @Column({ field: 'location_id', type: DataType.UUID, allowNull: true })
+  declare locationId: string | null
+
   @Column({ field: 'client_payment_type', type: DataType.STRING, allowNull: false })
   declare clientPaymentType: ClientPaymentType
 

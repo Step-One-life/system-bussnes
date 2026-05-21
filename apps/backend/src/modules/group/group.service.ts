@@ -21,6 +21,7 @@ export class GroupService extends OwnedCrudService<Group> {
       schedule: dto.schedule ?? [],
       duration: dto.duration ?? 60,
       isIndividual: dto.isIndividual ?? false,
+      locationId: dto.locationId ?? null,
     })
   }
 }
