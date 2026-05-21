@@ -20,3 +20,12 @@ export type HallPaymentType = ClientPaymentType
 export type TimeSlot = 'regular' | 'prime'
 
 export type FinStatus = 'active' | 'closed'
+
+/** Тип локации, где проходят занятия. */
+export type LocationKind = 'hall' | 'studio' | 'outdoor' | 'online'
+
+/** Вид занятия в тарифе. */
+export type LessonKind = 'individual' | 'group'
+
+/** Формат тарифа: разовое занятие или абонемент. */
+export type PricingFormat = 'single' | 'subscription'

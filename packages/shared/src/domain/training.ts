@@ -3,6 +3,7 @@ export interface Training {
   date: string
   time: string
   groupId: string
+  locationId: string | null
   attendees: string[]
   note: string
   isPrime: boolean
