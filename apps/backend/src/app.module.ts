@@ -9,6 +9,7 @@ import { AllExceptionsFilter } from './common/filters/all-exceptions.filter'
 import { TransformInterceptor } from './common/interceptors/transform.interceptor'
 import { AuthModule } from './modules/auth/auth.module'
 import { GroupModule } from './modules/group/group.module'
+import { LocationModule } from './modules/location/location.module'
 import { StudentModule } from './modules/student/student.module'
 import { TrainingModule } from './modules/training/training.module'
 import { FinanceModule } from './modules/finance/finance.module'
@@ -23,6 +24,7 @@ import { FinanceModule } from './modules/finance/finance.module'
     DatabaseModule,
     AuthModule,
     GroupModule,
+    LocationModule,
     StudentModule,
     TrainingModule,
     FinanceModule,
