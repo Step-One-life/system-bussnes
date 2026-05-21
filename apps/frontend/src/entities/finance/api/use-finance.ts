@@ -10,9 +10,7 @@ import {
   deletePricingRule,
   getHallCosts,
   getPayments,
-  getPricing,
   getPricingRules,
-  savePricing,
   updateHallCost,
   updatePayment,
   updatePricingRule,
@@ -23,7 +21,6 @@ import type {
   HallCostInput,
   Payment,
   PaymentInput,
-  Pricing,
   PricingRuleChanges,
   PricingRuleInput,
 } from 'entities/finance/model/types'
@@ -31,7 +28,6 @@ import type {
 export const financeKeys = {
   payments: ['payments', 'all'] as const,
   hallCosts: ['hall-costs', 'all'] as const,
-  pricing: ['pricing'] as const,
   pricingRules: (locationId: string) => ['pricing-rules', locationId] as const,
 }
 
@@ -41,10 +37,6 @@ export function usePayments() {
 
 export function useHallCosts() {
   return useQuery({ queryKey: financeKeys.hallCosts, queryFn: getHallCosts })
-}
-
-export function usePricing() {
-  return useQuery({ queryKey: financeKeys.pricing, queryFn: getPricing })
 }
 
 export function useCreatePayment() {
@@ -97,14 +89,6 @@ export function useDeleteHallCost() {
   return useMutation({
     mutationFn: (id: string) => deleteHallCost(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: financeKeys.hallCosts }),
-  })
-}
-
-export function useSavePricing() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (data: Pricing) => savePricing(data),
-    onSuccess: () => qc.invalidateQueries({ queryKey: financeKeys.pricing }),
   })
 }
 

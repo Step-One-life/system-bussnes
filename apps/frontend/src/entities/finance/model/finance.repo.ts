@@ -7,7 +7,6 @@ import type {
   HallCostInput,
   Payment,
   PaymentInput,
-  Pricing,
   PricingRule,
   PricingRuleChanges,
   PricingRuleInput,
@@ -84,19 +83,6 @@ function sortByPaidDesc<T extends { paid_at: string }>(items: T[]): T[] {
   return [...items].sort(
     (a, b) => new Date(b.paid_at).getTime() - new Date(a.paid_at).getTime(),
   )
-}
-
-/* ── Pricing ── */
-
-export async function getPricing(): Promise<Pricing> {
-  const data = await apiClient.get<Record<string, number>>('/finance/pricing')
-  return { ...data } as Pricing
-}
-
-export async function savePricing(data: Pricing): Promise<void> {
-  const { updated_at, ...values } = data
-  void updated_at
-  await apiClient.put('/finance/pricing', { data: values })
 }
 
 /* ── Pricing rules (per-location tariffs) ── */

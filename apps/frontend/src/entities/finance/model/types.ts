@@ -65,8 +65,6 @@ export interface HallCostInput {
   notes?: string
 }
 
-export type Pricing = Record<string, number> & { updated_at?: string }
-
 export type LessonKind = 'individual' | 'group'
 
 export type PricingFormat = 'single' | 'subscription'

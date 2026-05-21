@@ -7,11 +7,14 @@ import { useTranslation } from 'react-i18next'
 
 import { useToast } from 'common/ui'
 import { FIN_LABELS } from 'entities/finance/model/finance-constants'
+import { useGroups } from 'entities/groups/api/use-groups'
+import { useLocations } from 'entities/locations'
 import { studentKeys } from 'entities/students/api/use-students'
 import { linkPaymentToSub } from 'entities/students/model/students.repo'
 
-import { useCreatePayment, usePricing } from '../api/use-finance'
+import { useCreatePayment, usePricingRules } from '../api/use-finance'
 import { subPaymentType } from '../lib/auto-payment'
+import { matchRule, subTypeToTuple } from '../lib/pricing-lookup'
 
 import type { Dayjs } from 'dayjs'
 import type { Student, Subscription } from 'entities/students'
@@ -41,11 +44,19 @@ export function MarkPaidModal({
   const toast = useToast()
   const qc = useQueryClient()
   const createPayment = useCreatePayment()
-  const { data: pricing } = usePricing()
+  const { data: groups = [] } = useGroups()
+  const { data: locations = [] } = useLocations()
+
+  // Resolve the subscription's location via its group, else the default one.
+  const subGroup = sub ? (groups.find((g) => g.name === sub.groupId) ?? null) : null
+  const defaultLocation = locations.find((l) => l.isDefault) ?? locations[0] ?? null
+  const locationId = subGroup?.locationId ?? defaultLocation?.id ?? ''
+  const { data: rules = [] } = usePricingRules(locationId)
 
   const paymentType = sub ? subPaymentType(sub.type, isIndividual) : null
   const typeLabel = paymentType ? (FIN_LABELS[paymentType] ?? paymentType) : t('common.dash')
-  const defaultAmount = paymentType ? (pricing?.[`client_${paymentType}_price`] ?? 0) : 0
+  const matchedRule = sub ? matchRule(rules, subTypeToTuple(sub.type, isIndividual)) : null
+  const defaultAmount = matchedRule?.client_price ?? 0
 
   const [amount, setAmount] = useState<number>(defaultAmount)
   const [date, setDate] = useState<string>(sub?.createdAt ?? today())
@@ -67,6 +78,7 @@ export function MarkPaidModal({
     try {
       const payment = await createPayment.mutateAsync({
         student_id: student.id,
+        location_id: locationId || null,
         client_payment_type: paymentType ?? 'single_individual',
         client_amount: amount,
         paid_at: date,
