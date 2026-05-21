@@ -12,6 +12,7 @@ interface RawTraining {
   date: string
   time: string
   groupId: string
+  locationId?: string | null
   attendees?: { id: string }[]
   note: string
   isPrime: boolean
@@ -28,6 +29,7 @@ function toTraining(raw: RawTraining, byId: Map<string, string>): Training {
     date: raw.date,
     time: raw.time ?? '',
     groupId: byId.get(raw.groupId) ?? raw.groupId,
+    locationId: raw.locationId ?? null,
     attendees: map(raw.attendees ?? [], (a) => a.id),
     note: raw.note ?? '',
     isPrime: raw.isPrime ?? false,
@@ -75,6 +77,7 @@ export async function createTraining(data: TrainingInput): Promise<Training> {
     date: data.date,
     time: data.time ?? '',
     groupId: byName.get(data.groupId) ?? data.groupId,
+    locationId: data.locationId ?? null,
     attendees: data.attendees ?? [],
     note: data.note ?? '',
     isPrime: data.isPrime,
@@ -94,6 +97,7 @@ export async function updateTraining(
   if (changes.date !== undefined) body.date = changes.date
   if (changes.time !== undefined) body.time = changes.time
   if (changes.groupId !== undefined) body.groupId = byName.get(changes.groupId) ?? changes.groupId
+  if (changes.locationId !== undefined) body.locationId = changes.locationId
   if (changes.note !== undefined) body.note = changes.note
   if (changes.isPrime !== undefined) body.isPrime = changes.isPrime
   if (changes.sessionDuration !== undefined) body.sessionDuration = changes.sessionDuration

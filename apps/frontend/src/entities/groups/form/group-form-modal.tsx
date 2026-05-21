@@ -2,6 +2,8 @@ import { Button, Form, Input, Modal, Popconfirm, Select } from 'antd'
 
 import { useTranslation } from 'react-i18next'
 
+import { LocationSelect } from 'entities/locations'
+
 import { DURATIONS } from './schedule-config'
 import { ScheduleEditor } from './schedule-editor'
 import { useGroupForm } from './use-group-form'
@@ -81,6 +83,9 @@ export function GroupFormModal({ open, group, onClose, onDelete }: GroupFormModa
               label: t('groups.form.durationOption', { minutes: m }),
             }))}
           />
+        </Form.Item>
+        <Form.Item label={t('locations.selectLabel')}>
+          <LocationSelect value={form.locationId} onChange={form.setLocationId} />
         </Form.Item>
       </Form>
     </Modal>

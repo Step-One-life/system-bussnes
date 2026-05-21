@@ -4,8 +4,8 @@ import map from 'lodash/map'
 
 import { useTranslation } from 'react-i18next'
 
-import { DURATION_PRESETS, LESSON_KINDS, PRICING_FORMATS, SESSIONS_PRESETS } from './pricing-config'
 import { PresetPicker } from './preset-picker'
+import { DURATION_PRESETS, LESSON_KINDS, PRICING_FORMATS, SESSIONS_PRESETS } from './pricing-config'
 import { useRuleForm } from './use-rule-form'
 
 import type { LessonKind, PricingFormat, PricingRule } from '../model/types'

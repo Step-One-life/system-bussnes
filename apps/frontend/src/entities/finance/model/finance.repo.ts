@@ -21,6 +21,7 @@ import type {
 interface RawPayment {
   id: string
   studentId: string | null
+  locationId: string | null
   clientPaymentType: Payment['client_payment_type']
   clientAmount: number | string
   sessionsTotal: number
@@ -34,6 +35,7 @@ interface RawPayment {
 interface RawHallCost {
   id: string
   studentId: string | null
+  locationId: string | null
   hallPaymentType: HallCost['hall_payment_type']
   timeSlot: HallCost['time_slot']
   trainingTime: string
@@ -49,6 +51,7 @@ function toPayment(raw: RawPayment): Payment {
   return {
     id: raw.id,
     student_id: raw.studentId,
+    location_id: raw.locationId ?? null,
     client_payment_type: raw.clientPaymentType,
     client_amount: Number(raw.clientAmount) || 0,
     sessions_total: raw.sessionsTotal,
@@ -64,6 +67,7 @@ function toHallCost(raw: RawHallCost): HallCost {
   return {
     id: raw.id,
     student_id: raw.studentId,
+    location_id: raw.locationId ?? null,
     hall_payment_type: raw.hallPaymentType,
     time_slot: raw.timeSlot,
     training_time: raw.trainingTime ?? '',
@@ -199,6 +203,7 @@ export async function getPayments(): Promise<Payment[]> {
 export async function createPayment(data: PaymentInput): Promise<Payment> {
   const raw = await apiClient.post<RawPayment>('/finance/payments', {
     studentId: data.student_id ?? null,
+    locationId: data.location_id ?? null,
     clientPaymentType: data.client_payment_type,
     clientAmount: parseFloat(String(data.client_amount)) || 0,
     paidAt: data.paid_at,
@@ -214,6 +219,7 @@ export async function updatePayment(
 ): Promise<Payment | null> {
   const body: Record<string, unknown> = {}
   if (changes.student_id !== undefined) body.studentId = changes.student_id
+  if (changes.location_id !== undefined) body.locationId = changes.location_id
   if (changes.client_payment_type !== undefined) {
     body.clientPaymentType = changes.client_payment_type
   }
@@ -242,6 +248,7 @@ export async function getHallCosts(): Promise<HallCost[]> {
 export async function createHallCost(data: HallCostInput): Promise<HallCost> {
   const raw = await apiClient.post<RawHallCost>('/finance/hall-costs', {
     studentId: data.student_id ?? null,
+    locationId: data.location_id ?? null,
     hallPaymentType: data.hall_payment_type,
     timeSlot: data.time_slot,
     trainingTime: data.training_time,
@@ -258,6 +265,7 @@ export async function updateHallCost(
 ): Promise<HallCost | null> {
   const body: Record<string, unknown> = {}
   if (changes.student_id !== undefined) body.studentId = changes.student_id
+  if (changes.location_id !== undefined) body.locationId = changes.location_id
   if (changes.hall_payment_type !== undefined) body.hallPaymentType = changes.hall_payment_type
   if (changes.time_slot !== undefined) body.timeSlot = changes.time_slot
   if (changes.training_time !== undefined) body.trainingTime = changes.training_time

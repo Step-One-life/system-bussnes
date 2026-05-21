@@ -2,6 +2,8 @@ import { DatePicker, Form, Input, InputNumber, Select, TimePicker } from 'antd'
 
 import { useTranslation } from 'react-i18next'
 
+import { LocationSelect } from 'entities/locations'
+
 import { CLIENT_TYPE_OPTIONS, HALL_TYPE_OPTIONS } from './payment-form-config'
 
 import type { usePaymentForm } from './use-payment-form'
@@ -50,6 +52,10 @@ export function PaymentFormFields({ form, students }: PaymentFormFieldsProps) {
           options={studentOptions}
           onChange={handleStudentChange}
         />
+      </Form.Item>
+
+      <Form.Item label={t('locations.selectLabel')}>
+        <LocationSelect value={form.locationId} onChange={form.setLocationId} />
       </Form.Item>
 
       <div className="fin-modal-grid">

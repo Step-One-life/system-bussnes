@@ -4,6 +4,7 @@ import { CheckOutlined, SyncOutlined } from '@ant-design/icons'
 import { useTranslation } from 'react-i18next'
 
 import { SubProgressBar } from 'common/ui'
+import { LocationSelect } from 'entities/locations'
 
 import { ConflictHint, PrimeHint } from './training-hints'
 import { useIndividualSession } from './use-individual-session'
@@ -116,6 +117,10 @@ export function IndividualSessionModal({
 
         <ConflictHint conflicts={form.conflicts} />
         <PrimeHint date={form.date} time={form.time} />
+
+        <Form.Item label={t('locations.selectLabel')}>
+          <LocationSelect value={form.locationId} onChange={form.setLocationId} />
+        </Form.Item>
 
         {form.client && !form.activeSub && (
           <Form.Item label={t('trainings.individual.newSubLabel')}>

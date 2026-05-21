@@ -23,6 +23,7 @@ export function useGroupForm({ group, onDone }: UseGroupFormOptions) {
   const [name, setName] = useState(group?.name ?? '')
   const [schedule, setSchedule] = useState<ScheduleEntry[]>(group?.schedule ?? [])
   const [duration, setDuration] = useState(group?.duration ?? 60)
+  const [locationId, setLocationId] = useState<string | null>(group?.locationId ?? null)
 
   const saving = createGroup.isPending || updateGroup.isPending
 
@@ -33,10 +34,13 @@ export function useGroupForm({ group, onDone }: UseGroupFormOptions) {
     }
     try {
       if (isEdit) {
-        await updateGroup.mutateAsync({ id: group.id, changes: { schedule, duration } })
+        await updateGroup.mutateAsync({
+          id: group.id,
+          changes: { schedule, duration, locationId },
+        })
         toast({ type: 'success', title: t('groups.updated'), msg: group.name })
       } else {
-        await createGroup.mutateAsync({ name: name.trim(), schedule, duration })
+        await createGroup.mutateAsync({ name: name.trim(), schedule, duration, locationId })
         toast({ type: 'success', title: t('groups.created'), msg: name.trim() })
       }
       onDone()
@@ -53,6 +57,8 @@ export function useGroupForm({ group, onDone }: UseGroupFormOptions) {
     setSchedule,
     duration,
     setDuration,
+    locationId,
+    setLocationId,
     saving,
     submit,
   }

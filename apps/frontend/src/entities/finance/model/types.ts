@@ -18,6 +18,7 @@ export type FinStatus = 'active' | 'closed'
 export interface Payment {
   id: string
   student_id: string | null
+  location_id: string | null
   client_payment_type: ClientPaymentType
   client_amount: number
   sessions_total: number
@@ -30,6 +31,7 @@ export interface Payment {
 
 export interface PaymentInput {
   student_id?: string | null
+  location_id?: string | null
   client_payment_type: ClientPaymentType
   client_amount: number | string
   paid_at?: string
@@ -40,6 +42,7 @@ export interface PaymentInput {
 export interface HallCost {
   id: string
   student_id: string | null
+  location_id: string | null
   hall_payment_type: HallPaymentType
   time_slot: TimeSlot
   training_time: string
@@ -53,6 +56,7 @@ export interface HallCost {
 
 export interface HallCostInput {
   student_id?: string | null
+  location_id?: string | null
   hall_payment_type: HallPaymentType
   time_slot?: TimeSlot
   training_time?: string

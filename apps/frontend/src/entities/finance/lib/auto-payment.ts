@@ -1,6 +1,7 @@
 import { isPrimeTime } from 'entities/trainings/model/training-logic'
 
-import { createHallCost, createPayment, getPricing } from '../model/finance.repo'
+import { createHallCost, createPayment } from '../model/finance.repo'
+import { resolvePricingRule, subTypeToTuple } from './pricing-lookup'
 
 import type { ClientPaymentType, HallPaymentType } from '../model/types'
 
@@ -15,6 +16,8 @@ interface AutoSub {
 interface AutoPaymentOptions {
   time?: string
   isPrime?: boolean
+  /** Локация абонемента (из тренировки/группы). Если нет — дефолтная. */
+  locationId?: string | null
 }
 
 /** Maps a subscription type to the finance payment type. */
@@ -31,20 +34,15 @@ export function subPaymentType(
   return null
 }
 
-/** 1.5h types reuse 1h individual hall pricing. */
-const HALL_TYPE_ALIAS: Partial<Record<ClientPaymentType, HallPaymentType>> = {
-  single_individual_90: 'single_individual',
-  individual_sub_4_90: 'individual_sub_4',
-  individual_sub_8_90: 'individual_sub_8',
-}
-
 interface AutoPaymentResult {
   paymentId: string
 }
 
 /**
  * Auto-creates a client payment + linked hall cost when a subscription is created.
- * Returns the created payment id (link it to the subscription via linkPaymentToSub).
+ * Prices come from the location's pricing rules, matched by the tuple
+ * (lessonKind, format, durationMinutes, sessionsCount). If no rule matches the
+ * amounts default to 0. Returns the created payment id.
  */
 export async function autoCreatePayment(
   studentId: string,
@@ -55,18 +53,24 @@ export async function autoCreatePayment(
   const paymentType = subPaymentType(sub.type, isIndividual)
   if (!paymentType) return null
 
-  const pricing = await getPricing()
-  const clientAmount = pricing[`client_${paymentType}_price`] ?? 0
   const paidAt = sub.createdAt || new Date().toISOString().slice(0, 10)
-
-  const hallType = HALL_TYPE_ALIAS[paymentType] ?? paymentType
   const isPrime = opts.isPrime ?? (opts.time ? isPrimeTime(paidAt, opts.time) : false)
   const timeSlot = isPrime ? 'prime' : 'regular'
-  const hallAmount = pricing[`hall_${hallType}_${timeSlot}_price`] ?? 0
+
+  const tuple = subTypeToTuple(sub.type, isIndividual)
+  const { rule, locationId } = await resolvePricingRule(opts.locationId ?? null, tuple)
+
+  const clientAmount = rule
+    ? isPrime
+      ? rule.client_prime_price
+      : rule.client_price
+    : 0
+  const hallAmount = rule ? (isPrime ? rule.hall_prime_cost : rule.hall_cost) : 0
 
   const hallCost = await createHallCost({
     student_id: studentId,
-    hall_payment_type: hallType,
+    location_id: locationId,
+    hall_payment_type: paymentType as HallPaymentType,
     time_slot: timeSlot,
     training_time: opts.time || '',
     hall_amount: hallAmount,
@@ -75,6 +79,7 @@ export async function autoCreatePayment(
 
   const payment = await createPayment({
     student_id: studentId,
+    location_id: locationId,
     client_payment_type: paymentType,
     client_amount: clientAmount,
     hall_cost_id: hallCost.id,

@@ -2,6 +2,8 @@ import { Button, Checkbox, Form, Input, Modal, Select } from 'antd'
 
 import { useTranslation } from 'react-i18next'
 
+import { LocationSelect } from 'entities/locations'
+
 import { ConflictHint, PrimeHint } from './training-hints'
 import { useGroupTraining } from './use-group-training'
 
@@ -71,6 +73,9 @@ export function GroupTrainingModal({ open, onClose }: GroupTrainingModalProps) {
         </div>
         <ConflictHint conflicts={form.conflicts} />
         <PrimeHint date={form.date} time={form.time} />
+        <Form.Item label={t('locations.selectLabel')}>
+          <LocationSelect value={form.locationId} onChange={form.setLocationId} />
+        </Form.Item>
         <Form.Item label={t('trainings.group.studentsLabel')}>
           {!form.groupId ? (
             <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>

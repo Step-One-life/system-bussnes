@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-export type FinanceTab = 'records' | 'stats' | 'pricing'
+export type FinanceTab = 'records' | 'stats' | 'pricing' | 'locations'
 
 export function useFinancePage() {
   const [tab, setTab] = useState<FinanceTab>('records')

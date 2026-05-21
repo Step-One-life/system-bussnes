@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 
 import { useToast } from 'common/ui'
 import { uuid } from 'common/utils/uuid'
+import { useGroups } from 'entities/groups/api/use-groups'
 import { studentKeys } from 'entities/students/api/use-students'
 import { useStudents } from 'entities/students/api/use-students'
 import {
@@ -45,7 +46,10 @@ export function useIndividualSession({ indGroupId, onDone }: UseIndividualSessio
   const toast = useToast()
   const qc = useQueryClient()
   const { data: students = [] } = useStudents()
+  const { data: groups = [] } = useGroups()
   const createTraining = useCreateTraining()
+
+  const indGroup = groups.find((g) => g.name === indGroupId) ?? null
 
   const [duration, setDurationState] = useState(60)
   const [clientId, setClientId] = useState('')
@@ -55,6 +59,17 @@ export function useIndividualSession({ indGroupId, onDone }: UseIndividualSessio
   const [recurring, setRecurring] = useState(false)
   const [note, setNote] = useState('')
   const [saving, setSaving] = useState(false)
+  const [locationId, setLocationIdState] = useState<string | null>(null)
+  const [locationTouched, setLocationTouched] = useState(false)
+
+  // Default to the individual group's location until the coach overrides it.
+  const effectiveLocationId = locationTouched
+    ? locationId
+    : (indGroup?.locationId ?? null)
+  const setLocationId = (id: string | null) => {
+    setLocationTouched(true)
+    setLocationIdState(id)
+  }
 
   const setDuration = (next: number) => {
     setDurationState(next)
@@ -118,6 +133,7 @@ export function useIndividualSession({ indGroupId, onDone }: UseIndividualSessio
         date,
         time,
         groupId: indGroupId,
+        locationId: effectiveLocationId,
         attendees: [clientId],
         note: note.trim(),
         isPrime: isPrimeTime(date, time),
@@ -154,6 +170,7 @@ export function useIndividualSession({ indGroupId, onDone }: UseIndividualSessio
             date: futureDate,
             time,
             groupId: indGroupId,
+            locationId: effectiveLocationId,
             attendees: [clientId],
             note: '',
             isPrime: isPrimeTime(futureDate, time),
@@ -210,6 +227,8 @@ export function useIndividualSession({ indGroupId, onDone }: UseIndividualSessio
     setRecurring,
     note,
     setNote,
+    locationId: effectiveLocationId,
+    setLocationId,
     conflicts,
     client,
     activeSub,

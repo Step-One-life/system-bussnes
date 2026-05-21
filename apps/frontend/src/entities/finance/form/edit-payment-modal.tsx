@@ -92,11 +92,13 @@ function EditPaymentModalInner({
               paid_at: form.date,
               notes: form.notes,
               student_id: form.studentId,
+              location_id: form.locationId,
             },
           })
         } else {
           const hc = await createHallCost.mutateAsync({
             student_id: form.studentId,
+            location_id: form.locationId,
             hall_payment_type: form.hallType,
             time_slot: form.timeSlot,
             training_time: form.trainingTime,
@@ -115,6 +117,7 @@ function EditPaymentModalInner({
         id: payment.id,
         changes: {
           student_id: form.studentId,
+          location_id: form.locationId,
           client_payment_type: form.clientType,
           client_amount: form.clientAmount,
           paid_at: form.date,

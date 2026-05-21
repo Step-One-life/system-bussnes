@@ -9,9 +9,12 @@ import {
   UserAddOutlined,
 } from '@ant-design/icons'
 
+import find from 'lodash/find'
+
 import { useTranslation } from 'react-i18next'
 
 import { formatDay, formatDayOfWeek, formatMonth } from 'common/utils/date'
+import { useLocations } from 'entities/locations'
 
 import { isIndividualTraining } from '../model/training-helpers'
 
@@ -41,6 +44,10 @@ export function TrainingItem({
 }: TrainingItemProps) {
   const { t } = useTranslation()
   const [expanded, setExpanded] = useState(false)
+  const { data: locations = [] } = useLocations()
+  const locationName = training.locationId
+    ? (find(locations, (l) => l.id === training.locationId)?.name ?? '')
+    : ''
 
   const handleToggleExpanded = () => setExpanded((v) => !v)
   const handleAddStudent = () => onAddStudent(training)
@@ -63,6 +70,7 @@ export function TrainingItem({
   const meta = [
     training.time || '',
     isInd ? '' : t('trainings.calendar.attendeesCount', { count: training.attendees.length }),
+    locationName,
     training.note || '',
   ]
     .filter(Boolean)

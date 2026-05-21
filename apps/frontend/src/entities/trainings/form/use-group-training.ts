@@ -31,8 +31,23 @@ export function useGroupTraining({ onDone }: UseGroupTrainingOptions) {
   const [time, setTime] = useState('18:00')
   const [note, setNote] = useState('')
   const [attendees, setAttendees] = useState<string[]>([])
+  const [locationId, setLocationId] = useState<string | null>(null)
+  // Tracks an explicit location override so picking a group does not clobber it.
+  const [locationTouched, setLocationTouched] = useState(false)
 
   const regularGroups = groups.filter((g) => !g.isIndividual)
+
+  const handleSetGroupId = (id: string) => {
+    setGroupId(id)
+    if (!locationTouched) {
+      const group = groups.find((g) => g.name === id)
+      setLocationId(group?.locationId ?? null)
+    }
+  }
+  const handleSetLocationId = (id: string | null) => {
+    setLocationTouched(true)
+    setLocationId(id)
+  }
   const groupStudents = groupId
     ? students.filter((s) => s.groups.includes(groupId))
     : []
@@ -67,6 +82,7 @@ export function useGroupTraining({ onDone }: UseGroupTrainingOptions) {
         date,
         time,
         groupId,
+        locationId,
         attendees,
         note: note.trim(),
         isPrime: isPrimeTime(date, time),
@@ -102,7 +118,7 @@ export function useGroupTraining({ onDone }: UseGroupTrainingOptions) {
     regularGroups,
     groupStudents,
     groupId,
-    setGroupId,
+    setGroupId: handleSetGroupId,
     date,
     setDate,
     time,
@@ -111,6 +127,8 @@ export function useGroupTraining({ onDone }: UseGroupTrainingOptions) {
     setNote,
     attendees,
     toggleAttendee,
+    locationId,
+    setLocationId: handleSetLocationId,
     conflicts,
     saving,
     submit,

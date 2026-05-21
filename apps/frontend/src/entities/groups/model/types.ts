@@ -9,6 +9,7 @@ export interface Group {
   schedule: ScheduleEntry[]
   duration: number
   isIndividual: boolean
+  locationId: string | null
   createdAt: string
 }
 
@@ -17,6 +18,7 @@ export interface GroupInput {
   schedule?: ScheduleEntry[]
   duration?: number
   isIndividual?: boolean
+  locationId?: string | null
 }
 
 export interface GroupStats {

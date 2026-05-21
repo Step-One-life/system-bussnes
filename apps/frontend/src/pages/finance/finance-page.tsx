@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next'
 
 import { PageHeader } from 'common/ui'
 import { PricingTab, RecordsTab, StatsTab } from 'entities/finance'
+import { LocationsPanel } from 'entities/locations'
 
 import { useFinancePage } from './use-finance-page'
 
@@ -17,6 +18,7 @@ export function FinancePage() {
     { value: 'records', label: t('finance.tabs.records') },
     { value: 'stats', label: t('finance.tabs.stats') },
     { value: 'pricing', label: t('finance.tabs.pricing') },
+    { value: 'locations', label: t('finance.tabs.locations') },
   ]
 
   const handleSelectTab = (value: FinanceTab) => () => page.setTab(value)
@@ -40,6 +42,7 @@ export function FinancePage() {
       {page.tab === 'records' && <RecordsTab />}
       {page.tab === 'stats' && <StatsTab />}
       {page.tab === 'pricing' && <PricingTab />}
+      {page.tab === 'locations' && <LocationsPanel />}
     </div>
   )
 }

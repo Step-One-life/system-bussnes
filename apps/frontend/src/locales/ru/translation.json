@@ -286,7 +286,8 @@
     "tabs": {
       "records": "Записи",
       "stats": "Статистика",
-      "pricing": "Настройка цен"
+      "pricing": "Настройка цен",
+      "locations": "Локации"
     },
     "records": {
       "searchPlaceholder": "Поиск по имени, типу, дате…",

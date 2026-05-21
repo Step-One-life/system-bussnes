@@ -2,7 +2,8 @@ import { useMemo, useState } from 'react'
 
 import { isPrimeTime } from 'entities/trainings/model/training-logic'
 
-import { usePricing } from '../api/use-finance'
+import { usePricingRules } from '../api/use-finance'
+import { clientTypeToTuple, matchRule } from '../lib/pricing-lookup'
 
 import type {
   ClientPaymentType,
@@ -18,6 +19,7 @@ function today(): string {
 
 export interface PaymentFormState {
   studentId: string | null
+  locationId: string | null
   clientType: ClientPaymentType
   clientAmount: number
   hallType: HallPaymentType | ''
@@ -34,9 +36,10 @@ interface UsePaymentFormOptions {
 }
 
 export function usePaymentForm({ payment, hallCost }: UsePaymentFormOptions = {}) {
-  const { data: pricing } = usePricing()
-
   const [studentId, setStudentId] = useState<string | null>(payment?.student_id ?? null)
+  const [locationId, setLocationIdState] = useState<string | null>(
+    payment?.location_id ?? hallCost?.location_id ?? null,
+  )
   const [clientType, setClientTypeState] = useState<ClientPaymentType>(
     payment?.client_payment_type ?? 'single_individual',
   )
@@ -52,14 +55,27 @@ export function usePaymentForm({ payment, hallCost }: UsePaymentFormOptions = {}
   )
   const [notes, setNotes] = useState<string>(payment?.notes ?? '')
 
-  const clientPrice = (type: ClientPaymentType): number =>
-    pricing?.[`client_${type}_price`] ?? 0
-  const hallPrice = (type: HallPaymentType, slot: TimeSlot): number =>
-    pricing?.[`hall_${type}_${slot}_price`] ?? 0
+  // Tariffs of the chosen location drive the auto-filled prices.
+  const { data: rules = [] } = usePricingRules(locationId ?? '')
+
+  const clientPrice = (type: ClientPaymentType, slot: TimeSlot): number => {
+    const rule = matchRule(rules, clientTypeToTuple(type))
+    if (!rule) return 0
+    return slot === 'prime' ? rule.client_prime_price : rule.client_price
+  }
+  const hallPrice = (type: HallPaymentType, slot: TimeSlot): number => {
+    const rule = matchRule(rules, clientTypeToTuple(type))
+    if (!rule) return 0
+    return slot === 'prime' ? rule.hall_prime_cost : rule.hall_cost
+  }
+
+  const setLocationId = (next: string | null) => {
+    setLocationIdState(next)
+  }
 
   const setClientType = (type: ClientPaymentType) => {
     setClientTypeState(type)
-    setClientAmount(clientPrice(type))
+    setClientAmount(clientPrice(type, 'regular'))
   }
 
   const setHallType = (type: HallPaymentType | '') => {
@@ -96,6 +112,7 @@ export function usePaymentForm({ payment, hallCost }: UsePaymentFormOptions = {}
 
   const state: PaymentFormState = {
     studentId,
+    locationId,
     clientType,
     clientAmount,
     hallType,
@@ -111,6 +128,7 @@ export function usePaymentForm({ payment, hallCost }: UsePaymentFormOptions = {}
     state,
     net,
     setStudentId,
+    setLocationId,
     setClientType,
     setClientAmount,
     setHallType,

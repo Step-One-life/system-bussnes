@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
+
 import { Button, Grid, Select } from 'antd'
 import { CopyOutlined, PlusOutlined } from '@ant-design/icons'
 
@@ -26,15 +27,15 @@ export function PricingTab() {
   const isMobile = !screens.md
 
   const { data: locations = [] } = useLocations()
-  const [locationId, setLocationId] = useState('')
+  const [picked, setPicked] = useState('')
 
-  // Default the selector to the user's default location once loaded.
-  useEffect(() => {
-    if (!locationId && locations.length) {
-      const def = locations.find((l) => l.isDefault) ?? locations[0]
-      setLocationId(def.id)
-    }
-  }, [locations, locationId])
+  // Default the selector to the user's default location until the coach picks
+  // another one — derived during render to avoid a setState-in-effect cascade.
+  const defaultId = locations.length
+    ? (locations.find((l) => l.isDefault) ?? locations[0]).id
+    : ''
+  const locationId = picked || defaultId
+  const setLocationId = setPicked
 
   const { data: rules = [] } = usePricingRules(locationId)
   const actions = useRuleActions(locationId)

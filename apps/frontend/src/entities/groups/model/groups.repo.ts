@@ -26,6 +26,7 @@ export async function createGroup(data: GroupInput): Promise<Group> {
     schedule: data.schedule ?? [],
     duration: data.duration ?? 60,
     isIndividual: data.isIndividual ?? false,
+    locationId: data.locationId ?? null,
   })
   invalidateGroupMap()
   return group
@@ -36,6 +37,7 @@ export async function updateGroup(id: string, changes: Partial<Group>): Promise<
   if (changes.schedule !== undefined) body.schedule = changes.schedule
   if (changes.duration !== undefined) body.duration = changes.duration
   if (changes.isIndividual !== undefined) body.isIndividual = changes.isIndividual
+  if (changes.locationId !== undefined) body.locationId = changes.locationId
   const group = await apiClient.patch<Group>(`/groups/${id}`, body)
   invalidateGroupMap()
   return group
