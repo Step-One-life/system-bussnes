@@ -25,6 +25,7 @@ export function useRuleForm({ locationId, rule, onDone }: UseRuleFormOptions) {
   const isEdit = !!rule
 
   const [title, setTitle] = useState(rule?.title ?? '')
+  const [ruleLocationId, setRuleLocationId] = useState(rule?.location_id ?? locationId)
   const [lessonKind, setLessonKind] = useState<LessonKind>(rule?.lesson_kind ?? 'individual')
   const [format, setFormat] = useState<PricingFormat>(rule?.format ?? 'subscription')
   const [duration, setDuration] = useState(rule?.duration_minutes ?? 60)
@@ -60,7 +61,7 @@ export function useRuleForm({ locationId, rule, onDone }: UseRuleFormOptions) {
       if (isEdit) {
         await updateRule.mutateAsync({ id: rule.id, changes: payload })
       } else {
-        await createRule.mutateAsync({ location_id: locationId, ...payload })
+        await createRule.mutateAsync({ location_id: ruleLocationId, ...payload })
       }
       toast({ type: 'success', title: t('finance.pricing.ruleSaved') })
       onDone()
@@ -73,6 +74,8 @@ export function useRuleForm({ locationId, rule, onDone }: UseRuleFormOptions) {
     isEdit,
     title,
     setTitle,
+    ruleLocationId,
+    setRuleLocationId,
     lessonKind,
     setLessonKind,
     format,

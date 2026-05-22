@@ -4,6 +4,8 @@ import map from 'lodash/map'
 
 import { useTranslation } from 'react-i18next'
 
+import { useLocations } from 'entities/locations'
+
 import { PresetPicker } from './preset-picker'
 import { DURATION_PRESETS, LESSON_KINDS, PRICING_FORMATS, SESSIONS_PRESETS } from './pricing-config'
 import { useRuleForm } from './use-rule-form'
@@ -28,6 +30,7 @@ export function RuleFormModal({
 }: RuleFormModalProps) {
   const { t } = useTranslation()
   const form = useRuleForm({ locationId, rule, onDone: onClose })
+  const { data: locations = [] } = useLocations()
 
   const handleTitleChange = (e: ChangeEvent<HTMLInputElement>) =>
     form.setTitle(e.target.value)
@@ -81,6 +84,20 @@ export function RuleFormModal({
             value={form.title}
             onChange={handleTitleChange}
             placeholder={t('finance.pricing.ruleForm.titlePlaceholder')}
+          />
+        </Form.Item>
+        <Form.Item
+          label={t('finance.pricing.ruleForm.locationLabel')}
+          extra={
+            form.isEdit ? t('finance.pricing.ruleForm.locationLockedHint') : undefined
+          }
+        >
+          <Select
+            value={form.ruleLocationId || undefined}
+            onChange={form.setRuleLocationId}
+            disabled={form.isEdit}
+            placeholder={t('finance.pricing.ruleForm.locationPlaceholder')}
+            options={map(locations, (l) => ({ value: l.id, label: l.name }))}
           />
         </Form.Item>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--sp-4)' }}>
