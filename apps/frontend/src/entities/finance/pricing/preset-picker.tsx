@@ -1,3 +1,5 @@
+import { useState } from 'react'
+
 import { InputNumber, Segmented } from 'antd'
 
 import map from 'lodash/map'
@@ -16,6 +18,9 @@ const CUSTOM = '__custom__'
 /**
  * Number picker with preset chips plus a free-input fallback. Used for the
  * lesson duration and the subscription session count.
+ *
+ * Custom mode is tracked in local state so that picking «своё» stays sticky
+ * even when the current value happens to coincide with a preset.
  */
 export function PresetPicker({
   presets,
@@ -25,14 +30,22 @@ export function PresetPicker({
   formatPreset,
   onChange,
 }: PresetPickerProps) {
-  const segmentValue = isPreset ? String(value) : CUSTOM
+  // Sticky user choice of the custom mode. Combined with `isPreset` below it
+  // keeps the free input visible even when the value coincides with a preset.
+  const [customPicked, setCustomPicked] = useState(false)
+
+  // Custom mode is active when the user explicitly picked it, or when the
+  // current value is simply not a preset (e.g. editing an existing rule).
+  const isCustom = customPicked || !isPreset
+
+  const segmentValue = isCustom ? CUSTOM : String(value)
 
   const handleSegmentChange = (next: string | number) => {
     if (next === CUSTOM) {
-      // Switch to custom mode with a value that is not a preset.
-      onChange(value)
+      setCustomPicked(true)
       return
     }
+    setCustomPicked(false)
     onChange(Number(next))
   }
   const handleCustomChange = (next: number | null) => {
@@ -47,7 +60,7 @@ export function PresetPicker({
   return (
     <div className="preset-picker">
       <Segmented value={segmentValue} options={options} onChange={handleSegmentChange} />
-      {!isPreset && (
+      {isCustom && (
         <InputNumber
           min={1}
           value={value}
