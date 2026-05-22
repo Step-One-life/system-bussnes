@@ -345,10 +345,7 @@
       "dateLabel": "Дата оплаты"
     },
     "pricing": {
-      "clientTitle": "Что платят клиенты мне",
-      "incomeBadge": "Доход",
-      "hallTitle": "Что я плачу залу",
-      "expenseBadge": "Расход",
+      "tariffsTitle": "Тарифы",
       "save": "Сохранить цены",
       "saved": "Цены сохранены",
       "savedMsg": "Применятся к следующим записям",
@@ -362,21 +359,27 @@
       "noLocations": "Сначала создайте локацию во вкладке «Локации»",
       "noRules": "Тарифов пока нет. Добавьте тариф или скопируйте из другой локации.",
       "addRule": "Добавить тариф",
-      "marginTitle": "Маржа (цена клиента − расход зала)",
       "marginRegular": "Обычная",
       "marginPrime": "Prime",
       "ruleSaved": "Тариф сохранён",
       "ruleDeleted": "Тариф удалён",
+      "ruleDuplicated": "Тариф продублирован",
+      "duplicateSuffix": "(копия)",
+      "summary": "{{count}} тариф · средняя маржа {{margin}} ₽ · Prime {{prime}} ₽",
+      "summary_few": "{{count}} тарифа · средняя маржа {{margin}} ₽ · Prime {{prime}} ₽",
+      "summary_many": "{{count}} тарифов · средняя маржа {{margin}} ₽ · Prime {{prime}} ₽",
       "table": {
-        "lessonKind": "Тип занятия",
-        "format": "Формат",
-        "duration": "Длительность",
-        "sessions": "Кол-во занятий",
-        "clientPrice": "Обычная цена",
-        "clientPrimePrice": "Prime-цена",
-        "hallCost": "Обычный расход",
-        "hallPrimeCost": "Prime-расход",
-        "actions": ""
+        "tariff": "Тариф",
+        "params": "Параметры",
+        "client": "Клиент",
+        "hall": "Зал",
+        "margin": "Маржа",
+        "actions": "Действие"
+      },
+      "actionsMenu": {
+        "edit": "Редактировать",
+        "duplicate": "Дублировать",
+        "delete": "Удалить"
       },
       "lessonKind": {
         "individual": "Индивидуальное",
@@ -400,14 +403,17 @@
         "durationCustom": "Своя длительность (мин)",
         "sessionsLabel": "Количество занятий",
         "sessionsCustom": "Своё количество",
-        "clientPriceLabel": "Цена для клиента (обычная)",
-        "clientPrimePriceLabel": "Цена для клиента (Prime)",
-        "hallCostLabel": "Расход залу (обычный)",
-        "hallPrimeCostLabel": "Расход залу (Prime)",
+        "clientPriceLabel": "Цена клиента — обычная",
+        "clientPrimePriceLabel": "Цена клиента — Prime",
+        "hallCostLabel": "Расход зала — обычный",
+        "hallPrimeCostLabel": "Расход зала — Prime",
         "deleteTitle": "Удалить тариф?",
         "titleRequired": "Укажите название тарифа"
       },
       "durationPreset": "{{minutes}} мин",
+      "sessionsCount": "{{count}} занятие",
+      "sessionsCount_few": "{{count}} занятия",
+      "sessionsCount_many": "{{count}} занятий",
       "sessionsValue": "{{count}}"
     },
     "priceRow": {

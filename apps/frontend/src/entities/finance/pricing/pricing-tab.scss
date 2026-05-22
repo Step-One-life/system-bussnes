@@ -17,111 +17,6 @@
     font-weight: 600;
     margin: 0;
   }
-
-  &__badge {
-    font-size: 0.72rem;
-    font-weight: 700;
-    padding: 3px 10px;
-    border-radius: 999px;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-
-    &--income {
-      background: var(--success-dim);
-      color: var(--success);
-    }
-
-    &--expense {
-      background: var(--danger-dim);
-      color: var(--danger);
-    }
-  }
-}
-
-.price-group {
-  margin-bottom: var(--sp-4);
-
-  &__subtitle {
-    font-size: 0.72rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--text-muted);
-    margin-bottom: var(--sp-2);
-  }
-}
-
-.price-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--sp-2) 0;
-  border-bottom: 1px solid var(--border);
-  gap: var(--sp-3);
-
-  &:last-child {
-    border-bottom: none;
-  }
-
-  &__label {
-    font-size: 0.875rem;
-    color: var(--text-secondary);
-    flex: 1;
-    min-width: 0;
-  }
-
-  &__input-wrap {
-    display: flex;
-    align-items: center;
-    gap: var(--sp-2);
-  }
-
-  &--hall {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--sp-2);
-  }
-
-  &__hall-inputs {
-    display: flex;
-    gap: var(--sp-5);
-    flex-wrap: wrap;
-  }
-
-  &__currency {
-    font-size: 0.875rem;
-    color: var(--text-muted);
-  }
-}
-
-.hall-slot-mini {
-  font-size: 0.7rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--text-muted);
-  min-width: 54px;
-
-  &--prime {
-    color: var(--warning);
-  }
-}
-
-.price-input {
-  width: 110px;
-}
-
-.price-per {
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  min-width: 88px;
-  text-align: right;
-}
-
-.fin-pricing-footer {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: var(--sp-2);
 }
 
 .pricing-toolbar {
@@ -143,14 +38,10 @@
   margin: 0;
 }
 
-.fin-section__badge--income {
-  background: var(--success-dim);
-  color: var(--success);
-}
-
-.fin-section__badge--expense {
-  background: var(--danger-dim);
-  color: var(--danger);
+.pricing-summary {
+  font-size: 0.83rem;
+  color: var(--text-secondary);
+  margin: var(--sp-4) 0 0;
 }
 
 .preset-picker {
@@ -160,50 +51,62 @@
   gap: var(--sp-3);
 }
 
-.margin-list {
+.rule-title {
+  font-weight: 600;
+}
+
+/* ── Колонка «Параметры» ── */
+.rule-params {
   display: flex;
   flex-direction: column;
-  gap: var(--sp-2);
+  line-height: 1.35;
+
+  &__top {
+    font-size: 0.85rem;
+    color: var(--text-primary);
+  }
+
+  &__bottom {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+  }
 }
 
-.margin-row {
+/* ── Ячейка с обычной и Prime ценой ── */
+.price-cell {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--sp-3);
-  padding: var(--sp-2) 0;
-  border-bottom: 1px solid var(--border);
-  flex-wrap: wrap;
+  flex-direction: column;
+  line-height: 1.35;
 
-  &:last-child {
-    border-bottom: none;
+  &__value {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-primary);
+
+    &--prime {
+      color: var(--warning);
+    }
+
+    &--neg {
+      color: var(--danger);
+    }
+
+    &--zero {
+      color: var(--text-muted);
+    }
+
+    &--pos {
+      color: var(--success);
+    }
   }
 
-  &__label {
-    font-size: 0.875rem;
-    color: var(--text-secondary);
-  }
-
-  &__values {
-    display: flex;
-    gap: var(--sp-4);
-  }
-}
-
-.margin-val {
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--text-primary);
-
-  &--prime {
-    color: var(--warning);
-  }
-
-  &--neg {
-    color: var(--danger);
+  &__star {
+    margin-right: 2px;
+    font-size: 0.72rem;
   }
 }
 
+/* ── Мобильные карточки ── */
 .rule-cards {
   display: flex;
   flex-direction: column;
@@ -219,6 +122,7 @@
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
+    gap: var(--sp-3);
   }
 
   &__title {
@@ -227,18 +131,26 @@
   }
 
   &__meta {
-    font-size: 0.78rem;
-    color: var(--text-muted);
-    margin-bottom: var(--sp-2);
+    margin: var(--sp-2) 0 var(--sp-3);
   }
 
-  &__prices {
+  &__grid {
     display: flex;
+    flex-wrap: wrap;
     gap: var(--sp-4);
-    font-size: 0.83rem;
   }
 
-  &__price--prime {
-    color: var(--warning);
+  &__cell {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  &__cell-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-muted);
   }
 }

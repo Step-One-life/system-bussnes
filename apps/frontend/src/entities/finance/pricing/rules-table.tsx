@@ -1,80 +1,97 @@
-import { Button, Table } from 'antd'
-import { EditOutlined } from '@ant-design/icons'
+import { Table } from 'antd'
 
 import map from 'lodash/map'
 
 import { useTranslation } from 'react-i18next'
 
+import { PriceCell } from './price-cell'
+import { getRuleMargin } from './pricing-utils'
+import { RuleActionsMenu } from './rule-actions-menu'
 import { RuleCard } from './rule-card'
+import { RuleParams } from './rule-params'
 
 import type { PricingRule } from '../model/types'
 import type { ColumnsType } from 'antd/es/table'
 import type { TFunction } from 'i18next'
 
-interface RulesTableProps {
-  rules: PricingRule[]
-  mode: 'client' | 'hall'
-  isMobile: boolean
+interface RuleActions {
   onEdit: (rule: PricingRule) => void
+  onDuplicate: (rule: PricingRule) => void
+  onDelete: (rule: PricingRule) => void
 }
 
-function buildColumns(
-  t: TFunction,
-  mode: 'client' | 'hall',
-  onEdit: (rule: PricingRule) => void,
-): ColumnsType<PricingRule> {
-  const renderEdit = (_: unknown, rule: PricingRule) => {
-    const handleEdit = () => onEdit(rule)
-    return <Button type="text" size="small" icon={<EditOutlined />} onClick={handleEdit} />
-  }
+interface RulesTableProps extends RuleActions {
+  rules: PricingRule[]
+  isMobile: boolean
+}
+
+function buildColumns(t: TFunction, actions: RuleActions): ColumnsType<PricingRule> {
   return [
-    { title: t('finance.pricing.ruleForm.titleLabel'), dataIndex: 'title', key: 'title' },
     {
-      title: t('finance.pricing.table.lessonKind'),
-      key: 'lessonKind',
-      render: (_: unknown, r: PricingRule) => t(`finance.pricing.lessonKind.${r.lesson_kind}`),
+      title: t('finance.pricing.table.tariff'),
+      dataIndex: 'title',
+      key: 'title',
+      render: (title: string) => <span className="rule-title">{title}</span>,
     },
     {
-      title: t('finance.pricing.table.format'),
-      key: 'format',
-      render: (_: unknown, r: PricingRule) => t(`finance.pricing.format.${r.format}`),
+      title: t('finance.pricing.table.params'),
+      key: 'params',
+      render: (_: unknown, rule: PricingRule) => <RuleParams rule={rule} />,
     },
     {
-      title: t('finance.pricing.table.duration'),
-      key: 'duration',
-      render: (_: unknown, r: PricingRule) =>
-        t('finance.pricing.durationPreset', { minutes: r.duration_minutes }),
+      title: t('finance.pricing.table.client'),
+      key: 'client',
+      render: (_: unknown, rule: PricingRule) => (
+        <PriceCell regular={rule.client_price} prime={rule.client_prime_price} />
+      ),
     },
     {
-      title: t('finance.pricing.table.sessions'),
-      dataIndex: 'sessions_count',
-      key: 'sessions',
+      title: t('finance.pricing.table.hall'),
+      key: 'hall',
+      render: (_: unknown, rule: PricingRule) => (
+        <PriceCell regular={rule.hall_cost} prime={rule.hall_prime_cost} />
+      ),
     },
     {
-      title: t('finance.pricing.table.clientPrice'),
-      key: 'regular',
-      render: (_: unknown, r: PricingRule) =>
-        `${mode === 'client' ? r.client_price : r.hall_cost} ₽`,
+      title: t('finance.pricing.table.margin'),
+      key: 'margin',
+      render: (_: unknown, rule: PricingRule) => {
+        const margin = getRuleMargin(rule)
+        return <PriceCell regular={margin.regular} prime={margin.prime} colored />
+      },
     },
     {
-      title: t('finance.pricing.table.clientPrimePrice'),
-      key: 'prime',
-      render: (_: unknown, r: PricingRule) =>
-        `${mode === 'client' ? r.client_prime_price : r.hall_prime_cost} ₽`,
+      title: t('finance.pricing.table.actions'),
+      key: 'actions',
+      width: 80,
+      align: 'center',
+      render: (_: unknown, rule: PricingRule) => (
+        <RuleActionsMenu
+          rule={rule}
+          onEdit={actions.onEdit}
+          onDuplicate={actions.onDuplicate}
+          onDelete={actions.onDelete}
+        />
+      ),
     },
-    { title: '', key: 'actions', width: 56, render: renderEdit },
   ]
 }
 
-/** Pricing rules as a desktop table or a stack of mobile cards. */
-export function RulesTable({ rules, mode, isMobile, onEdit }: RulesTableProps) {
+/** Единая таблица тарифов на десктопе или стек карточек на мобиле. */
+export function RulesTable({ rules, isMobile, onEdit, onDuplicate, onDelete }: RulesTableProps) {
   const { t } = useTranslation()
 
   if (isMobile) {
     return (
       <div className="rule-cards">
         {map(rules, (rule) => (
-          <RuleCard key={rule.id} rule={rule} mode={mode} onEdit={onEdit} />
+          <RuleCard
+            key={rule.id}
+            rule={rule}
+            onEdit={onEdit}
+            onDuplicate={onDuplicate}
+            onDelete={onDelete}
+          />
         ))}
       </div>
     )
@@ -86,7 +103,7 @@ export function RulesTable({ rules, mode, isMobile, onEdit }: RulesTableProps) {
       size="small"
       pagination={false}
       dataSource={rules}
-      columns={buildColumns(t, mode, onEdit)}
+      columns={buildColumns(t, { onEdit, onDuplicate, onDelete })}
     />
   )
 }

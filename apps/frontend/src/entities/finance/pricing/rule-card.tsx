@@ -1,43 +1,51 @@
-import { Button } from 'antd'
-import { EditOutlined } from '@ant-design/icons'
-
 import { useTranslation } from 'react-i18next'
+
+import { PriceCell } from './price-cell'
+import { getRuleMargin } from './pricing-utils'
+import { RuleActionsMenu } from './rule-actions-menu'
+import { RuleParams } from './rule-params'
 
 import type { PricingRule } from '../model/types'
 
 interface RuleCardProps {
   rule: PricingRule
-  mode: 'client' | 'hall'
   onEdit: (rule: PricingRule) => void
+  onDuplicate: (rule: PricingRule) => void
+  onDelete: (rule: PricingRule) => void
 }
 
-/** Mobile-friendly card for a single pricing rule. */
-export function RuleCard({ rule, mode, onEdit }: RuleCardProps) {
+/** Мобильная карточка одного тарифа со всеми данными. */
+export function RuleCard({ rule, onEdit, onDuplicate, onDelete }: RuleCardProps) {
   const { t } = useTranslation()
-  const handleEdit = () => onEdit(rule)
-
-  const regular = mode === 'client' ? rule.client_price : rule.hall_cost
-  const prime = mode === 'client' ? rule.client_prime_price : rule.hall_prime_cost
+  const margin = getRuleMargin(rule)
 
   return (
     <div className="rule-card">
       <div className="rule-card__head">
         <span className="rule-card__title">{rule.title}</span>
-        <Button type="text" size="small" icon={<EditOutlined />} onClick={handleEdit} />
+        <RuleActionsMenu
+          rule={rule}
+          onEdit={onEdit}
+          onDuplicate={onDuplicate}
+          onDelete={onDelete}
+        />
       </div>
       <div className="rule-card__meta">
-        {t(`finance.pricing.lessonKind.${rule.lesson_kind}`)} ·{' '}
-        {t(`finance.pricing.format.${rule.format}`)} ·{' '}
-        {t('finance.pricing.durationPreset', { minutes: rule.duration_minutes })} ·{' '}
-        {t('finance.pricing.table.sessions')}: {rule.sessions_count}
+        <RuleParams rule={rule} />
       </div>
-      <div className="rule-card__prices">
-        <span className="rule-card__price">
-          {t('finance.pricing.marginRegular')}: <b>{regular} ₽</b>
-        </span>
-        <span className="rule-card__price rule-card__price--prime">
-          {t('finance.pricing.marginPrime')}: <b>{prime} ₽</b>
-        </span>
+      <div className="rule-card__grid">
+        <div className="rule-card__cell">
+          <span className="rule-card__cell-label">{t('finance.pricing.table.client')}</span>
+          <PriceCell regular={rule.client_price} prime={rule.client_prime_price} />
+        </div>
+        <div className="rule-card__cell">
+          <span className="rule-card__cell-label">{t('finance.pricing.table.hall')}</span>
+          <PriceCell regular={rule.hall_cost} prime={rule.hall_prime_cost} />
+        </div>
+        <div className="rule-card__cell">
+          <span className="rule-card__cell-label">{t('finance.pricing.table.margin')}</span>
+          <PriceCell regular={margin.regular} prime={margin.prime} colored />
+        </div>
       </div>
     </div>
   )
