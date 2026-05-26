@@ -25,6 +25,9 @@ export function StudentsPage() {
   const [drawerId, setDrawerId] = useState<string | null>(null)
   const [formOpen, setFormOpen] = useState(false)
   const [editId, setEditId] = useState<string | null>(null)
+  // formKey меняется при каждом открытии формы, чтобы React пересоздал
+  // StudentFormModal и useState внутри инициализировался свежими данными.
+  const [formKey, setFormKey] = useState(0)
 
   const indNames = groups.filter((g) => g.isIndividual).map((g) => g.name)
   const groupNames = groups.map((g) => g.name)
@@ -32,12 +35,14 @@ export function StudentsPage() {
 
   const openCreate = () => {
     setEditId(null)
+    setFormKey((k) => k + 1)
     setFormOpen(true)
   }
 
   const openEdit = (id: string) => {
     setDrawerId(null)
     setEditId(id)
+    setFormKey((k) => k + 1)
     setFormOpen(true)
   }
 
@@ -70,6 +75,7 @@ export function StudentsPage() {
       <StudentDrawer studentId={drawerId} onClose={handleCloseDrawer} onEdit={openEdit} />
 
       <StudentFormModal
+        key={formKey}
         open={formOpen}
         student={editStudent}
         onClose={handleCloseForm}
