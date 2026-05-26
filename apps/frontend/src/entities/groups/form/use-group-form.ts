@@ -20,6 +20,9 @@ export function useGroupForm({ group, onDone }: UseGroupFormOptions) {
   const createGroup = useCreateGroup()
   const updateGroup = useUpdateGroup()
 
+  // Стейт инициализируется из переданной группы. Чтобы при переоткрытии
+  // модалки для другой группы поля показывали актуальные данные, родитель
+  // должен перемонтировать GroupFormModal через изменение key.
   const [name, setName] = useState(group?.name ?? '')
   const [schedule, setSchedule] = useState<ScheduleEntry[]>(group?.schedule ?? [])
   const [duration, setDuration] = useState(group?.duration ?? 60)

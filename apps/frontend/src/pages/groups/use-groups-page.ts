@@ -20,16 +20,21 @@ export function useGroupsPage() {
   const [openedGroup, setOpenedGroup] = useState<Group | null>(null)
   const [formGroup, setFormGroup] = useState<Group | null>(null)
   const [formOpen, setFormOpen] = useState(false)
+  // formKey меняется при каждом открытии формы (новая или другая группа),
+  // что заставляет React пересоздать GroupFormModal и сбросить состояние полей.
+  const [formKey, setFormKey] = useState(0)
 
   const regularGroups = groups.filter((g) => !g.isIndividual)
 
   const openCreate = () => {
     setFormGroup(null)
+    setFormKey((k) => k + 1)
     setFormOpen(true)
   }
 
   const openEdit = (group: Group) => {
     setFormGroup(group)
+    setFormKey((k) => k + 1)
     setFormOpen(true)
   }
 
@@ -62,6 +67,7 @@ export function useGroupsPage() {
     setOpenedGroup,
     formGroup,
     formOpen,
+    formKey,
     openCreate,
     openEdit,
     closeForm,

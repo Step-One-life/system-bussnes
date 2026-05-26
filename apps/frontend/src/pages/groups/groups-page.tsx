@@ -25,6 +25,7 @@ export function GroupsPage() {
           onOpenStudent={handleOpenStudentNoop}
         />
         <GroupFormModal
+          key={page.formKey}
           open={page.formOpen}
           group={page.formGroup}
           onClose={page.closeForm}
