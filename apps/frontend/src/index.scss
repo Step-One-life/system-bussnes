@@ -19,6 +19,9 @@ body {
   background: var(--bg);
   color: var(--text-primary);
   min-height: 100vh;
+  // dvh учитывает динамическую панель браузера на мобильных, плюс safe-area
+  // снизу для standalone PWA, чтобы нижний бар не обрезался кнопкой Home.
+  min-height: calc(100dvh + env(safe-area-inset-bottom));
   transition:
     background var(--dur) var(--ease),
     color var(--dur) var(--ease);

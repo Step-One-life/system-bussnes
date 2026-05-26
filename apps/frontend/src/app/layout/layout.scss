@@ -201,6 +201,9 @@
 
   .main {
     padding: var(--sp-4);
+    padding-top: calc(env(safe-area-inset-top) + var(--sp-4));
+    padding-left: calc(env(safe-area-inset-left) + var(--sp-4));
+    padding-right: calc(env(safe-area-inset-right) + var(--sp-4));
     padding-bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom) + var(--sp-4));
   }
 
