@@ -43,18 +43,18 @@ export function TrainingsPage() {
           <>
             <div className="view-toggle">
               <button
-                className={`view-toggle__btn${page.view === 'list' ? ' view-toggle__btn--active' : ''}`}
-                title={t('trainings.viewList')}
-                onClick={handleSelectListView}
-              >
-                <UnorderedListOutlined />
-              </button>
-              <button
                 className={`view-toggle__btn${page.view === 'calendar' ? ' view-toggle__btn--active' : ''}`}
                 title={t('trainings.viewWeek')}
                 onClick={handleSelectCalendarView}
               >
                 <CalendarOutlined />
+              </button>
+              <button
+                className={`view-toggle__btn${page.view === 'list' ? ' view-toggle__btn--active' : ''}`}
+                title={t('trainings.viewList')}
+                onClick={handleSelectListView}
+              >
+                <UnorderedListOutlined />
               </button>
             </div>
             <Button type="primary" icon={<PlusOutlined />} onClick={page.openTypeModal}>

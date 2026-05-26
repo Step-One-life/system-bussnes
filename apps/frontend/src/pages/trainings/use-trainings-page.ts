@@ -26,7 +26,7 @@ export function useTrainingsPage() {
   const removeFromTraining = useRemoveFromTraining()
   const deleteTraining = useDeleteTrainingWithRestore()
 
-  const [view, setView] = useState<TrainingsView>('list')
+  const [view, setView] = useState<TrainingsView>('calendar')
 
   const [typeModalOpen, setTypeModalOpen] = useState(false)
   const [groupModalOpen, setGroupModalOpen] = useState(false)
