@@ -42,15 +42,20 @@ export async function getKPIs(): Promise<DashboardKPIs> {
     }),
   )
 
+  let active = 0
   let ending = 0
   let expired = 0
   for (const s of students) {
     const status = getOverallSubStatus(s)
     if (status.type === 'expired') expired++
     else if (status.type === 'ending') ending++
+    else if (status.type === 'active') active++
   }
 
-  return { total: students.length, monthTrainings, ending, expired }
+  // total — активные ученики (есть хотя бы одна не-просроченная подписка).
+  // Раньше показывало всех students.length, включая «без групп» / только с
+  // expired-подписками — это давало тренеру неверную картину масштаба.
+  return { total: active + ending, monthTrainings, ending, expired }
 }
 
 export async function getWarningStudents(): Promise<WarningEntry[]> {
