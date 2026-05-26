@@ -4,6 +4,7 @@ import map from 'lodash/map'
 
 import { useTranslation } from 'react-i18next'
 
+import { useUnsavedFormGuard } from 'common/lib/use-unsaved-form-guard'
 import { useLocations } from 'entities/locations'
 
 import { PresetPicker } from './preset-picker'
@@ -32,6 +33,17 @@ export function RuleFormModal({
   const form = useRuleForm({ locationId, rule, onDone: onClose })
   const { data: locations = [] } = useLocations()
 
+  // Спрашиваем подтверждение перед закрытием формы и перед уходом со страницы,
+  // если пользователь начал вводить данные, но не нажал «Сохранить».
+  const { confirmClose } = useUnsavedFormGuard({
+    isDirty: open && form.isDirty,
+    confirmTitle: t('finance.pricing.ruleForm.unsavedTitle'),
+    confirmContent: t('finance.pricing.ruleForm.unsavedContent'),
+    okText: t('finance.pricing.ruleForm.unsavedLeave'),
+    cancelText: t('finance.pricing.ruleForm.unsavedStay'),
+  })
+
+  const handleCancel = () => confirmClose(onClose)
   const handleTitleChange = (e: ChangeEvent<HTMLInputElement>) =>
     form.setTitle(e.target.value)
   const handleNumberChange = (setter: (v: number) => void) => (v: number | null) =>
@@ -57,7 +69,7 @@ export function RuleFormModal({
         </Button>
       </Popconfirm>
     ),
-    <Button key="cancel" onClick={onClose}>
+    <Button key="cancel" onClick={handleCancel}>
       {t('common.cancel')}
     </Button>,
     <Button key="save" type="primary" loading={form.saving} onClick={form.submit}>
@@ -73,7 +85,7 @@ export function RuleFormModal({
           ? t('finance.pricing.ruleForm.editTitle')
           : t('finance.pricing.ruleForm.createTitle')
       }
-      onCancel={onClose}
+      onCancel={handleCancel}
       footer={footer}
       destroyOnHidden
       width={520}

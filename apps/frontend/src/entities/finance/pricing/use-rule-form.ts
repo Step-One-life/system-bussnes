@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 
 import includes from 'lodash/includes'
 
@@ -24,16 +24,49 @@ export function useRuleForm({ locationId, rule, onDone }: UseRuleFormOptions) {
   const updateRule = useUpdatePricingRule()
   const isEdit = !!rule
 
-  const [title, setTitle] = useState(rule?.title ?? '')
-  const [ruleLocationId, setRuleLocationId] = useState(rule?.location_id ?? locationId)
-  const [lessonKind, setLessonKind] = useState<LessonKind>(rule?.lesson_kind ?? 'individual')
-  const [format, setFormat] = useState<PricingFormat>(rule?.format ?? 'subscription')
-  const [duration, setDuration] = useState(rule?.duration_minutes ?? 60)
-  const [sessions, setSessions] = useState(rule?.sessions_count ?? 4)
-  const [clientPrice, setClientPrice] = useState(rule?.client_price ?? 0)
-  const [clientPrimePrice, setClientPrimePrice] = useState(rule?.client_prime_price ?? 0)
-  const [hallCost, setHallCost] = useState(rule?.hall_cost ?? 0)
-  const [hallPrimeCost, setHallPrimeCost] = useState(rule?.hall_prime_cost ?? 0)
+  // Базовые значения формы — нужны и для инициализации useState, и для
+  // вычисления «грязного» состояния, чтобы спрашивать подтверждение перед
+  // потерей введённых данных.
+  const initial = useMemo(
+    () => ({
+      title: rule?.title ?? '',
+      ruleLocationId: rule?.location_id ?? locationId,
+      lessonKind: (rule?.lesson_kind ?? 'individual') as LessonKind,
+      format: (rule?.format ?? 'subscription') as PricingFormat,
+      duration: rule?.duration_minutes ?? 60,
+      sessions: rule?.sessions_count ?? 4,
+      clientPrice: rule?.client_price ?? 0,
+      clientPrimePrice: rule?.client_prime_price ?? 0,
+      hallCost: rule?.hall_cost ?? 0,
+      hallPrimeCost: rule?.hall_prime_cost ?? 0,
+    }),
+    [rule, locationId],
+  )
+
+  const [title, setTitle] = useState(initial.title)
+  const [ruleLocationId, setRuleLocationId] = useState(initial.ruleLocationId)
+  const [lessonKind, setLessonKind] = useState<LessonKind>(initial.lessonKind)
+  const [format, setFormat] = useState<PricingFormat>(initial.format)
+  const [duration, setDuration] = useState(initial.duration)
+  const [sessions, setSessions] = useState(initial.sessions)
+  const [clientPrice, setClientPrice] = useState(initial.clientPrice)
+  const [clientPrimePrice, setClientPrimePrice] = useState(initial.clientPrimePrice)
+  const [hallCost, setHallCost] = useState(initial.hallCost)
+  const [hallPrimeCost, setHallPrimeCost] = useState(initial.hallPrimeCost)
+
+  // Отслеживаем «грязные» изменения, чтобы предупредить пользователя при
+  // попытке закрыть форму или уйти со страницы без сохранения.
+  const isDirty =
+    title !== initial.title ||
+    ruleLocationId !== initial.ruleLocationId ||
+    lessonKind !== initial.lessonKind ||
+    format !== initial.format ||
+    duration !== initial.duration ||
+    sessions !== initial.sessions ||
+    clientPrice !== initial.clientPrice ||
+    clientPrimePrice !== initial.clientPrimePrice ||
+    hallCost !== initial.hallCost ||
+    hallPrimeCost !== initial.hallPrimeCost
 
   // Whether the current value is one of the presets — drives preset/custom UI.
   const durationIsPreset = includes(DURATION_PRESETS, duration)
@@ -95,6 +128,7 @@ export function useRuleForm({ locationId, rule, onDone }: UseRuleFormOptions) {
     hallPrimeCost,
     setHallPrimeCost,
     saving,
+    isDirty,
     submit,
   }
 }

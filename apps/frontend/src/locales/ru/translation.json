@@ -408,7 +408,11 @@
         "hallCostLabel": "Расход зала — обычный",
         "hallPrimeCostLabel": "Расход зала — Prime",
         "deleteTitle": "Удалить тариф?",
-        "titleRequired": "Укажите название тарифа"
+        "titleRequired": "Укажите название тарифа",
+        "unsavedTitle": "Несохранённые изменения",
+        "unsavedContent": "Вы изменили тариф, но не нажали «Сохранить». Если уйти сейчас, введённые данные пропадут.",
+        "unsavedLeave": "Уйти без сохранения",
+        "unsavedStay": "Остаться"
       },
       "durationPreset": "{{minutes}} мин",
       "sessionsCount": "{{count}} занятие",
