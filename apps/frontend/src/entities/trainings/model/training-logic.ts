@@ -32,27 +32,33 @@ export async function checkTrainingConflict(
   time: string,
   groupId: string,
   excludeId: string | null = null,
+  sessionDuration?: number,
 ): Promise<TrainingConflict[]> {
   if (!time) return []
 
   const [allTrainings, allGroups] = await Promise.all([getTrainings(), getGroups()])
 
   const groupMap: Record<string, Group> = Object.fromEntries(map(allGroups, (g) => [g.name, g]))
-  const newDur = groupMap[groupId]?.duration ?? 60
+  // Для новой тренировки приоритет у явно переданной длительности (например,
+  // индивидуальная сессия 90 мин), затем длительность группы, затем 60.
+  const newDur = sessionDuration ?? groupMap[groupId]?.duration ?? 60
   const newStart = timeToMinutes(time)
   const newEnd = newStart + newDur
 
+  // У существующих тренировок длительность может отличаться от группы
+  // (индивидуальные 1.5ч сохраняют sessionDuration в самой записи).
+  const durationOf = (t: Training): number =>
+    t.sessionDuration ?? groupMap[t.groupId]?.duration ?? 60
+
   const overlapping = filter(allTrainings, (t) => {
     if (t.date !== date || t.id === excludeId || !t.time) return false
-    const dur = groupMap[t.groupId]?.duration ?? 60
     const start = timeToMinutes(t.time)
-    const end = start + dur
+    const end = start + durationOf(t)
     return newStart < end && start < newEnd
   })
 
   return map(overlapping, (t) => {
-    const dur = groupMap[t.groupId]?.duration ?? 60
-    const end = timeToMinutes(t.time) + dur
+    const end = timeToMinutes(t.time) + durationOf(t)
     return { groupId: t.groupId, start: t.time, end: minutesToTime(end) }
   })
 }

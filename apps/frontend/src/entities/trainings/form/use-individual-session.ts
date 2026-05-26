@@ -90,8 +90,8 @@ export function useIndividualSession({ indGroupId, onDone }: UseIndividualSessio
   const subOptions = SUB_OPTIONS[duration]
 
   const { data: conflicts = [] } = useQuery({
-    queryKey: ['training-conflict', indGroupId, date, time],
-    queryFn: () => checkTrainingConflict(date, time, indGroupId),
+    queryKey: ['training-conflict', indGroupId, date, time, duration],
+    queryFn: () => checkTrainingConflict(date, time, indGroupId, null, duration),
     enabled: !!date && !!time,
   })
 
@@ -100,7 +100,7 @@ export function useIndividualSession({ indGroupId, onDone }: UseIndividualSessio
       toast({ type: 'error', title: t('trainings.individual.pickClientAndDate') })
       return
     }
-    const live = await checkTrainingConflict(date, time, indGroupId)
+    const live = await checkTrainingConflict(date, time, indGroupId, null, duration)
     if (live.length) {
       const detail = live.map((c) => `«${c.groupId}» ${c.start}–${c.end}`).join(', ')
       toast({ type: 'error', title: t('trainings.individual.scheduleConflict'), msg: detail })
