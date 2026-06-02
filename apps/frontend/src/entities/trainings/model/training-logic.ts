@@ -2,6 +2,8 @@ import filter from 'lodash/filter'
 import isEmpty from 'lodash/isEmpty'
 import map from 'lodash/map'
 
+import { isPrimeTime } from '@trikick/shared'
+
 import { minutesToTime, timeToMinutes } from 'common/utils/date'
 import { getGroups } from 'entities/groups/model/groups.repo'
 import { getStudentById } from 'entities/students/model/students.repo'
@@ -12,34 +14,11 @@ import type { Training, TrainingConflict } from './types'
 import type { Group } from 'entities/groups/model/types'
 import type { DeductStatus, Subscription } from 'entities/students/model/types'
 
-type PrimeTimeLocation = {
-  primeWeekdayStart?: string | null
-  primeWeekdayEnd?: string | null
-  primeWeekendStart?: string | null
-  primeWeekendEnd?: string | null
-} | null | undefined
-
-/**
- * Prime-time check. Defaults: weekdays 17:00–20:00, weekends 10:00–20:00.
- * Pass a location to use its custom prime-time window instead.
- */
-export function isPrimeTime(date: string, time: string, location?: PrimeTimeLocation): boolean {
-  if (!date || !time) return false
-  const d = new Date(date + 'T00:00:00')
-  const dow = d.getDay()
-  const mins = timeToMinutes(time)
-  const isWeekend = dow === 0 || dow === 6
-
-  if (isWeekend) {
-    const start = location?.primeWeekendStart ? timeToMinutes(location.primeWeekendStart) : 600
-    const end = location?.primeWeekendEnd ? timeToMinutes(location.primeWeekendEnd) : 1200
-    return mins >= start && mins < end
-  } else {
-    const start = location?.primeWeekdayStart ? timeToMinutes(location.primeWeekdayStart) : 1020
-    const end = location?.primeWeekdayEnd ? timeToMinutes(location.primeWeekdayEnd) : 1200
-    return mins >= start && mins < end
-  }
-}
+// Реэкспорт общей функции для совместимости с существующими импортами по пути
+// 'entities/trainings/model/training-logic'. Логика прайм-тайма живёт в
+// `@trikick/shared/lib/prime-time` — единственный источник правды для фронта
+// и бэка.
+export { isPrimeTime }
 
 /** Trainings that overlap with a proposed slot. */
 export async function checkTrainingConflict(

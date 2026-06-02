@@ -2,8 +2,11 @@ import { Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/sequelize'
 import type { FindOptions } from 'sequelize'
 
+import { isPrimeTime } from '@trikick/shared'
+
 import { OwnedCrudService } from '../../common/services/owned-crud.service'
 import { DateUtil } from '../../common/utils/date.util'
+import { LocationService } from '../location/location.service'
 import { Student } from '../student/student.model'
 import { SubscriptionsService } from '../student/subscriptions.service'
 import { Visit } from '../student/visit.model'
@@ -18,6 +21,7 @@ export class TrainingService extends OwnedCrudService<Training> {
     @InjectModel(Training) private readonly trainingModel: typeof Training,
     @InjectModel(Visit) private readonly visitModel: typeof Visit,
     private readonly subscriptionsService: SubscriptionsService,
+    private readonly locationService: LocationService,
   ) {
     super(trainingModel)
   }
@@ -27,35 +31,34 @@ export class TrainingService extends OwnedCrudService<Training> {
   }
 
   /**
-   * Prime-time: weekdays 17:00–19:59, weekends 10:00–19:59.
-   * Ported from frontend training-logic.ts.
-   */
-  static isPrimeTime(date: string, time: string): boolean {
-    if (!date || !time) return false
-    const dow = new Date(date + 'T00:00:00').getDay()
-    const [h, m] = time.split(':').map(Number)
-    const mins = h * 60 + (m || 0)
-    const isWeekend = dow === 0 || dow === 6
-    return isWeekend ? mins >= 600 && mins <= 1199 : mins >= 1020 && mins <= 1199
-  }
-
-  /**
    * Create a training. When `deductSessions` is true (default) attendees'
    * sessions are deducted and visits recorded; the seeder passes false to
    * create historical records without re-deducting.
+   *
+   * Если `dto.isPrime` не передан, признак прайм-тайма выводится из времени
+   * с учётом кастомного окна локации (если она указана). Логика общая с
+   * фронтом — функция `isPrimeTime` из `@trikick/shared`.
    */
   async createTraining(
     userId: string,
     dto: CreateTrainingDto,
     deductSessions = true,
   ): Promise<Training> {
+    let isPrime = dto.isPrime
+    if (isPrime === undefined) {
+      const location = dto.locationId
+        ? await this.locationService.findOneForUser(userId, dto.locationId).catch(() => null)
+        : null
+      isPrime = isPrimeTime(dto.date, dto.time ?? '', location)
+    }
+
     const training = await this.createForUser(userId, {
       groupId: dto.groupId,
       locationId: dto.locationId ?? null,
       date: dto.date,
       time: dto.time ?? '',
       note: dto.note ?? '',
-      isPrime: dto.isPrime ?? TrainingService.isPrimeTime(dto.date, dto.time ?? ''),
+      isPrime,
       sessionDuration: dto.sessionDuration ?? 60,
       recurring: dto.recurring ?? false,
       recurringId: dto.recurringId ?? null,
