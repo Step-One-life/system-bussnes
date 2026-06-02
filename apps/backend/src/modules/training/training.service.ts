@@ -59,6 +59,8 @@ export class TrainingService extends OwnedCrudService<Training> {
       sessionDuration: dto.sessionDuration ?? 60,
       recurring: dto.recurring ?? false,
       recurringId: dto.recurringId ?? null,
+      isOnline: dto.isOnline ?? false,
+      plannedStudentId: dto.plannedStudentId ?? null,
     })
 
     if (dto.attendees?.length) {
@@ -109,15 +111,40 @@ export class TrainingService extends OwnedCrudService<Training> {
       where: { trainingId: training.id, studentId },
     })
     if (visit) {
-      await this.subscriptionsService.restore(studentId, training.groupId)
+      await this.subscriptionsService.restore(studentId, training.groupId, training.sessionDuration)
       await visit.destroy()
     }
   }
 
-  /** Delete a recurring series by recurringId. */
+  /** Delete a training: restore sessions and remove visits for every attendee. */
+  async removeTraining(userId: string, id: string): Promise<void> {
+    const training = await this.findOneForUser(userId, id)
+    const attendeeIds = (training.attendees ?? []).map((s) => s.id)
+    for (const studentId of attendeeIds) {
+      const visit = await this.visitModel.findOne({ where: { trainingId: id, studentId } })
+      if (visit) {
+        await this.subscriptionsService.restore(studentId, training.groupId, training.sessionDuration)
+        await visit.destroy()
+      }
+    }
+    await training.destroy()
+  }
+
+  /** Delete a recurring series by recurringId, restoring sessions for all attendees. */
   async removeSeries(userId: string, recurringId: string): Promise<number> {
-    const trainings = await this.trainingModel.findAll({ where: { userId, recurringId } })
+    const trainings = await this.trainingModel.findAll({
+      where: { userId, recurringId },
+      include: [Student],
+    })
     for (const t of trainings) {
+      const attendeeIds = (t.attendees ?? []).map((s) => s.id)
+      for (const studentId of attendeeIds) {
+        const visit = await this.visitModel.findOne({ where: { trainingId: t.id, studentId } })
+        if (visit) {
+          await this.subscriptionsService.restore(studentId, t.groupId, t.sessionDuration)
+          await visit.destroy()
+        }
+      }
       await t.destroy()
     }
     return trainings.length

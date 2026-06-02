@@ -1,4 +1,4 @@
-import { Button, Checkbox, Form, Input, Modal, Popconfirm, Select } from 'antd'
+import { Button, Checkbox, Form, Input, Modal, Popconfirm, Select, TimePicker } from 'antd'
 
 import map from 'lodash/map'
 
@@ -8,7 +8,17 @@ import { LOCATION_KINDS } from '../model/location-kinds'
 import { useLocationForm } from './use-location-form'
 
 import type { Location, LocationKind } from '../model/types'
+import type { Dayjs } from 'dayjs'
 import type { ChangeEvent } from 'react'
+
+import dayjs from 'dayjs'
+
+function strToDayjs(v: string): Dayjs | null {
+  return v ? dayjs(v, 'HH:mm') : null
+}
+function dayjsToStr(v: Dayjs | null): string {
+  return v ? v.format('HH:mm') : ''
+}
 
 interface LocationFormModalProps {
   open: boolean
@@ -33,6 +43,10 @@ export function LocationFormModal({
   const handleKindChange = (value: LocationKind) => form.setKind(value)
   const handleDefaultChange = (e: { target: { checked: boolean } }) =>
     form.setIsDefault(e.target.checked)
+  const handlePWdStart = (v: Dayjs | null) => form.setPrimeWeekdayStart(dayjsToStr(v))
+  const handlePWdEnd = (v: Dayjs | null) => form.setPrimeWeekdayEnd(dayjsToStr(v))
+  const handlePWeStart = (v: Dayjs | null) => form.setPrimeWeekendStart(dayjsToStr(v))
+  const handlePWeEnd = (v: Dayjs | null) => form.setPrimeWeekendEnd(dayjsToStr(v))
   const handleDeleteConfirm = () => {
     if (location && onDelete) onDelete(location)
   }
@@ -98,6 +112,50 @@ export function LocationFormModal({
           <Checkbox checked={form.isDefault} onChange={handleDefaultChange}>
             {t('locations.form.defaultLabel')}
           </Checkbox>
+        </Form.Item>
+
+        <Form.Item label={t('locations.form.primeWeekdayLabel')}>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <TimePicker
+              format="HH:mm"
+              minuteStep={15}
+              value={strToDayjs(form.primeWeekdayStart)}
+              onChange={handlePWdStart}
+              placeholder={t('locations.form.primeStartPlaceholder')}
+              style={{ flex: 1 }}
+            />
+            <span style={{ color: 'var(--text-muted)' }}>—</span>
+            <TimePicker
+              format="HH:mm"
+              minuteStep={15}
+              value={strToDayjs(form.primeWeekdayEnd)}
+              onChange={handlePWdEnd}
+              placeholder={t('locations.form.primeEndPlaceholder')}
+              style={{ flex: 1 }}
+            />
+          </div>
+        </Form.Item>
+
+        <Form.Item label={t('locations.form.primeWeekendLabel')}>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <TimePicker
+              format="HH:mm"
+              minuteStep={15}
+              value={strToDayjs(form.primeWeekendStart)}
+              onChange={handlePWeStart}
+              placeholder={t('locations.form.primeStartPlaceholder')}
+              style={{ flex: 1 }}
+            />
+            <span style={{ color: 'var(--text-muted)' }}>—</span>
+            <TimePicker
+              format="HH:mm"
+              minuteStep={15}
+              value={strToDayjs(form.primeWeekendEnd)}
+              onChange={handlePWeEnd}
+              placeholder={t('locations.form.primeEndPlaceholder')}
+              style={{ flex: 1 }}
+            />
+          </div>
         </Form.Item>
       </Form>
     </Modal>

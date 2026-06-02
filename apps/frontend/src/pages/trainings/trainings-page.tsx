@@ -31,6 +31,7 @@ export function TrainingsPage() {
   const handleCloseTypeModal = () => page.setTypeModalOpen(false)
   const handleCloseGroupModal = () => page.setGroupModalOpen(false)
   const handleCloseIndModal = () => page.setIndModalOpen(false)
+  const handleCloseOnlineModal = () => page.setOnlineModalOpen(false)
   const handleCloseAddTarget = () => page.setAddTarget(null)
   const handleCloseCalendarBlock = () => page.setCalendarBlock(null)
 
@@ -89,6 +90,7 @@ export function TrainingsPage() {
         onClose={handleCloseTypeModal}
         onPickGroup={page.pickGroup}
         onPickIndividual={page.pickIndividual}
+        onPickOnline={page.pickOnline}
       />
 
       <GroupTrainingModal
@@ -101,6 +103,15 @@ export function TrainingsPage() {
           open={page.indModalOpen}
           indGroupId={page.indGroupId}
           onClose={handleCloseIndModal}
+        />
+      )}
+
+      {page.indGroupId && (
+        <IndividualSessionModal
+          open={page.onlineModalOpen}
+          indGroupId={page.indGroupId}
+          onClose={handleCloseOnlineModal}
+          isOnline
         />
       )}
 

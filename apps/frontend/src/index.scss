@@ -1,4 +1,4 @@
-@import url('https://api.fontshare.com/v2/css?f[]=satoshi@400,500,600,700&display=swap');
+/* SF Pro loads natively on Apple devices; fallback chain handles others */
 
 *,
 *::before,
@@ -18,10 +18,7 @@ body {
   font-family: var(--font);
   background: var(--bg);
   color: var(--text-primary);
-  min-height: 100vh;
-  // dvh учитывает динамическую панель браузера на мобильных, плюс safe-area
-  // снизу для standalone PWA, чтобы нижний бар не обрезался кнопкой Home.
-  min-height: calc(100dvh + env(safe-area-inset-bottom));
+  min-height: 100dvh;
   transition:
     background var(--dur) var(--ease),
     color var(--dur) var(--ease);

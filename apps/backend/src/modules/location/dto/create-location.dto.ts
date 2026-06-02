@@ -25,4 +25,24 @@ export class CreateLocationDto implements CreateLocationShape {
   @IsOptional()
   @IsBoolean()
   isDefault?: boolean
+
+  @ApiPropertyOptional({ example: '17:00', description: 'Начало прайм-тайм в будни (HH:mm)' })
+  @IsOptional()
+  @IsString()
+  primeWeekdayStart?: string | null
+
+  @ApiPropertyOptional({ example: '20:00', description: 'Конец прайм-тайм в будни (HH:mm)' })
+  @IsOptional()
+  @IsString()
+  primeWeekdayEnd?: string | null
+
+  @ApiPropertyOptional({ example: '10:00', description: 'Начало прайм-тайм в выходные (HH:mm)' })
+  @IsOptional()
+  @IsString()
+  primeWeekendStart?: string | null
+
+  @ApiPropertyOptional({ example: '20:00', description: 'Конец прайм-тайм в выходные (HH:mm)' })
+  @IsOptional()
+  @IsString()
+  primeWeekendEnd?: string | null
 }

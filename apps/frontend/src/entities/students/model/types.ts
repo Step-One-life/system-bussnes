@@ -1,8 +1,12 @@
 export type SubscriptionType = '1' | '4' | '8' | '1_90' | '4_90' | '8_90'
 
+export type TimeSlot = 'regular' | 'prime'
+
 export interface Subscription {
   id: string
   groupId: string
+  /** Все группы (имена), которые покрывает абонемент. Общий — несколько. */
+  groupIds: string[]
   type: SubscriptionType
   total: number
   remaining: number
@@ -11,6 +15,8 @@ export interface Subscription {
   isActive: boolean
   finPaymentId: string | null
   sessionDuration: number
+  /** Слот тарифа, выбранный при продаже (прайм/обычный). */
+  timeSlot: TimeSlot
 }
 
 export interface VisitRecord {
@@ -39,6 +45,10 @@ export interface SubscriptionInput {
   type: SubscriptionType
   createdAt?: string
   sessionDuration?: number
+  validityDays?: number
+  timeSlot?: TimeSlot
+  /** Общий абонемент: покрываемые группы (имена). Пусто = только groupId. */
+  groupIds?: string[]
 }
 
 export type SubStatusType = 'active' | 'ending' | 'danger' | 'expired' | 'none'

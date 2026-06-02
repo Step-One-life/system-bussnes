@@ -1,6 +1,6 @@
 import { BelongsTo, Column, DataType, ForeignKey, Table } from 'sequelize-typescript'
 
-import type { SubscriptionType } from '@trikick/shared'
+import type { SubscriptionType, TimeSlot } from '@trikick/shared'
 
 import { BaseEntity } from '../../common/entities/base.entity'
 import { Group } from '../group/group.model'
@@ -39,4 +39,10 @@ export class Subscription extends BaseEntity {
 
   @Column({ field: 'session_duration', type: DataType.INTEGER, allowNull: false, defaultValue: 60 })
   declare sessionDuration: number
+
+  @Column({ field: 'time_slot', type: DataType.STRING, allowNull: false, defaultValue: 'regular' })
+  declare timeSlot: TimeSlot
+
+  @Column({ field: 'group_ids', type: DataType.JSON, allowNull: true })
+  declare groupIds: string[] | null
 }

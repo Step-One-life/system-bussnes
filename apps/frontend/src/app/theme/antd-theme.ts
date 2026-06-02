@@ -5,28 +5,28 @@ import type { ThemeConfig } from 'antd'
 export type ThemeMode = 'dark' | 'light'
 
 const sharedToken = {
-  colorPrimary: '#01696f',
-  colorSuccess: '#22c55e',
-  colorWarning: '#f59e0b',
-  colorError: '#ef4444',
-  borderRadius: 10,
-  fontFamily: "'Satoshi', system-ui, sans-serif",
+  colorPrimary: '#5856D6',
+  colorSuccess: '#34C759',
+  colorWarning: '#FF9500',
+  colorError: '#FF3B30',
+  borderRadius: 12,
+  fontFamily: "-apple-system, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif",
 }
 
 const darkColors = {
-  colorBgBase: '#0d0f10',
-  colorBgContainer: '#1a1e24',
-  colorBgElevated: '#13161a',
-  colorTextBase: '#f0f2f5',
-  colorBorder: 'rgba(255,255,255,0.07)',
+  colorBgBase: '#000000',
+  colorBgContainer: '#1C1C1E',
+  colorBgElevated: '#2C2C2E',
+  colorTextBase: '#FFFFFF',
+  colorBorder: 'rgba(255,255,255,0.08)',
 }
 
 const lightColors = {
-  colorBgBase: '#f4f5f7',
-  colorBgContainer: '#ffffff',
-  colorBgElevated: '#ffffff',
-  colorTextBase: '#111316',
-  colorBorder: 'rgba(0,0,0,0.08)',
+  colorBgBase: '#F2F2F7',
+  colorBgContainer: '#FFFFFF',
+  colorBgElevated: '#FFFFFF',
+  colorTextBase: '#000000',
+  colorBorder: 'rgba(60,60,67,0.13)',
 }
 
 // Button sizing aligned with legacy .btn / .btn--sm / .btn--lg.

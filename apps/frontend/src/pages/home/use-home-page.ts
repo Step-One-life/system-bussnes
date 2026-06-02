@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 
 import { getKPIs, getWarningStudents } from 'common/lib/kpi'
+import { todayISO } from 'common/utils/date'
 import { useGroups } from 'entities/groups'
 import { useStudents } from 'entities/students'
 import { useTrainings } from 'entities/trainings'
@@ -30,7 +31,7 @@ export function useHomePage() {
     [groups],
   )
 
-  const todayStr = new Date().toISOString().slice(0, 10)
+  const todayStr = todayISO()
   const todayTrainings = useMemo(
     () => trainings.filter((t) => t.date === todayStr),
     [trainings, todayStr],

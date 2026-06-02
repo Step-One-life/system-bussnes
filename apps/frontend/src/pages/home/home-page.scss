@@ -50,3 +50,24 @@
     padding: var(--sp-6);
   }
 }
+
+/* Главная: таймлайн дня и «Требуют внимания» рядом на десктопе,
+   друг под другом — на мобильном. */
+.home-cols {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--sp-6);
+  margin-bottom: var(--sp-6);
+
+  &__col {
+    min-width: 0;
+  }
+}
+
+@media (min-width: 1024px) {
+  .home-cols {
+    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+    gap: var(--sp-5);
+    align-items: start;
+  }
+}

@@ -1,10 +1,11 @@
-import { createBrowserRouter } from 'react-router-dom'
+import { createBrowserRouter, Navigate } from 'react-router-dom'
 
 import { FinancePage } from 'pages/finance'
 import { GroupsPage } from 'pages/groups'
 import { HomePage } from 'pages/home'
 import { IndividualPage } from 'pages/individual'
 import { LoginPage } from 'pages/login'
+import { PeopleLayout } from 'pages/people'
 import { RegisterPage } from 'pages/register'
 import { StudentsPage } from 'pages/students'
 import { TrainingsPage } from 'pages/trainings'
@@ -24,9 +25,16 @@ export const router = createBrowserRouter([
         children: [
           { index: true, element: <HomePage /> },
           { path: 'trainings', element: <TrainingsPage /> },
-          { path: 'students', element: <StudentsPage /> },
-          { path: 'individual', element: <IndividualPage /> },
-          { path: 'groups', element: <GroupsPage /> },
+          {
+            path: 'people',
+            element: <PeopleLayout />,
+            children: [
+              { index: true, element: <Navigate to="students" replace /> },
+              { path: 'students', element: <StudentsPage /> },
+              { path: 'groups', element: <GroupsPage /> },
+              { path: 'individual', element: <IndividualPage /> },
+            ],
+          },
           { path: 'finance', element: <FinancePage /> },
         ],
       },

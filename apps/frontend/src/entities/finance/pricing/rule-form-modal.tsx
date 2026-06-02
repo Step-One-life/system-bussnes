@@ -154,6 +154,15 @@ export function RuleFormModal({
             onChange={form.setSessions}
           />
         </Form.Item>
+        <Form.Item label={t('finance.pricing.ruleForm.validityDaysLabel')}>
+          <InputNumber
+            min={1}
+            value={form.validityDays}
+            onChange={(v) => form.setValidityDays(typeof v === 'number' ? v : 35)}
+            style={{ width: '100%' }}
+            addonAfter={t('finance.pricing.ruleForm.validityDaysSuffix')}
+          />
+        </Form.Item>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--sp-4)' }}>
           <Form.Item label={t('finance.pricing.ruleForm.clientPriceLabel')}>
             <InputNumber

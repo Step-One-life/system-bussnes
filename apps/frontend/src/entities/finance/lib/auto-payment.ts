@@ -1,7 +1,13 @@
+import { todayISO } from 'common/utils/date'
 import { isPrimeTime } from 'entities/trainings/model/training-logic'
 
 import { createHallCost, createPayment } from '../model/finance.repo'
-import { resolvePricingRule, subTypeToTuple } from './pricing-lookup'
+import {
+  resolvePricingRule,
+  resolvePricingRuleForOnline,
+  resolvePricingRuleForShared,
+  subTypeToTuple,
+} from './pricing-lookup'
 
 import type { ClientPaymentType, HallPaymentType } from '../model/types'
 
@@ -18,6 +24,10 @@ interface AutoPaymentOptions {
   isPrime?: boolean
   /** Локация абонемента (из тренировки/группы). Если нет — дефолтная. */
   locationId?: string | null
+  /** Онлайн-сессия: тариф ищется online→individual, расход зала не пишется. */
+  isOnline?: boolean
+  /** Общий абонемент: тариф ищется по виду 'shared' (по числу занятий). */
+  isShared?: boolean
 }
 
 /** Maps a subscription type to the finance payment type. */
@@ -53,36 +63,48 @@ export async function autoCreatePayment(
   const paymentType = subPaymentType(sub.type, isIndividual)
   if (!paymentType) return null
 
-  const paidAt = sub.createdAt || new Date().toISOString().slice(0, 10)
+  const paidAt = sub.createdAt || todayISO()
   const isPrime = opts.isPrime ?? (opts.time ? isPrimeTime(paidAt, opts.time) : false)
   const timeSlot = isPrime ? 'prime' : 'regular'
 
   const tuple = subTypeToTuple(sub.type, isIndividual)
-  const { rule, locationId } = await resolvePricingRule(opts.locationId ?? null, tuple)
+  const { rule, locationId } = opts.isShared
+    ? await resolvePricingRuleForShared(opts.locationId ?? null, {
+        format: tuple.format,
+        sessionsCount: tuple.sessionsCount,
+      })
+    : opts.isOnline
+      ? await resolvePricingRuleForOnline(opts.locationId ?? null, tuple)
+      : await resolvePricingRule(opts.locationId ?? null, tuple)
 
-  const clientAmount = rule
-    ? isPrime
-      ? rule.client_prime_price
-      : rule.client_price
-    : 0
-  const hallAmount = rule ? (isPrime ? rule.hall_prime_cost : rule.hall_cost) : 0
+  // Нет тарифа для этого посещения → ничего не пишем (без нулевых записей).
+  if (!rule) return null
 
-  const hallCost = await createHallCost({
-    student_id: studentId,
-    location_id: locationId,
-    hall_payment_type: paymentType as HallPaymentType,
-    time_slot: timeSlot,
-    training_time: opts.time || '',
-    hall_amount: hallAmount,
-    paid_at: paidAt,
-  })
+  const clientAmount = isPrime ? rule.client_prime_price : rule.client_price
+
+  // Очные сессии списывают расход зала (прайм/обычный); онлайн зал не
+  // использует, поэтому расход не создаём.
+  let hallCostId: string | null = null
+  if (!opts.isOnline) {
+    const hallAmount = isPrime ? rule.hall_prime_cost : rule.hall_cost
+    const hallCost = await createHallCost({
+      student_id: studentId,
+      location_id: locationId,
+      hall_payment_type: paymentType as HallPaymentType,
+      time_slot: timeSlot,
+      training_time: opts.time || '',
+      hall_amount: hallAmount,
+      paid_at: paidAt,
+    })
+    hallCostId = hallCost.id
+  }
 
   const payment = await createPayment({
     student_id: studentId,
     location_id: locationId,
     client_payment_type: paymentType,
     client_amount: clientAmount,
-    hall_cost_id: hallCost.id,
+    hall_cost_id: hallCostId,
     paid_at: paidAt,
   })
 

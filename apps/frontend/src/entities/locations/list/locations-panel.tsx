@@ -63,6 +63,7 @@ export function LocationsPanel() {
       )}
 
       <LocationFormModal
+        key={editing?.id ?? 'new'}
         open={modalOpen}
         location={editing}
         onClose={handleClose}

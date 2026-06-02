@@ -3,6 +3,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 
 import { useToast } from 'common/ui'
+import { todayISO } from 'common/utils/date'
 
 import { studentKeys, useDeleteStudent, useDeleteSubscription } from '../api/use-students'
 import { deductSession, recordVisit } from '../model/students.repo'
@@ -23,7 +24,7 @@ export function useStudentActions(onAfterChange: () => void) {
     const { sub, status } = await deductSession(studentId, groupId)
     if (!sub) return
     await recordVisit(studentId, {
-      date: new Date().toISOString().slice(0, 10),
+      date: todayISO(),
       groupId,
       trainingId: '',
     })

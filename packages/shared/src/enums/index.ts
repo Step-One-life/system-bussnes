@@ -25,7 +25,7 @@ export type FinStatus = 'active' | 'closed'
 export type LocationKind = 'hall' | 'studio' | 'outdoor' | 'online'
 
 /** Вид занятия в тарифе. */
-export type LessonKind = 'individual' | 'group'
+export type LessonKind = 'individual' | 'group' | 'online' | 'shared'
 
 /** Формат тарифа: разовое занятие или абонемент. */
 export type PricingFormat = 'single' | 'subscription'

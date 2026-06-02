@@ -90,6 +90,7 @@ export function PricingTab() {
       </div>
 
       <RuleFormModal
+        key={actions.editing?.id ?? 'new'}
         open={actions.modalOpen}
         locationId={locationId}
         rule={actions.editing}

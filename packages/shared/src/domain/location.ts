@@ -9,4 +9,8 @@ export interface Location {
   isDefault: boolean
   archived: boolean
   createdAt: string
+  primeWeekdayStart: string | null
+  primeWeekdayEnd: string | null
+  primeWeekendStart: string | null
+  primeWeekendEnd: string | null
 }

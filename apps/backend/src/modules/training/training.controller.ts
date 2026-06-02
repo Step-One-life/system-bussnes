@@ -79,9 +79,9 @@ export class TrainingController {
 
   @Delete(':id')
   @HttpCode(204)
-  @ApiOperation({ summary: 'Удалить тренировку' })
+  @ApiOperation({ summary: 'Удалить тренировку (восстанавливает занятия учеников)' })
   remove(@CurrentUser() user: CurrentUserPayload, @Param() { id }: IdParamDto): Promise<void> {
-    return this.trainingService.removeForUser(user.id, id)
+    return this.trainingService.removeTraining(user.id, id)
   }
 
   @Post(':id/attendees')

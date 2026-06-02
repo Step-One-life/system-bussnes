@@ -59,4 +59,7 @@ export class PricingRule extends OwnedEntity {
 
   @Column({ type: DataType.BOOLEAN, allowNull: false, defaultValue: true })
   declare active: boolean
+
+  @Column({ field: 'validity_days', type: DataType.INTEGER, allowNull: false, defaultValue: 35 })
+  declare validityDays: number
 }

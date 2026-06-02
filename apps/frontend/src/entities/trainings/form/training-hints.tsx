@@ -1,15 +1,19 @@
 import { useTranslation } from 'react-i18next'
 
+import { useLocations } from 'entities/locations'
+
 import { isPrimeTime } from '../model/training-logic'
 
 import type { TrainingConflict } from '../model/types'
 
 import './training-modals.scss'
 
-export function PrimeHint({ date, time }: { date: string; time: string }) {
+export function PrimeHint({ date, time, locationId }: { date: string; time: string; locationId?: string | null }) {
   const { t } = useTranslation()
+  const { data: locations = [] } = useLocations()
   if (!time) return <div className="prime-hint" />
-  const prime = isPrimeTime(date, time)
+  const location = locationId ? (locations.find((l) => l.id === locationId) ?? null) : null
+  const prime = isPrimeTime(date, time, location)
   return (
     <div className="prime-hint">
       <span className={`badge ${prime ? 'badge--prime' : 'badge--neutral'}`}>

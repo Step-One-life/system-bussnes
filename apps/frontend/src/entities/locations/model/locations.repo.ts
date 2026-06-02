@@ -18,6 +18,10 @@ interface RawLocation {
   isDefault: boolean
   archived: boolean
   createdAt: string
+  primeWeekdayStart: string | null
+  primeWeekdayEnd: string | null
+  primeWeekendStart: string | null
+  primeWeekendEnd: string | null
 }
 
 function toLocation(raw: RawLocation): Location {
@@ -29,6 +33,10 @@ function toLocation(raw: RawLocation): Location {
     isDefault: !!raw.isDefault,
     archived: !!raw.archived,
     createdAt: raw.createdAt,
+    primeWeekdayStart: raw.primeWeekdayStart ?? null,
+    primeWeekdayEnd: raw.primeWeekdayEnd ?? null,
+    primeWeekendStart: raw.primeWeekendStart ?? null,
+    primeWeekendEnd: raw.primeWeekendEnd ?? null,
   }
 }
 
@@ -65,6 +73,10 @@ export async function createLocation(data: LocationInput): Promise<Location> {
     address: data.address ?? null,
     kind: data.kind ?? 'hall',
     isDefault: data.isDefault ?? false,
+    primeWeekdayStart: data.primeWeekdayStart ?? null,
+    primeWeekdayEnd: data.primeWeekdayEnd ?? null,
+    primeWeekendStart: data.primeWeekendStart ?? null,
+    primeWeekendEnd: data.primeWeekendEnd ?? null,
   })
   invalidateLocations()
   return toLocation(raw)
@@ -80,6 +92,10 @@ export async function updateLocation(
   if (!isNil(changes.kind)) body.kind = changes.kind
   if (!isNil(changes.isDefault)) body.isDefault = changes.isDefault
   if (!isNil(changes.archived)) body.archived = changes.archived
+  if (changes.primeWeekdayStart !== undefined) body.primeWeekdayStart = changes.primeWeekdayStart
+  if (changes.primeWeekdayEnd !== undefined) body.primeWeekdayEnd = changes.primeWeekdayEnd
+  if (changes.primeWeekendStart !== undefined) body.primeWeekendStart = changes.primeWeekendStart
+  if (changes.primeWeekendEnd !== undefined) body.primeWeekendEnd = changes.primeWeekendEnd
   const raw = await apiClient.patch<RawLocation>(`/locations/${id}`, body)
   invalidateLocations()
   return toLocation(raw)

@@ -17,42 +17,48 @@ import { StudentDrawer } from 'entities/students'
 import { RenewSubModal } from 'entities/students/subscriptions/renew-sub-modal'
 import {
   AddToTrainingModal,
+  CalendarTrainingModal,
   ensureIndividualGroup,
   GroupTrainingModal,
   IndividualSessionModal,
-  TrainingList,
+  TrainingDayCalendar,
   TrainingTypeModal,
-  useDeleteTrainingWithRestore,
-  useRemoveFromTraining,
 } from 'entities/trainings'
 
 import { KpiDetailModal } from './kpi-detail-modal'
 import { MarkTodayModal } from './mark-today-modal'
 import { useHomePage } from './use-home-page'
 
-import type { Training } from 'entities/trainings'
+import type { CalendarBlock, Training } from 'entities/trainings'
 
 import './home-page.scss'
 
 export function HomePage() {
   const { t } = useTranslation()
   const page = useHomePage()
-  const removeFromTraining = useRemoveFromTraining()
-  const deleteTraining = useDeleteTrainingWithRestore()
 
   const [drawerId, setDrawerId] = useState<string | null>(null)
   const [renew, setRenew] = useState<{ studentId: string; groupId: string } | null>(null)
   const [typeOpen, setTypeOpen] = useState(false)
   const [groupOpen, setGroupOpen] = useState(false)
   const [indOpen, setIndOpen] = useState(false)
+  const [onlineOpen, setOnlineOpen] = useState(false)
   const [indGroupId, setIndGroupId] = useState<string | null>(null)
   const [addTarget, setAddTarget] = useState<Training | null>(null)
+  const [calBlock, setCalBlock] = useState<CalendarBlock | null>(null)
 
   const pickIndividual = async () => {
     const g = await ensureIndividualGroup()
     setIndGroupId(g.name)
     setTypeOpen(false)
     setIndOpen(true)
+  }
+
+  const pickOnline = async () => {
+    const g = await ensureIndividualGroup()
+    setIndGroupId(g.name)
+    setTypeOpen(false)
+    setOnlineOpen(true)
   }
 
   const renewStudent = page.students.find((s) => s.id === renew?.studentId)
@@ -64,15 +70,6 @@ export function HomePage() {
   const handleSelectMonth = () => page.setKpiType('month')
   const handleSelectEnding = () => page.setKpiType('ending')
   const handleSelectExpired = () => page.setKpiType('expired')
-
-  const handleRemoveStudent = (tr: Training, sid: string) =>
-    removeFromTraining.mutateAsync({ trainingId: tr.id, studentId: sid })
-
-  const handleDeleteTraining = (tr: Training) =>
-    deleteTraining.mutateAsync({
-      training: tr,
-      series: tr.recurring && !!tr.recurringId,
-    })
 
   const handleOpenStudentDrawer = (id: string) => () => setDrawerId(id)
   const handleRenewWarning =
@@ -92,7 +89,9 @@ export function HomePage() {
   }
   const handleCloseGroup = () => setGroupOpen(false)
   const handleCloseInd = () => setIndOpen(false)
+  const handleCloseOnline = () => setOnlineOpen(false)
   const handleCloseAdd = () => setAddTarget(null)
+  const handleCloseCalBlock = () => setCalBlock(null)
   const handleCloseDrawer = () => setDrawerId(null)
   const handleEditNoop = () => {}
   const handleCloseRenew = () => setRenew(null)
@@ -151,49 +150,47 @@ export function HomePage() {
         </div>
       )}
 
-      <div className="section-title">{t('home.trainingsToday')}</div>
-      <div style={{ marginBottom: 'var(--sp-6)' }}>
-        {page.todayTrainings.length ? (
-          <TrainingList
-            trainings={page.todayTrainings}
+      <div className="home-cols">
+        <section className="home-cols__col">
+          <div className="section-title">{t('home.trainingsToday')}</div>
+          <TrainingDayCalendar
+            trainings={page.trainings}
             students={page.students}
             groups={page.groups}
-            onAddStudent={setAddTarget}
-            onRemoveStudent={handleRemoveStudent}
-            onDelete={handleDeleteTraining}
+            onBlockClick={setCalBlock}
           />
-        ) : (
-          <div className="home-empty-card">{t('home.noTrainingsToday')}</div>
-        )}
-      </div>
+        </section>
 
-      <div className="section-title">
-        {page.warnings.length ? t('home.attention') : t('home.subStatus')}
+        <section className="home-cols__col">
+          <div className="section-title">
+            {page.warnings.length ? t('home.attention') : t('home.subStatus')}
+          </div>
+          {page.warnings.length ? (
+            <div className="warning-list">
+              {page.warnings.map((w) => (
+                <WarningItem
+                  key={`${w.student.id}-${w.groupId}`}
+                  name={w.student.name}
+                  detail={`${page.indNames.includes(w.groupId) ? t('home.indTraining') : w.groupId} · ${w.status.label}`}
+                  danger={w.status.type === 'expired'}
+                  onClick={handleOpenStudentDrawer(w.student.id)}
+                  action={
+                    <Button
+                      type="primary"
+                      size="small"
+                      onClick={handleRenewWarning(w.student.id, w.groupId)}
+                    >
+                      {t('home.extend')}
+                    </Button>
+                  }
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="home-empty-card home-empty-card--ok">{t('home.allSubsOk')}</div>
+          )}
+        </section>
       </div>
-      {page.warnings.length ? (
-        <div className="warning-list">
-          {page.warnings.map((w) => (
-            <WarningItem
-              key={`${w.student.id}-${w.groupId}`}
-              name={w.student.name}
-              detail={`${page.indNames.includes(w.groupId) ? t('home.indTraining') : w.groupId} · ${w.status.label}`}
-              danger={w.status.type === 'expired'}
-              onClick={handleOpenStudentDrawer(w.student.id)}
-              action={
-                <Button
-                  type="primary"
-                  size="small"
-                  onClick={handleRenewWarning(w.student.id, w.groupId)}
-                >
-                  {t('home.extend')}
-                </Button>
-              }
-            />
-          ))}
-        </div>
-      ) : (
-        <div className="home-empty-card home-empty-card--ok">{t('home.allSubsOk')}</div>
-      )}
 
       <KpiDetailModal
         kpiType={page.kpiType}
@@ -217,6 +214,7 @@ export function HomePage() {
         onClose={handleCloseType}
         onPickGroup={handlePickGroup}
         onPickIndividual={pickIndividual}
+        onPickOnline={pickOnline}
       />
       <GroupTrainingModal open={groupOpen} onClose={handleCloseGroup} />
       {indGroupId && (
@@ -226,6 +224,21 @@ export function HomePage() {
           onClose={handleCloseInd}
         />
       )}
+      {indGroupId && (
+        <IndividualSessionModal
+          open={onlineOpen}
+          indGroupId={indGroupId}
+          onClose={handleCloseOnline}
+          isOnline
+        />
+      )}
+
+      <CalendarTrainingModal
+        open={!!calBlock}
+        block={calBlock}
+        onClose={handleCloseCalBlock}
+        onAddStudent={setAddTarget}
+      />
 
       <AddToTrainingModal
         open={!!addTarget}

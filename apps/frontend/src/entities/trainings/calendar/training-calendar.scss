@@ -196,6 +196,13 @@
   }
 }
 
+/* Плановое (ещё не подтверждённое) занятие — пунктир, приглушённое. */
+.cal-block--scheduled {
+  opacity: 0.6;
+  box-shadow: none;
+  border: 1px dashed rgba(255, 255, 255, 0.7);
+}
+
 @media (max-width: 680px) {
   .cal-head,
   .cal-body {

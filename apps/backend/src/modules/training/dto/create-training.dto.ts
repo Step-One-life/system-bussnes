@@ -59,4 +59,14 @@ export class CreateTrainingDto implements CreateTrainingShape {
   @IsOptional()
   @IsString()
   recurringId?: string | null
+
+  @ApiPropertyOptional({ default: false })
+  @IsOptional()
+  @IsBoolean()
+  isOnline?: boolean
+
+  @ApiPropertyOptional({ format: 'uuid', nullable: true, description: 'Запланированный клиент (без списания)' })
+  @IsOptional()
+  @IsUUID()
+  plannedStudentId?: string | null
 }

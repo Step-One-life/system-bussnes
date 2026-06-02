@@ -39,6 +39,7 @@ export function useRuleForm({ locationId, rule, onDone }: UseRuleFormOptions) {
       clientPrimePrice: rule?.client_prime_price ?? 0,
       hallCost: rule?.hall_cost ?? 0,
       hallPrimeCost: rule?.hall_prime_cost ?? 0,
+      validityDays: rule?.validity_days ?? 35,
     }),
     [rule, locationId],
   )
@@ -53,6 +54,7 @@ export function useRuleForm({ locationId, rule, onDone }: UseRuleFormOptions) {
   const [clientPrimePrice, setClientPrimePrice] = useState(initial.clientPrimePrice)
   const [hallCost, setHallCost] = useState(initial.hallCost)
   const [hallPrimeCost, setHallPrimeCost] = useState(initial.hallPrimeCost)
+  const [validityDays, setValidityDays] = useState(initial.validityDays)
 
   // Отслеживаем «грязные» изменения, чтобы предупредить пользователя при
   // попытке закрыть форму или уйти со страницы без сохранения.
@@ -66,7 +68,8 @@ export function useRuleForm({ locationId, rule, onDone }: UseRuleFormOptions) {
     clientPrice !== initial.clientPrice ||
     clientPrimePrice !== initial.clientPrimePrice ||
     hallCost !== initial.hallCost ||
-    hallPrimeCost !== initial.hallPrimeCost
+    hallPrimeCost !== initial.hallPrimeCost ||
+    validityDays !== initial.validityDays
 
   // Whether the current value is one of the presets — drives preset/custom UI.
   const durationIsPreset = includes(DURATION_PRESETS, duration)
@@ -89,6 +92,7 @@ export function useRuleForm({ locationId, rule, onDone }: UseRuleFormOptions) {
       client_prime_price: clientPrimePrice || 0,
       hall_cost: hallCost || 0,
       hall_prime_cost: hallPrimeCost || 0,
+      validity_days: validityDays > 0 ? validityDays : 35,
     }
     try {
       if (isEdit) {
@@ -127,6 +131,8 @@ export function useRuleForm({ locationId, rule, onDone }: UseRuleFormOptions) {
     setHallCost,
     hallPrimeCost,
     setHallPrimeCost,
+    validityDays,
+    setValidityDays,
     saving,
     isDirty,
     submit,

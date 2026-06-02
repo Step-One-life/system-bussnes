@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 
+import { toLocalISODate } from 'common/utils/date'
 import { FIN_LABELS } from 'entities/finance/model/finance-constants'
 import { useStudents } from 'entities/students'
 
@@ -19,15 +20,13 @@ export const PERIOD_LABELS: Record<FinancePeriod, string> = {
 function periodStart(period: FinancePeriod): string | null {
   const now = new Date()
   if (period === 'month') {
-    return new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10)
+    return toLocalISODate(new Date(now.getFullYear(), now.getMonth(), 1))
   }
   if (period === 'quarter') {
-    return new Date(now.getFullYear(), Math.floor(now.getMonth() / 3) * 3, 1)
-      .toISOString()
-      .slice(0, 10)
+    return toLocalISODate(new Date(now.getFullYear(), Math.floor(now.getMonth() / 3) * 3, 1))
   }
   if (period === 'year') {
-    return new Date(now.getFullYear(), 0, 1).toISOString().slice(0, 10)
+    return toLocalISODate(new Date(now.getFullYear(), 0, 1))
   }
   return null
 }

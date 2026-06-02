@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 
+import { todayISO } from 'common/utils/date'
 import { isPrimeTime } from 'entities/trainings/model/training-logic'
 
 import { usePricingRules } from '../api/use-finance'
@@ -14,7 +15,7 @@ import type {
 } from '../model/types'
 
 function today(): string {
-  return new Date().toISOString().slice(0, 10)
+  return todayISO()
 }
 
 export interface PaymentFormState {

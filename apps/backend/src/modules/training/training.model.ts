@@ -40,6 +40,12 @@ export class Training extends OwnedEntity {
   @Column({ field: 'recurring_id', type: DataType.UUID, allowNull: true })
   declare recurringId: string | null
 
+  @Column({ field: 'is_online', type: DataType.BOOLEAN, allowNull: false, defaultValue: false })
+  declare isOnline: boolean
+
+  @Column({ field: 'planned_student_id', type: DataType.UUID, allowNull: true })
+  declare plannedStudentId: string | null
+
   @BelongsToMany(() => Student, () => TrainingAttendee)
   declare attendees?: Student[]
 }

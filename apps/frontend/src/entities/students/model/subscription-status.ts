@@ -22,8 +22,10 @@ export function getDaysRemaining(sub: Subscription | null): number | null {
   if (!sub || !sub.expiresAt) return null
   const today = new Date()
   today.setHours(0, 0, 0, 0)
-  const expiry = new Date(sub.expiresAt)
-  return Math.ceil((expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+  // Parse as local midnight (not UTC) so the day count matches the calendar
+  // day for the user's timezone.
+  const expiry = new Date(sub.expiresAt + 'T00:00:00')
+  return Math.round((expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
 }
 
 /** Subscription status for a student in a given group. */

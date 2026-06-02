@@ -1,4 +1,4 @@
-import { Button, Form, Input, Modal, Select } from 'antd'
+import { Button, Form, Input, Modal, Segmented, Select } from 'antd'
 import { CheckOutlined, SyncOutlined } from '@ant-design/icons'
 
 import { useTranslation } from 'react-i18next'
@@ -17,15 +17,17 @@ interface IndividualSessionModalProps {
   open: boolean
   indGroupId: string
   onClose: () => void
+  isOnline?: boolean
 }
 
 export function IndividualSessionModal({
   open,
   indGroupId,
   onClose,
+  isOnline = false,
 }: IndividualSessionModalProps) {
   const { t } = useTranslation()
-  const form = useIndividualSession({ indGroupId, onDone: onClose })
+  const form = useIndividualSession({ indGroupId, onDone: onClose, isOnline })
 
   const handleSelectDuration = (d: number) => () => form.setDuration(d)
   const handleDateChange = (e: ChangeEvent<HTMLInputElement>) =>
@@ -48,7 +50,7 @@ export function IndividualSessionModal({
   return (
     <Modal
       open={open}
-      title={t('trainings.individual.title')}
+      title={isOnline ? t('trainings.online.title') : t('trainings.individual.title')}
       onCancel={onClose}
       footer={footer}
       destroyOnHidden
@@ -116,20 +118,38 @@ export function IndividualSessionModal({
         </div>
 
         <ConflictHint conflicts={form.conflicts} />
-        <PrimeHint date={form.date} time={form.time} />
+        <PrimeHint date={form.date} time={form.time} locationId={form.locationId} />
 
-        <Form.Item label={t('locations.selectLabel')}>
-          <LocationSelect value={form.locationId} onChange={form.setLocationId} />
-        </Form.Item>
+        {!isOnline && (
+          <Form.Item label={t('locations.selectLabel')}>
+            <LocationSelect value={form.locationId} onChange={form.setLocationId} />
+          </Form.Item>
+        )}
 
         {form.client && !form.activeSub && (
-          <Form.Item label={t('trainings.individual.newSubLabel')}>
-            <Select
-              value={form.subType}
-              onChange={form.setSubType}
-              options={form.subOptions}
-            />
-          </Form.Item>
+          <>
+            <Form.Item label={t('trainings.individual.newSubLabel')}>
+              <Select
+                value={form.subType}
+                onChange={form.setSubType}
+                options={form.subOptions}
+              />
+            </Form.Item>
+            <Form.Item
+              label={t('trainings.individual.slotLabel')}
+              extra={t('trainings.individual.slotHint')}
+            >
+              <Segmented
+                block
+                value={form.slot}
+                onChange={(v) => form.setSlot(v as 'regular' | 'prime')}
+                options={[
+                  { label: t('finance.markPaid.regular'), value: 'regular' },
+                  { label: t('finance.markPaid.prime'), value: 'prime' },
+                ]}
+              />
+            </Form.Item>
+          </>
         )}
 
         <Form.Item>

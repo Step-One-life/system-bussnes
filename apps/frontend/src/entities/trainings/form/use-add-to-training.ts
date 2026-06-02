@@ -4,11 +4,20 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 
 import { useToast } from 'common/ui'
+import { autoCreatePayment } from 'entities/finance/lib/auto-payment'
+import { resolvePricingRule, subTypeToTuple } from 'entities/finance/lib/pricing-lookup'
+import { useGroups } from 'entities/groups/api/use-groups'
+import { useLocations } from 'entities/locations'
 import { studentKeys, useStudents } from 'entities/students/api/use-students'
-import { addSubscription, createStudent } from 'entities/students/model/students.repo'
+import {
+  addSubscription,
+  createStudent,
+  linkPaymentToSub,
+} from 'entities/students/model/students.repo'
 import { getDaysRemaining, getSubStatus } from 'entities/students/model/subscription-status'
 
 import { useMarkAttendance, useUpdateTraining } from '../api/use-trainings'
+import { isPrimeTime } from '../model/training-logic'
 import { getTrainingById } from '../model/trainings.repo'
 
 import type { Training } from '../model/types'
@@ -31,6 +40,8 @@ export function useAddToTraining({ training, onDone }: UseAddToTrainingOptions) 
   const toast = useToast()
   const qc = useQueryClient()
   const { data: students = [] } = useStudents()
+  const { data: groups = [] } = useGroups()
+  const { data: locations = [] } = useLocations()
   const updateTraining = useUpdateTraining()
   const markAttendance = useMarkAttendance()
 
@@ -100,11 +111,19 @@ export function useAddToTraining({ training, onDone }: UseAddToTrainingOptions) 
         }
         const student = await createStudent({ name, groups: [training.groupId] })
 
+        const isIndividual =
+          groups.find((g) => g.name === training.groupId)?.isIndividual ?? false
+        let createdSub: Awaited<ReturnType<typeof addSubscription>> = null
         if (newSubType) {
-          await addSubscription(student.id, {
+          const { rule } = await resolvePricingRule(
+            training.locationId,
+            subTypeToTuple(newSubType, isIndividual),
+          )
+          createdSub = await addSubscription(student.id, {
             groupId: training.groupId,
             type: newSubType,
             createdAt: training.date,
+            validityDays: rule?.validity_days,
           })
         }
 
@@ -125,6 +144,29 @@ export function useAddToTraining({ training, onDone }: UseAddToTrainingOptions) 
                 msg: t('trainings.addTo.remaining', { count: r.sub?.remaining }),
               })
             }
+          }
+        }
+
+        // Разовое посещение (drop-in): доход и расход зала пишутся в финансы
+        // автоматически, прайм/обычный — по времени тренировки.
+        if (createdSub && (newSubType === '1' || newSubType === '1_90')) {
+          const loc = locations.find((l) => l.id === training.locationId) ?? null
+          const isPrime = isPrimeTime(training.date, training.time, loc)
+          const fin = await autoCreatePayment(
+            student.id,
+            { id: createdSub.id, type: newSubType, createdAt: training.date },
+            isIndividual,
+            {
+              time: training.time,
+              isPrime,
+              locationId: training.locationId,
+              isOnline: training.isOnline,
+            },
+          )
+          if (fin) {
+            await linkPaymentToSub(student.id, createdSub.id, fin.paymentId)
+          } else {
+            toast({ type: 'warn', title: t('finance.autoRecord.noTariff') })
           }
         }
 

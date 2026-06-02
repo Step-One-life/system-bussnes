@@ -72,7 +72,7 @@ export function GroupTrainingModal({ open, onClose }: GroupTrainingModalProps) {
           </Form.Item>
         </div>
         <ConflictHint conflicts={form.conflicts} />
-        <PrimeHint date={form.date} time={form.time} />
+        <PrimeHint date={form.date} time={form.time} locationId={form.locationId} />
         <Form.Item label={t('locations.selectLabel')}>
           <LocationSelect value={form.locationId} onChange={form.setLocationId} />
         </Form.Item>

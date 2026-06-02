@@ -16,7 +16,11 @@ import { IdParamDto } from '../../common/dto/id-param.dto'
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard'
 import type { CurrentUserPayload } from '../../common/interfaces/current-user.interface'
 import { CreateStudentDto } from './dto/create-student.dto'
-import { CreateSubscriptionDto, ExtendSubscriptionDto } from './dto/create-subscription.dto'
+import {
+  CreateSubscriptionDto,
+  ExtendSubscriptionDto,
+  LinkPaymentDto,
+} from './dto/create-subscription.dto'
 import { UpdateStudentDto } from './dto/update-student.dto'
 import { Student } from './student.model'
 import { StudentService } from './student.service'
@@ -105,6 +109,19 @@ export class StudentController {
     const student = await this.studentService.findOneForUser(user.id, id)
     const sub = student.subscriptions?.find((s) => s.id === subId)
     if (sub) await this.subscriptionsService.extend(id, sub.groupId, dto.days)
+    return this.studentService.findOneForUser(user.id, id)
+  }
+
+  @Post(':id/subscriptions/:subId/link-payment')
+  @ApiOperation({ summary: 'Привязать платёж к абонементу (отметить оплаченным)' })
+  async linkPayment(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') id: string,
+    @Param('subId') subId: string,
+    @Body() dto: LinkPaymentDto,
+  ): Promise<Student> {
+    await this.studentService.findOneForUser(user.id, id)
+    await this.subscriptionsService.linkPayment(subId, dto.paymentId)
     return this.studentService.findOneForUser(user.id, id)
   }
 

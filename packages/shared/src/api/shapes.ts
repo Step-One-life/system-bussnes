@@ -44,6 +44,10 @@ export interface CreateSubscriptionShape {
   type: SubscriptionType
   createdAt?: string
   sessionDuration?: number
+  validityDays?: number
+  timeSlot?: TimeSlot
+  /** Общий абонемент: все покрываемые группы (UUID). Пусто = только groupId. */
+  groupIds?: string[]
 }
 
 export interface CreateTrainingShape {
@@ -57,6 +61,8 @@ export interface CreateTrainingShape {
   sessionDuration?: number
   recurring?: boolean
   recurringId?: string | null
+  isOnline?: boolean
+  plannedStudentId?: string | null
 }
 
 export type UpdateTrainingShape = Partial<CreateTrainingShape>
@@ -93,6 +99,10 @@ export interface CreateLocationShape {
   address?: string | null
   kind?: LocationKind
   isDefault?: boolean
+  primeWeekdayStart?: string | null
+  primeWeekdayEnd?: string | null
+  primeWeekendStart?: string | null
+  primeWeekendEnd?: string | null
 }
 
 export type UpdateLocationShape = Partial<CreateLocationShape> & {
@@ -113,6 +123,7 @@ export interface CreatePricingRuleShape {
   hallCost?: number
   hallPrimeCost?: number
   active?: boolean
+  validityDays?: number
 }
 
 export type UpdatePricingRuleShape = Partial<Omit<CreatePricingRuleShape, 'locationId'>>

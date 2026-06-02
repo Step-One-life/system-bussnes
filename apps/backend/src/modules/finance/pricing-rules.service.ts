@@ -47,6 +47,7 @@ export class PricingRulesService extends OwnedCrudService<PricingRule> {
       clientPrimePrice: dto.clientPrimePrice ?? 0,
       hallCost: dto.hallCost ?? 0,
       hallPrimeCost: dto.hallPrimeCost ?? 0,
+      validityDays: dto.validityDays ?? 35,
       active: dto.active ?? true,
     })
   }
@@ -88,6 +89,7 @@ export class PricingRulesService extends OwnedCrudService<PricingRule> {
       clientPrimePrice: rule.clientPrimePrice,
       hallCost: rule.hallCost,
       hallPrimeCost: rule.hallPrimeCost,
+      validityDays: rule.validityDays,
       active: rule.active,
     }))
     await this.ruleModel.bulkCreate(copies)

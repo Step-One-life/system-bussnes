@@ -99,6 +99,7 @@ interface RawPricingRule {
   clientPrimePrice: number | string
   hallCost: number | string
   hallPrimeCost: number | string
+  validityDays: number
   active: boolean
   createdAt: string
 }
@@ -116,6 +117,7 @@ function toPricingRule(raw: RawPricingRule): PricingRule {
     client_prime_price: Number(raw.clientPrimePrice) || 0,
     hall_cost: Number(raw.hallCost) || 0,
     hall_prime_cost: Number(raw.hallPrimeCost) || 0,
+    validity_days: Number(raw.validityDays) || 35,
     active: !!raw.active,
     created_at: raw.createdAt,
   }

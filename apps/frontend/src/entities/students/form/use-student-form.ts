@@ -3,6 +3,8 @@ import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { useToast } from 'common/ui'
+import { todayISO } from 'common/utils/date'
+import { resolvePricingRule, subTypeToTuple } from 'entities/finance/lib/pricing-lookup'
 import { useGroups } from 'entities/groups/api/use-groups'
 
 import { useAddSubscription, useCreateStudent, useUpdateStudent } from '../api/use-students'
@@ -38,7 +40,7 @@ export function useStudentForm({ student, onDone }: UseStudentFormOptions) {
   const [name, setName] = useState(student?.name ?? '')
   const [selectedGroups, setSelectedGroups] = useState<string[]>(student?.groups ?? [])
   const [subChoice, setSubChoice] = useState<SubChoice>({})
-  const [subStartDate, setSubStartDate] = useState(new Date().toISOString().slice(0, 10))
+  const [subStartDate, setSubStartDate] = useState(todayISO())
 
   const saving =
     createStudent.isPending || updateStudent.isPending || addSubscription.isPending
@@ -66,9 +68,15 @@ export function useStudentForm({ student, onDone }: UseStudentFormOptions) {
         })
         for (const [groupId, type] of Object.entries(subChoice)) {
           if (type && selectedGroups.includes(groupId)) {
+            const group = groups.find((g) => g.name === groupId) ?? null
+            const isIndividual = group?.isIndividual ?? false
+            const { rule } = await resolvePricingRule(
+              group?.locationId ?? null,
+              subTypeToTuple(type, isIndividual),
+            )
             await addSubscription.mutateAsync({
               studentId: created.id,
-              data: { groupId, type, createdAt: subStartDate },
+              data: { groupId, type, createdAt: subStartDate, validityDays: rule?.validity_days },
             })
           }
         }

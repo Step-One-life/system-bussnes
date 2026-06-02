@@ -37,7 +37,7 @@ export async function getKPIs(): Promise<DashboardKPIs> {
 
   const monthTrainings = size(
     filter(trainings, (t) => {
-      const d = new Date(t.date)
+      const d = new Date(t.date + 'T00:00:00')
       return d.getMonth() === month && d.getFullYear() === year
     }),
   )
@@ -46,16 +46,23 @@ export async function getKPIs(): Promise<DashboardKPIs> {
   let ending = 0
   let expired = 0
   for (const s of students) {
-    const status = getOverallSubStatus(s)
-    if (status.type === 'expired') expired++
-    else if (status.type === 'ending') ending++
-    else if (status.type === 'active') active++
+    const overall = getOverallSubStatus(s)
+    if (overall.type === 'expired') expired++
+    else if (overall.type === 'ending') ending++
+
+    // total — активные ученики: есть хотя бы одна не-просроченная (active/ending)
+    // подписка, даже если в другой группе абонемент истёк. (getOverallSubStatus
+    // берёт ХУДШИЙ статус, поэтому отдельно считаем «есть живой абонемент».)
+    const hasNonExpired =
+      !isEmpty(s.groups) &&
+      some(s.groups, (g) => {
+        const type = getSubStatus(s, g).type
+        return type === 'active' || type === 'ending'
+      })
+    if (hasNonExpired) active++
   }
 
-  // total — активные ученики (есть хотя бы одна не-просроченная подписка).
-  // Раньше показывало всех students.length, включая «без групп» / только с
-  // expired-подписками — это давало тренеру неверную картину масштаба.
-  return { total: active + ending, monthTrainings, ending, expired }
+  return { total: active, monthTrainings, ending, expired }
 }
 
 export async function getWarningStudents(): Promise<WarningEntry[]> {
@@ -98,8 +105,8 @@ export async function getIndividualKPIs(indGroupNames: string[]): Promise<Indivi
   startOfWeek.setHours(0, 0, 0, 0)
 
   const indTrainings = filter(trainings, (t) => includes(indGroupNames, t.groupId))
-  const monthSessions = size(filter(indTrainings, (t) => new Date(t.date) >= startOfMonth))
-  const weekSessions = size(filter(indTrainings, (t) => new Date(t.date) >= startOfWeek))
+  const monthSessions = size(filter(indTrainings, (t) => new Date(t.date + 'T00:00:00') >= startOfMonth))
+  const weekSessions = size(filter(indTrainings, (t) => new Date(t.date + 'T00:00:00') >= startOfWeek))
 
   let expiring = 0
   for (const s of clients) {

@@ -17,8 +17,9 @@ interface RawGroup {
   name: string
 }
 
-interface RawSubscription extends Omit<Subscription, 'groupId'> {
+interface RawSubscription extends Omit<Subscription, 'groupId' | 'groupIds'> {
   groupId: string
+  groupIds?: string[] | null
 }
 
 interface RawVisit {
@@ -45,6 +46,9 @@ function toStudent(raw: RawStudent, byId: Map<string, string>): Student {
     subscriptions: map(raw.subscriptions ?? [], (s) => ({
       ...s,
       groupId: byId.get(s.groupId) ?? s.groupId,
+      groupIds: (s.groupIds?.length ? s.groupIds : [s.groupId]).map(
+        (id) => byId.get(id) ?? id,
+      ),
     })),
     visitHistory: map(raw.visits ?? [], (v) => ({
       date: v.date,
@@ -114,11 +118,17 @@ export async function addSubscription(
 ): Promise<Subscription | null> {
   const { byName } = await getGroupMaps()
   const groupId = byName.get(subData.groupId) ?? subData.groupId
+  const groupIds = subData.groupIds?.length
+    ? subData.groupIds.map((name) => byName.get(name) ?? name)
+    : undefined
   const raw = await apiClient.post<RawStudent>(`/students/${studentId}/subscriptions`, {
     groupId,
     type: subData.type,
     createdAt: subData.createdAt,
     sessionDuration: subData.sessionDuration,
+    validityDays: subData.validityDays,
+    timeSlot: subData.timeSlot,
+    groupIds,
   })
   const student = toStudent(raw, (await getGroupMaps()).byId)
   // The newest subscription for this group is the one just created.
@@ -223,11 +233,11 @@ export async function linkPaymentToSub(
   subId: string,
   paymentId: string,
 ): Promise<void> {
-  // The backend has no endpoint to link a payment to a subscription, so this
-  // is a no-op. `subscription.finPaymentId` therefore stays null on the client.
-  void studentId
-  void subId
-  void paymentId
+  // Marks the subscription as paid (sets finPaymentId) so the "Оплатить"
+  // action disappears and the payment can't be recorded twice.
+  await apiClient.post(`/students/${studentId}/subscriptions/${subId}/link-payment`, {
+    paymentId,
+  })
 }
 
 /* ── Visit history ── */

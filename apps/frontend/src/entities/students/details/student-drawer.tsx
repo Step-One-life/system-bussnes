@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { Button, Drawer, Popconfirm } from 'antd'
-import { DeleteOutlined, EditOutlined, UserOutlined } from '@ant-design/icons'
+import { DeleteOutlined, EditOutlined, PlusOutlined, UserOutlined } from '@ant-design/icons'
 
 import { useTranslation } from 'react-i18next'
 
@@ -13,8 +13,10 @@ import { useRemoveVisitAt } from 'entities/trainings/api/use-trainings'
 
 import { studentKeys } from '../api/use-students'
 import { getLastVisitDate,getStudentById } from '../model/students.repo'
+import { AddSubModal } from '../subscriptions/add-sub-modal'
 import { ExtendSubModal } from '../subscriptions/extend-sub-modal'
 import { RenewSubModal } from '../subscriptions/renew-sub-modal'
+import { SharedSubCard } from './shared-sub-card'
 import { SubCard } from './sub-card'
 import { useStudentActions } from './use-student-actions'
 import { VisitHistory } from './visit-history'
@@ -37,6 +39,7 @@ export function StudentDrawer({ studentId, onClose, onEdit }: StudentDrawerProps
   const removeVisitAt = useRemoveVisitAt()
   const [subModal, setSubModal] = useState<SubModalState>(null)
   const [markPaid, setMarkPaid] = useState<MarkPaidState>(null)
+  const [addSubOpen, setAddSubOpen] = useState(false)
 
   const { data: student } = useQuery({
     queryKey: ['students', studentId],
@@ -52,7 +55,12 @@ export function StudentDrawer({ studentId, onClose, onEdit }: StudentDrawerProps
   const actions = useStudentActions(refresh)
 
   const indNames = groups.filter((g) => g.isIndividual).map((g) => g.name)
-  const groupGroups = student?.groups.filter((g) => !indNames.includes(g)) ?? []
+  // Общие абонементы (покрывают несколько групп) показываем отдельной секцией,
+  // а покрытые ими группы — не дублируем подушевыми карточками.
+  const sharedSubs = student?.subscriptions.filter((s) => (s.groupIds?.length ?? 0) > 1) ?? []
+  const coveredByShared = new Set(sharedSubs.flatMap((s) => s.groupIds))
+  const groupGroups =
+    student?.groups.filter((g) => !indNames.includes(g) && !coveredByShared.has(g)) ?? []
   const indGroups = student?.groups.filter((g) => indNames.includes(g)) ?? []
   const lastVisit = student ? getLastVisitDate(student) : null
 
@@ -87,6 +95,11 @@ export function StudentDrawer({ studentId, onClose, onEdit }: StudentDrawerProps
   }
   const handleCloseMarkPaid = () => {
     setMarkPaid(null)
+    refresh()
+  }
+  const handleOpenAddSub = () => setAddSubOpen(true)
+  const handleCloseAddSub = () => {
+    setAddSubOpen(false)
     refresh()
   }
 
@@ -136,6 +149,27 @@ export function StudentDrawer({ studentId, onClose, onEdit }: StudentDrawerProps
                 {t('students.drawer.noGroupSessions')}
               </p>
             )}
+
+            {sharedSubs.length > 0 && (
+              <>
+                <div className="section-title">{t('students.drawer.sharedSubs')}</div>
+                {sharedSubs.map((s) => (
+                  <SharedSubCard
+                    key={s.id}
+                    student={student}
+                    sub={s}
+                    onDeleteSub={handleDeleteSub}
+                    onMarkPaid={handleMarkPaid(s.groupId)}
+                  />
+                ))}
+              </>
+            )}
+
+            <div style={{ marginTop: 'var(--sp-3)' }}>
+              <Button size="small" icon={<PlusOutlined />} onClick={handleOpenAddSub}>
+                {t('subscriptions.add.openBtn')}
+              </Button>
+            </div>
 
             {indGroups.length > 0 && (
               <>
@@ -214,6 +248,15 @@ export function StudentDrawer({ studentId, onClose, onEdit }: StudentDrawerProps
           }
           isIndividual={indNames.includes(markPaid.groupId)}
           onClose={handleCloseMarkPaid}
+        />
+      )}
+      {student && addSubOpen && (
+        <AddSubModal
+          open
+          studentId={student.id}
+          studentName={student.name}
+          studentGroups={student.groups}
+          onClose={handleCloseAddSub}
         />
       )}
     </>

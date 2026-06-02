@@ -24,6 +24,10 @@ export function useLocationForm({ location, onDone }: UseLocationFormOptions) {
   const [address, setAddress] = useState(location?.address ?? '')
   const [kind, setKind] = useState<LocationKind>(location?.kind ?? 'hall')
   const [isDefault, setIsDefault] = useState(location?.isDefault ?? false)
+  const [primeWeekdayStart, setPrimeWeekdayStart] = useState(location?.primeWeekdayStart ?? '')
+  const [primeWeekdayEnd, setPrimeWeekdayEnd] = useState(location?.primeWeekdayEnd ?? '')
+  const [primeWeekendStart, setPrimeWeekendStart] = useState(location?.primeWeekendStart ?? '')
+  const [primeWeekendEnd, setPrimeWeekendEnd] = useState(location?.primeWeekendEnd ?? '')
 
   const saving = createLocation.isPending || updateLocation.isPending
 
@@ -33,10 +37,16 @@ export function useLocationForm({ location, onDone }: UseLocationFormOptions) {
       return
     }
     try {
+      const primeFields = {
+        primeWeekdayStart: primeWeekdayStart.trim() || null,
+        primeWeekdayEnd: primeWeekdayEnd.trim() || null,
+        primeWeekendStart: primeWeekendStart.trim() || null,
+        primeWeekendEnd: primeWeekendEnd.trim() || null,
+      }
       if (isEdit) {
         await updateLocation.mutateAsync({
           id: location.id,
-          changes: { name: name.trim(), address: address.trim() || null, kind, isDefault },
+          changes: { name: name.trim(), address: address.trim() || null, kind, isDefault, ...primeFields },
         })
         toast({ type: 'success', title: t('locations.updated'), msg: name.trim() })
       } else {
@@ -45,6 +55,7 @@ export function useLocationForm({ location, onDone }: UseLocationFormOptions) {
           address: address.trim() || null,
           kind,
           isDefault,
+          ...primeFields,
         })
         toast({ type: 'success', title: t('locations.created'), msg: name.trim() })
       }
@@ -64,6 +75,14 @@ export function useLocationForm({ location, onDone }: UseLocationFormOptions) {
     setKind,
     isDefault,
     setIsDefault,
+    primeWeekdayStart,
+    setPrimeWeekdayStart,
+    primeWeekdayEnd,
+    setPrimeWeekdayEnd,
+    primeWeekendStart,
+    setPrimeWeekendStart,
+    primeWeekendEnd,
+    setPrimeWeekendEnd,
     saving,
     submit,
   }

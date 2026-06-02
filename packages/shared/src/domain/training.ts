@@ -10,6 +10,8 @@ export interface Training {
   sessionDuration: number
   recurring: boolean
   recurringId: string | null
+  /** Запланированный клиент для будущего занятия, ещё не списанного. */
+  plannedStudentId: string | null
   createdAt: string
 }
 

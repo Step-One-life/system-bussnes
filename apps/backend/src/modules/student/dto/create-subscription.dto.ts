@@ -1,9 +1,10 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
-import { IsIn, IsInt, IsOptional, IsString, IsUUID } from 'class-validator'
+import { IsArray, IsIn, IsInt, IsOptional, IsString, IsUUID } from 'class-validator'
 
-import type { CreateSubscriptionShape, SubscriptionType } from '@trikick/shared'
+import type { CreateSubscriptionShape, SubscriptionType, TimeSlot } from '@trikick/shared'
 
 const SUB_TYPES: SubscriptionType[] = ['1', '4', '8', '1_90', '4_90', '8_90']
+const TIME_SLOTS: TimeSlot[] = ['regular', 'prime']
 
 export class CreateSubscriptionDto implements CreateSubscriptionShape {
   @ApiProperty({ description: 'id группы', format: 'uuid' })
@@ -23,10 +24,32 @@ export class CreateSubscriptionDto implements CreateSubscriptionShape {
   @IsOptional()
   @IsInt()
   sessionDuration?: number
+
+  @ApiPropertyOptional({ default: 35, description: 'Срок действия абонемента (дней)' })
+  @IsOptional()
+  @IsInt()
+  validityDays?: number
+
+  @ApiPropertyOptional({ enum: TIME_SLOTS, default: 'regular', description: 'Слот тарифа (прайм/обычный)' })
+  @IsOptional()
+  @IsIn(TIME_SLOTS)
+  timeSlot?: TimeSlot
+
+  @ApiPropertyOptional({ type: [String], description: 'Общий абонемент: покрываемые группы (UUID)' })
+  @IsOptional()
+  @IsArray()
+  @IsUUID('4', { each: true })
+  groupIds?: string[]
 }
 
 export class ExtendSubscriptionDto {
   @ApiProperty({ description: 'На сколько дней продлить' })
   @IsInt()
   days!: number
+}
+
+export class LinkPaymentDto {
+  @ApiProperty({ description: 'id платежа, который оплачивает абонемент', format: 'uuid' })
+  @IsUUID()
+  paymentId!: string
 }

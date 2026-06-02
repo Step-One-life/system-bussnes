@@ -16,9 +16,11 @@ interface RawTraining {
   attendees?: { id: string }[]
   note: string
   isPrime: boolean
+  isOnline?: boolean
   sessionDuration: number
   recurring: boolean
   recurringId: string | null
+  plannedStudentId?: string | null
   createdAt: string
 }
 
@@ -33,9 +35,11 @@ function toTraining(raw: RawTraining, byId: Map<string, string>): Training {
     attendees: map(raw.attendees ?? [], (a) => a.id),
     note: raw.note ?? '',
     isPrime: raw.isPrime ?? false,
+    isOnline: raw.isOnline ?? false,
     sessionDuration: raw.sessionDuration ?? 60,
     recurring: raw.recurring ?? false,
     recurringId: raw.recurringId ?? null,
+    plannedStudentId: raw.plannedStudentId ?? null,
     createdAt: raw.createdAt,
   }
 }
@@ -81,9 +85,11 @@ export async function createTraining(data: TrainingInput): Promise<Training> {
     attendees: data.attendees ?? [],
     note: data.note ?? '',
     isPrime: data.isPrime,
+    isOnline: data.isOnline ?? false,
     sessionDuration: data.sessionDuration,
     recurring: data.recurring,
     recurringId: data.recurringId,
+    plannedStudentId: data.plannedStudentId ?? null,
   })
   return toTraining(raw, byId)
 }

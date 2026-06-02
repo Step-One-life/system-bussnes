@@ -5,8 +5,11 @@ import { Button, DatePicker, Form, Modal, Select } from 'antd'
 import { useTranslation } from 'react-i18next'
 
 import { useToast } from 'common/ui'
+import { todayISO } from 'common/utils/date'
+import { resolvePricingRule, subTypeToTuple } from 'entities/finance/lib/pricing-lookup'
+import { useGroups } from 'entities/groups/api/use-groups'
 
-import { useAddSubscription } from '../api/use-students'
+import { useAddSubscription, useStudents } from '../api/use-students'
 
 import type { SubscriptionType } from '../model/types'
 import type { Dayjs } from 'dayjs'
@@ -31,13 +34,34 @@ export function RenewSubModal({
   const { t } = useTranslation()
   const toast = useToast()
   const addSubscription = useAddSubscription()
+  const { data: groups = [] } = useGroups()
+  const { data: students = [] } = useStudents()
   const [type, setType] = useState<SubscriptionType>('8')
-  const [date, setDate] = useState(new Date().toISOString().slice(0, 10))
+  const [date, setDate] = useState(todayISO())
 
   const submit = async () => {
+    const group = groups.find((g) => g.id === groupId) ?? null
+    const { rule } = await resolvePricingRule(
+      group?.locationId ?? null,
+      subTypeToTuple(type, group?.isIndividual ?? false),
+    )
+    // Продление наследует слот (прайм/обычный) от предыдущего абонемента группы,
+    // чтобы прайм-клиент при продлении не сбрасывался на «обычный».
+    const groupName = group?.name ?? groupId
+    const prevSub =
+      [...(students.find((s) => s.id === studentId)?.subscriptions ?? [])]
+        .filter((s) => s.groupId === groupName)
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0] ??
+      null
     await addSubscription.mutateAsync({
       studentId,
-      data: { groupId, type, createdAt: date },
+      data: {
+        groupId,
+        type,
+        createdAt: date,
+        validityDays: rule?.validity_days,
+        timeSlot: prevSub?.timeSlot ?? 'regular',
+      },
     })
     toast({
       type: 'success',

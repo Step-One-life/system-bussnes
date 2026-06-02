@@ -4,14 +4,16 @@ import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 
 import { useToast } from 'common/ui'
+import { todayISO } from 'common/utils/date'
 import { useGroups } from 'entities/groups/api/use-groups'
+import { useLocations } from 'entities/locations'
 import { useStudents } from 'entities/students/api/use-students'
 
 import { useCreateTraining, useMarkAttendance } from '../api/use-trainings'
 import { checkTrainingConflict, isPrimeTime } from '../model/training-logic'
 
 function today(): string {
-  return new Date().toISOString().slice(0, 10)
+  return todayISO()
 }
 
 interface UseGroupTrainingOptions {
@@ -25,6 +27,7 @@ export function useGroupTraining({ onDone }: UseGroupTrainingOptions) {
   const { data: students = [] } = useStudents()
   const createTraining = useCreateTraining()
   const markAttendance = useMarkAttendance()
+  const { data: locations = [] } = useLocations()
 
   const [groupId, setGroupId] = useState('')
   const [date, setDate] = useState(today())
@@ -36,6 +39,7 @@ export function useGroupTraining({ onDone }: UseGroupTrainingOptions) {
   const [locationTouched, setLocationTouched] = useState(false)
 
   const regularGroups = groups.filter((g) => !g.isIndividual)
+  const selectedGroup = regularGroups.find((g) => g.name === groupId) ?? null
 
   const handleSetGroupId = (id: string) => {
     setGroupId(id)
@@ -78,14 +82,16 @@ export function useGroupTraining({ onDone }: UseGroupTrainingOptions) {
       return
     }
     try {
+      const effectiveLocation = locations.find((l) => l.id === locationId) ?? null
       const training = await createTraining.mutateAsync({
         date,
         time,
         groupId,
         locationId,
-        attendees,
+        attendees: [],
         note: note.trim(),
-        isPrime: isPrimeTime(date, time),
+        isPrime: isPrimeTime(date, time, effectiveLocation),
+        sessionDuration: selectedGroup?.duration ?? 60,
       })
       const results = await markAttendance.mutateAsync({ training, studentIds: attendees })
 

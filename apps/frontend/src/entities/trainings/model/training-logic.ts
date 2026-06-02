@@ -12,18 +12,33 @@ import type { Training, TrainingConflict } from './types'
 import type { Group } from 'entities/groups/model/types'
 import type { DeductStatus, Subscription } from 'entities/students/model/types'
 
+type PrimeTimeLocation = {
+  primeWeekdayStart?: string | null
+  primeWeekdayEnd?: string | null
+  primeWeekendStart?: string | null
+  primeWeekendEnd?: string | null
+} | null | undefined
+
 /**
- * Prime-time check.
- * Weekdays 17:00–19:59, weekends 10:00–19:59.
+ * Prime-time check. Defaults: weekdays 17:00–20:00, weekends 10:00–20:00.
+ * Pass a location to use its custom prime-time window instead.
  */
-export function isPrimeTime(date: string, time: string): boolean {
+export function isPrimeTime(date: string, time: string, location?: PrimeTimeLocation): boolean {
   if (!date || !time) return false
   const d = new Date(date + 'T00:00:00')
   const dow = d.getDay()
-  const [h, m] = time.split(':').map(Number)
-  const mins = h * 60 + (m || 0)
+  const mins = timeToMinutes(time)
   const isWeekend = dow === 0 || dow === 6
-  return isWeekend ? mins >= 600 && mins <= 1199 : mins >= 1020 && mins <= 1199
+
+  if (isWeekend) {
+    const start = location?.primeWeekendStart ? timeToMinutes(location.primeWeekendStart) : 600
+    const end = location?.primeWeekendEnd ? timeToMinutes(location.primeWeekendEnd) : 1200
+    return mins >= start && mins < end
+  } else {
+    const start = location?.primeWeekdayStart ? timeToMinutes(location.primeWeekdayStart) : 1020
+    const end = location?.primeWeekdayEnd ? timeToMinutes(location.primeWeekdayEnd) : 1200
+    return mins >= start && mins < end
+  }
 }
 
 /** Trainings that overlap with a proposed slot. */
@@ -45,10 +60,17 @@ export async function checkTrainingConflict(
   const newStart = timeToMinutes(time)
   const newEnd = newStart + newDur
 
-  // У существующих тренировок длительность может отличаться от группы
-  // (индивидуальные 1.5ч сохраняют sessionDuration в самой записи).
-  const durationOf = (t: Training): number =>
-    t.sessionDuration ?? groupMap[t.groupId]?.duration ?? 60
+  // Для групповых тренировок канонический источник — настройка группы (duration),
+  // потому что sessionDuration в записи может быть дефолтным 60 даже если группа
+  // имеет другую длительность. Для индивидуальных — per-session sessionDuration,
+  // потому что у одного тренера могут чередоваться 60- и 90-минутные сессии.
+  const durationOf = (t: Training): number => {
+    const group = groupMap[t.groupId]
+    if (group?.isIndividual) {
+      return t.sessionDuration ?? group.duration ?? 60
+    }
+    return group?.duration ?? t.sessionDuration ?? 60
+  }
 
   const overlapping = filter(allTrainings, (t) => {
     if (t.date !== date || t.id === excludeId || !t.time) return false

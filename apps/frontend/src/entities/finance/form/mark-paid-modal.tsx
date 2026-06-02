@@ -1,21 +1,23 @@
 import { useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 
-import { Button, DatePicker, Form, InputNumber, Modal } from 'antd'
+import { Button, DatePicker, Form, InputNumber, Modal, Segmented } from 'antd'
 
 import { useTranslation } from 'react-i18next'
 
 import { useToast } from 'common/ui'
+import { todayISO } from 'common/utils/date'
 import { FIN_LABELS } from 'entities/finance/model/finance-constants'
 import { useGroups } from 'entities/groups/api/use-groups'
 import { useLocations } from 'entities/locations'
 import { studentKeys } from 'entities/students/api/use-students'
 import { linkPaymentToSub } from 'entities/students/model/students.repo'
 
-import { useCreatePayment, usePricingRules } from '../api/use-finance'
+import { useCreateHallCost, useCreatePayment, usePricingRules } from '../api/use-finance'
 import { subPaymentType } from '../lib/auto-payment'
 import { matchRule, subTypeToTuple } from '../lib/pricing-lookup'
 
+import type { HallPaymentType, TimeSlot } from '../model/types'
 import type { Dayjs } from 'dayjs'
 import type { Student, Subscription } from 'entities/students'
 
@@ -30,7 +32,7 @@ interface MarkPaidModalProps {
 }
 
 function today(): string {
-  return new Date().toISOString().slice(0, 10)
+  return todayISO()
 }
 
 export function MarkPaidModal({
@@ -44,6 +46,7 @@ export function MarkPaidModal({
   const toast = useToast()
   const qc = useQueryClient()
   const createPayment = useCreatePayment()
+  const createHallCost = useCreateHallCost()
   const { data: groups = [] } = useGroups()
   const { data: locations = [] } = useLocations()
 
@@ -56,31 +59,55 @@ export function MarkPaidModal({
   const paymentType = sub ? subPaymentType(sub.type, isIndividual) : null
   const typeLabel = paymentType ? (FIN_LABELS[paymentType] ?? paymentType) : t('common.dash')
   const matchedRule = sub ? matchRule(rules, subTypeToTuple(sub.type, isIndividual)) : null
-  const defaultAmount = matchedRule?.client_price ?? 0
+
+  // No training time on a subscription, so the trainer picks prime/regular;
+  // that drives both the client price and the hall expense from the tariff.
+  const [slot, setSlot] = useState<TimeSlot>('regular')
+  const defaultAmount =
+    (slot === 'prime' ? matchedRule?.client_prime_price : matchedRule?.client_price) ?? 0
+  const defaultHall =
+    (slot === 'prime' ? matchedRule?.hall_prime_cost : matchedRule?.hall_cost) ?? 0
 
   const [amount, setAmount] = useState<number>(defaultAmount)
+  const [hallAmount, setHallAmount] = useState<number>(defaultHall)
   const [date, setDate] = useState<string>(sub?.createdAt ?? today())
-  const [pricedAmount, setPricedAmount] = useState(defaultAmount)
+  const [priced, setPriced] = useState(`${defaultAmount}|${defaultHall}`)
 
-  if (defaultAmount !== pricedAmount) {
-    setPricedAmount(defaultAmount)
+  if (priced !== `${defaultAmount}|${defaultHall}`) {
+    setPriced(`${defaultAmount}|${defaultHall}`)
     setAmount(defaultAmount)
+    setHallAmount(defaultHall)
   }
 
   if (!student || !sub) return null
 
   const handleAmountChange = (v: number | null) =>
     setAmount(typeof v === 'number' ? v : 0)
+  const handleHallChange = (v: number | null) =>
+    setHallAmount(typeof v === 'number' ? v : 0)
   const handleDateChange = (d: Dayjs | null) =>
     setDate(d ? d.format('YYYY-MM-DD') : '')
 
+  const saving = createPayment.isPending || createHallCost.isPending
+
   const submit = async () => {
     try {
+      // Hall expense first so the income payment can link to it.
+      const hallCost = await createHallCost.mutateAsync({
+        student_id: student.id,
+        location_id: locationId || null,
+        hall_payment_type: (paymentType ?? 'single_individual') as HallPaymentType,
+        time_slot: slot,
+        training_time: '',
+        hall_amount: hallAmount,
+        paid_at: date,
+      })
       const payment = await createPayment.mutateAsync({
         student_id: student.id,
         location_id: locationId || null,
         client_payment_type: paymentType ?? 'single_individual',
         client_amount: amount,
+        hall_cost_id: hallCost.id,
         paid_at: date,
       })
       await linkPaymentToSub(student.id, sub.id, payment.id)
@@ -106,7 +133,7 @@ export function MarkPaidModal({
         <Button
           key="save"
           type="primary"
-          loading={createPayment.isPending}
+          loading={saving}
           onClick={submit}
         >
           {t('finance.markPaid.markPaidBtn')}
@@ -126,6 +153,17 @@ export function MarkPaidModal({
         <div style={{ fontWeight: 600 }}>{typeLabel}</div>
       </div>
       <Form layout="vertical">
+        <Form.Item label={t('finance.markPaid.timeSlotLabel')}>
+          <Segmented
+            block
+            value={slot}
+            onChange={(v) => setSlot(v as TimeSlot)}
+            options={[
+              { label: t('finance.markPaid.regular'), value: 'regular' },
+              { label: t('finance.markPaid.prime'), value: 'prime' },
+            ]}
+          />
+        </Form.Item>
         <Form.Item label={t('finance.markPaid.amountLabel')}>
           <InputNumber
             min={0}
@@ -133,6 +171,15 @@ export function MarkPaidModal({
             controls={false}
             style={{ width: '100%' }}
             onChange={handleAmountChange}
+          />
+        </Form.Item>
+        <Form.Item label={t('finance.markPaid.hallAmountLabel')}>
+          <InputNumber
+            min={0}
+            value={hallAmount}
+            controls={false}
+            style={{ width: '100%' }}
+            onChange={handleHallChange}
           />
         </Form.Item>
         <Form.Item label={t('finance.markPaid.dateLabel')}>

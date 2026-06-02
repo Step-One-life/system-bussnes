@@ -31,6 +31,7 @@ export function useTrainingsPage() {
   const [typeModalOpen, setTypeModalOpen] = useState(false)
   const [groupModalOpen, setGroupModalOpen] = useState(false)
   const [indModalOpen, setIndModalOpen] = useState(false)
+  const [onlineModalOpen, setOnlineModalOpen] = useState(false)
   const [indGroupId, setIndGroupId] = useState('')
 
   const [addTarget, setAddTarget] = useState<Training | null>(null)
@@ -48,6 +49,13 @@ export function useTrainingsPage() {
     const indGroup = await ensureIndividualGroup()
     setIndGroupId(indGroup.name)
     setIndModalOpen(true)
+  }
+
+  const pickOnline = async () => {
+    setTypeModalOpen(false)
+    const indGroup = await ensureIndividualGroup()
+    setIndGroupId(indGroup.name)
+    setOnlineModalOpen(true)
   }
 
   const openAddStudent = (training: Training) => setAddTarget(training)
@@ -78,6 +86,8 @@ export function useTrainingsPage() {
     setGroupModalOpen,
     indModalOpen,
     setIndModalOpen,
+    onlineModalOpen,
+    setOnlineModalOpen,
     indGroupId,
     addTarget,
     setAddTarget,
@@ -86,6 +96,7 @@ export function useTrainingsPage() {
     openTypeModal,
     pickGroup,
     pickIndividual,
+    pickOnline,
     openAddStudent,
     handleRemoveStudent,
     handleDelete,

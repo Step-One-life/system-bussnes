@@ -36,6 +36,10 @@ export class LocationService extends OwnedCrudService<Location> {
       kind: dto.kind ?? 'hall',
       isDefault,
       archived: false,
+      primeWeekdayStart: dto.primeWeekdayStart ?? null,
+      primeWeekdayEnd: dto.primeWeekdayEnd ?? null,
+      primeWeekendStart: dto.primeWeekendStart ?? null,
+      primeWeekendEnd: dto.primeWeekendEnd ?? null,
     })
   }
 

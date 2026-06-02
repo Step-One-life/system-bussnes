@@ -65,7 +65,7 @@ export interface HallCostInput {
   notes?: string
 }
 
-export type LessonKind = 'individual' | 'group'
+export type LessonKind = 'individual' | 'group' | 'online' | 'shared'
 
 export type PricingFormat = 'single' | 'subscription'
 
@@ -83,6 +83,7 @@ export interface PricingRule {
   hall_cost: number
   hall_prime_cost: number
   active: boolean
+  validity_days: number
   created_at: string
 }
 
@@ -98,6 +99,7 @@ export interface PricingRuleInput {
   hall_cost?: number
   hall_prime_cost?: number
   active?: boolean
+  validity_days?: number
 }
 
 export interface PricingRuleChanges {
@@ -111,4 +113,5 @@ export interface PricingRuleChanges {
   hall_cost?: number
   hall_prime_cost?: number
   active?: boolean
+  validity_days?: number
 }

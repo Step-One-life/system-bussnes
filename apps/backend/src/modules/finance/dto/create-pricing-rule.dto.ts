@@ -3,7 +3,7 @@ import { IsBoolean, IsIn, IsInt, IsNotEmpty, IsNumber, IsOptional, IsString, IsU
 
 import type { CreatePricingRuleShape, LessonKind, PricingFormat } from '@trikick/shared'
 
-const LESSON_KINDS: LessonKind[] = ['individual', 'group']
+const LESSON_KINDS: LessonKind[] = ['individual', 'group', 'online', 'shared']
 const FORMATS: PricingFormat[] = ['single', 'subscription']
 
 export class CreatePricingRuleDto implements CreatePricingRuleShape {
@@ -62,4 +62,10 @@ export class CreatePricingRuleDto implements CreatePricingRuleShape {
   @IsOptional()
   @IsBoolean()
   active?: boolean
+
+  @ApiPropertyOptional({ default: 35, description: 'Срок действия абонемента (дней)' })
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  validityDays?: number
 }

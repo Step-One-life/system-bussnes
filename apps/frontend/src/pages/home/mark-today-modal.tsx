@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 
 import { Button, Checkbox, Modal } from 'antd'
 import { CheckOutlined, ClockCircleOutlined } from '@ant-design/icons'
@@ -19,17 +19,37 @@ interface MarkTodayModalProps {
 
 export function MarkTodayModal({ open, onClose }: MarkTodayModalProps) {
   const { t } = useTranslation()
-  const { todayGroups, students, checks, toggle, initChecks, save, saving } = useMarkToday(
-    open,
-    onClose,
-  )
+  const {
+    todayGroups,
+    todayIndividuals,
+    students,
+    checks,
+    indChecks,
+    toggle,
+    toggleInd,
+    initChecks,
+    save,
+    saving,
+  } = useMarkToday(open, onClose)
 
+  const inited = useRef(false)
   useEffect(() => {
-    if (open) initChecks()
+    if (!open) {
+      inited.current = false
+      return
+    }
+    // Seed checkboxes once per open, after today's data is available — avoids
+    // wiping the trainer's in-progress toggles when data refetches in the
+    // background while the modal is open.
+    if (!inited.current && (todayGroups.length > 0 || todayIndividuals.length > 0)) {
+      initChecks()
+      inited.current = true
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, todayGroups])
+  }, [open, todayGroups, todayIndividuals])
 
   const hasGroups = todayGroups.length > 0
+  const hasContent = hasGroups || todayIndividuals.length > 0
 
   const handleToggle = (groupId: string, studentId: string) => () =>
     toggle(groupId, studentId)
@@ -40,7 +60,7 @@ export function MarkTodayModal({ open, onClose }: MarkTodayModalProps) {
       title={t('home.markTodayModal.title')}
       onCancel={onClose}
       footer={
-        hasGroups
+        hasContent
           ? [
               <Button
                 key="save"
@@ -56,7 +76,7 @@ export function MarkTodayModal({ open, onClose }: MarkTodayModalProps) {
           : null
       }
     >
-      {!hasGroups ? (
+      {!hasContent ? (
         <p className="mark-empty">{t('home.markTodayModal.nothingScheduled')}</p>
       ) : (
         <div className="mark-today">
@@ -111,6 +131,55 @@ export function MarkTodayModal({ open, onClose }: MarkTodayModalProps) {
               </div>
             )
           })}
+
+          {todayIndividuals.length > 0 && (
+            <div className="mark-group">
+              <div className="mark-group__head">
+                <span className="mark-group__name">
+                  {t('home.markTodayModal.individualSessions')}
+                </span>
+              </div>
+              <div className="mark-group__list">
+                {todayIndividuals.map((ti) => {
+                  const student = students.find((s) => s.id === ti.studentId)
+                  if (!student) return null
+                  const st = getSubStatus(student, ti.groupId)
+                  const sub =
+                    student.subscriptions.find(
+                      (sb) => sb.groupId === ti.groupId && sb.isActive,
+                    ) ?? null
+                  const isSingle = sub?.type === '1' || sub?.type === '1_90'
+                  const subLine = sub
+                    ? isSingle
+                      ? subTypeLabel(sub.type)
+                      : `${subTypeLabel(sub.type)} · осталось ${sub.remaining}`
+                    : ''
+                  const checked = indChecks[ti.trainingId] ?? ti.originalPresent
+                  return (
+                    <label
+                      key={ti.trainingId}
+                      className={`mark-row${checked ? ' mark-row--checked' : ''}`}
+                    >
+                      <Checkbox checked={checked} onChange={() => toggleInd(ti.trainingId)} />
+                      <div className="mark-row__info">
+                        <span className="mark-row__name">{student.name}</span>
+                        <span className="mark-row__sub">
+                          {ti.time && (
+                            <>
+                              <ClockCircleOutlined /> {ti.time}
+                              {subLine ? ' · ' : ''}
+                            </>
+                          )}
+                          {subLine}
+                        </span>
+                      </div>
+                      <StatusBadge status={st} />
+                    </label>
+                  )
+                })}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </Modal>

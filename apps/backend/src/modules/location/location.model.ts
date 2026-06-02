@@ -28,4 +28,16 @@ export class Location extends OwnedEntity {
 
   @Column({ type: DataType.BOOLEAN, allowNull: false, defaultValue: false })
   declare archived: boolean
+
+  @Column({ field: 'prime_weekday_start', type: DataType.STRING(5), allowNull: true })
+  declare primeWeekdayStart: string | null
+
+  @Column({ field: 'prime_weekday_end', type: DataType.STRING(5), allowNull: true })
+  declare primeWeekdayEnd: string | null
+
+  @Column({ field: 'prime_weekend_start', type: DataType.STRING(5), allowNull: true })
+  declare primeWeekendStart: string | null
+
+  @Column({ field: 'prime_weekend_end', type: DataType.STRING(5), allowNull: true })
+  declare primeWeekendEnd: string | null
 }

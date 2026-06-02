@@ -6,6 +6,7 @@ import {
   ExclamationCircleOutlined,
   PlusOutlined,
   TeamOutlined,
+  WifiOutlined,
 } from '@ant-design/icons'
 
 import { useTranslation } from 'react-i18next'
@@ -52,6 +53,8 @@ export function IndividualPage() {
 
   const handleOpenSession = () => page.setSessionOpen(true)
   const handleCloseSession = () => page.setSessionOpen(false)
+  const handleOpenOnlineSession = () => page.setOnlineSessionOpen(true)
+  const handleCloseOnlineSession = () => page.setOnlineSessionOpen(false)
   const handleCloseAdd = () => setAddTarget(null)
 
   return (
@@ -60,14 +63,23 @@ export function IndividualPage() {
         title={t('individual.title')}
         subtitle={t('individual.subtitle', { count: page.kpis.clients })}
         actions={
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            disabled={!page.indGroupId}
-            onClick={handleOpenSession}
-          >
-            {t('individual.record')}
-          </Button>
+          <div style={{ display: 'flex', gap: 'var(--sp-2)' }}>
+            <Button
+              icon={<WifiOutlined />}
+              disabled={!page.indGroupId}
+              onClick={handleOpenOnlineSession}
+            >
+              {t('individual.recordOnline')}
+            </Button>
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              disabled={!page.indGroupId}
+              onClick={handleOpenSession}
+            >
+              {t('individual.record')}
+            </Button>
+          </div>
         }
       />
 
@@ -176,6 +188,15 @@ export function IndividualPage() {
           open={page.sessionOpen}
           indGroupId={page.indGroupId}
           onClose={handleCloseSession}
+        />
+      )}
+
+      {page.indGroupId && (
+        <IndividualSessionModal
+          open={page.onlineSessionOpen}
+          indGroupId={page.indGroupId}
+          onClose={handleCloseOnlineSession}
+          isOnline
         />
       )}
 

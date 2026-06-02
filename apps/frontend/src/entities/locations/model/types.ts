@@ -8,6 +8,10 @@ export interface Location {
   isDefault: boolean
   archived: boolean
   createdAt: string
+  primeWeekdayStart: string | null
+  primeWeekdayEnd: string | null
+  primeWeekendStart: string | null
+  primeWeekendEnd: string | null
 }
 
 export interface LocationInput {
@@ -15,6 +19,10 @@ export interface LocationInput {
   address?: string | null
   kind?: LocationKind
   isDefault?: boolean
+  primeWeekdayStart?: string | null
+  primeWeekdayEnd?: string | null
+  primeWeekendStart?: string | null
+  primeWeekendEnd?: string | null
 }
 
 export interface LocationChanges {
@@ -23,4 +31,8 @@ export interface LocationChanges {
   kind?: LocationKind
   isDefault?: boolean
   archived?: boolean
+  primeWeekdayStart?: string | null
+  primeWeekdayEnd?: string | null
+  primeWeekendStart?: string | null
+  primeWeekendEnd?: string | null
 }

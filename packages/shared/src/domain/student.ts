@@ -1,8 +1,10 @@
-import type { SubscriptionType, SubStatusType } from '../enums'
+import type { SubscriptionType, SubStatusType, TimeSlot } from '../enums'
 
 export interface Subscription {
   id: string
   groupId: string
+  /** Все группы, которые покрывает абонемент (общий — несколько). */
+  groupIds: string[]
   type: SubscriptionType
   total: number
   remaining: number
@@ -11,6 +13,8 @@ export interface Subscription {
   isActive: boolean
   finPaymentId: string | null
   sessionDuration: number
+  /** Слот тарифа, выбранный при продаже (прайм/обычный). */
+  timeSlot: TimeSlot
 }
 
 export interface VisitRecord {

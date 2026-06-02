@@ -9,6 +9,7 @@
     "individual": "Индивидуальные",
     "individualShort": "Инд.",
     "groups": "Группы",
+    "people": "Люди",
     "finance": "Финансы"
   },
   "common": {
@@ -108,6 +109,7 @@
       "lastVisit": "Последнее посещение:",
       "groupSessions": "Групповые занятия",
       "noGroupSessions": "Нет групповых занятий",
+      "sharedSubs": "Общие абонементы",
       "individual": "Индивидуальные",
       "visitHistory": "История посещений",
       "deleteTitle": "Удалить ученика «{{name}}»?",
@@ -152,6 +154,22 @@
       "group": "Группа:",
       "typeLabel": "Тип абонемента",
       "dateLabel": "Дата начала"
+    },
+    "add": {
+      "title": "Новый абонемент",
+      "openBtn": "Абонемент",
+      "createBtn": "Создать",
+      "groupsLabel": "Группы",
+      "groupsPlaceholder": "Выберите одну или несколько групп",
+      "singleHint": "Одна группа — обычный абонемент.",
+      "sharedHint": "Несколько групп — общий абонемент: один баланс на все выбранные группы.",
+      "typeLabel": "Тип абонемента",
+      "type_1": "Разовое посещение",
+      "type_4": "4 занятия",
+      "type_8": "8 занятий",
+      "dateLabel": "Дата начала",
+      "pickGroup": "Выберите хотя бы одну группу",
+      "created": "Абонемент создан"
     }
   },
   "trainings": {
@@ -168,7 +186,11 @@
     "type": {
       "title": "Новая тренировка",
       "group": "Групповая",
-      "individual": "Индивидуальная"
+      "individual": "Индивидуальная",
+      "online": "Online"
+    },
+    "online": {
+      "title": "Online training"
     },
     "item": {
       "indWith": "Индивидуальная тренировка с {{name}}",
@@ -216,14 +238,17 @@
       "dateLabel": "Дата",
       "timeLabel": "Время",
       "newSubLabel": "Новый абонемент",
+      "slotLabel": "Тариф (прайм/обычный)",
+      "slotHint": "По умолчанию — по времени занятия. Задаёт цену абонемента и расход зала.",
+      "primeMismatch": "Абонемент «{{sub}}», но занятие в {{slot}}-время",
       "weekly": "Еженедельно",
-      "weeklyHint": "Добавить в расписание на 7 недель вперёд",
+      "weeklyHint": "Создать плановые занятия на весь абонемент (списываются по мере подтверждения)",
       "noteLabel": "Комментарий (необязательно)",
       "notePlaceholder": "Например: работали над акробатикой...",
       "pickClientAndDate": "Выберите клиента и дату",
       "scheduleConflict": "Конфликт расписания",
       "recorded": "Занятие записано",
-      "recordedRecurringMsg": "{{name}} · добавлено на 7 недель"
+      "recordedRecurringMsg": "{{name}} · плановые занятия добавлены"
     },
     "addTo": {
       "saving": "Добавить на тренировку — {{group}}",
@@ -266,6 +291,7 @@
     "title": "Индивидуальные занятия",
     "subtitle": "{{count}} клиентов",
     "record": "Записать занятие",
+    "recordOnline": "Online",
     "removedFromTraining": "Убран с тренировки",
     "seriesDeleted": "Серия удалена",
     "trainingDeleted": "Тренировка удалена",
@@ -342,7 +368,11 @@
       "client": "Клиент",
       "type": "Тип",
       "amountLabel": "Сумма оплаты (₽)",
-      "dateLabel": "Дата оплаты"
+      "dateLabel": "Дата оплаты",
+      "timeSlotLabel": "Время",
+      "regular": "Обычное",
+      "prime": "Прайм",
+      "hallAmountLabel": "Расход зала (₽)"
     },
     "pricing": {
       "tariffsTitle": "Тарифы",
@@ -383,7 +413,9 @@
       },
       "lessonKind": {
         "individual": "Индивидуальное",
-        "group": "Групповое"
+        "group": "Групповое",
+        "online": "Online",
+        "shared": "Общий"
       },
       "format": {
         "single": "Разовое",
@@ -407,6 +439,8 @@
         "clientPrimePriceLabel": "Цена клиента — Prime",
         "hallCostLabel": "Расход зала — обычный",
         "hallPrimeCostLabel": "Расход зала — Prime",
+        "validityDaysLabel": "Subscription validity",
+        "validityDaysSuffix": "days",
         "deleteTitle": "Удалить тариф?",
         "titleRequired": "Укажите название тарифа",
         "unsavedTitle": "Unsaved changes",
@@ -445,6 +479,9 @@
       "periodQuarter": "Квартал",
       "periodYear": "Год",
       "periodAll": "Всё время"
+    },
+    "autoRecord": {
+      "noTariff": "Тариф не настроен — запись в финансы не создана"
     }
   },
   "home": {
@@ -452,8 +489,8 @@
     "markTodayShort": "Отметить",
     "recordTraining": "Записать тренировку",
     "kpiTotal": "Active students",
-    "kpiMonth": "Тренировок в этом месяце",
-    "kpiEnding": "Заканчивается абонемент",
+    "kpiMonth": "Тренировок за месяц",
+    "kpiEnding": "Заканчиваются",
     "kpiExpired": "Нужно продлить",
     "trainingsToday": "Тренировки сегодня",
     "noTrainingsToday": "Тренировок на сегодня нет",
@@ -481,7 +518,8 @@
       "title": "Отметить за сегодня",
       "saveAttendance": "Сохранить посещаемость",
       "nothingScheduled": "По расписанию групп на сегодня ничего не запланировано",
-      "noGroupStudents": "В группе нет учеников"
+      "noGroupStudents": "В группе нет учеников",
+      "individualSessions": "Индивидуальные"
     }
   },
   "locations": {
@@ -517,6 +555,10 @@
       "addressPlaceholder": "Необязательно",
       "kindLabel": "Тип локации",
       "defaultLabel": "Локация по умолчанию",
+      "primeWeekdayLabel": "Prime time (weekdays)",
+      "primeWeekendLabel": "Prime time (weekends)",
+      "primeStartPlaceholder": "From",
+      "primeEndPlaceholder": "To",
       "deleteTitle": "Удалить локацию?",
       "deleteDescription": "Тарифы локации также будут удалены"
     }

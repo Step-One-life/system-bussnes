@@ -14,6 +14,7 @@ export function useIndividualPage() {
 
   const [indGroupId, setIndGroupId] = useState('')
   const [sessionOpen, setSessionOpen] = useState(false)
+  const [onlineSessionOpen, setOnlineSessionOpen] = useState(false)
 
   useEffect(() => {
     ensureIndividualGroup().then((g) => setIndGroupId(g.name))
@@ -63,5 +64,7 @@ export function useIndividualPage() {
     groups,
     sessionOpen,
     setSessionOpen,
+    onlineSessionOpen,
+    setOnlineSessionOpen,
   }
 }

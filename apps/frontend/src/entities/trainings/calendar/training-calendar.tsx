@@ -106,7 +106,9 @@ export function TrainingCalendar({
                 {d.blocks.map((b) => (
                   <button
                     key={b.key}
-                    className={`cal-block cal-block--${b.isInd ? 'ind' : 'group'}`}
+                    className={`cal-block cal-block--${b.isInd ? 'ind' : 'group'}${
+                      b.isScheduled ? ' cal-block--scheduled' : ''
+                    }`}
                     style={{ top: b.topPx, height: b.heightPx }}
                     onClick={handleBlockClick(b)}
                   >
