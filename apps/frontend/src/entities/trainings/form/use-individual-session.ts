@@ -3,8 +3,6 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { useTranslation } from 'react-i18next'
 
-import { SUB_TYPE_TOTALS } from '@trikick/shared'
-
 import { useToast } from 'common/ui'
 import { todayISO, toLocalISODate } from 'common/utils/date'
 import { uuid } from 'common/utils/uuid'
@@ -25,6 +23,8 @@ import { useCreateTraining } from '../api/use-trainings'
 import { checkTrainingConflict, isPrimeTime } from '../model/training-logic'
 
 import type { SubscriptionType } from 'entities/students/model/types'
+
+import { SUB_TYPE_TOTALS } from '@trikick/shared'
 
 function today(): string {
   return todayISO()

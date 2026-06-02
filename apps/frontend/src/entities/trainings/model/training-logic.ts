@@ -2,8 +2,6 @@ import filter from 'lodash/filter'
 import isEmpty from 'lodash/isEmpty'
 import map from 'lodash/map'
 
-import { isPrimeTime } from '@trikick/shared'
-
 import { minutesToTime, timeToMinutes } from 'common/utils/date'
 import { getGroups } from 'entities/groups/model/groups.repo'
 import { getStudentById } from 'entities/students/model/students.repo'
@@ -13,6 +11,8 @@ import { addAttendees, getTrainings } from './trainings.repo'
 import type { Training, TrainingConflict } from './types'
 import type { Group } from 'entities/groups/model/types'
 import type { DeductStatus, Subscription } from 'entities/students/model/types'
+
+import { isPrimeTime } from '@trikick/shared'
 
 // Реэкспорт общей функции для совместимости с существующими импортами по пути
 // 'entities/trainings/model/training-logic'. Логика прайм-тайма живёт в
