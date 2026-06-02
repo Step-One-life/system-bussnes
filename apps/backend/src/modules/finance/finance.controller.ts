@@ -7,7 +7,6 @@ import {
   Param,
   Patch,
   Post,
-  Put,
   Query,
   UseGuards,
 } from '@nestjs/common'
@@ -21,7 +20,6 @@ import { CopyPricingDto } from './dto/copy-pricing.dto'
 import { CreateHallCostDto, UpdateHallCostDto } from './dto/create-hall-cost.dto'
 import { CreatePaymentDto, UpdatePaymentDto } from './dto/create-payment.dto'
 import { CreatePricingRuleDto } from './dto/create-pricing-rule.dto'
-import { SavePricingDto } from './dto/save-pricing.dto'
 import { UpdatePricingRuleDto } from './dto/update-pricing-rule.dto'
 import type { FinanceStats } from './finance-stats.service'
 import { FinanceStatsService } from './finance-stats.service'
@@ -31,7 +29,6 @@ import { Payment } from './payment.model'
 import { PaymentsService } from './payments.service'
 import { PricingRule } from './pricing-rule.model'
 import { PricingRulesService } from './pricing-rules.service'
-import { PricingService } from './pricing.service'
 
 @ApiTags('finance')
 @ApiBearerAuth()
@@ -41,7 +38,6 @@ export class FinanceController {
   constructor(
     private readonly paymentsService: PaymentsService,
     private readonly hallCostsService: HallCostsService,
-    private readonly pricingService: PricingService,
     private readonly pricingRulesService: PricingRulesService,
     private readonly statsService: FinanceStatsService,
   ) {}
@@ -118,23 +114,6 @@ export class FinanceController {
     @Param() { id }: IdParamDto,
   ): Promise<void> {
     return this.hallCostsService.removeForUser(user.id, id)
-  }
-
-  /* ── Pricing ── */
-
-  @Get('pricing')
-  @ApiOperation({ summary: 'Цены тренера' })
-  getPricing(@CurrentUser() user: CurrentUserPayload): Promise<Record<string, number>> {
-    return this.pricingService.get(user.id)
-  }
-
-  @Put('pricing')
-  @ApiOperation({ summary: 'Сохранить цены' })
-  savePricing(
-    @CurrentUser() user: CurrentUserPayload,
-    @Body() dto: SavePricingDto,
-  ): Promise<Record<string, number>> {
-    return this.pricingService.save(user.id, dto.data)
   }
 
   /* ── Pricing rules (гибкие тарифы локаций) ── */

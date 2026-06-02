@@ -9,16 +9,13 @@ import { Payment } from './payment.model'
 import { PaymentsService } from './payments.service'
 import { PricingRule } from './pricing-rule.model'
 import { PricingRulesService } from './pricing-rules.service'
-import { Pricing } from './pricing.model'
-import { PricingService } from './pricing.service'
 
 @Module({
-  imports: [SequelizeModule.forFeature([Payment, HallCost, Pricing, PricingRule])],
+  imports: [SequelizeModule.forFeature([Payment, HallCost, PricingRule])],
   controllers: [FinanceController],
   providers: [
     PaymentsService,
     HallCostsService,
-    PricingService,
     PricingRulesService,
     FinanceStatsService,
   ],
