@@ -1,19 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
 import { InjectModel } from '@nestjs/sequelize'
 
+import { SUB_TYPE_TOTALS } from '@trikick/shared'
 import type { DeductStatus, SubscriptionType, TimeSlot } from '@trikick/shared'
 
 import { DateUtil } from '../../common/utils/date.util'
 import { Subscription } from './subscription.model'
-
-const SUB_TYPE_TOTALS: Record<SubscriptionType, number> = {
-  '1': 1,
-  '4': 4,
-  '8': 8,
-  '1_90': 1,
-  '4_90': 4,
-  '8_90': 8,
-}
 
 @Injectable()
 export class SubscriptionsService {

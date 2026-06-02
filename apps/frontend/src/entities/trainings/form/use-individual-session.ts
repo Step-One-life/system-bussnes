@@ -3,6 +3,8 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { useTranslation } from 'react-i18next'
 
+import { SUB_TYPE_TOTALS } from '@trikick/shared'
+
 import { useToast } from 'common/ui'
 import { todayISO, toLocalISODate } from 'common/utils/date'
 import { uuid } from 'common/utils/uuid'
@@ -39,16 +41,6 @@ const SUB_OPTIONS: Record<number, { value: SubscriptionType; label: string }[]> 
     { value: '4_90', label: '4 занятия 1.5ч' },
     { value: '8_90', label: '8 занятий 1.5ч' },
   ],
-}
-
-/** Сколько занятий в абонементе каждого типа — задаёт длину рекуррентной серии. */
-const SUB_TYPE_TOTALS: Record<SubscriptionType, number> = {
-  '1': 1,
-  '4': 4,
-  '8': 8,
-  '1_90': 1,
-  '4_90': 4,
-  '8_90': 8,
 }
 
 type TimeSlot = 'regular' | 'prime'
