@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
 import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core'
+import { ScheduleModule } from '@nestjs/schedule'
 
 import configuration from './config/configuration'
 import { validateEnv } from './config/env.validation'
@@ -13,6 +14,7 @@ import { LocationModule } from './modules/location/location.module'
 import { StudentModule } from './modules/student/student.module'
 import { TrainingModule } from './modules/training/training.module'
 import { FinanceModule } from './modules/finance/finance.module'
+import { CalendarModule } from './modules/calendar/calendar.module'
 
 @Module({
   imports: [
@@ -21,6 +23,7 @@ import { FinanceModule } from './modules/finance/finance.module'
       load: [configuration],
       validate: validateEnv,
     }),
+    ScheduleModule.forRoot(),
     DatabaseModule,
     AuthModule,
     GroupModule,
@@ -28,6 +31,7 @@ import { FinanceModule } from './modules/finance/finance.module'
     StudentModule,
     TrainingModule,
     FinanceModule,
+    CalendarModule,
   ],
   providers: [
     { provide: APP_FILTER, useClass: AllExceptionsFilter },
