@@ -1,4 +1,25 @@
 {
+  "settings": {
+    "title": "Settings",
+    "google": {
+      "title": "Google Calendar",
+      "hint": "Trainings are pushed to your selected Google calendar automatically.",
+      "connect": "Connect Google",
+      "chooseCalendar": "Choose calendar",
+      "changeCalendar": "Change calendar",
+      "connectedTo": "Connected: {{name}}",
+      "pickerTitle": "Where to put trainings",
+      "createNew": "Create new \"TriKick\"",
+      "choose": "Choose",
+      "primary": "Primary",
+      "selected": "Calendar selected, schedule is being exported",
+      "resync": "Sync everything",
+      "resynced": "Queued: {{count}}",
+      "disconnect": "Disconnect",
+      "needsReconnect": "Google access expired — reconnect the calendar.",
+      "error": "Could not connect Google. Please try again."
+    }
+  },
   "app": {
     "name": "TriKick"
   },
@@ -10,7 +31,8 @@
     "individualShort": "Инд.",
     "groups": "Группы",
     "people": "Люди",
-    "finance": "Финансы"
+    "finance": "Финансы",
+    "settings": "Settings"
   },
   "common": {
     "themeToggle": "Сменить тему",

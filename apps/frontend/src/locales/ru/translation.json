@@ -1,4 +1,25 @@
 {
+  "settings": {
+    "title": "Настройки",
+    "google": {
+      "title": "Google Календарь",
+      "hint": "Тренировки автоматически попадают в выбранный календарь Google.",
+      "connect": "Подключить Google",
+      "chooseCalendar": "Выбрать календарь",
+      "changeCalendar": "Сменить календарь",
+      "connectedTo": "Подключено: {{name}}",
+      "pickerTitle": "Куда складывать тренировки",
+      "createNew": "Создать новый «TriKick»",
+      "choose": "Выбрать",
+      "primary": "Основной",
+      "selected": "Календарь выбран, расписание выгружается",
+      "resync": "Синхронизировать всё",
+      "resynced": "Поставлено в очередь: {{count}}",
+      "disconnect": "Отключить",
+      "needsReconnect": "Доступ к Google истёк — переподключите календарь.",
+      "error": "Не удалось подключить Google. Попробуйте ещё раз."
+    }
+  },
   "app": {
     "name": "TriKick"
   },
@@ -10,7 +31,8 @@
     "individualShort": "Инд.",
     "groups": "Группы",
     "people": "Люди",
-    "finance": "Финансы"
+    "finance": "Финансы",
+    "settings": "Настройки"
   },
   "common": {
     "themeToggle": "Сменить тему",
