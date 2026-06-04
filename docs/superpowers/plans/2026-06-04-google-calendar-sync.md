@@ -10,7 +10,7 @@
 
 **Ветка:** `feat/google-calendar-sync` (от `origin/main`).
 
-**Условные обозначения:** все пути — от корня репозитория. `BE=apps/backend`, `FE=apps/frontend`. Бэкенд запускается `npm run start:dev -w @trikick/backend` (порт 3021, `nest start --watch`). Сборка фронта/бэка: `tsc`. Команды линта/сборки указаны в конкретных шагах.
+**Условные обозначения:** все пути — от корня репозитория. `BE=apps/backend`, `FE=apps/frontend`. Бэкенд запускается `npm run start:dev -w backend` (порт 3021, `nest start --watch`). Сборка фронта/бэка: `tsc`. Команды линта/сборки указаны в конкретных шагах.
 
 ---
 
@@ -65,7 +65,7 @@
 
 Run:
 ```bash
-npm install googleapis @nestjs/schedule @nestjs/jwt -w @trikick/backend
+npm install googleapis @nestjs/schedule @nestjs/jwt -w backend
 ```
 Expected: пакеты добавлены в `apps/backend/package.json` → `dependencies`.
 
@@ -73,7 +73,7 @@ Expected: пакеты добавлены в `apps/backend/package.json` → `de
 
 Run:
 ```bash
-npm install -D jest ts-jest @types/jest -w @trikick/backend
+npm install -D jest ts-jest @types/jest -w backend
 ```
 Expected: добавлены в `devDependencies`.
 
@@ -116,7 +116,7 @@ module.exports = {
 
 - [ ] **Step 6: Проверить, что jest стартует (тестов пока нет — это ок)**
 
-Run: `npm test -w @trikick/backend`
+Run: `npm test -w backend`
 Expected: jest запускается; вывод вида `No tests found` (exit code допускается ненулевой) — главное, что инструмент работает, конфиг валиден.
 
 - [ ] **Step 7: Commit**
@@ -196,7 +196,7 @@ module.exports = {
 
 - [ ] **Step 3: Применить миграции**
 
-Run: `npm run migrate -w @trikick/backend`
+Run: `npm run migrate -w backend`
 Expected: обе миграции выполнились без ошибок; в БД появились таблицы `calendar_connections` и `calendar_sync_tasks`.
 
 - [ ] **Step 4: Commit**
@@ -414,7 +414,7 @@ describe('eventIdFor', () => {
 
 - [ ] **Step 2: Запустить тест — убедиться, что падает**
 
-Run: `npm test -w @trikick/backend -- event-id`
+Run: `npm test -w backend -- event-id`
 Expected: FAIL — `Cannot find module './event-id'`.
 
 - [ ] **Step 3: Реализация**
@@ -434,7 +434,7 @@ export function eventIdFor(trainingId: string): string {
 
 - [ ] **Step 4: Запустить тест — должен пройти**
 
-Run: `npm test -w @trikick/backend -- event-id`
+Run: `npm test -w backend -- event-id`
 Expected: PASS (2 теста).
 
 - [ ] **Step 5: Commit**
@@ -479,7 +479,7 @@ describe('nextRunAfter', () => {
 
 - [ ] **Step 2: Запустить — падает**
 
-Run: `npm test -w @trikick/backend -- sync-backoff`
+Run: `npm test -w backend -- sync-backoff`
 Expected: FAIL — модуль не найден.
 
 - [ ] **Step 3: Реализация**
@@ -498,7 +498,7 @@ export function nextRunAfter(attempts: number, from: Date = new Date()): Date {
 
 - [ ] **Step 4: Запустить — проходит**
 
-Run: `npm test -w @trikick/backend -- sync-backoff`
+Run: `npm test -w backend -- sync-backoff`
 Expected: PASS (3 теста).
 
 - [ ] **Step 5: Commit**
@@ -587,7 +587,7 @@ describe('buildEventResource', () => {
 
 - [ ] **Step 2: Запустить — падает**
 
-Run: `npm test -w @trikick/backend -- event-builder`
+Run: `npm test -w backend -- event-builder`
 Expected: FAIL — модуль не найден.
 
 - [ ] **Step 3: Реализация**
@@ -664,7 +664,7 @@ export function buildEventResource(input: EventBuilderInput): GoogleEventResourc
 
 - [ ] **Step 4: Запустить — проходит**
 
-Run: `npm test -w @trikick/backend -- event-builder`
+Run: `npm test -w backend -- event-builder`
 Expected: PASS (4 теста).
 
 - [ ] **Step 5: Commit**
@@ -705,7 +705,7 @@ describe('TokenCryptoService', () => {
 
 - [ ] **Step 2: Запустить — падает**
 
-Run: `npm test -w @trikick/backend -- token-crypto`
+Run: `npm test -w backend -- token-crypto`
 Expected: FAIL — модуль не найден.
 
 - [ ] **Step 3: Реализация**
@@ -752,7 +752,7 @@ export class TokenCryptoService {
 
 - [ ] **Step 4: Запустить — проходит**
 
-Run: `npm test -w @trikick/backend -- token-crypto`
+Run: `npm test -w backend -- token-crypto`
 Expected: PASS (2 теста).
 
 - [ ] **Step 5: Commit**
@@ -1488,7 +1488,7 @@ Expected: без ошибок (модуль из Task 13 теперь наход
 
 - [ ] **Step 4: Запуск приложения — проверка, что поднимается**
 
-Run: `npm run start:dev -w @trikick/backend` (подожди строку `TriKick API запущен …`, затем останови Ctrl+C).
+Run: `npm run start:dev -w backend` (подожди строку `TriKick API запущен …`, затем останови Ctrl+C).
 Expected: старт без ошибок DI; в логах нет падений; маршруты `/api/calendar/*` зарегистрированы.
 
 - [ ] **Step 5: Commit (модуль + контроллер вместе)**
@@ -1579,7 +1579,7 @@ Expected: без ошибок.
 
 - [ ] **Step 8: Прогнать все юнит-тесты**
 
-Run: `npm test -w @trikick/backend`
+Run: `npm test -w backend`
 Expected: PASS — все спеки (event-id, sync-backoff, event-builder, token-crypto).
 
 - [ ] **Step 9: Commit**
@@ -1992,8 +1992,8 @@ git commit -m "docs(backend): переменные окружения для Goo
 
 Run (в двух терминалах):
 ```bash
-npm run start:dev -w @trikick/backend
-npm run dev -w @trikick/frontend
+npm run start:dev -w backend
+npm run dev -w frontend
 ```
 Expected: бэкенд на :3021, фронт на :3020 без ошибок.
 
@@ -2026,7 +2026,7 @@ Run:
 ```bash
 npx tsc -p apps/backend/tsconfig.json --noEmit
 npx tsc -p apps/frontend/tsconfig.json --noEmit
-npm test -w @trikick/backend
+npm test -w backend
 npm run lint 2>/dev/null || echo "если есть отдельный lint — прогнать его"
 ```
 Expected: всё зелёное; тесты проходят.
