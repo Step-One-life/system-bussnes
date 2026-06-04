@@ -1,6 +1,7 @@
 import {
   AppstoreOutlined,
   CalendarOutlined,
+  SettingOutlined,
   TeamOutlined,
   WalletOutlined,
 } from '@ant-design/icons'
@@ -21,5 +22,6 @@ export const NAV_ITEMS: NavItem[] = [
   { path: '/', labelKey: 'nav.home', icon: <AppstoreOutlined /> },
   { path: '/trainings', labelKey: 'nav.trainings', icon: <CalendarOutlined />, dividerAfter: true },
   { path: '/people', labelKey: 'nav.people', icon: <TeamOutlined />, dividerAfter: true },
-  { path: '/finance', labelKey: 'nav.finance', icon: <WalletOutlined /> },
+  { path: '/finance', labelKey: 'nav.finance', icon: <WalletOutlined />, dividerAfter: true },
+  { path: '/settings', labelKey: 'nav.settings', icon: <SettingOutlined /> },
 ]

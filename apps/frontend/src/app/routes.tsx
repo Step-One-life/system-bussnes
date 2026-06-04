@@ -7,6 +7,7 @@ import { IndividualPage } from 'pages/individual'
 import { LoginPage } from 'pages/login'
 import { PeopleLayout } from 'pages/people'
 import { RegisterPage } from 'pages/register'
+import { SettingsPage } from 'pages/settings'
 import { StudentsPage } from 'pages/students'
 import { TrainingsPage } from 'pages/trainings'
 
@@ -36,6 +37,7 @@ export const router = createBrowserRouter([
             ],
           },
           { path: 'finance', element: <FinancePage /> },
+          { path: 'settings', element: <SettingsPage /> },
         ],
       },
     ],
