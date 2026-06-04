@@ -59,10 +59,13 @@ CalendarSyncWorker  ──►  Google Calendar API
 
 ## 5. Данные (новое в БД)
 
-### 5.1 `trainings.google_event_id`
-- `google_event_id` VARCHAR, nullable. Id события в Google для последующего
-  обновления/удаления. Одна тренировка → одно событие (тренировка принадлежит
-  одному `user_id`, у каждого тренера свой календарь).
+### 5.1 Идентификатор события (детерминированный, без колонки)
+- Id события в Google **выводим из id тренировки**: `eventId = trainingId` без
+  дефисов в нижнем регистре (32 hex-символа — валидный id для Google Calendar).
+- Это делает `upsert`/`delete` идемпотентными (нет гонок, не нужно писать id
+  обратно в БД) и **убирает отдельную колонку `google_event_id`**. Одна
+  тренировка → одно событие (тренировка принадлежит одному `user_id`, у каждого
+  тренера свой календарь).
 
 ### 5.2 Таблица `calendar_connections`
 | Поле | Тип | Назначение |
@@ -83,8 +86,7 @@ CalendarSyncWorker  ──►  Google Calendar API
 | `user_id` | UUID | чей календарь |
 | `training_id` | UUID, nullable | для `upsert` (для `delete` уже не нужен) |
 | `operation` | STRING | `upsert` / `delete` |
-| `calendar_id` | STRING, nullable | снимок на момент постановки (нужен для delete) |
-| `event_id` | STRING, nullable | снимок для delete/update |
+| `calendar_id` | STRING, nullable | снимок целевого календаря на момент постановки |
 | `status` | STRING | `pending` / `done` / `failed` |
 | `attempts` | INTEGER | счётчик попыток |
 | `last_error` | TEXT, nullable | причина последней ошибки |
@@ -138,9 +140,11 @@ Scope: `https://www.googleapis.com/auth/calendar` (управление кале
 событие удаляется.
 
 **Обработка `upsert` воркером:** загрузить `Training` по id; нет (удалена) —
-пропустить. Если `google_event_id` пуст → создать событие, записать id обратно в
-тренировку; иначе → обновить событие. **`delete`:** удалить по снимку
-`calendarId`+`eventId`.
+пропустить. Событие создаётся/обновляется по детерминированному id (см. §5.1):
+`events.insert`, а при конфликте `409` (уже есть) → `events.patch`. **`delete`:**
+`events.delete` по тому же выведенному id; `404/410` (события нет) — считаем
+успехом. Тренировка без времени → ставим `delete` (убрать возможное устаревшее
+событие).
 
 ## 9. Надёжность и крайние случаи
 
