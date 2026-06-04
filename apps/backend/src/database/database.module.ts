@@ -16,6 +16,9 @@ import type { AppConfig } from '../config/configuration'
           db: configService.getOrThrow('db'),
           jwt: configService.getOrThrow('jwt'),
           corsOrigin: configService.getOrThrow('corsOrigin'),
+          google: configService.getOrThrow('google'),
+          calendarTokenEncKey: configService.getOrThrow('calendarTokenEncKey'),
+          frontendUrl: configService.getOrThrow('frontendUrl'),
         }
         return buildDatabaseConfig(config)
       },

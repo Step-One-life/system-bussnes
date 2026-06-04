@@ -38,6 +38,22 @@ class EnvVariables {
   @IsString()
   @IsNotEmpty()
   CORS_ORIGIN!: string
+
+  @IsOptional()
+  @IsString()
+  GOOGLE_OAUTH_CLIENT_ID?: string
+
+  @IsOptional()
+  @IsString()
+  GOOGLE_OAUTH_CLIENT_SECRET?: string
+
+  @IsOptional()
+  @IsString()
+  GOOGLE_OAUTH_REDIRECT_URI?: string
+
+  @IsOptional()
+  @IsString()
+  CALENDAR_TOKEN_ENC_KEY?: string
 }
 
 export function validateEnv(config: Record<string, unknown>): EnvVariables {

@@ -13,6 +13,13 @@ export interface AppConfig {
     expiresIn: string
   }
   corsOrigin: string
+  google: {
+    clientId: string
+    clientSecret: string
+    redirectUri: string
+  }
+  calendarTokenEncKey: string
+  frontendUrl: string
 }
 
 export default (): AppConfig => ({
@@ -30,4 +37,13 @@ export default (): AppConfig => ({
     expiresIn: process.env.JWT_EXPIRES_IN ?? '7d',
   },
   corsOrigin: process.env.CORS_ORIGIN ?? 'http://localhost:3020',
+  google: {
+    clientId: process.env.GOOGLE_OAUTH_CLIENT_ID ?? '',
+    clientSecret: process.env.GOOGLE_OAUTH_CLIENT_SECRET ?? '',
+    redirectUri:
+      process.env.GOOGLE_OAUTH_REDIRECT_URI ??
+      'http://localhost:3021/api/calendar/google/callback',
+  },
+  calendarTokenEncKey: process.env.CALENDAR_TOKEN_ENC_KEY ?? 'dev-insecure-key-change-me',
+  frontendUrl: process.env.CORS_ORIGIN ?? 'http://localhost:3020',
 })
