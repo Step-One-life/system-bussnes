@@ -6,6 +6,7 @@ import { isPrimeTime } from '@trikick/shared'
 
 import { OwnedCrudService } from '../../common/services/owned-crud.service'
 import { DateUtil } from '../../common/utils/date.util'
+import { CalendarSyncService } from '../calendar/services/calendar-sync.service'
 import { LocationService } from '../location/location.service'
 import { Student } from '../student/student.model'
 import { SubscriptionsService } from '../student/subscriptions.service'
@@ -22,6 +23,7 @@ export class TrainingService extends OwnedCrudService<Training> {
     @InjectModel(Visit) private readonly visitModel: typeof Visit,
     private readonly subscriptionsService: SubscriptionsService,
     private readonly locationService: LocationService,
+    private readonly calendarSync: CalendarSyncService,
   ) {
     super(trainingModel)
   }
@@ -73,7 +75,15 @@ export class TrainingService extends OwnedCrudService<Training> {
         await this.attachAttendeesWithVisits(training, dto.attendees)
       }
     }
+    await this.calendarSync.enqueueUpsert(userId, training.id, training.time)
     return this.findOneForUser(userId, training.id)
+  }
+
+  /** Обновление + постановка синхронизации события. */
+  async updateForUser(userId: string, id: string, data: object): Promise<Training> {
+    const training = await super.updateForUser(userId, id, data)
+    await this.calendarSync.enqueueUpsert(userId, training.id, training.time)
+    return training
   }
 
   /** Deduct one session per attendee and record visits. */
@@ -92,6 +102,7 @@ export class TrainingService extends OwnedCrudService<Training> {
         date: training.date,
       })
     }
+    await this.calendarSync.enqueueUpsert(training.userId, training.id, training.time)
   }
 
   /** Attach attendees and record visits WITHOUT deducting sessions (seeder). */
@@ -117,6 +128,7 @@ export class TrainingService extends OwnedCrudService<Training> {
       await this.subscriptionsService.restore(studentId, training.groupId, training.sessionDuration)
       await visit.destroy()
     }
+    await this.calendarSync.enqueueUpsert(training.userId, training.id, training.time)
   }
 
   /** Delete a training: restore sessions and remove visits for every attendee. */
@@ -130,6 +142,7 @@ export class TrainingService extends OwnedCrudService<Training> {
         await visit.destroy()
       }
     }
+    await this.calendarSync.enqueueDelete(userId, training.id)
     await training.destroy()
   }
 
@@ -148,6 +161,7 @@ export class TrainingService extends OwnedCrudService<Training> {
           await visit.destroy()
         }
       }
+      await this.calendarSync.enqueueDelete(userId, t.id)
       await t.destroy()
     }
     return trainings.length
