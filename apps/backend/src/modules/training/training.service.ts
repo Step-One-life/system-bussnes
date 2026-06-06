@@ -12,6 +12,7 @@ import { Student } from '../student/student.model'
 import { SubscriptionsService } from '../student/subscriptions.service'
 import { Visit } from '../student/visit.model'
 import { CreateTrainingDto } from './dto/create-training.dto'
+import { seriesUpdateFields, type SeriesUpdateInput } from './lib/series-update'
 import { Training } from './training.model'
 
 @Injectable()
@@ -84,6 +85,33 @@ export class TrainingService extends OwnedCrudService<Training> {
     const training = await super.updateForUser(userId, id, data)
     await this.calendarSync.enqueueUpsert(userId, training.id, training.time)
     return training
+  }
+
+  /**
+   * Обновить все занятия повторяющейся серии. Распространяемые поля (время/локация/
+   * заметка/онлайн) применяются ко всем; дата НЕ трогается (у каждого своя). Прайм
+   * пересчитывается по дате каждого занятия. На каждое занятие ставится upsert.
+   */
+  async updateSeriesForUser(
+    userId: string,
+    recurringId: string,
+    dto: SeriesUpdateInput,
+  ): Promise<number> {
+    const fields = seriesUpdateFields(dto)
+    const trainings = await this.trainingModel.findAll({ where: { userId, recurringId } })
+    for (const t of trainings) {
+      if (fields.time !== undefined) t.time = fields.time
+      if (fields.locationId !== undefined) t.locationId = fields.locationId
+      if (fields.note !== undefined) t.note = fields.note
+      if (fields.isOnline !== undefined) t.isOnline = fields.isOnline
+      const location = t.locationId
+        ? await this.locationService.findOneForUser(userId, t.locationId).catch(() => null)
+        : null
+      t.isPrime = isPrimeTime(t.date, t.time, location)
+      await t.save()
+      await this.calendarSync.enqueueUpsert(userId, t.id, t.time)
+    }
+    return trainings.length
   }
 
   /** Deduct one session per attendee and record visits. */

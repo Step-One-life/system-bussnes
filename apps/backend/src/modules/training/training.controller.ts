@@ -56,6 +56,18 @@ export class TrainingController {
     return this.trainingService.createTraining(user.id, dto)
   }
 
+  @Patch('recurring/:recurringId')
+  @ApiOperation({ summary: 'Обновить всю серию повторяющихся тренировок' })
+  updateSeries(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('recurringId') recurringId: string,
+    @Body() dto: UpdateTrainingDto,
+  ): Promise<{ updated: number }> {
+    return this.trainingService
+      .updateSeriesForUser(user.id, recurringId, dto)
+      .then((updated) => ({ updated }))
+  }
+
   @Patch(':id')
   @ApiOperation({ summary: 'Обновить тренировку' })
   update(
