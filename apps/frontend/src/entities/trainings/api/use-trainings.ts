@@ -9,6 +9,7 @@ import {
   getTrainings,
   removeVisitAt,
   updateTraining,
+  updateTrainingSeries,
 } from 'entities/trainings/model/trainings.repo'
 
 import type { Training, TrainingInput } from 'entities/trainings/model/types'
@@ -34,6 +35,20 @@ export function useUpdateTraining() {
   return useMutation({
     mutationFn: ({ id, changes }: { id: string; changes: Partial<Training> }) =>
       updateTraining(id, changes),
+    onSuccess: () => qc.invalidateQueries({ queryKey: trainingKeys.all }),
+  })
+}
+
+export function useUpdateTrainingSeries() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({
+      recurringId,
+      changes,
+    }: {
+      recurringId: string
+      changes: { time?: string; locationId?: string | null; note?: string; isOnline?: boolean }
+    }) => updateTrainingSeries(recurringId, changes),
     onSuccess: () => qc.invalidateQueries({ queryKey: trainingKeys.all }),
   })
 }

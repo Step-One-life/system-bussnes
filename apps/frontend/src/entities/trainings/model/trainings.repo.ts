@@ -106,6 +106,7 @@ export async function updateTraining(
   if (changes.locationId !== undefined) body.locationId = changes.locationId
   if (changes.note !== undefined) body.note = changes.note
   if (changes.isPrime !== undefined) body.isPrime = changes.isPrime
+  if (changes.isOnline !== undefined) body.isOnline = changes.isOnline
   if (changes.sessionDuration !== undefined) body.sessionDuration = changes.sessionDuration
   if (changes.recurring !== undefined) body.recurring = changes.recurring
   if (changes.recurringId !== undefined) body.recurringId = changes.recurringId
@@ -114,6 +115,22 @@ export async function updateTraining(
   // backend uses to deduct sessions and record visits atomically.
   const raw = await apiClient.patch<RawTraining>(`/trainings/${id}`, body)
   return toTraining(raw, byId)
+}
+
+export async function updateTrainingSeries(
+  recurringId: string,
+  changes: { time?: string; locationId?: string | null; note?: string; isOnline?: boolean },
+): Promise<number> {
+  const body: Record<string, unknown> = {}
+  if (changes.time !== undefined) body.time = changes.time
+  if (changes.locationId !== undefined) body.locationId = changes.locationId
+  if (changes.note !== undefined) body.note = changes.note
+  if (changes.isOnline !== undefined) body.isOnline = changes.isOnline
+  const result = await apiClient.patch<{ updated: number }>(
+    `/trainings/recurring/${recurringId}`,
+    body,
+  )
+  return result?.updated ?? 0
 }
 
 export async function deleteTraining(id: string): Promise<boolean> {
