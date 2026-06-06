@@ -11,6 +11,7 @@ import { EmptyState, PageHeader } from 'common/ui'
 import {
   AddToTrainingModal,
   CalendarTrainingModal,
+  EditTrainingModal,
   GroupTrainingModal,
   IndividualSessionModal,
   TrainingCalendar,
@@ -34,6 +35,7 @@ export function TrainingsPage() {
   const handleCloseOnlineModal = () => page.setOnlineModalOpen(false)
   const handleCloseAddTarget = () => page.setAddTarget(null)
   const handleCloseCalendarBlock = () => page.setCalendarBlock(null)
+  const handleCloseEdit = () => page.setEditTarget(null)
 
   return (
     <div>
@@ -80,6 +82,7 @@ export function TrainingsPage() {
           onAddStudent={page.openAddStudent}
           onRemoveStudent={page.handleRemoveStudent}
           onDelete={page.handleDelete}
+          onEdit={page.openEditTraining}
         />
       ) : (
         <EmptyState title={t('trainings.empty')} text={t('trainings.emptyText')} />
@@ -126,6 +129,12 @@ export function TrainingsPage() {
         block={page.calendarBlock}
         onClose={handleCloseCalendarBlock}
         onAddStudent={page.openAddStudent}
+        onEdit={page.openEditTraining}
+      />
+      <EditTrainingModal
+        open={!!page.editTarget}
+        training={page.editTarget}
+        onClose={handleCloseEdit}
       />
     </div>
   )

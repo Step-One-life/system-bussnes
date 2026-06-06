@@ -35,6 +35,7 @@ export function useTrainingsPage() {
   const [indGroupId, setIndGroupId] = useState('')
 
   const [addTarget, setAddTarget] = useState<Training | null>(null)
+  const [editTarget, setEditTarget] = useState<Training | null>(null)
   const [calendarBlock, setCalendarBlock] = useState<CalendarBlock | null>(null)
 
   const openTypeModal = () => setTypeModalOpen(true)
@@ -59,6 +60,7 @@ export function useTrainingsPage() {
   }
 
   const openAddStudent = (training: Training) => setAddTarget(training)
+  const openEditTraining = (training: Training) => setEditTarget(training)
 
   const handleRemoveStudent = async (training: Training, studentId: string) => {
     await removeFromTraining.mutateAsync({ trainingId: training.id, studentId })
@@ -91,6 +93,9 @@ export function useTrainingsPage() {
     indGroupId,
     addTarget,
     setAddTarget,
+    editTarget,
+    setEditTarget,
+    openEditTraining,
     calendarBlock,
     setCalendarBlock,
     openTypeModal,

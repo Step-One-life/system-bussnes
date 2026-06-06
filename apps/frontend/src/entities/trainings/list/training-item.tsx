@@ -5,6 +5,7 @@ import {
   CloseOutlined,
   DeleteOutlined,
   DownOutlined,
+  EditOutlined,
   SyncOutlined,
   UserAddOutlined,
 } from '@ant-design/icons'
@@ -32,6 +33,7 @@ interface TrainingItemProps {
   onAddStudent: (training: Training) => void
   onRemoveStudent: (training: Training, studentId: string) => void
   onDelete: (training: Training) => void
+  onEdit?: (training: Training) => void
 }
 
 export function TrainingItem({
@@ -41,6 +43,7 @@ export function TrainingItem({
   onAddStudent,
   onRemoveStudent,
   onDelete,
+  onEdit,
 }: TrainingItemProps) {
   const { t } = useTranslation()
   const [expanded, setExpanded] = useState(false)
@@ -58,6 +61,7 @@ export function TrainingItem({
   const handleRemoveStudent = (studentId: string) => () =>
     onRemoveStudent(training, studentId)
   const handleDelete = () => onDelete(training)
+  const handleEdit = () => onEdit?.(training)
 
   const isInd = isIndividualTraining(training.groupId, groups)
   const clientName = isInd
@@ -134,6 +138,15 @@ export function TrainingItem({
           <Button size="small" icon={<UserAddOutlined />} onClick={handleAddStudent}>
             {t('trainings.item.addStudent')}
           </Button>
+          {onEdit && (
+            <Button
+              type="text"
+              size="small"
+              icon={<EditOutlined />}
+              title={t('trainings.item.edit')}
+              onClick={handleEdit}
+            />
+          )}
           <Popconfirm
             title={t('trainings.item.deleteTitle')}
             description={t('trainings.item.deleteDescription')}

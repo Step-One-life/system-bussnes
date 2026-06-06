@@ -1,5 +1,5 @@
 import { Button, Modal, Popconfirm } from 'antd'
-import { CloseOutlined, DeleteOutlined, UserAddOutlined } from '@ant-design/icons'
+import { CloseOutlined, DeleteOutlined, EditOutlined, UserAddOutlined } from '@ant-design/icons'
 
 import { useTranslation } from 'react-i18next'
 
@@ -27,6 +27,7 @@ interface CalendarTrainingModalProps {
   block: CalendarBlock | null
   onClose: () => void
   onAddStudent: (training: Training) => void
+  onEdit?: (training: Training) => void
 }
 
 export function CalendarTrainingModal({
@@ -34,6 +35,7 @@ export function CalendarTrainingModal({
   block,
   onClose,
   onAddStudent,
+  onEdit,
 }: CalendarTrainingModalProps) {
   if (!block) return null
   return (
@@ -42,6 +44,7 @@ export function CalendarTrainingModal({
       open={open}
       onClose={onClose}
       onAddStudent={onAddStudent}
+      onEdit={onEdit}
     />
   )
 }
@@ -87,11 +90,13 @@ function CalendarTrainingModalInner({
   open,
   onClose,
   onAddStudent,
+  onEdit,
 }: {
   block: CalendarBlock
   open: boolean
   onClose: () => void
   onAddStudent: (training: Training) => void
+  onEdit?: (training: Training) => void
 }) {
   const { t } = useTranslation()
   const m = useCalendarTraining({ block, onDone: onClose })
@@ -130,6 +135,22 @@ function CalendarTrainingModalInner({
     )
   }
   if (m.training) {
+    if (onEdit) {
+      footer.push(
+        <Button
+          key="edit"
+          icon={<EditOutlined />}
+          onClick={() => {
+            if (m.training && onEdit) {
+              onClose()
+              onEdit(m.training)
+            }
+          }}
+        >
+          {t('trainings.cal.edit')}
+        </Button>,
+      )
+    }
     footer.push(
       <Popconfirm
         key="del"

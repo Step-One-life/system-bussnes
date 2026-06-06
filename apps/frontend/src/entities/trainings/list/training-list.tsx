@@ -11,6 +11,7 @@ interface TrainingListProps {
   onAddStudent: (training: Training) => void
   onRemoveStudent: (training: Training, studentId: string) => void
   onDelete: (training: Training) => void
+  onEdit?: (training: Training) => void
 }
 
 export function TrainingList({
@@ -20,6 +21,7 @@ export function TrainingList({
   onAddStudent,
   onRemoveStudent,
   onDelete,
+  onEdit,
 }: TrainingListProps) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-3)' }}>
@@ -32,6 +34,7 @@ export function TrainingList({
           onAddStudent={onAddStudent}
           onRemoveStudent={onRemoveStudent}
           onDelete={onDelete}
+          onEdit={onEdit}
         />
       ))}
     </div>
