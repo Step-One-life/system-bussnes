@@ -223,11 +223,27 @@
       "noAttendees": "Нет записей об учениках",
       "deleteTitle": "Удалить тренировку?",
       "deleteDescription": "Занятия будут возвращены ученикам.",
-      "deleteTraining": "Удалить тренировку"
+      "deleteTraining": "Удалить тренировку",
+      "edit": "Edit"
     },
     "calendar": {
       "today": "Сегодня",
       "attendeesCount": "{{count}} чел."
+    },
+    "edit": {
+      "title": "Edit session",
+      "dateLabel": "Date",
+      "timeLabel": "Time",
+      "noteLabel": "Note (optional)",
+      "onlineLabel": "Online",
+      "primeLabel": "Prime time",
+      "recurringNote": "This session is part of a recurring series. On save, choose to apply to one or all; the date changes only for this session.",
+      "scopeTitle": "Apply changes",
+      "scopeBody": "This is a recurring session. Apply changes to this one only or the whole series?",
+      "scopeSingle": "This session only",
+      "scopeSeries": "Whole series",
+      "saved": "Training updated",
+      "seriesSaved": "Series updated"
     },
     "group": {
       "title": "Групповая тренировка",
@@ -301,7 +317,8 @@
       "deleteDescription": "Занятия будут возвращены ученикам.",
       "studentRemoved": "Ученик убран",
       "attendanceSaved": "Посещаемость сохранена",
-      "recordDeleted": "Запись удалена"
+      "recordDeleted": "Запись удалена",
+      "edit": "Edit"
     },
     "hint": {
       "prime": "⭐ Prime",
