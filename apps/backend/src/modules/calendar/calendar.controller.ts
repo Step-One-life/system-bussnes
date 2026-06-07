@@ -7,6 +7,7 @@ import { CurrentUser } from '../../common/decorators/current-user.decorator'
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard'
 import type { CurrentUserPayload } from '../../common/interfaces/current-user.interface'
 import { SelectCalendarDto } from './dto/select-calendar.dto'
+import { SetTimezoneDto } from './dto/set-timezone.dto'
 import { CalendarConnectionService } from './services/calendar-connection.service'
 import { CalendarSyncService } from './services/calendar-sync.service'
 import { GoogleOAuthService } from './services/google-oauth.service'
@@ -75,15 +76,11 @@ export class CalendarController {
     const token = await this.connections.getRefreshToken(user.id)
     if (!token) return { ok: false }
 
+    const timeZone = dto.timeZone || 'Europe/Moscow'
     let calendarId = dto.calendarId ?? ''
-    let timeZone = await this.google.primaryTimeZone(token)
     if (dto.create) {
       const created = await this.google.createCalendar(token, dto.name || 'TriKick', timeZone)
       calendarId = created.id
-      timeZone = created.timeZone
-    } else {
-      const list = await this.google.listCalendars(token)
-      timeZone = list.find((c) => c.id === calendarId)?.timeZone ?? timeZone
     }
 
     await this.connections.setCalendar(user.id, calendarId, timeZone)
@@ -95,6 +92,14 @@ export class CalendarController {
   @Post('resync')
   @UseGuards(JwtAuthGuard)
   async resync(@CurrentUser() user: CurrentUserPayload) {
+    return { backfilled: await this.sync.backfill(user.id) }
+  }
+
+  /** Сменить часовой пояс и пере-синхронизировать будущие занятия. */
+  @Post('timezone')
+  @UseGuards(JwtAuthGuard)
+  async setTimeZone(@CurrentUser() user: CurrentUserPayload, @Body() dto: SetTimezoneDto) {
+    await this.connections.setTimeZone(user.id, dto.timeZone)
     return { backfilled: await this.sync.backfill(user.id) }
   }
 

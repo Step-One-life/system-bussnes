@@ -12,4 +12,8 @@ export class SelectCalendarDto {
   @IsOptional()
   @IsString()
   name?: string
+
+  @IsOptional()
+  @IsString()
+  timeZone?: string
 }

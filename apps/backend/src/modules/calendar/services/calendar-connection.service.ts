@@ -44,6 +44,10 @@ export class CalendarConnectionService {
     await this.model.update({ calendarId, calendarTimeZone: timeZone }, { where: { userId } })
   }
 
+  async setTimeZone(userId: string, timeZone: string): Promise<void> {
+    await this.model.update({ calendarTimeZone: timeZone }, { where: { userId } })
+  }
+
   async setStatus(userId: string, status: ConnectionStatus): Promise<void> {
     await this.model.update({ status }, { where: { userId } })
   }
