@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 
 import { useToast } from 'common/ui'
-import { todayISO, toLocalISODate } from 'common/utils/date'
+import { todayISO } from 'common/utils/date'
 import { uuid } from 'common/utils/uuid'
 import { autoCreatePayment } from 'entities/finance/lib/auto-payment'
 import { resolvePricingRule, resolvePricingRuleForOnline, subTypeToTuple } from 'entities/finance/lib/pricing-lookup'
@@ -21,6 +21,7 @@ import {
 
 import { useCreateTraining } from '../api/use-trainings'
 import { checkTrainingConflict, isPrimeTime } from '../model/training-logic'
+import { weeklySeriesDates } from '../model/weekly-series'
 
 import type { SubscriptionType } from 'entities/students/model/types'
 
@@ -68,6 +69,8 @@ export function useIndividualSession({ indGroupId, onDone, isOnline = false }: U
   const [time, setTime] = useState('18:00')
   const [subType, setSubType] = useState<SubscriptionType>('1')
   const [recurring, setRecurring] = useState(false)
+  const [paymentMode, setPaymentMode] = useState<'subscription' | 'oneoff'>('subscription')
+  const [repeatCount, setRepeatCount] = useState(1)
   const [note, setNote] = useState('')
   const [saving, setSaving] = useState(false)
   const [locationId, setLocationIdState] = useState<string | null>(null)
@@ -118,6 +121,11 @@ export function useIndividualSession({ indGroupId, onDone, isOnline = false }: U
     enabled: !!date && !!time,
   })
 
+  const handleSetSubType = (value: SubscriptionType) => {
+    setSubType(value)
+    setRepeatCount(SUB_TYPE_TOTALS[value] ?? 1)
+  }
+
   const submit = async () => {
     if (!clientId || !date) {
       toast({ type: 'error', title: t('trainings.individual.pickClientAndDate') })
@@ -140,15 +148,48 @@ export function useIndividualSession({ indGroupId, onDone, isOnline = false }: U
       }
 
       const effectiveLocation = locations.find((l) => l.id === effectiveLocationId) ?? null
+      const seriesLen = recurring ? Math.max(1, repeatCount) : 1
+      const dates = weeklySeriesDates(date, seriesLen)
+      const recurringId = seriesLen > 1 ? uuid() : null
+
+      // --- Режим «Разово»: без абонемента и платежа; все занятия плановые. ---
+      if (paymentMode === 'oneoff') {
+        for (const d of dates) {
+          await createTraining.mutateAsync({
+            date: d,
+            time,
+            groupId: indGroupId,
+            locationId: isOnline ? null : effectiveLocationId,
+            attendees: [],
+            plannedStudentId: clientId,
+            note: note.trim(),
+            isPrime: isPrimeTime(d, time, effectiveLocation),
+            sessionDuration: duration,
+            recurring: seriesLen > 1,
+            recurringId,
+            isOnline,
+          })
+        }
+        qc.invalidateQueries({ queryKey: studentKeys.all })
+        toast({
+          type: 'success',
+          title: t('trainings.individual.recorded'),
+          msg:
+            seriesLen > 1
+              ? t('trainings.individual.recordedRecurringMsg', { name: student.name })
+              : student.name,
+        })
+        onDone()
+        return
+      }
+
+      // --- Режим «Абонемент»: как раньше, но длина серии из dates. ---
       const isPrime = isPrimeTime(date, time, effectiveLocation)
       const slotIsPrime = effectiveSlot === 'prime'
-      // Online pricing is looked up against the group's location; in-person
-      // uses the effective (possibly overridden) location.
       const pricingLocationId = isOnline ? (indGroup?.locationId ?? null) : effectiveLocationId
 
       let createdSub: Awaited<ReturnType<typeof addSubscription>> = null
       if (!activeSub) {
-        // For online sessions: try 'online' pricing rule first, fallback to 'individual'.
         const { rule } = isOnline
           ? await resolvePricingRuleForOnline(pricingLocationId, subTypeToTuple(subType, true))
           : await resolvePricingRule(effectiveLocationId, subTypeToTuple(subType, true))
@@ -162,15 +203,9 @@ export function useIndividualSession({ indGroupId, onDone, isOnline = false }: U
         })
       }
 
-      const recurringId = recurring ? uuid() : null
-
-      // В рекуррентной серии будущие занятия создаём плановыми (без списания);
-      // первое — плановое, только если дата старта в будущем. Иначе первое
-      // занятие проводится сейчас и списывается (бэкенд списывает при создании
-      // тренировки с этим участником — отдельный markAttendance не нужен).
-      const firstPlanned = recurring && date > today()
+      const firstPlanned = seriesLen > 1 && date > today()
       await createTraining.mutateAsync({
-        date,
+        date: dates[0],
         time,
         groupId: indGroupId,
         locationId: isOnline ? null : effectiveLocationId,
@@ -179,14 +214,11 @@ export function useIndividualSession({ indGroupId, onDone, isOnline = false }: U
         note: note.trim(),
         isPrime,
         sessionDuration: duration,
-        recurring,
+        recurring: seriesLen > 1,
         recurringId,
         isOnline,
       })
 
-      // Деньги пишем один раз при продаже абонемента: доход + расход зала на
-      // весь пакет по ВЫБРАННОМУ слоту (прайм/обычный), а не по числу занятий.
-      // Списание занятий идёт постепенно (подтверждение в «Отметить за сегодня»).
       if (createdSub) {
         const fin = await autoCreatePayment(
           clientId,
@@ -201,7 +233,6 @@ export function useIndividualSession({ indGroupId, onDone, isOnline = false }: U
         }
       }
 
-      // Уведомление о несовпадении: слот абонемента ≠ прайм/не-прайм по времени.
       if (slotIsPrime !== isPrime) {
         toast({
           type: 'warn',
@@ -231,42 +262,32 @@ export function useIndividualSession({ indGroupId, onDone, isOnline = false }: U
           ]
         : []
 
-      if (recurring) {
-        // Длина серии = число занятий в абонементе (минус первое). Для нового
-        // абонемента берём из его типа, для уже активного — из остатка. Будущие
-        // занятия — плановые: участник не добавляется, занятие не списывается,
-        // финансы не трогаются. Подтверждаются в «Отметить за сегодня».
-        const totalSessions = activeSub ? activeSub.remaining : (SUB_TYPE_TOTALS[subType] ?? 1)
-        const futureCount = Math.max(0, totalSessions - 1)
-        for (let w = 1; w <= futureCount; w++) {
-          const fd = new Date(date + 'T00:00:00')
-          fd.setDate(fd.getDate() + 7 * w)
-          const futureDate = toLocalISODate(fd)
-          await createTraining.mutateAsync({
-            date: futureDate,
-            time,
-            groupId: indGroupId,
-            locationId: isOnline ? null : effectiveLocationId,
-            attendees: [],
-            plannedStudentId: clientId,
-            note: '',
-            isPrime: isPrimeTime(futureDate, time, effectiveLocation),
-            sessionDuration: duration,
-            recurring: true,
-            recurringId,
-            isOnline,
-          })
-        }
+      // Будущие занятия серии — плановые (без списания). Кол-во из dates.
+      for (const fd of dates.slice(1)) {
+        await createTraining.mutateAsync({
+          date: fd,
+          time,
+          groupId: indGroupId,
+          locationId: isOnline ? null : effectiveLocationId,
+          attendees: [],
+          plannedStudentId: clientId,
+          note: '',
+          isPrime: isPrimeTime(fd, time, effectiveLocation),
+          sessionDuration: duration,
+          recurring: true,
+          recurringId,
+          isOnline,
+        })
       }
 
       qc.invalidateQueries({ queryKey: studentKeys.all })
-
       toast({
         type: 'success',
         title: t('trainings.individual.recorded'),
-        msg: recurring
-          ? t('trainings.individual.recordedRecurringMsg', { name: student.name })
-          : student.name,
+        msg:
+          seriesLen > 1
+            ? t('trainings.individual.recordedRecurringMsg', { name: student.name })
+            : student.name,
       })
 
       for (const r of results) {
@@ -299,10 +320,14 @@ export function useIndividualSession({ indGroupId, onDone, isOnline = false }: U
     time,
     setTime,
     subType,
-    setSubType,
+    setSubType: handleSetSubType,
     subOptions,
     recurring,
     setRecurring,
+    paymentMode,
+    setPaymentMode,
+    repeatCount,
+    setRepeatCount,
     note,
     setNote,
     locationId: effectiveLocationId,
