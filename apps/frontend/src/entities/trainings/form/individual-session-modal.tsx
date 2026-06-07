@@ -1,4 +1,4 @@
-import { Button, Form, Input, Modal, Segmented, Select } from 'antd'
+import { Button, Form, Input, InputNumber, Modal, Segmented, Select } from 'antd'
 import { CheckOutlined, SyncOutlined } from '@ant-design/icons'
 
 import { useTranslation } from 'react-i18next'
@@ -108,6 +108,18 @@ export function IndividualSessionModal({
           )}
         </Form.Item>
 
+        <Form.Item label={t('trainings.individual.paymentLabel')}>
+          <Segmented
+            block
+            value={form.paymentMode}
+            onChange={(v) => form.setPaymentMode(v as 'subscription' | 'oneoff')}
+            options={[
+              { label: t('trainings.individual.paymentSubscription'), value: 'subscription' },
+              { label: t('trainings.individual.paymentOneoff'), value: 'oneoff' },
+            ]}
+          />
+        </Form.Item>
+
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--sp-4)' }}>
           <Form.Item label={t('trainings.individual.dateLabel')}>
             <Input type="date" value={form.date} onChange={handleDateChange} />
@@ -126,7 +138,7 @@ export function IndividualSessionModal({
           </Form.Item>
         )}
 
-        {form.client && !form.activeSub && (
+        {form.client && !form.activeSub && form.paymentMode === 'subscription' && (
           <>
             <Form.Item label={t('trainings.individual.newSubLabel')}>
               <Select
@@ -169,6 +181,18 @@ export function IndividualSessionModal({
             <div className="rec-toggle-card__check">{form.recurring && <CheckOutlined />}</div>
           </div>
         </Form.Item>
+
+        {form.recurring && (
+          <Form.Item label={t('trainings.individual.repeatLabel')}>
+            <InputNumber
+              min={1}
+              max={52}
+              value={form.repeatCount}
+              onChange={(v) => form.setRepeatCount(typeof v === 'number' ? v : 1)}
+              style={{ width: '100%' }}
+            />
+          </Form.Item>
+        )}
 
         <Form.Item label={t('trainings.individual.noteLabel')}>
           <Input.TextArea
