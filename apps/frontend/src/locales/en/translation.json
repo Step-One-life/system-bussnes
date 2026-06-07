@@ -286,7 +286,11 @@
       "pickClientAndDate": "Выберите клиента и дату",
       "scheduleConflict": "Конфликт расписания",
       "recorded": "Занятие записано",
-      "recordedRecurringMsg": "{{name}} · плановые занятия добавлены"
+      "recordedRecurringMsg": "{{name}} · плановые занятия добавлены",
+      "paymentLabel": "Payment",
+      "paymentSubscription": "Subscription",
+      "paymentOneoff": "Per session",
+      "repeatLabel": "Repeat (weekly), sessions"
     },
     "addTo": {
       "saving": "Добавить на тренировку — {{group}}",
