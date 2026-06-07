@@ -17,7 +17,9 @@
       "resynced": "Queued: {{count}}",
       "disconnect": "Disconnect",
       "needsReconnect": "Google access expired — reconnect the calendar.",
-      "error": "Could not connect Google. Please try again."
+      "error": "Could not connect Google. Please try again.",
+      "timeZoneLabel": "Time zone",
+      "timeZoneUpdated": "Time zone updated, sessions re-synced: {{count}}"
     }
   },
   "app": {
