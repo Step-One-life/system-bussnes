@@ -25,11 +25,18 @@ export const calendarRepo = {
   listCalendars: (): Promise<{ calendars: CalendarOption[] }> =>
     apiClient.get<{ calendars: CalendarOption[] }>('/calendar/calendars'),
 
-  select: (body: { calendarId?: string; create?: boolean; name?: string }): Promise<unknown> =>
-    apiClient.post('/calendar/select', body),
+  select: (body: {
+    calendarId?: string
+    create?: boolean
+    name?: string
+    timeZone?: string
+  }): Promise<unknown> => apiClient.post('/calendar/select', body),
 
   resync: (): Promise<{ backfilled: number }> =>
     apiClient.post<{ backfilled: number }>('/calendar/resync'),
+
+  setTimeZone: (timeZone: string): Promise<{ backfilled: number }> =>
+    apiClient.post<{ backfilled: number }>('/calendar/timezone', { timeZone }),
 
   disconnect: (): Promise<unknown> => apiClient.post('/calendar/disconnect'),
 }

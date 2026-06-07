@@ -1,4 +1,4 @@
-import { Alert, Button, Card, List, Modal, Space, Tag, Typography, message } from 'antd'
+import { Alert, Button, Card, List, Modal, Select, Space, Tag, Typography, message } from 'antd'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -7,6 +7,7 @@ import {
   type CalendarConnectionState,
   type CalendarOption,
 } from 'entities/calendar/calendar.repo'
+import { buildTimeZoneOptions } from 'entities/calendar/timezones'
 
 export function GoogleCalendarCard() {
   const { t } = useTranslation()
@@ -42,7 +43,10 @@ export function GoogleCalendarCard() {
   const choose = async (body: { calendarId?: string; create?: boolean; name?: string }) => {
     setBusy(true)
     try {
-      await calendarRepo.select(body)
+      await calendarRepo.select({
+        ...body,
+        timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      })
       setPicker(null)
       await refresh()
       message.success(t('settings.google.selected'))
@@ -54,6 +58,12 @@ export function GoogleCalendarCard() {
   const resync = async () => {
     const { backfilled } = await calendarRepo.resync()
     message.success(t('settings.google.resynced', { count: backfilled }))
+  }
+
+  const changeTimeZone = async (tz: string) => {
+    const { backfilled } = await calendarRepo.setTimeZone(tz)
+    await refresh()
+    message.success(t('settings.google.timeZoneUpdated', { count: backfilled }))
   }
 
   const disconnect = async () => {
@@ -87,6 +97,19 @@ export function GoogleCalendarCard() {
                 {t('settings.google.disconnect')}
               </Button>
             </Space>
+            <div style={{ marginTop: 8 }}>
+              <Typography.Text type="secondary">
+                {t('settings.google.timeZoneLabel')}
+              </Typography.Text>
+              <Select
+                style={{ width: '100%', marginTop: 4 }}
+                value={state.calendarTimeZone ?? undefined}
+                options={buildTimeZoneOptions(state.calendarTimeZone)}
+                onChange={changeTimeZone}
+                showSearch
+                optionFilterProp="label"
+              />
+            </div>
           </>
         ) : status === 'connected' && !state?.calendarId ? (
           <Button type="primary" onClick={openPicker}>
