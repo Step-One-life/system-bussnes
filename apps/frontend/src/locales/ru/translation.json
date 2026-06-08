@@ -39,6 +39,10 @@
   "common": {
     "themeToggle": "Сменить тему",
     "logout": "Выйти",
+    "profile": "Профиль",
+    "calendarSettings": "Настройки календаря",
+    "themeDark": "Тёмная тема",
+    "themeLight": "Светлая тема",
     "cancel": "Отмена",
     "save": "Сохранить",
     "create": "Создать",

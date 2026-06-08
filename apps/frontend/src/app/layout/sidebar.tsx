@@ -1,27 +1,19 @@
 import { Fragment } from 'react'
 
-import { Button } from 'antd'
-import { LogoutOutlined } from '@ant-design/icons'
+import { DownOutlined } from '@ant-design/icons'
 
 import { useTranslation } from 'react-i18next'
-import { NavLink, useNavigate } from 'react-router-dom'
+import { NavLink } from 'react-router-dom'
 
-import { useTheme } from 'common/hooks/use-theme'
 import { useAuth } from 'entities/auth/api/use-auth'
 import { getInitials } from 'entities/students'
 
 import { NAV_ITEMS } from './nav-config'
+import { ProfileMenu } from './profile-menu'
 
 export function Sidebar() {
   const { t } = useTranslation()
-  const { mode, toggle } = useTheme()
-  const { user, logout } = useAuth()
-  const navigate = useNavigate()
-
-  const handleLogout = () => {
-    logout()
-    navigate('/login', { replace: true })
-  }
+  const { user } = useAuth()
 
   return (
     <aside className="sidebar">
@@ -48,25 +40,17 @@ export function Sidebar() {
 
       <div className="sidebar__footer">
         {user && (
-          <div className="sidebar__user">
-            <div className="sidebar__user-avatar">{getInitials(user.name)}</div>
-            <div className="sidebar__user-info">
-              <span className="sidebar__user-name">{user.name}</span>
-              <span className="sidebar__user-email">{user.email}</span>
+          <ProfileMenu placement="topRight">
+            <div className="sidebar__user sidebar__user--clickable">
+              <div className="sidebar__user-avatar">{getInitials(user.name)}</div>
+              <div className="sidebar__user-info">
+                <span className="sidebar__user-name">{user.name}</span>
+                <span className="sidebar__user-email">{user.email}</span>
+              </div>
+              <DownOutlined className="sidebar__user-caret" />
             </div>
-          </div>
+          </ProfileMenu>
         )}
-        <div className="sidebar__actions">
-          <button className="theme-toggle" onClick={toggle} title={t('common.themeToggle')}>
-            {mode === 'dark' ? '☀' : '☾'}
-          </button>
-          <Button
-            type="text"
-            icon={<LogoutOutlined />}
-            onClick={handleLogout}
-            title={t('common.logout')}
-          />
-        </div>
       </div>
     </aside>
   )

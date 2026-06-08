@@ -178,6 +178,29 @@
   }
 }
 
+.sidebar__user--clickable {
+  cursor: pointer;
+  border-radius: var(--r-md);
+  transition: background var(--dur) var(--ease);
+
+  &:hover {
+    background: var(--surface-2);
+  }
+}
+
+.sidebar__user-caret {
+  margin-left: auto;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+button.nav-item {
+  border: none;
+  background: none;
+  font-family: inherit;
+  cursor: pointer;
+}
+
 /* ---------- Main ---------- */
 .main {
   flex: 1;
