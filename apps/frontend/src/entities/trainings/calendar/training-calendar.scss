@@ -37,6 +37,16 @@
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
   }
+
+  /* Общий вертикальный скролл для шапки и тела: скроллбар одинаково
+     сужает обе grid-сетки, поэтому колонки заголовка и тела не
+     рассинхронизируются (крайний левый столбец ПН не обрезается). */
+  &__scroll {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+    max-height: min(480px, calc(100vh - 300px));
+  }
 }
 
 .cal-head,
@@ -47,6 +57,9 @@
 }
 
 .cal-head {
+  position: sticky;
+  top: 0;
+  z-index: 3;
   border-bottom: 2px solid var(--border);
   background: var(--surface);
 
@@ -97,13 +110,6 @@
     color: var(--text-primary);
     line-height: 1;
   }
-}
-
-.cal-body-wrap {
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior-y: contain;
-  max-height: min(480px, calc(100vh - 300px));
 }
 
 .cal-gutter {

@@ -73,19 +73,19 @@ export function TrainingCalendar({
       </div>
 
       <div className="cal-week__canvas">
-        <div className="cal-head">
-          <div className="cal-head__corner" />
-          {days.map((d) => (
-            <div
-              key={d.date}
-              className={`cal-head__day${d.isToday ? ' cal-head__day--today' : ''}`}
-            >
-              <span className="cal-head__dow">{d.dayOfWeek}</span>
-              <span className="cal-head__num">{d.dayLabel}</span>
-            </div>
-          ))}
-        </div>
-        <div className="cal-body-wrap">
+        <div className="cal-week__scroll">
+          <div className="cal-head">
+            <div className="cal-head__corner" />
+            {days.map((d) => (
+              <div
+                key={d.date}
+                className={`cal-head__day${d.isToday ? ' cal-head__day--today' : ''}`}
+              >
+                <span className="cal-head__dow">{d.dayOfWeek}</span>
+                <span className="cal-head__num">{d.dayLabel}</span>
+              </div>
+            ))}
+          </div>
           <div className="cal-body">
             <div className="cal-gutter" style={{ height: TOTAL_H }}>
               {hours.map((h, i) => (
@@ -131,3 +131,4 @@ export function TrainingCalendar({
     </div>
   )
 }
+
