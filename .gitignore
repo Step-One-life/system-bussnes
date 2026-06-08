@@ -38,3 +38,9 @@ Thumbs.db
 *.tsbuildinfo
 .cache/
 coverage/
+
+# Claude Code (локальные настройки)
+.claude/settings.local.json
+
+# Локальные черновики/заметки
+план/
