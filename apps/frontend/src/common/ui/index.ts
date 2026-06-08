@@ -1,6 +1,7 @@
 export type { BadgeVariant } from './badge/status-badge'
 export { Badge, StatusBadge } from './badge/status-badge'
 export { EmptyState } from './empty-state/empty-state'
+export { ErrorBoundary } from './error-boundary/error-boundary'
 export type { KpiVariant } from './kpi-card/kpi-card'
 export { KpiCard } from './kpi-card/kpi-card'
 export { PageHeader } from './page-header/page-header'
