@@ -6,6 +6,9 @@ import { minutesToTime, timeToMinutes } from 'common/utils/date'
 import { getGroups } from 'entities/groups/model/groups.repo'
 import { getStudentById } from 'entities/students/model/students.repo'
 
+import { autoCreatePayment } from 'entities/finance/lib/auto-payment'
+
+import { isIndividualTraining } from './training-helpers'
 import { addAttendees, getTrainings } from './trainings.repo'
 
 import type { Training, TrainingConflict } from './types'
@@ -100,6 +103,39 @@ export async function markAttendance(
     }
 
     results.push({ studentId: sid, name: student.name, sub, status })
+  }
+
+  return results
+}
+
+/**
+ * Отметить посещение и, если у ученика НЕТ активного абонемента на эту группу,
+ * записать разовый платёж по тарифу. Платёж не пишется, если абонемент активен
+ * (тогда `markAttendance` списал занятие) или если тарифа нет (autoCreatePayment
+ * вернёт null). Тип платежа — «1 занятие» (1_90 для 90-минутных).
+ */
+export async function markAttendanceWithPayment(
+  training: Training,
+  studentIds: string[],
+): Promise<MarkResult[]> {
+  const results = await markAttendance(training, studentIds)
+
+  const groups = await getGroups()
+  const isInd = isIndividualTraining(training.groupId, groups)
+  const type: '1' | '1_90' = training.sessionDuration === 90 ? '1_90' : '1'
+
+  for (const sid of studentIds) {
+    const student = await getStudentById(sid)
+    const hasActive = student?.subscriptions.some(
+      (s) => s.groupId === training.groupId && s.isActive,
+    )
+    if (hasActive) continue
+    await autoCreatePayment(
+      sid,
+      { id: '', type, createdAt: training.date },
+      isInd,
+      { time: training.time, locationId: training.locationId, isOnline: training.isOnline },
+    )
   }
 
   return results
