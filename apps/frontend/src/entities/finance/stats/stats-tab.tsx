@@ -46,6 +46,27 @@ export function StatsTab() {
         ))}
       </div>
 
+      {stats.period !== 'all' && (
+        <div className="fin-period-nav">
+          <button
+            className="fin-period-nav__btn"
+            onClick={stats.prev}
+            aria-label={t('finance.stats.periodPrev')}
+          >
+            ‹
+          </button>
+          <span className="fin-period-nav__label">{stats.periodLabel}</span>
+          <button
+            className="fin-period-nav__btn"
+            onClick={stats.next}
+            disabled={!stats.canGoNext}
+            aria-label={t('finance.stats.periodNext')}
+          >
+            ›
+          </button>
+        </div>
+      )}
+
       <div className="fin-hero">
         <div className="fin-hero__item">
           <span className="fin-hero__label">{t('finance.stats.income')}</span>

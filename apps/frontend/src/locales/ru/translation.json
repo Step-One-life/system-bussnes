@@ -523,7 +523,9 @@
       "periodMonth": "Месяц",
       "periodQuarter": "Квартал",
       "periodYear": "Год",
-      "periodAll": "Всё время"
+      "periodAll": "Всё время",
+      "periodPrev": "Предыдущий период",
+      "periodNext": "Следующий период"
     },
     "autoRecord": {
       "noTariff": "Тариф не настроен — запись в финансы не создана"
