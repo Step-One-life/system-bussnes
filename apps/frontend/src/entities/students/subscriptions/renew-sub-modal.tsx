@@ -109,6 +109,7 @@ export function RenewSubModal({
         </Form.Item>
         <Form.Item label={t('subscriptions.renew.dateLabel')}>
           <DatePicker
+            format="DD.MM.YYYY"
             style={{ width: '100%' }}
             value={dayjs(date)}
             onChange={handleDateChange}

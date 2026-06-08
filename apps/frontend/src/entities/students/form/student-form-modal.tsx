@@ -99,6 +99,7 @@ export function StudentFormModal({ open, student, onClose }: StudentFormModalPro
           <>
             <Form.Item label={t('students.form.subStartLabel')}>
               <DatePicker
+                format="DD.MM.YYYY"
                 style={{ width: '100%' }}
                 value={dayjs(form.subStartDate)}
                 onChange={handleSubStartChange}

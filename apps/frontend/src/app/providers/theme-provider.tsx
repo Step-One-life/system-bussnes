@@ -1,6 +1,7 @@
 import { createContext, useCallback, useEffect, useMemo, useState } from 'react'
 
 import { App as AntdApp, ConfigProvider } from 'antd'
+import ruRU from 'antd/locale/ru_RU'
 
 import { getAntdTheme } from 'app/theme/antd-theme'
 
@@ -41,7 +42,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   return (
     <ThemeContext.Provider value={value}>
-      <ConfigProvider theme={getAntdTheme(mode)}>
+      <ConfigProvider locale={ruRU} theme={getAntdTheme(mode)}>
         <AntdApp>{children}</AntdApp>
       </ConfigProvider>
     </ThemeContext.Provider>
