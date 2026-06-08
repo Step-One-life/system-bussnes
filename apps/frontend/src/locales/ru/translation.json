@@ -270,7 +270,7 @@
     },
     "individual": {
       "title": "Записать индивидуальное занятие",
-      "recordAndDeduct": "Записать и списать",
+      "recordAndDeduct": "Создать занятие",
       "durationLabel": "Длительность",
       "duration60": "1 час",
       "duration90": "1.5 часа",
@@ -296,7 +296,7 @@
       "paymentLabel": "Оплата",
       "paymentSubscription": "Абонемент",
       "paymentOneoff": "Разово",
-      "repeatLabel": "Повторить (раз в неделю), занятий"
+      "repeatLabel": "Сколько занятий (раз в неделю)"
     },
     "addTo": {
       "saving": "Добавить на тренировку — {{group}}",

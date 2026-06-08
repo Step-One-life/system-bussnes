@@ -213,7 +213,9 @@ export function useIndividualSession({ indGroupId, onDone, isOnline = false }: U
         })
       }
 
-      const firstPlanned = seriesLen > 1 && date > today()
+      // Одиночные и будущие занятия серии — плановые: списание с абонемента
+      // происходит при отметке посещения, а не при создании занятия.
+      const firstPlanned = true
       await createTraining.mutateAsync({
         date: dates[0],
         time,

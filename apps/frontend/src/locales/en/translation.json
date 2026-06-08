@@ -270,7 +270,7 @@
     },
     "individual": {
       "title": "Записать индивидуальное занятие",
-      "recordAndDeduct": "Записать и списать",
+      "recordAndDeduct": "Создать занятие",
       "durationLabel": "Длительность",
       "duration60": "1 час",
       "duration90": "1.5 часа",
@@ -296,7 +296,7 @@
       "paymentLabel": "Payment",
       "paymentSubscription": "Subscription",
       "paymentOneoff": "Per session",
-      "repeatLabel": "Repeat (weekly), sessions"
+      "repeatLabel": "Number of sessions (weekly)"
     },
     "addTo": {
       "saving": "Добавить на тренировку — {{group}}",
