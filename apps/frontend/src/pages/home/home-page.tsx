@@ -5,6 +5,7 @@ import {
   AlertOutlined,
   CalendarOutlined,
   CheckSquareOutlined,
+  DollarOutlined,
   PlusOutlined,
   TeamOutlined,
   WarningOutlined,
@@ -27,7 +28,9 @@ import {
 
 import { KpiDetailModal } from './kpi-detail-modal'
 import { MarkTodayModal } from './mark-today-modal'
+import { UnpaidSubsModal } from './unpaid-subs-modal'
 import { useHomePage } from './use-home-page'
+import { useUnpaidSubs } from './use-unpaid-subs'
 
 import type { CalendarBlock, Training } from 'entities/trainings'
 
@@ -36,8 +39,10 @@ import './home-page.scss'
 export function HomePage() {
   const { t } = useTranslation()
   const page = useHomePage()
+  const { count: unpaidCount } = useUnpaidSubs()
 
   const [drawerId, setDrawerId] = useState<string | null>(null)
+  const [unpaidOpen, setUnpaidOpen] = useState(false)
   const [renew, setRenew] = useState<{ studentId: string; groupId: string } | null>(null)
   const [typeOpen, setTypeOpen] = useState(false)
   const [groupOpen, setGroupOpen] = useState(false)
@@ -65,6 +70,8 @@ export function HomePage() {
 
   const handleOpenMarkToday = () => page.setMarkTodayOpen(true)
   const handleOpenType = () => setTypeOpen(true)
+  const handleOpenUnpaid = () => setUnpaidOpen(true)
+  const handleCloseUnpaid = () => setUnpaidOpen(false)
 
   const handleSelectTotal = () => page.setKpiType('total')
   const handleSelectMonth = () => page.setKpiType('month')
@@ -102,6 +109,18 @@ export function HomePage() {
         title={t('nav.home')}
         actions={
           <>
+            {unpaidCount > 0 && (
+              <Button
+                className="btn-unpaid"
+                icon={<DollarOutlined />}
+                onClick={handleOpenUnpaid}
+              >
+                <span className="btn-label--full">
+                  {t('home.unpaidCount', { count: unpaidCount })}
+                </span>
+                <span className="btn-label--short">{unpaidCount}</span>
+              </Button>
+            )}
             <Button
               className="btn-mark"
               icon={<CheckSquareOutlined />}
@@ -208,6 +227,8 @@ export function HomePage() {
         open={page.markTodayOpen}
         onClose={handleCloseMarkToday}
       />
+
+      <UnpaidSubsModal open={unpaidOpen} onClose={handleCloseUnpaid} />
 
       <TrainingTypeModal
         open={typeOpen}

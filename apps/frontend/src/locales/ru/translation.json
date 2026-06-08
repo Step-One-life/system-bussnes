@@ -547,6 +547,11 @@
     "extend": "Продлить",
     "allSubsOk": "✓ Все абонементы в порядке",
     "attendanceSaved": "Посещаемость сохранена",
+    "unpaidCount": "Ожидают оплаты ({{count}})",
+    "unpaidModal": {
+      "title": "Ожидают оплаты",
+      "allPaid": "✓ Все абонементы оплачены"
+    },
     "kpi": {
       "allStudents": "Все ученики ({{count}})",
       "noGroups": "Нет групп",
