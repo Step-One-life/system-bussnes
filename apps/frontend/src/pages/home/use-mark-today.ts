@@ -12,7 +12,7 @@ import {
 } from 'entities/students'
 import {
   createTraining,
-  markAttendance,
+  markAttendanceWithPayment,
   removeAttendee,
   trainingKeys,
   useTrainings,
@@ -155,7 +155,7 @@ export function useMarkToday(open: boolean, onClose: () => void) {
         }
         if (!training) continue
 
-        if (toAdd.length) await markAttendance(training, toAdd)
+        if (toAdd.length) await markAttendanceWithPayment(training, toAdd)
 
         for (const sid of toRemove) {
           await removeAttendee(training.id, sid)
@@ -168,7 +168,7 @@ export function useMarkToday(open: boolean, onClose: () => void) {
           await removeAttendee(ti.trainingId, ti.studentId)
         } else if (isChecked && !ti.originalPresent) {
           const tr = trainings.find((t) => t.id === ti.trainingId)
-          if (tr) await markAttendance(tr, [ti.studentId])
+          if (tr) await markAttendanceWithPayment(tr, [ti.studentId])
         }
       }
 
