@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { ConflictException, Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/sequelize'
 import type { FindOptions } from 'sequelize'
 
@@ -13,6 +13,7 @@ import { SubscriptionsService } from '../student/subscriptions.service'
 import { Visit } from '../student/visit.model'
 import { CreateTrainingDto } from './dto/create-training.dto'
 import { seriesUpdateFields, type SeriesUpdateInput } from './lib/series-update'
+import { findOverlaps } from './lib/training-overlap'
 import { Training } from './training.model'
 
 @Injectable()
@@ -47,6 +48,27 @@ export class TrainingService extends OwnedCrudService<Training> {
     dto: CreateTrainingDto,
     deductSessions = true,
   ): Promise<Training> {
+    // Серверный барьер от наслоения: занятие с временем не должно пересекаться
+    // по времени с другим занятием тренера в тот же день. Сидер (deductSessions
+    // = false) создаёт исторические записи и проверку пропускает.
+    if (deductSessions && dto.time) {
+      const sameDay = await this.trainingModel.findAll({
+        where: { userId, date: dto.date },
+      })
+      const overlaps = findOverlaps(
+        { date: dto.date, time: dto.time, durationMinutes: dto.sessionDuration ?? 60 },
+        sameDay.map((t) => ({
+          id: t.id,
+          date: t.date,
+          time: t.time,
+          sessionDuration: t.sessionDuration,
+        })),
+      )
+      if (overlaps.length) {
+        throw new ConflictException('Время занятия пересекается с другим занятием')
+      }
+    }
+
     let isPrime = dto.isPrime
     if (isPrime === undefined) {
       const location = dto.locationId
@@ -99,6 +121,30 @@ export class TrainingService extends OwnedCrudService<Training> {
   ): Promise<number> {
     const fields = seriesUpdateFields(dto)
     const trainings = await this.trainingModel.findAll({ where: { userId, recurringId } })
+    // Смена времени применяется ко всей серии — проверяем, что ни одно занятие
+    // серии не наслаивается на занятие вне серии в свою дату. Сначала проверяем
+    // все, и только потом сохраняем (не оставляем серию частично сдвинутой).
+    if (fields.time !== undefined) {
+      const seriesIds = trainings.map((t) => t.id)
+      for (const t of trainings) {
+        const sameDay = await this.trainingModel.findAll({
+          where: { userId, date: t.date },
+        })
+        const overlaps = findOverlaps(
+          { date: t.date, time: fields.time, durationMinutes: t.sessionDuration },
+          sameDay.map((x) => ({
+            id: x.id,
+            date: x.date,
+            time: x.time,
+            sessionDuration: x.sessionDuration,
+          })),
+          seriesIds,
+        )
+        if (overlaps.length) {
+          throw new ConflictException(`Серия пересекается с другим занятием (${t.date})`)
+        }
+      }
+    }
     for (const t of trainings) {
       if (fields.time !== undefined) t.time = fields.time
       if (fields.locationId !== undefined) t.locationId = fields.locationId

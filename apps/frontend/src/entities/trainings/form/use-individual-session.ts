@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 
 import { useToast } from 'common/ui'
-import { todayISO } from 'common/utils/date'
+import { formatDateShort, todayISO } from 'common/utils/date'
 import { uuid } from 'common/utils/uuid'
 import { autoCreatePayment } from 'entities/finance/lib/auto-payment'
 import { resolvePricingRule, resolvePricingRuleForOnline, subTypeToTuple } from 'entities/finance/lib/pricing-lookup'
@@ -131,10 +131,22 @@ export function useIndividualSession({ indGroupId, onDone, isOnline = false }: U
       toast({ type: 'error', title: t('trainings.individual.pickClientAndDate') })
       return
     }
-    const live = await checkTrainingConflict(date, time, indGroupId, null, duration)
-    if (live.length) {
-      const detail = live.map((c) => `«${c.groupId}» ${c.start}–${c.end}`).join(', ')
-      toast({ type: 'error', title: t('trainings.individual.scheduleConflict'), msg: detail })
+
+    const seriesLen = recurring ? Math.max(1, repeatCount) : 1
+    const dates = weeklySeriesDates(date, seriesLen)
+    // Проверяем конфликт по КАЖДОЙ дате серии, а не только по первой —
+    // иначе будущие занятия серии могут наслоиться на существующие.
+    const conflictDates: string[] = []
+    for (const d of dates) {
+      const c = await checkTrainingConflict(d, time, indGroupId, null, duration)
+      if (c.length) conflictDates.push(formatDateShort(d))
+    }
+    if (conflictDates.length) {
+      toast({
+        type: 'error',
+        title: t('trainings.individual.scheduleConflict'),
+        msg: conflictDates.join(', '),
+      })
       return
     }
 
@@ -148,8 +160,6 @@ export function useIndividualSession({ indGroupId, onDone, isOnline = false }: U
       }
 
       const effectiveLocation = locations.find((l) => l.id === effectiveLocationId) ?? null
-      const seriesLen = recurring ? Math.max(1, repeatCount) : 1
-      const dates = weeklySeriesDates(date, seriesLen)
       const recurringId = seriesLen > 1 ? uuid() : null
 
       // --- Режим «Разово»: без абонемента и платежа; все занятия плановые. ---

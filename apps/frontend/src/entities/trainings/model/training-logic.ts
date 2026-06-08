@@ -28,10 +28,12 @@ export async function checkTrainingConflict(
   date: string,
   time: string,
   groupId: string,
-  excludeId: string | null = null,
+  excludeId: string | string[] | null = null,
   sessionDuration?: number,
 ): Promise<TrainingConflict[]> {
   if (!time) return []
+
+  const excludeIds = Array.isArray(excludeId) ? excludeId : excludeId ? [excludeId] : []
 
   const [allTrainings, allGroups] = await Promise.all([getTrainings(), getGroups()])
 
@@ -55,7 +57,7 @@ export async function checkTrainingConflict(
   }
 
   const overlapping = filter(allTrainings, (t) => {
-    if (t.date !== date || t.id === excludeId || !t.time) return false
+    if (t.date !== date || excludeIds.includes(t.id) || !t.time) return false
     const start = timeToMinutes(t.time)
     const end = start + durationOf(t)
     return newStart < end && start < newEnd

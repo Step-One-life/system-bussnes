@@ -3,8 +3,9 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { useToast } from 'common/ui'
+import { formatDateShort } from 'common/utils/date'
 
-import { useUpdateTraining, useUpdateTrainingSeries } from '../api/use-trainings'
+import { useTrainings, useUpdateTraining, useUpdateTrainingSeries } from '../api/use-trainings'
 import { checkTrainingConflict } from '../model/training-logic'
 
 import type { Training, TrainingConflict } from '../model/types'
@@ -19,6 +20,7 @@ export function useEditTraining({ training, onDone }: UseEditTrainingOptions) {
   const toast = useToast()
   const update = useUpdateTraining()
   const updateSeries = useUpdateTrainingSeries()
+  const { data: trainings = [] } = useTrainings()
 
   const [date, setDate] = useState('')
   const [time, setTime] = useState('')
@@ -100,8 +102,29 @@ export function useEditTraining({ training, onDone }: UseEditTrainingOptions) {
 
   const confirmScope = async (scope: 'single' | 'series') => {
     setScopeOpen(false)
-    if (scope === 'series') await saveSeries()
-    else await saveSingle()
+    if (scope === 'series') {
+      if (!training?.recurringId) return
+      // Смена времени применяется ко ВСЕЙ серии — проверяем конфликт по каждой
+      // её дате с новым временем, исключая сами занятия серии.
+      const series = trainings.filter((t) => t.recurringId === training.recurringId)
+      const seriesIds = series.map((t) => t.id)
+      const conflictDates: string[] = []
+      for (const s of series) {
+        const c = await checkTrainingConflict(s.date, time, training.groupId, seriesIds, s.sessionDuration)
+        if (c.length) conflictDates.push(formatDateShort(s.date))
+      }
+      if (conflictDates.length) {
+        toast({
+          type: 'error',
+          title: t('trainings.group.scheduleConflict'),
+          msg: conflictDates.join(', '),
+        })
+        return
+      }
+      await saveSeries()
+    } else {
+      await saveSingle()
+    }
   }
 
   return {
