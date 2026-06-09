@@ -158,20 +158,31 @@ export async function getRecurringSeries(recurringId: string | null): Promise<Tr
   return all.filter((t) => t.recurringId === recurringId)
 }
 
+/** Результат биллинга одного ученика при отметке (зеркало бэка). */
+export interface BillingResult {
+  studentId: string
+  billing: 'subscription' | 'payment' | 'none'
+  subStatus: 'ok' | 'ending' | 'expired' | 'none' | null
+  remaining: number | null
+}
+
 /**
- * Add students to a training. The backend deducts a session per student and
- * records visits. Returns the refreshed training.
+ * Add students to a training. The backend deducts a session per student OR
+ * records an auto-payment, records visits, and reports billing per student.
  */
 export async function addAttendees(
   trainingId: string,
   studentIds: string[],
-): Promise<Training | null> {
-  if (!studentIds.length) return getTrainingById(trainingId)
+): Promise<{ training: Training | null; billing: BillingResult[] }> {
+  if (!studentIds.length) {
+    return { training: await getTrainingById(trainingId), billing: [] }
+  }
   const { byId } = await getGroupMaps()
-  const raw = await apiClient.post<RawTraining>(`/trainings/${trainingId}/attendees`, {
-    studentIds,
-  })
-  return toTraining(raw, byId)
+  const raw = await apiClient.post<{ training: RawTraining; billing: BillingResult[] }>(
+    `/trainings/${trainingId}/attendees`,
+    { studentIds },
+  )
+  return { training: toTraining(raw.training, byId), billing: raw.billing ?? [] }
 }
 
 /** Remove a single student from a training (restores their session server-side). */

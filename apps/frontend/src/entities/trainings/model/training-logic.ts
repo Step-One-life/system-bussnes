@@ -4,16 +4,14 @@ import map from 'lodash/map'
 
 import { minutesToTime, timeToMinutes } from 'common/utils/date'
 import { getGroups } from 'entities/groups/model/groups.repo'
-import { getStudentById } from 'entities/students/model/students.repo'
+import { getStudents } from 'entities/students/model/students.repo'
 
-import { autoCreatePayment } from 'entities/finance/lib/auto-payment'
-
-import { isIndividualTraining } from './training-helpers'
 import { addAttendees, getTrainings } from './trainings.repo'
 
+import type { BillingResult } from './trainings.repo'
 import type { Training, TrainingConflict } from './types'
 import type { Group } from 'entities/groups/model/types'
-import type { DeductStatus, Subscription } from 'entities/students/model/types'
+import type { DeductStatus } from 'entities/students/model/types'
 
 import { isPrimeTime } from '@trikick/shared'
 
@@ -72,82 +70,31 @@ export async function checkTrainingConflict(
 export interface MarkResult {
   studentId: string
   name: string
-  sub: Subscription | null
+  billing: BillingResult['billing']
+  /** Статус абонемента после списания; 'none' — списания не было. */
   status: DeductStatus
+  remaining: number | null
 }
 
 /**
- * Mark students as attended. The backend deducts a session per attendee and
- * records visits atomically via the attendees endpoint; we then read each
- * student's resulting subscription to report status back to the UI.
+ * Отметить посещение. Биллинг (списание абонемента ИЛИ авто-платёж по тарифу)
+ * целиком на бэке; здесь только маппинг ответа в результаты для тостов.
  */
 export async function markAttendance(
   training: Training,
   studentIds: string[],
 ): Promise<MarkResult[]> {
   if (!studentIds.length) return []
-
-  await addAttendees(training.id, studentIds)
-
-  const results: MarkResult[] = []
-  for (const sid of studentIds) {
-    const student = await getStudentById(sid)
-    if (!student) continue
-
-    const sub =
-      student.subscriptions.find((s) => s.groupId === training.groupId) ?? null
-
-    let status: DeductStatus = 'none'
-    if (sub) {
-      if (!sub.isActive) status = 'expired'
-      else if (sub.remaining <= 2) status = 'ending'
-      else status = 'ok'
-    }
-
-    results.push({ studentId: sid, name: student.name, sub, status })
-  }
-
-  return results
-}
-
-/**
- * Отметить посещение и, если у ученика НЕТ активного абонемента на эту группу,
- * записать разовый платёж по тарифу. Платёж не пишется, если абонемент активен
- * (тогда `markAttendance` списал занятие) или если тарифа нет (autoCreatePayment
- * вернёт null). Тип платежа — «1 занятие» (1_90 для 90-минутных).
- */
-export async function markAttendanceWithPayment(
-  training: Training,
-  studentIds: string[],
-): Promise<MarkResult[]> {
-  const results = await markAttendance(training, studentIds)
-
-  const groups = await getGroups()
-  const isInd = isIndividualTraining(training.groupId, groups)
-  const isPair = training.isPair
-  const type: '1' | '1_90' | '1_pair' | '1_pair_90' = isPair
-    ? (training.sessionDuration === 90 ? '1_pair_90' : '1_pair')
-    : (training.sessionDuration === 90 ? '1_90' : '1')
-
-  for (const sid of studentIds) {
-    // Парное занятие всегда пишет парный платёж (абонемент на бэке не списан),
-    // поэтому проверку активного абонемента делаем только для НЕ-парных.
-    if (!isPair) {
-      const student = await getStudentById(sid)
-      const hasActive = student?.subscriptions.some(
-        (s) => s.groupId === training.groupId && s.isActive,
-      )
-      if (hasActive) continue
-    }
-    await autoCreatePayment(
-      sid,
-      { id: '', type, createdAt: training.date },
-      isInd,
-      { time: training.time, locationId: training.locationId, isOnline: training.isOnline },
-    )
-  }
-
-  return results
+  const { billing } = await addAttendees(training.id, studentIds)
+  const students = await getStudents()
+  const nameOf = (id: string) => students.find((s) => s.id === id)?.name ?? ''
+  return billing.map((b) => ({
+    studentId: b.studentId,
+    name: nameOf(b.studentId),
+    billing: b.billing,
+    status: b.billing === 'subscription' ? ((b.subStatus ?? 'ok') as DeductStatus) : 'none',
+    remaining: b.remaining,
+  }))
 }
 
 /** Human-readable group schedule string. */
