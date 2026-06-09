@@ -90,6 +90,18 @@ export function useMarkToday(open: boolean, onClose: () => void) {
               originalPresent: true,
             })
           }
+        } else if (tr.isPair) {
+          // Парное плановое занятие: показываем обоих учеников неотмеченными.
+          for (const sid of [tr.plannedStudentId, tr.plannedStudentId2]) {
+            if (!sid) continue
+            result.push({
+              trainingId: tr.id,
+              studentId: sid,
+              time: tr.time ?? '',
+              groupId: g.name,
+              originalPresent: false,
+            })
+          }
         } else if (tr.plannedStudentId) {
           // Запланированное занятие серии: показываем неотмеченным. Галочка →
           // markAttendance спишет занятие. Не пришёл — не отмечаешь, не списано.

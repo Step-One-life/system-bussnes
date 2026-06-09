@@ -124,14 +124,21 @@ export async function markAttendanceWithPayment(
 
   const groups = await getGroups()
   const isInd = isIndividualTraining(training.groupId, groups)
-  const type: '1' | '1_90' = training.sessionDuration === 90 ? '1_90' : '1'
+  const isPair = training.isPair
+  const type: '1' | '1_90' | '1_pair' | '1_pair_90' = isPair
+    ? (training.sessionDuration === 90 ? '1_pair_90' : '1_pair')
+    : (training.sessionDuration === 90 ? '1_90' : '1')
 
   for (const sid of studentIds) {
-    const student = await getStudentById(sid)
-    const hasActive = student?.subscriptions.some(
-      (s) => s.groupId === training.groupId && s.isActive,
-    )
-    if (hasActive) continue
+    // Парное занятие всегда пишет парный платёж (абонемент на бэке не списан),
+    // поэтому проверку активного абонемента делаем только для НЕ-парных.
+    if (!isPair) {
+      const student = await getStudentById(sid)
+      const hasActive = student?.subscriptions.some(
+        (s) => s.groupId === training.groupId && s.isActive,
+      )
+      if (hasActive) continue
+    }
     await autoCreatePayment(
       sid,
       { id: '', type, createdAt: training.date },
