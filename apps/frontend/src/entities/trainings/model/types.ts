@@ -13,6 +13,10 @@ export interface Training {
   isOnline: boolean
   /** Запланированный клиент для будущего занятия, ещё не списанного. */
   plannedStudentId: string | null
+  /** Парная (сплит) тренировка на двух учеников. */
+  isPair: boolean
+  /** Второй плановый ученик парной тренировки. */
+  plannedStudentId2: string | null
   createdAt: string
 }
 
@@ -29,6 +33,8 @@ export interface TrainingInput {
   recurringId?: string | null
   isOnline?: boolean
   plannedStudentId?: string | null
+  isPair?: boolean
+  plannedStudentId2?: string | null
 }
 
 export interface TrainingConflict {

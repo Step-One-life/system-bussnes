@@ -21,6 +21,8 @@ interface RawTraining {
   recurring: boolean
   recurringId: string | null
   plannedStudentId?: string | null
+  isPair?: boolean
+  plannedStudentId2?: string | null
   createdAt: string
 }
 
@@ -40,6 +42,8 @@ function toTraining(raw: RawTraining, byId: Map<string, string>): Training {
     recurring: raw.recurring ?? false,
     recurringId: raw.recurringId ?? null,
     plannedStudentId: raw.plannedStudentId ?? null,
+    isPair: raw.isPair ?? false,
+    plannedStudentId2: raw.plannedStudentId2 ?? null,
     createdAt: raw.createdAt,
   }
 }
@@ -90,6 +94,8 @@ export async function createTraining(data: TrainingInput): Promise<Training> {
     recurring: data.recurring,
     recurringId: data.recurringId,
     plannedStudentId: data.plannedStudentId ?? null,
+    isPair: data.isPair ?? false,
+    plannedStudentId2: data.plannedStudentId2 ?? null,
   })
   return toTraining(raw, byId)
 }
