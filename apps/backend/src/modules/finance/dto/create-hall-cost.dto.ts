@@ -13,6 +13,8 @@ const HALL_TYPES: HallPaymentType[] = [
   'single_individual_90',
   'individual_sub_4_90',
   'individual_sub_8_90',
+  'single_pair',
+  'single_pair_90',
 ]
 
 const TIME_SLOTS: TimeSlot[] = ['regular', 'prime']

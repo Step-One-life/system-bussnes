@@ -3,7 +3,7 @@ import { IsBoolean, IsIn, IsInt, IsNotEmpty, IsNumber, IsOptional, IsString, IsU
 
 import type { CreatePricingRuleShape, LessonKind, PricingFormat } from '@trikick/shared'
 
-const LESSON_KINDS: LessonKind[] = ['individual', 'group', 'online', 'shared']
+const LESSON_KINDS: LessonKind[] = ['individual', 'group', 'online', 'shared', 'pair']
 const FORMATS: PricingFormat[] = ['single', 'subscription']
 
 export class CreatePricingRuleDto implements CreatePricingRuleShape {
