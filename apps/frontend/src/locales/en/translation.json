@@ -463,7 +463,8 @@
         "individual": "Individual",
         "group": "Group",
         "online": "Online",
-        "shared": "Shared"
+        "shared": "Shared",
+        "pair": "Pair"
       },
       "format": {
         "single": "Single",
