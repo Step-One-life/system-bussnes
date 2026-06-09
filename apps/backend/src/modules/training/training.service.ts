@@ -327,35 +327,49 @@ export class TrainingService extends OwnedCrudService<Training> {
     }
   }
 
-  /** Remove a student from a training: restore session + delete visit. */
-  async removeAttendee(training: Training, studentId: string): Promise<void> {
-    await training.$remove('attendees', studentId)
+  /**
+   * Откат визита строго по записанному billing: 'subscription' → +1 на тот
+   * самый абонемент; 'payment' → удалить платёж (каскадом расход зала);
+   * 'none' → ничего; NULL (легаси) → старая эвристика restore. Визит
+   * удаляется в конце.
+   */
+  private async revertVisit(training: Training, studentId: string): Promise<void> {
     const visit = await this.visitModel.findOne({
       where: { trainingId: training.id, studentId },
     })
-    if (visit) {
+    if (!visit) return
+    if (visit.billing === 'subscription' && visit.subscriptionId) {
+      await this.subscriptionsService.restoreById(visit.subscriptionId)
+    } else if (visit.billing === 'payment' && visit.paymentId) {
+      // Платёж могли удалить вручную в Финансах — тогда молча пропускаем.
+      await this.paymentsService
+        .removePayment(training.userId, visit.paymentId)
+        .catch(() => undefined)
+    } else if (visit.billing == null) {
       await this.subscriptionsService.restore(studentId, training.groupId, training.sessionDuration)
-      await visit.destroy()
     }
+    await visit.destroy()
+  }
+
+  /** Remove a student from a training: revert billing + delete visit. */
+  async removeAttendee(training: Training, studentId: string): Promise<void> {
+    await training.$remove('attendees', studentId)
+    await this.revertVisit(training, studentId)
     await this.calendarSync.enqueueUpsert(training.userId, training.id, training.time)
   }
 
-  /** Delete a training: restore sessions and remove visits for every attendee. */
+  /** Delete a training: revert billing and remove visits for every attendee. */
   async removeTraining(userId: string, id: string): Promise<void> {
     const training = await this.findOneForUser(userId, id)
     const attendeeIds = (training.attendees ?? []).map((s) => s.id)
     for (const studentId of attendeeIds) {
-      const visit = await this.visitModel.findOne({ where: { trainingId: id, studentId } })
-      if (visit) {
-        await this.subscriptionsService.restore(studentId, training.groupId, training.sessionDuration)
-        await visit.destroy()
-      }
+      await this.revertVisit(training, studentId)
     }
     await this.calendarSync.enqueueDelete(userId, training.id)
     await training.destroy()
   }
 
-  /** Delete a recurring series by recurringId, restoring sessions for all attendees. */
+  /** Delete a recurring series by recurringId, reverting billing for all attendees. */
   async removeSeries(userId: string, recurringId: string): Promise<number> {
     const trainings = await this.trainingModel.findAll({
       where: { userId, recurringId },
@@ -364,11 +378,7 @@ export class TrainingService extends OwnedCrudService<Training> {
     for (const t of trainings) {
       const attendeeIds = (t.attendees ?? []).map((s) => s.id)
       for (const studentId of attendeeIds) {
-        const visit = await this.visitModel.findOne({ where: { trainingId: t.id, studentId } })
-        if (visit) {
-          await this.subscriptionsService.restore(studentId, t.groupId, t.sessionDuration)
-          await visit.destroy()
-        }
+        await this.revertVisit(t, studentId)
       }
       await this.calendarSync.enqueueDelete(userId, t.id)
       await t.destroy()
