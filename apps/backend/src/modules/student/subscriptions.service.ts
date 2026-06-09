@@ -96,6 +96,16 @@ export class SubscriptionsService {
     return sub
   }
 
+  /** Точечный возврат занятия на конкретный абонемент (откат отметки). */
+  async restoreById(subscriptionId: string): Promise<Subscription | null> {
+    const sub = await this.subModel.findByPk(subscriptionId)
+    if (!sub) return null
+    sub.remaining = Math.min(sub.remaining + 1, sub.total)
+    if (sub.remaining > 0) sub.isActive = true
+    await sub.save()
+    return sub
+  }
+
   async extend(studentId: string, groupId: string, days: number): Promise<Subscription> {
     const sub = await this.findActiveOrLatest(studentId, groupId)
     if (!sub) throw new NotFoundException('Абонемент не найден')
