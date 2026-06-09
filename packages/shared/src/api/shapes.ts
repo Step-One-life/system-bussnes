@@ -63,6 +63,8 @@ export interface CreateTrainingShape {
   recurringId?: string | null
   isOnline?: boolean
   plannedStudentId?: string | null
+  isPair?: boolean
+  plannedStudentId2?: string | null
 }
 
 export type UpdateTrainingShape = Partial<CreateTrainingShape>

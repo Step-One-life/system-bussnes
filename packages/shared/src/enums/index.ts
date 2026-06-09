@@ -14,6 +14,8 @@ export type ClientPaymentType =
   | 'single_individual_90'
   | 'individual_sub_4_90'
   | 'individual_sub_8_90'
+  | 'single_pair'
+  | 'single_pair_90'
 
 export type HallPaymentType = ClientPaymentType
 
@@ -25,7 +27,7 @@ export type FinStatus = 'active' | 'closed'
 export type LocationKind = 'hall' | 'studio' | 'outdoor' | 'online'
 
 /** Вид занятия в тарифе. */
-export type LessonKind = 'individual' | 'group' | 'online' | 'shared'
+export type LessonKind = 'individual' | 'group' | 'online' | 'shared' | 'pair'
 
 /** Формат тарифа: разовое занятие или абонемент. */
 export type PricingFormat = 'single' | 'subscription'
