@@ -67,9 +67,16 @@ export function TrainingItem({
   const clientName = isInd
     ? (students.find((s) => s.id === training.attendees[0])?.name ?? null)
     : null
-  const title = clientName
-    ? t('trainings.item.indWith', { name: clientName })
-    : training.groupId
+  const pairNames = training.isPair
+    ? [training.plannedStudentId, training.plannedStudentId2]
+        .map((id) => students.find((s) => s.id === id)?.name ?? '?')
+        .join(' + ')
+    : null
+  const title = pairNames
+    ? t('trainings.pair.label', { names: pairNames })
+    : clientName
+      ? t('trainings.item.indWith', { name: clientName })
+      : training.groupId
 
   const meta = [
     training.time || '',

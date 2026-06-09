@@ -126,9 +126,12 @@ function collectDayItems(
     // берём имя клиента из plannedStudentId.
     const planned = isInd && t.attendees.length === 0 && !!t.plannedStudentId
     const attendeeId = t.attendees[0] ?? t.plannedStudentId
-    const label = isInd
-      ? (find(students, (s) => s.id === attendeeId)?.name ?? '?')
-      : t.groupId
+    const nameById = (id: string | null) => find(students, (s) => s.id === id)?.name ?? '?'
+    const label = t.isPair
+      ? `${nameById(t.plannedStudentId)} + ${nameById(t.plannedStudentId2)}`
+      : isInd
+        ? nameById(attendeeId)
+        : t.groupId
     items.push({
       training: t,
       groupId: t.groupId,
