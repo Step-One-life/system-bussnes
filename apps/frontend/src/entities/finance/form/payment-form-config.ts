@@ -10,6 +10,8 @@ export const CLIENT_TYPE_OPTIONS: { value: ClientPaymentType; label: string }[] 
   { value: 'individual_sub_8_90', label: 'Индив. 1.5ч ×8' },
   { value: 'group_sub_4', label: 'Групп. ×4' },
   { value: 'group_sub_8', label: 'Групп. ×8' },
+  { value: 'single_pair', label: 'Парная разовая' },
+  { value: 'single_pair_90', label: 'Парная 1.5ч' },
 ]
 
 export const HALL_TYPE_OPTIONS: { value: HallPaymentType; label: string }[] = [
@@ -19,4 +21,6 @@ export const HALL_TYPE_OPTIONS: { value: HallPaymentType; label: string }[] = [
   { value: 'individual_sub_8', label: 'Индив. ×8' },
   { value: 'group_sub_4', label: 'Групп. ×4' },
   { value: 'group_sub_8', label: 'Групп. ×8' },
+  { value: 'single_pair', label: 'Парная разовая' },
+  { value: 'single_pair_90', label: 'Парная 1.5ч' },
 ]
