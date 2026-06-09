@@ -215,7 +215,8 @@
       "title": "New training",
       "group": "Group",
       "individual": "Individual",
-      "online": "Online"
+      "online": "Online",
+      "pair": "Pair"
     },
     "online": {
       "title": "Online training"
@@ -297,6 +298,18 @@
       "paymentSubscription": "Subscription",
       "paymentOneoff": "Per session",
       "repeatLabel": "Number of sessions (weekly)"
+    },
+    "pair": {
+      "title": "Record pair session",
+      "create": "Create session",
+      "clientA": "First student",
+      "clientB": "Second student",
+      "pickBoth": "Select both students and a date",
+      "sameClient": "Select two different students",
+      "scheduleConflict": "Schedule conflict",
+      "recorded": "Pair session recorded",
+      "weeklyHint": "Create pair sessions every week (paid as confirmed)",
+      "label": "Pair: {{names}}"
     },
     "addTo": {
       "saving": "Add to training — {{group}}",

@@ -22,6 +22,7 @@ import {
   ensureIndividualGroup,
   GroupTrainingModal,
   IndividualSessionModal,
+  PairSessionModal,
   TrainingDayCalendar,
   TrainingTypeModal,
 } from 'entities/trainings'
@@ -48,6 +49,7 @@ export function HomePage() {
   const [groupOpen, setGroupOpen] = useState(false)
   const [indOpen, setIndOpen] = useState(false)
   const [onlineOpen, setOnlineOpen] = useState(false)
+  const [pairOpen, setPairOpen] = useState(false)
   const [indGroupId, setIndGroupId] = useState<string | null>(null)
   const [addTarget, setAddTarget] = useState<Training | null>(null)
   const [calBlock, setCalBlock] = useState<CalendarBlock | null>(null)
@@ -64,6 +66,13 @@ export function HomePage() {
     setIndGroupId(g.name)
     setTypeOpen(false)
     setOnlineOpen(true)
+  }
+
+  const pickPair = async () => {
+    const g = await ensureIndividualGroup()
+    setIndGroupId(g.name)
+    setTypeOpen(false)
+    setPairOpen(true)
   }
 
   const renewStudent = page.students.find((s) => s.id === renew?.studentId)
@@ -97,6 +106,7 @@ export function HomePage() {
   const handleCloseGroup = () => setGroupOpen(false)
   const handleCloseInd = () => setIndOpen(false)
   const handleCloseOnline = () => setOnlineOpen(false)
+  const handleClosePair = () => setPairOpen(false)
   const handleCloseAdd = () => setAddTarget(null)
   const handleCloseCalBlock = () => setCalBlock(null)
   const handleCloseDrawer = () => setDrawerId(null)
@@ -236,6 +246,7 @@ export function HomePage() {
         onPickGroup={handlePickGroup}
         onPickIndividual={pickIndividual}
         onPickOnline={pickOnline}
+        onPickPair={pickPair}
       />
       <GroupTrainingModal open={groupOpen} onClose={handleCloseGroup} />
       {indGroupId && (
@@ -251,6 +262,13 @@ export function HomePage() {
           indGroupId={indGroupId}
           onClose={handleCloseOnline}
           isOnline
+        />
+      )}
+      {indGroupId && (
+        <PairSessionModal
+          open={pairOpen}
+          indGroupId={indGroupId}
+          onClose={handleClosePair}
         />
       )}
 

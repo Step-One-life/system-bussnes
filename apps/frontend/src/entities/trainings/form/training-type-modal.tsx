@@ -1,5 +1,5 @@
 import { Modal } from 'antd'
-import { TeamOutlined, UserOutlined, WifiOutlined } from '@ant-design/icons'
+import { TeamOutlined, UsergroupAddOutlined, UserOutlined, WifiOutlined } from '@ant-design/icons'
 
 import { useTranslation } from 'react-i18next'
 
@@ -11,6 +11,7 @@ interface TrainingTypeModalProps {
   onPickGroup: () => void
   onPickIndividual: () => void
   onPickOnline: () => void
+  onPickPair: () => void
 }
 
 export function TrainingTypeModal({
@@ -19,6 +20,7 @@ export function TrainingTypeModal({
   onPickGroup,
   onPickIndividual,
   onPickOnline,
+  onPickPair,
 }: TrainingTypeModalProps) {
   const { t } = useTranslation()
   return (
@@ -41,6 +43,10 @@ export function TrainingTypeModal({
         <button className="training-type-card" onClick={onPickOnline}>
           <WifiOutlined />
           <span>{t('trainings.type.online')}</span>
+        </button>
+        <button className="training-type-card" onClick={onPickPair}>
+          <UsergroupAddOutlined />
+          <span>{t('trainings.type.pair')}</span>
         </button>
       </div>
     </Modal>

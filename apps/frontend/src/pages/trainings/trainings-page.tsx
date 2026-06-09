@@ -14,6 +14,7 @@ import {
   EditTrainingModal,
   GroupTrainingModal,
   IndividualSessionModal,
+  PairSessionModal,
   TrainingCalendar,
   TrainingList,
   TrainingTypeModal,
@@ -33,6 +34,7 @@ export function TrainingsPage() {
   const handleCloseGroupModal = () => page.setGroupModalOpen(false)
   const handleCloseIndModal = () => page.setIndModalOpen(false)
   const handleCloseOnlineModal = () => page.setOnlineModalOpen(false)
+  const handleClosePairModal = () => page.setPairModalOpen(false)
   const handleCloseAddTarget = () => page.setAddTarget(null)
   const handleCloseCalendarBlock = () => page.setCalendarBlock(null)
   const handleCloseEdit = () => page.setEditTarget(null)
@@ -94,6 +96,7 @@ export function TrainingsPage() {
         onPickGroup={page.pickGroup}
         onPickIndividual={page.pickIndividual}
         onPickOnline={page.pickOnline}
+        onPickPair={page.pickPair}
       />
 
       <GroupTrainingModal
@@ -115,6 +118,14 @@ export function TrainingsPage() {
           indGroupId={page.indGroupId}
           onClose={handleCloseOnlineModal}
           isOnline
+        />
+      )}
+
+      {page.indGroupId && (
+        <PairSessionModal
+          open={page.pairModalOpen}
+          indGroupId={page.indGroupId}
+          onClose={handleClosePairModal}
         />
       )}
 
