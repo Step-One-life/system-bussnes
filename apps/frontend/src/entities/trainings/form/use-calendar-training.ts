@@ -83,11 +83,18 @@ export function useCalendarTraining({ block, onDone }: UseCalendarTrainingOption
   const clientName = isInd
     ? (students.find((s) => s.id === training?.attendees[0])?.name ?? null)
     : null
-  const title = isInd
-    ? clientName
-      ? t('trainings.cal.indWith', { name: clientName })
+  const pairNames = training?.isPair
+    ? [training.plannedStudentId, training.plannedStudentId2]
+        .map((id) => students.find((s) => s.id === id)?.name ?? '?')
+        .join(' + ')
+    : null
+  const title = pairNames
+    ? t('trainings.pair.label', { names: pairNames })
+    : isInd
+      ? clientName
+        ? t('trainings.cal.indWith', { name: clientName })
+        : block.groupId
       : block.groupId
-    : block.groupId
 
   const toggle = (id: string) => {
     setChecked((prev) => {
