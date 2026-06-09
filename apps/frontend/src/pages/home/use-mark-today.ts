@@ -12,7 +12,7 @@ import {
 } from 'entities/students'
 import {
   createTraining,
-  markAttendanceWithPayment,
+  markAttendance,
   removeAttendee,
   trainingKeys,
   useTrainings,
@@ -150,6 +150,7 @@ export function useMarkToday(open: boolean, onClose: () => void) {
   const save = async () => {
     setSaving(true)
     try {
+      const noTariff: string[] = []
       for (const tg of todayGroups) {
         const checked = [...(checks[tg.groupId] ?? [])]
         const toAdd = checked.filter((id) => !tg.originalAttendees.has(id))
@@ -167,7 +168,10 @@ export function useMarkToday(open: boolean, onClose: () => void) {
         }
         if (!training) continue
 
-        if (toAdd.length) await markAttendanceWithPayment(training, toAdd)
+        if (toAdd.length) {
+          const results = await markAttendance(training, toAdd)
+          noTariff.push(...results.filter((r) => r.billing === 'none').map((r) => r.name))
+        }
 
         for (const sid of toRemove) {
           await removeAttendee(training.id, sid)
@@ -180,13 +184,19 @@ export function useMarkToday(open: boolean, onClose: () => void) {
           await removeAttendee(ti.trainingId, ti.studentId)
         } else if (isChecked && !ti.originalPresent) {
           const tr = trainings.find((t) => t.id === ti.trainingId)
-          if (tr) await markAttendanceWithPayment(tr, [ti.studentId])
+          if (tr) {
+            const results = await markAttendance(tr, [ti.studentId])
+            noTariff.push(...results.filter((r) => r.billing === 'none').map((r) => r.name))
+          }
         }
       }
 
       qc.invalidateQueries({ queryKey: trainingKeys.all })
       qc.invalidateQueries({ queryKey: studentKeys.all })
       qc.invalidateQueries({ queryKey: groupKeys.all })
+      if (noTariff.length) {
+        toast({ type: 'warn', title: t('finance.autoRecord.noTariff'), msg: noTariff.join(', ') })
+      }
       toast({ type: 'success', title: t('home.attendanceSaved') })
       onClose()
     } finally {

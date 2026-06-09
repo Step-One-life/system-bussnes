@@ -108,10 +108,10 @@ export function useGroupTraining({ onDone }: UseGroupTrainingOptions) {
           toast({
             type: 'warn',
             title: r.name,
-            msg: t('trainings.addTo.remaining', { count: r.sub?.remaining }),
+            msg: t('trainings.addTo.remaining', { count: r.remaining ?? 0 }),
           })
-        } else if (r.status === 'none') {
-          toast({ type: 'warn', title: r.name, msg: t('trainings.addTo.noActiveSub') })
+        } else if (r.billing === 'none') {
+          toast({ type: 'warn', title: r.name, msg: t('finance.autoRecord.noTariff') })
         }
       }
       onDone()

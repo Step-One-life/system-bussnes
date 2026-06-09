@@ -16,7 +16,7 @@ import {
 } from 'entities/students/model/students.repo'
 import { getDaysRemaining, getSubStatus } from 'entities/students/model/subscription-status'
 
-import { useMarkAttendance, useUpdateTraining } from '../api/use-trainings'
+import { useMarkAttendance } from '../api/use-trainings'
 import { isPrimeTime } from '../model/training-logic'
 import { getTrainingById } from '../model/trainings.repo'
 
@@ -42,7 +42,6 @@ export function useAddToTraining({ training, onDone }: UseAddToTrainingOptions) 
   const { data: students = [] } = useStudents()
   const { data: groups = [] } = useGroups()
   const { data: locations = [] } = useLocations()
-  const updateTraining = useUpdateTraining()
   const markAttendance = useMarkAttendance()
 
   const [tab, setTab] = useState<'group' | 'new'>('group')
@@ -78,8 +77,6 @@ export function useAddToTraining({ training, onDone }: UseAddToTrainingOptions) 
         }
         const fresh = await getTrainingById(training.id)
         if (!fresh) return
-        const attendees = [...new Set([...fresh.attendees, ...selected])]
-        await updateTraining.mutateAsync({ id: training.id, changes: { attendees } })
         const results = await markAttendance.mutateAsync({
           training: fresh,
           studentIds: selected,
@@ -97,10 +94,10 @@ export function useAddToTraining({ training, onDone }: UseAddToTrainingOptions) 
             toast({
               type: 'warn',
               title: r.name,
-              msg: t('trainings.addTo.remaining', { count: r.sub?.remaining }),
+              msg: t('trainings.addTo.remaining', { count: r.remaining ?? 0 }),
             })
-          } else if (r.status === 'none') {
-            toast({ type: 'warn', title: r.name, msg: t('trainings.addTo.noActiveSub') })
+          } else if (r.billing === 'none') {
+            toast({ type: 'warn', title: r.name, msg: t('finance.autoRecord.noTariff') })
           }
         }
       } else {
@@ -135,15 +132,17 @@ export function useAddToTraining({ training, onDone }: UseAddToTrainingOptions) 
           training: fresh,
           studentIds: [student.id],
         })
-        if (newSubType) {
-          for (const r of results) {
-            if (r.status === 'ending') {
-              toast({
-                type: 'warn',
-                title: r.name,
-                msg: t('trainings.addTo.remaining', { count: r.sub?.remaining }),
-              })
-            }
+        for (const r of results) {
+          if (r.status === 'expired') {
+            toast({ type: 'error', title: r.name, msg: t('trainings.addTo.subExpired') })
+          } else if (r.status === 'ending') {
+            toast({
+              type: 'warn',
+              title: r.name,
+              msg: t('trainings.addTo.remaining', { count: r.remaining ?? 0 }),
+            })
+          } else if (r.billing === 'none') {
+            toast({ type: 'warn', title: r.name, msg: t('finance.autoRecord.noTariff') })
           }
         }
 

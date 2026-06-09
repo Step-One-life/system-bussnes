@@ -191,19 +191,6 @@ export async function getActiveSubscription(
   return find(student.subscriptions, (s) => s.groupId === groupId && s.isActive) ?? null
 }
 
-export async function restoreSession(
-  studentId: string,
-  groupId: string,
-): Promise<Subscription | null> {
-  // The backend restores a session as a side effect of removing a training
-  // attendee; there is no standalone endpoint. Callers that remove attendees
-  // via the training repo already trigger the restore server-side, so this is
-  // a no-op kept for signature compatibility.
-  void studentId
-  void groupId
-  return null
-}
-
 export async function extendSubscription(
   studentId: string,
   groupId: string,
@@ -255,9 +242,4 @@ export async function recordVisit(
 export function getLastVisitDate(student: Student): string | null {
   if (isEmpty(student.visitHistory)) return null
   return map(student.visitHistory, (v) => v.date).sort().at(-1) ?? null
-}
-
-export async function removeVisit(studentId: string, trainingId: string): Promise<void> {
-  // Removing a visit is done server-side via DELETE /trainings/:id/attendees/:studentId.
-  await apiClient.delete(`/trainings/${trainingId}/attendees/${studentId}`)
 }

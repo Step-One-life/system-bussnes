@@ -6,14 +6,13 @@ import { useTranslation } from 'react-i18next'
 import { useToast } from 'common/ui'
 import { useGroups } from 'entities/groups/api/use-groups'
 import { studentKeys, useStudents } from 'entities/students/api/use-students'
-import { removeVisit, restoreSession } from 'entities/students/model/students.repo'
 import { getSubStatus, subTypeLabel } from 'entities/students/model/subscription-status'
 
 import { useDeleteTrainingWithRestore } from '../api/use-training-actions'
 import { useTrainings } from '../api/use-trainings'
 import { isIndividualTraining } from '../model/training-helpers'
 import { markAttendance } from '../model/training-logic'
-import { createTraining, getTrainingById, updateTraining } from '../model/trainings.repo'
+import { createTraining, removeAttendee as removeAttendeeApi } from '../model/trainings.repo'
 
 import type { CalendarBlock } from '../calendar/calendar-model'
 import type { Student, SubStatus } from 'entities/students/model/types'
@@ -108,11 +107,7 @@ export function useCalendarTraining({ block, onDone }: UseCalendarTrainingOption
   const removeAttendee = async (studentId: string) => {
     if (!training) return
     try {
-      await updateTraining(training.id, {
-        attendees: training.attendees.filter((id) => id !== studentId),
-      })
-      await restoreSession(studentId, training.groupId)
-      await removeVisit(studentId, training.id)
+      await removeAttendeeApi(training.id, studentId)
       qc.invalidateQueries({ queryKey: studentKeys.all })
       qc.invalidateQueries({ queryKey: ['trainings', 'all'] })
       toast({ type: 'info', title: t('trainings.cal.studentRemoved') })
@@ -141,23 +136,24 @@ export function useCalendarTraining({ block, onDone }: UseCalendarTrainingOption
       }
 
       const toAdd = [...checked].filter((id) => !attendeeSet.has(id))
-      if (toAdd.length) await markAttendance(current, toAdd)
+      if (toAdd.length) {
+        const results = await markAttendance(current, toAdd)
+        const noTariff = results.filter((r) => r.billing === 'none').map((r) => r.name)
+        if (noTariff.length) {
+          toast({
+            type: 'warn',
+            title: t('finance.autoRecord.noTariff'),
+            msg: noTariff.join(', '),
+          })
+        }
+      }
 
       const toRemove = groupRows
         .map((r) => r.studentId)
         .filter((id) => !checked.has(id) && attendeeSet.has(id))
       for (const sid of toRemove) {
-        const fresh = await getTrainingById(current.id)
-        if (!fresh) continue
-        await restoreSession(sid, block.groupId)
-        await removeVisit(sid, current.id)
-        await updateTraining(current.id, {
-          attendees: fresh.attendees.filter((id) => id !== sid),
-        })
+        await removeAttendeeApi(current.id, sid)
       }
-
-      const finalAttendees = [...checked]
-      await updateTraining(current.id, { attendees: finalAttendees })
 
       qc.invalidateQueries({ queryKey: studentKeys.all })
       qc.invalidateQueries({ queryKey: ['trainings', 'all'] })
