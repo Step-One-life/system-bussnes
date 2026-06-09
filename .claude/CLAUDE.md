@@ -13,3 +13,37 @@
 Перед каждым вызовом инструмента: либо обычный осмысленный текст-объяснение,
 заканчивающийся точкой и переводом строки, либо сразу тег. Никаких
 «висящих» слов перед тегом.
+
+# Карта проекта
+
+Полная карта — **`docs/ARCHITECTURE.md`** (структура монорепо, модули backend/frontend,
+история фич, ловушки, запуск). Читать её при старте новой задачи вместо повторного
+исследования кода.
+
+**Стек:** монорепо npm workspaces. `apps/backend` — NestJS+Fastify+Sequelize+MySQL,
+порт **3021**, префикс **`/api`**, ответы в `{ data, success }`. `apps/frontend` —
+React+Vite+antd+react-query+i18next, порт **3020**. `packages/shared` (`@trikick/shared`) —
+общие типы и чистая логика (прайм-тайм). Спеки/планы фич — `docs/superpowers/`.
+
+**Конвенции кода:** без точек с запятой, одинарные кавычки, отступ 2 пробела. UI-тексты —
+только через i18next (`t('...')`, ключи в `apps/frontend/src/locales/{ru,en}/translation.json`).
+
+**Запуск/проверка:**
+- Миграции: `npm run migrate -w apps/backend` (sequelize-cli, `apps/backend/database/migrations/`).
+- Бэкенд: `npm run start:dev -w apps/backend` · Фронт: `npm run dev`.
+- Сборки-gate: `npm run build -w apps/frontend` (tsc+vite), `npm run build -w apps/backend` (nest),
+  `npm test -w apps/backend` (jest — чистые функции). Демо-вход: `demo@trikick.ru` / `demo1234`.
+
+**Ловушки (важно!):**
+- **UTC vs NOW():** Sequelize пишет timestamps в UTC, MySQL `NOW()` — локальное (MSK +3).
+  Для SQL-диагностики «за N минут» использовать `UTC_TIMESTAMP()`.
+- **Новый вид занятия / тип оплаты добавляется в ~12 местах** (shared enums; дубль типов
+  фронта `finance/model/types`; `pricing-lookup`; `auto-payment`; `finance-constants` фронт+бэк;
+  `pricing-config`; `payment-form-config`; backend DTO `create-pricing-rule`/`create-payment`/
+  `create-hall-cost`; локали ru/en). Полный чек-лист — в ARCHITECTURE.md §8.
+- **`training.groupId` на фронте = ИМЯ группы** (не UUID); репозиторий мапит через `group-map`.
+- **Смена аккаунта** сбрасывает кэши в `auth-provider` (`queryClient.clear()` + инвалидации),
+  иначе данные «протекают» между аккаунтами.
+
+**Рабочий процесс:** фича → ветка → спека/план (superpowers) → реализация → gate (сборка+тесты)
+→ мерж в `main` + push. После завершения фичи — предлагать `/compact`, не копить контекст.
