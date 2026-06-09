@@ -89,6 +89,8 @@ export class TrainingService extends OwnedCrudService<Training> {
       recurringId: dto.recurringId ?? null,
       isOnline: dto.isOnline ?? false,
       plannedStudentId: dto.plannedStudentId ?? null,
+      isPair: dto.isPair ?? false,
+      plannedStudentId2: dto.plannedStudentId2 ?? null,
     })
 
     if (dto.attendees?.length) {
@@ -164,11 +166,15 @@ export class TrainingService extends OwnedCrudService<Training> {
   async markAttendance(training: Training, studentIds: string[]): Promise<void> {
     await training.$add('attendees', studentIds)
     for (const studentId of studentIds) {
-      await this.subscriptionsService.deduct(
-        studentId,
-        training.groupId,
-        training.sessionDuration,
-      )
+      // Парное (сплит) занятие не списывает абонемент — оплата идёт отдельным
+      // разовым платежом по pair-тарифу на стороне фронта.
+      if (!training.isPair) {
+        await this.subscriptionsService.deduct(
+          studentId,
+          training.groupId,
+          training.sessionDuration,
+        )
+      }
       await this.visitModel.create({
         studentId,
         groupId: training.groupId,

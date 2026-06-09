@@ -11,4 +11,6 @@ export const FIN_SESSIONS: Record<ClientPaymentType, number> = {
   single_individual_90: 1,
   individual_sub_4_90: 4,
   individual_sub_8_90: 8,
+  single_pair: 1,
+  single_pair_90: 1,
 }

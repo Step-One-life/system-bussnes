@@ -69,4 +69,14 @@ export class CreateTrainingDto implements CreateTrainingShape {
   @IsOptional()
   @IsUUID()
   plannedStudentId?: string | null
+
+  @ApiPropertyOptional({ default: false, description: 'Парная (сплит) тренировка' })
+  @IsOptional()
+  @IsBoolean()
+  isPair?: boolean
+
+  @ApiPropertyOptional({ format: 'uuid', nullable: true, description: 'Второй плановый ученик (парная)' })
+  @IsOptional()
+  @IsUUID()
+  plannedStudentId2?: string | null
 }

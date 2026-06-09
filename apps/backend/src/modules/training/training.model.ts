@@ -46,6 +46,12 @@ export class Training extends OwnedEntity {
   @Column({ field: 'planned_student_id', type: DataType.UUID, allowNull: true })
   declare plannedStudentId: string | null
 
+  @Column({ field: 'is_pair', type: DataType.BOOLEAN, allowNull: false, defaultValue: false })
+  declare isPair: boolean
+
+  @Column({ field: 'planned_student_id_2', type: DataType.UUID, allowNull: true })
+  declare plannedStudentId2: string | null
+
   @BelongsToMany(() => Student, () => TrainingAttendee)
   declare attendees?: Student[]
 }
