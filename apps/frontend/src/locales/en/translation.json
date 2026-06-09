@@ -297,7 +297,7 @@
       "paymentLabel": "Payment",
       "paymentSubscription": "Subscription",
       "paymentOneoff": "Per session",
-      "repeatLabel": "Number of sessions (weekly)"
+      "repeatLabel": "Number of sessions in the series"
     },
     "pair": {
       "title": "Record pair session",

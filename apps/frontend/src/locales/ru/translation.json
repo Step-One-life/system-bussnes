@@ -297,7 +297,7 @@
       "paymentLabel": "Оплата",
       "paymentSubscription": "Абонемент",
       "paymentOneoff": "Разово",
-      "repeatLabel": "Сколько занятий (раз в неделю)"
+      "repeatLabel": "Сколько занятий в серии"
     },
     "pair": {
       "title": "Записать парную тренировку",
