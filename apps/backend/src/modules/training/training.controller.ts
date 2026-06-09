@@ -20,7 +20,7 @@ import { AttendeesDto } from './dto/attendees.dto'
 import { CreateTrainingDto } from './dto/create-training.dto'
 import { UpdateTrainingDto } from './dto/update-training.dto'
 import { Training } from './training.model'
-import { TrainingService } from './training.service'
+import { TrainingService, type BillingResult } from './training.service'
 
 @ApiTags('trainings')
 @ApiBearerAuth()
@@ -97,15 +97,15 @@ export class TrainingController {
   }
 
   @Post(':id/attendees')
-  @ApiOperation({ summary: 'Добавить учеников на тренировку' })
+  @ApiOperation({ summary: 'Добавить учеников на тренировку (списание/авто-платёж на бэке)' })
   async addAttendees(
     @CurrentUser() user: CurrentUserPayload,
     @Param() { id }: IdParamDto,
     @Body() dto: AttendeesDto,
-  ): Promise<Training> {
+  ): Promise<{ training: Training; billing: BillingResult[] }> {
     const training = await this.trainingService.findOneForUser(user.id, id)
-    await this.trainingService.markAttendance(training, dto.studentIds)
-    return this.trainingService.findOneForUser(user.id, id)
+    const billing = await this.trainingService.markAttendance(training, dto.studentIds)
+    return { training: await this.trainingService.findOneForUser(user.id, id), billing }
   }
 
   @Delete(':id/attendees/:studentId')

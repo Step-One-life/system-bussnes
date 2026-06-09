@@ -3,18 +3,36 @@ import { InjectModel } from '@nestjs/sequelize'
 import type { FindOptions } from 'sequelize'
 
 import { isPrimeTime } from '@trikick/shared'
+import type { DeductStatus } from '@trikick/shared'
 
 import { OwnedCrudService } from '../../common/services/owned-crud.service'
 import { DateUtil } from '../../common/utils/date.util'
 import { CalendarSyncService } from '../calendar/services/calendar-sync.service'
+import { HallCostsService } from '../finance/hall-costs.service'
+import { Payment } from '../finance/payment.model'
+import { PaymentsService } from '../finance/payments.service'
+import { PricingRule } from '../finance/pricing-rule.model'
+import { PricingRulesService } from '../finance/pricing-rules.service'
+import { Group } from '../group/group.model'
 import { LocationService } from '../location/location.service'
 import { Student } from '../student/student.model'
 import { SubscriptionsService } from '../student/subscriptions.service'
 import { Visit } from '../student/visit.model'
+import type { VisitBilling } from '../student/visit.model'
 import { CreateTrainingDto } from './dto/create-training.dto'
+import { attendancePricing } from './lib/attendance-pricing'
 import { seriesUpdateFields, type SeriesUpdateInput } from './lib/series-update'
 import { findOverlaps } from './lib/training-overlap'
 import { Training } from './training.model'
+
+/** Результат биллинга одного ученика при отметке. */
+export interface BillingResult {
+  studentId: string
+  billing: VisitBilling
+  /** Статус абонемента после списания (только при billing='subscription'). */
+  subStatus: DeductStatus | null
+  remaining: number | null
+}
 
 @Injectable()
 export class TrainingService extends OwnedCrudService<Training> {
@@ -23,9 +41,13 @@ export class TrainingService extends OwnedCrudService<Training> {
   constructor(
     @InjectModel(Training) private readonly trainingModel: typeof Training,
     @InjectModel(Visit) private readonly visitModel: typeof Visit,
+    @InjectModel(Group) private readonly groupModel: typeof Group,
     private readonly subscriptionsService: SubscriptionsService,
     private readonly locationService: LocationService,
     private readonly calendarSync: CalendarSyncService,
+    private readonly pricingRulesService: PricingRulesService,
+    private readonly paymentsService: PaymentsService,
+    private readonly hallCostsService: HallCostsService,
   ) {
     super(trainingModel)
   }
@@ -162,38 +184,145 @@ export class TrainingService extends OwnedCrudService<Training> {
     return trainings.length
   }
 
-  /** Deduct one session per attendee and record visits. */
-  async markAttendance(training: Training, studentIds: string[]): Promise<void> {
+  /**
+   * Отметить посещение. На каждого ученика: уже есть визит → пропуск
+   * (идемпотентность); не парное → списание абонемента (включая общий);
+   * иначе → авто-платёж по тарифу (+расход зала, кроме онлайна); тарифа
+   * нет → визит с billing='none'. Визит записывает результат, откат
+   * (`revertVisit`) отменяет ровно его.
+   */
+  async markAttendance(training: Training, studentIds: string[]): Promise<BillingResult[]> {
     await training.$add('attendees', studentIds)
+    const results: BillingResult[] = []
     for (const studentId of studentIds) {
-      // Парное (сплит) занятие не списывает абонемент — оплата идёт отдельным
-      // разовым платежом по pair-тарифу на стороне фронта.
+      const existing = await this.visitModel.findOne({
+        where: { trainingId: training.id, studentId },
+      })
+      if (existing) continue
+
+      let billing: VisitBilling = 'none'
+      let subscriptionId: string | null = null
+      let paymentId: string | null = null
+      let subStatus: DeductStatus | null = null
+      let remaining: number | null = null
+
       if (!training.isPair) {
-        await this.subscriptionsService.deduct(
+        const { sub, status } = await this.subscriptionsService.deduct(
           studentId,
           training.groupId,
           training.sessionDuration,
         )
+        if (sub) {
+          billing = 'subscription'
+          subscriptionId = sub.id
+          subStatus = status
+          remaining = sub.remaining
+        }
       }
+
+      if (billing === 'none') {
+        // Ошибка биллинга не должна ломать отметку: платёж не создан →
+        // визит сохраняется с billing='none', UI покажет предупреждение.
+        const payment = await this.createAttendancePayment(training, studentId).catch(
+          () => null,
+        )
+        if (payment) {
+          billing = 'payment'
+          paymentId = payment.id
+        }
+      }
+
       await this.visitModel.create({
         studentId,
         groupId: training.groupId,
         trainingId: training.id,
         date: training.date,
+        billing,
+        subscriptionId,
+        paymentId,
       })
+      results.push({ studentId, billing, subStatus, remaining })
     }
     await this.calendarSync.enqueueUpsert(training.userId, training.id, training.time)
+    return results
+  }
+
+  /**
+   * Разовый платёж за посещение по тарифу локации (training.locationId или
+   * дефолтная локация тренера). Прайм — по сохранённому training.isPrime.
+   * Не-онлайн дополнительно пишет расход зала. Нет локации/тарифа → null.
+   */
+  private async createAttendancePayment(
+    training: Training,
+    studentId: string,
+  ): Promise<Payment | null> {
+    const group = await this.groupModel.findByPk(training.groupId)
+    const pricing = attendancePricing(
+      {
+        isPair: training.isPair,
+        isOnline: training.isOnline,
+        sessionDuration: training.sessionDuration,
+      },
+      group?.isIndividual ?? false,
+    )
+
+    let locationId = training.locationId
+    if (!locationId) {
+      const locations = await this.locationService.findEveryForUser(training.userId)
+      locationId = locations.find((l) => l.isDefault)?.id ?? locations[0]?.id ?? null
+    }
+    if (!locationId) return null
+
+    let rule: PricingRule | null = null
+    for (const a of pricing.attempts) {
+      rule = await this.pricingRulesService.findMatch(training.userId, {
+        locationId,
+        lessonKind: a.lessonKind,
+        format: a.format,
+        durationMinutes: a.durationMinutes,
+        sessionsCount: a.sessionsCount,
+      })
+      if (rule) break
+    }
+    if (!rule) return null
+
+    const isPrime = training.isPrime
+    let hallCostId: string | null = null
+    if (!training.isOnline) {
+      const hallCost = await this.hallCostsService.createHallCost(training.userId, {
+        studentId,
+        locationId,
+        hallPaymentType: pricing.paymentType,
+        timeSlot: isPrime ? 'prime' : 'regular',
+        trainingTime: training.time || '',
+        hallAmount: Number(isPrime ? rule.hallPrimeCost : rule.hallCost),
+        paidAt: training.date,
+      })
+      hallCostId = hallCost.id
+    }
+    return this.paymentsService.createPayment(training.userId, {
+      studentId,
+      locationId,
+      clientPaymentType: pricing.paymentType,
+      clientAmount: Number(isPrime ? rule.clientPrimePrice : rule.clientPrice),
+      hallCostId,
+      paidAt: training.date,
+    })
   }
 
   /** Attach attendees and record visits WITHOUT deducting sessions (seeder). */
   async attachAttendeesWithVisits(training: Training, studentIds: string[]): Promise<void> {
     await training.$add('attendees', studentIds)
     for (const studentId of studentIds) {
+      // billing='none': демо-история не порождает фантомных возвратов/платежей.
       await this.visitModel.create({
         studentId,
         groupId: training.groupId,
         trainingId: training.id,
         date: training.date,
+        billing: 'none',
+        subscriptionId: null,
+        paymentId: null,
       })
     }
   }
