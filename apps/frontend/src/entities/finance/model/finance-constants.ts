@@ -9,6 +9,8 @@ export const FIN_SESSIONS: Record<string, number> = {
   single_individual_90: 1,
   individual_sub_4_90: 4,
   individual_sub_8_90: 8,
+  single_pair: 1,
+  single_pair_90: 1,
 }
 
 // Human-readable payment type labels.
@@ -22,6 +24,8 @@ export const FIN_LABELS: Record<string, string> = {
   single_individual_90: 'Индив. 1.5ч',
   individual_sub_4_90: 'Индив. 1.5ч ×4',
   individual_sub_8_90: 'Индив. 1.5ч ×8',
+  single_pair: 'Парная разовая',
+  single_pair_90: 'Парная 1.5ч',
 }
 
 // Default pricing keys (all zero) used to seed the pricing form.

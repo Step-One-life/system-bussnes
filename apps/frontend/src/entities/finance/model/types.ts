@@ -8,6 +8,8 @@ export type ClientPaymentType =
   | 'single_individual_90'
   | 'individual_sub_4_90'
   | 'individual_sub_8_90'
+  | 'single_pair'
+  | 'single_pair_90'
 
 export type HallPaymentType = ClientPaymentType
 
@@ -65,7 +67,7 @@ export interface HallCostInput {
   notes?: string
 }
 
-export type LessonKind = 'individual' | 'group' | 'online' | 'shared'
+export type LessonKind = 'individual' | 'group' | 'online' | 'shared' | 'pair'
 
 export type PricingFormat = 'single' | 'subscription'
 

@@ -19,7 +19,7 @@ export interface RuleTuple {
   sessionsCount: number
 }
 
-type SubType = '1' | '4' | '8' | '1_90' | '4_90' | '8_90'
+type SubType = '1' | '4' | '8' | '1_90' | '4_90' | '8_90' | '1_pair' | '1_pair_90'
 
 /**
  * Маппинг типа абонемента ученика на кортеж тарифа (см. §4 плана).
@@ -55,6 +55,10 @@ export function subTypeToTuple(subType: SubType, isIndividual: boolean): RuleTup
         durationMinutes: 90,
         sessionsCount: 8,
       }
+    case '1_pair':
+      return { lessonKind: 'pair', format: 'single', durationMinutes: 60, sessionsCount: 1 }
+    case '1_pair_90':
+      return { lessonKind: 'pair', format: 'single', durationMinutes: 90, sessionsCount: 1 }
   }
 }
 
@@ -119,6 +123,10 @@ export function clientTypeToTuple(type: ClientPaymentType): RuleTuple {
         durationMinutes: 90,
         sessionsCount: 8,
       }
+    case 'single_pair':
+      return { lessonKind: 'pair', format: 'single', durationMinutes: 60, sessionsCount: 1 }
+    case 'single_pair_90':
+      return { lessonKind: 'pair', format: 'single', durationMinutes: 90, sessionsCount: 1 }
   }
 }
 

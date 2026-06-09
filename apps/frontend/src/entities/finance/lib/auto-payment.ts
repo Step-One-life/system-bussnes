@@ -11,7 +11,7 @@ import {
 
 import type { ClientPaymentType, HallPaymentType } from '../model/types'
 
-type SubType = '1' | '4' | '8' | '1_90' | '4_90' | '8_90'
+type SubType = '1' | '4' | '8' | '1_90' | '4_90' | '8_90' | '1_pair' | '1_pair_90'
 
 interface AutoSub {
   id: string
@@ -41,6 +41,8 @@ export function subPaymentType(
   if (subType === '1_90') return 'single_individual_90'
   if (subType === '4_90') return 'individual_sub_4_90'
   if (subType === '8_90') return 'individual_sub_8_90'
+  if (subType === '1_pair') return 'single_pair'
+  if (subType === '1_pair_90') return 'single_pair_90'
   return null
 }
 
