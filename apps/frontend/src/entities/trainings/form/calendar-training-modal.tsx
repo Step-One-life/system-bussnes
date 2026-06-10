@@ -109,28 +109,24 @@ function CalendarTrainingModalInner({
       onAddStudent(m.training)
     }
   }
-  const handleRemoveAttendee = (studentId: string) => () =>
-    m.removeAttendee(studentId)
   const handleToggleAttendee = (studentId: string) => () =>
     m.toggle(studentId)
 
   const footer: React.ReactNode[] = []
+  footer.push(
+    <Button key="save" type="primary" loading={m.saving} onClick={m.saveAttendance}>
+      {t('common.save')}
+    </Button>,
+  )
   if (m.isInd) {
     footer.push(
       <Button
         key="add"
-        type="primary"
         icon={<UserAddOutlined />}
         disabled={!m.training}
         onClick={handleAddStudent}
       >
         {t('common.add')}
-      </Button>,
-    )
-  } else {
-    footer.push(
-      <Button key="save" type="primary" loading={m.saving} onClick={m.saveAttendance}>
-        {t('common.save')}
       </Button>,
     )
   }
@@ -178,9 +174,9 @@ function CalendarTrainingModalInner({
                 <RowItem
                   key={row.studentId}
                   row={row}
-                  checkbox={false}
-                  checked
-                  onRemove={m.training ? handleRemoveAttendee(row.studentId) : undefined}
+                  checkbox
+                  checked={m.checked.has(row.studentId)}
+                  onToggle={handleToggleAttendee(row.studentId)}
                 />
               ))
             ) : (

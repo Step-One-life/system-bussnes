@@ -69,7 +69,17 @@ export function useCalendarTraining({ block, onDone }: UseCalendarTrainingOption
     status: getSubStatus(s, block.groupId),
   }))
 
-  const indRows: AttendRow[] = (training?.attendees ?? []).map((id) => {
+  // Отмеченные ∪ плановые: плановое занятие видно и отмечается из календаря
+  // любой датой (биллинг на бэке, paid_at = дата занятия).
+  const indIds = useMemo(() => {
+    if (!training) return []
+    const planned = [training.plannedStudentId, training.plannedStudentId2].filter(
+      (id): id is string => !!id,
+    )
+    return [...new Set([...training.attendees, ...planned])]
+  }, [training])
+
+  const indRows: AttendRow[] = indIds.map((id) => {
     const s = students.find((st) => st.id === id)
     return {
       studentId: id,
@@ -104,19 +114,6 @@ export function useCalendarTraining({ block, onDone }: UseCalendarTrainingOption
     })
   }
 
-  const removeAttendee = async (studentId: string) => {
-    if (!training) return
-    try {
-      await removeAttendeeApi(training.id, studentId)
-      qc.invalidateQueries({ queryKey: studentKeys.all })
-      qc.invalidateQueries({ queryKey: ['trainings', 'all'] })
-      toast({ type: 'info', title: t('trainings.cal.studentRemoved') })
-      onDone()
-    } catch (e) {
-      toast({ type: 'error', title: e instanceof Error ? e.message : t('common.error') })
-    }
-  }
-
   const saveAttendance = async () => {
     setSaving(true)
     try {
@@ -148,9 +145,9 @@ export function useCalendarTraining({ block, onDone }: UseCalendarTrainingOption
         }
       }
 
-      const toRemove = groupRows
-        .map((r) => r.studentId)
-        .filter((id) => !checked.has(id) && attendeeSet.has(id))
+      // attendeeSet − checked: одна формула для групповых и индивидуальных
+      // (checked инициализируется из attendees, плановые приходят без галочки).
+      const toRemove = [...attendeeSet].filter((id) => !checked.has(id))
       for (const sid of toRemove) {
         await removeAttendeeApi(current.id, sid)
       }
@@ -181,7 +178,6 @@ export function useCalendarTraining({ block, onDone }: UseCalendarTrainingOption
     indRows,
     checked,
     toggle,
-    removeAttendee,
     saveAttendance,
     handleDelete,
     saving,
