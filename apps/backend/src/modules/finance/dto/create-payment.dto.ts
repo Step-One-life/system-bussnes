@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger'
-import { IsIn, IsNumber, IsOptional, IsString, IsUUID } from 'class-validator'
+import { IsIn, IsNumber, IsOptional, IsString, IsUUID, Min } from 'class-validator'
 
 import type { ClientPaymentType, CreatePaymentShape } from '@trikick/shared'
 
@@ -34,6 +34,7 @@ export class CreatePaymentDto implements CreatePaymentShape {
 
   @ApiProperty()
   @IsNumber()
+  @Min(0)
   clientAmount!: number
 
   @ApiPropertyOptional()

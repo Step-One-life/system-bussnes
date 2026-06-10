@@ -86,6 +86,9 @@
     "form": {
       "deleteTitle": "Delete group?",
       "deleteDescription": "Students will remain in the system.",
+      "deleteImpact": "This permanently deletes {{trainings}} sessions, {{subs}} subscriptions and the group's entire visit history. Students remain in the system.",
+      "deleteImpactActive": "{{count}} of the deleted subscriptions are still active!",
+      "deleteImpactShared": "Shared subscriptions are kept and remain valid for other groups.",
       "editTitle": "Edit group",
       "createTitle": "Create group",
       "nameLabel": "Group name",

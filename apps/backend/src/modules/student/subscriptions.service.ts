@@ -5,6 +5,7 @@ import { SUB_TYPE_TOTALS } from '@trikick/shared'
 import type { DeductStatus, SubscriptionType, TimeSlot } from '@trikick/shared'
 
 import { DateUtil } from '../../common/utils/date.util'
+import { covers, pickSubForDeduct } from './lib/pick-subscription'
 import { Subscription } from './subscription.model'
 
 @Injectable()
@@ -45,28 +46,18 @@ export class SubscriptionsService {
     })
   }
 
-  /** Покрывает ли абонемент данную группу (общий — по списку group_ids). */
-  private covers(sub: Subscription, groupId: string): boolean {
-    return sub.groupIds?.length ? sub.groupIds.includes(groupId) : sub.groupId === groupId
-  }
-
   /** Deduct one session from the active subscription for a group. */
   async deduct(
     studentId: string,
     groupId: string,
     sessionDuration: number | null = null,
   ): Promise<{ sub: Subscription | null; status: DeductStatus }> {
-    // Порядок выбора: (1) «свой» абонемент группы с совпадающей длительностью
-    // (держит индив. 60/90 раздельно), (2) любой «свой» абонемент группы,
-    // (3) общий абонемент, покрывающий группу (длительность не важна, 1 визит =
-    // 1 занятие). Грузим активные абонементы ученика и выбираем в памяти.
+    // Выбор абонемента — чистая функция pickSubForDeduct («свой» по длительности
+    // → любой «свой» → общий). Истёкшие по сроку отсеиваются: isActive снимается
+    // только при remaining=0, по дате его никто не деактивирует, поэтому без
+    // фильтра здесь списание уходило на протухший абонемент вместо авто-платежа.
     const subs = await this.subModel.findAll({ where: { studentId, isActive: true } })
-    const sub =
-      (sessionDuration !== null
-        ? subs.find((s) => s.groupId === groupId && s.sessionDuration === sessionDuration)
-        : undefined) ??
-      subs.find((s) => s.groupId === groupId) ??
-      subs.find((s) => this.covers(s, groupId))
+    const sub = pickSubForDeduct(subs, groupId, sessionDuration, DateUtil.todayIso())
     if (!sub) return { sub: null, status: 'none' }
 
     sub.remaining -= 1
@@ -146,7 +137,7 @@ export class SubscriptionsService {
         ? pool.find((s) => s.groupId === groupId && s.sessionDuration === sessionDuration)
         : undefined) ??
       pool.find((s) => s.groupId === groupId) ??
-      pool.find((s) => this.covers(s, groupId))
+      pool.find((s) => covers(s, groupId))
     return byPreference(active) ?? byPreference(subs) ?? null
   }
 }

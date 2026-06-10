@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger'
-import { IsIn, IsNumber, IsOptional, IsString, IsUUID } from 'class-validator'
+import { IsIn, IsNumber, IsOptional, IsString, IsUUID, Min } from 'class-validator'
 
 import type { CreateHallCostShape, HallPaymentType, TimeSlot } from '@trikick/shared'
 
@@ -46,6 +46,7 @@ export class CreateHallCostDto implements CreateHallCostShape {
 
   @ApiProperty()
   @IsNumber()
+  @Min(0)
   hallAmount!: number
 
   @ApiPropertyOptional()
