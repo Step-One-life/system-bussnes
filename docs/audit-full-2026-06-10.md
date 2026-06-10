@@ -29,8 +29,14 @@
 >   деньги — `sumMoney`/`roundMoney` в `@trikick/shared` (+6 jest), суммирования
 >   на бэке (finance-stats) и фронте (use-finance-stats) без float-дрейфа.
 >   Проверка: esbuild-прогон реальных функций на ru/en — 22/22 PASS.
-> **Осталось:** M4 (timeSlot без логики — продуктовый вопрос), M5 (env-фолбэки),
-> M9 (таймаут Google), M10, и весь UX-бэклог §3.
+> - **M5, M9, M10** — починены (2026-06-11, main @ e9a1208): CALENDAR_TOKEN_ENC_KEY
+>   обязателен при NODE_ENV=production (`validateEnv`, dev-фолбэк только для
+>   разработки; мёртвый фолбэк JWT_SECRET убран); таймаут 15с на каждый вызов
+>   Google Calendar API (`GOOGLE_API_TIMEOUT_MS`, gaxios обрывает висящий запрос →
+>   retry с backoff — smoke-тест на молчащем сокете: обрыв через 1.5с);
+>   `updateSeriesForUser` отвечает 400 на `groupId`/`date` вместо молчаливого
+>   игнора (`seriesForbiddenFields`, +3 jest).
+> **Осталось:** M4 (timeSlot без логики — продуктовый вопрос) и весь UX-бэклог §3.
 > Каждый пакет: jest + обе сборки + e2e-самопроверка по API на живом бэке.
 
 ## 1. Подтверждённые баги (верифицированы по коду)
