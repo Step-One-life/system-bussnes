@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config'
 import { google, type calendar_v3 } from 'googleapis'
 import type { OAuth2Client } from 'google-auth-library'
 
-import { GOOGLE_CALENDAR_SCOPE } from '../calendar.constants'
+import { GOOGLE_API_TIMEOUT_MS, GOOGLE_CALENDAR_SCOPE } from '../calendar.constants'
 import type { GoogleEventResource } from '../lib/event-builder'
 
 export interface CalendarSummary {
@@ -50,7 +50,8 @@ export class GoogleOAuthService {
   private client(refreshToken: string): calendar_v3.Calendar {
     const auth = this.base()
     auth.setCredentials({ refresh_token: refreshToken })
-    return google.calendar({ version: 'v3', auth })
+    // timeout распространяется на каждый запрос клиента (см. GOOGLE_API_TIMEOUT_MS).
+    return google.calendar({ version: 'v3', auth, timeout: GOOGLE_API_TIMEOUT_MS })
   }
 
   async listCalendars(refreshToken: string): Promise<CalendarSummary[]> {

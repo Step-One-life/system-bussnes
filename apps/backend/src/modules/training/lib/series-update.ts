@@ -10,9 +10,10 @@ export interface SeriesUpdateInput {
   locationId?: string | null
   note?: string
   isOnline?: boolean
-  // Принимается, но НЕ распространяется на серию:
+  // Отклоняются с 400 (см. seriesForbiddenFields):
   date?: string
   groupId?: string
+  // Принимается, но игнорируется: пересчитывается по дате каждого занятия.
   isPrime?: boolean
 }
 
@@ -27,5 +28,17 @@ export function seriesUpdateFields(dto: SeriesUpdateInput): SeriesUpdatableField
   if (dto.locationId !== undefined) out.locationId = dto.locationId
   if (dto.note !== undefined) out.note = dto.note
   if (dto.isOnline !== undefined) out.isOnline = dto.isOnline
+  return out
+}
+
+/**
+ * Поля dto, которые серия не редактирует: дата у каждого занятия своя, смена
+ * группы меняет биллинг и состав. Молча игнорировать их нельзя — клиент
+ * получил бы «успех» без эффекта, поэтому сервис отвечает 400.
+ */
+export function seriesForbiddenFields(dto: SeriesUpdateInput): string[] {
+  const out: string[] = []
+  if (dto.groupId !== undefined) out.push('groupId')
+  if (dto.date !== undefined) out.push('date')
   return out
 }

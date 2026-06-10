@@ -1,4 +1,4 @@
-import { ConflictException, Injectable } from '@nestjs/common'
+import { BadRequestException, ConflictException, Injectable } from '@nestjs/common'
 import { InjectConnection, InjectModel } from '@nestjs/sequelize'
 import { UniqueConstraintError } from 'sequelize'
 import type { FindOptions, Transaction } from 'sequelize'
@@ -23,7 +23,11 @@ import { Visit } from '../student/visit.model'
 import type { VisitBilling } from '../student/visit.model'
 import { CreateTrainingDto } from './dto/create-training.dto'
 import { attendancePricing } from './lib/attendance-pricing'
-import { seriesUpdateFields, type SeriesUpdateInput } from './lib/series-update'
+import {
+  seriesForbiddenFields,
+  seriesUpdateFields,
+  type SeriesUpdateInput,
+} from './lib/series-update'
 import { findOverlaps } from './lib/training-overlap'
 import { Training } from './training.model'
 
@@ -138,14 +142,21 @@ export class TrainingService extends OwnedCrudService<Training> {
 
   /**
    * Обновить все занятия повторяющейся серии. Распространяемые поля (время/локация/
-   * заметка/онлайн) применяются ко всем; дата НЕ трогается (у каждого своя). Прайм
-   * пересчитывается по дате каждого занятия. На каждое занятие ставится upsert.
+   * заметка/онлайн) применяются ко всем; `groupId`/`date` отклоняются с 400 (дата
+   * у каждого своя, смена группы меняет биллинг). Прайм пересчитывается по дате
+   * каждого занятия. На каждое занятие ставится upsert.
    */
   async updateSeriesForUser(
     userId: string,
     recurringId: string,
     dto: SeriesUpdateInput,
   ): Promise<number> {
+    const forbidden = seriesForbiddenFields(dto)
+    if (forbidden.length) {
+      throw new BadRequestException(
+        `Для серии не редактируются поля: ${forbidden.join(', ')} — измените занятие отдельно`,
+      )
+    }
     const fields = seriesUpdateFields(dto)
     const trainings = await this.trainingModel.findAll({ where: { userId, recurringId } })
     // Смена времени применяется ко всей серии — проверяем, что ни одно занятие

@@ -13,3 +13,9 @@ export const SYNC_INTERVAL_MS = 20_000
 export const SYNC_BATCH = 25
 /** Максимум попыток до статуса failed. */
 export const SYNC_MAX_ATTEMPTS = 8
+/**
+ * Лимит на один HTTP-вызов Google API. Без него зависший запрос блокирует
+ * воркер навсегда (`running` не сбросится до ответа). По истечении gaxios
+ * обрывает запрос с ошибкой → обычный retry с backoff.
+ */
+export const GOOGLE_API_TIMEOUT_MS = 15_000

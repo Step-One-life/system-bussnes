@@ -1,5 +1,12 @@
 import { plainToInstance } from 'class-transformer'
-import { IsNotEmpty, IsNumberString, IsOptional, IsString, validateSync } from 'class-validator'
+import {
+  IsNotEmpty,
+  IsNumberString,
+  IsOptional,
+  IsString,
+  ValidateIf,
+  validateSync,
+} from 'class-validator'
 
 class EnvVariables {
   @IsOptional()
@@ -51,8 +58,11 @@ class EnvVariables {
   @IsString()
   GOOGLE_OAUTH_REDIRECT_URI?: string
 
-  @IsOptional()
+  // Ключ шифрования Google-токенов. В production обязателен: dev-фолбэк
+  // из configuration.ts общеизвестен и делает шифрование бутафорией.
+  @ValidateIf((o: EnvVariables) => o.NODE_ENV === 'production')
   @IsString()
+  @IsNotEmpty()
   CALENDAR_TOKEN_ENC_KEY?: string
 }
 
