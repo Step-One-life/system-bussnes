@@ -1,6 +1,8 @@
 import { ConflictException, Injectable } from '@nestjs/common'
-import { InjectModel } from '@nestjs/sequelize'
-import type { FindOptions } from 'sequelize'
+import { InjectConnection, InjectModel } from '@nestjs/sequelize'
+import { UniqueConstraintError } from 'sequelize'
+import type { FindOptions, Transaction } from 'sequelize'
+import { Sequelize } from 'sequelize-typescript'
 
 import { isPrimeTime } from '@trikick/shared'
 import type { DeductStatus } from '@trikick/shared'
@@ -48,6 +50,7 @@ export class TrainingService extends OwnedCrudService<Training> {
     private readonly pricingRulesService: PricingRulesService,
     private readonly paymentsService: PaymentsService,
     private readonly hallCostsService: HallCostsService,
+    @InjectConnection() private readonly sequelize: Sequelize,
   ) {
     super(trainingModel)
   }
@@ -200,48 +203,66 @@ export class TrainingService extends OwnedCrudService<Training> {
       })
       if (existing) continue
 
-      let billing: VisitBilling = 'none'
-      let subscriptionId: string | null = null
-      let paymentId: string | null = null
-      let subStatus: DeductStatus | null = null
-      let remaining: number | null = null
+      // Списание/платёж и визит — одна транзакция: сбой между ними не оставит
+      // «деньги без визита» (повторная отметка списала бы второй раз). Гонку
+      // параллельных отметок закрывает UNIQUE(training_id, student_id) на
+      // visits: проигравшая транзакция откатывается целиком вместе с деньгами.
+      try {
+        const result = await this.sequelize.transaction(async (tx) => {
+          let billing: VisitBilling = 'none'
+          let subscriptionId: string | null = null
+          let paymentId: string | null = null
+          let subStatus: DeductStatus | null = null
+          let remaining: number | null = null
 
-      if (!training.isPair) {
-        const { sub, status } = await this.subscriptionsService.deduct(
-          studentId,
-          training.groupId,
-          training.sessionDuration,
-        )
-        if (sub) {
-          billing = 'subscription'
-          subscriptionId = sub.id
-          subStatus = status
-          remaining = sub.remaining
-        }
+          if (!training.isPair) {
+            const { sub, status } = await this.subscriptionsService.deduct(
+              studentId,
+              training.groupId,
+              training.sessionDuration,
+              tx,
+            )
+            if (sub) {
+              billing = 'subscription'
+              subscriptionId = sub.id
+              subStatus = status
+              remaining = sub.remaining
+            }
+          }
+
+          if (billing === 'none') {
+            // Ошибка биллинга не должна ломать отметку: платёж не создан →
+            // визит сохраняется с billing='none', UI покажет предупреждение.
+            const payment = await this.createAttendancePayment(training, studentId, tx).catch(
+              () => null,
+            )
+            if (payment) {
+              billing = 'payment'
+              paymentId = payment.id
+            }
+          }
+
+          await this.visitModel.create(
+            {
+              studentId,
+              groupId: training.groupId,
+              trainingId: training.id,
+              date: training.date,
+              billing,
+              subscriptionId,
+              paymentId,
+            },
+            { transaction: tx },
+          )
+          return { studentId, billing, subStatus, remaining }
+        })
+        results.push(result)
+      } catch (e) {
+        // Параллельный запрос успел записать визит первым — наша транзакция
+        // откатилась вместе со списанием/платежом, ученик уже отмечен.
+        if (e instanceof UniqueConstraintError) continue
+        throw e
       }
-
-      if (billing === 'none') {
-        // Ошибка биллинга не должна ломать отметку: платёж не создан →
-        // визит сохраняется с billing='none', UI покажет предупреждение.
-        const payment = await this.createAttendancePayment(training, studentId).catch(
-          () => null,
-        )
-        if (payment) {
-          billing = 'payment'
-          paymentId = payment.id
-        }
-      }
-
-      await this.visitModel.create({
-        studentId,
-        groupId: training.groupId,
-        trainingId: training.id,
-        date: training.date,
-        billing,
-        subscriptionId,
-        paymentId,
-      })
-      results.push({ studentId, billing, subStatus, remaining })
     }
     await this.calendarSync.enqueueUpsert(training.userId, training.id, training.time)
     return results
@@ -255,6 +276,7 @@ export class TrainingService extends OwnedCrudService<Training> {
   private async createAttendancePayment(
     training: Training,
     studentId: string,
+    tx: Transaction | null = null,
   ): Promise<Payment | null> {
     const group = await this.groupModel.findByPk(training.groupId)
     const pricing = attendancePricing(
@@ -289,25 +311,33 @@ export class TrainingService extends OwnedCrudService<Training> {
     const isPrime = training.isPrime
     let hallCostId: string | null = null
     if (!training.isOnline) {
-      const hallCost = await this.hallCostsService.createHallCost(training.userId, {
-        studentId,
-        locationId,
-        hallPaymentType: pricing.paymentType,
-        timeSlot: isPrime ? 'prime' : 'regular',
-        trainingTime: training.time || '',
-        hallAmount: Number(isPrime ? rule.hallPrimeCost : rule.hallCost),
-        paidAt: training.date,
-      })
+      const hallCost = await this.hallCostsService.createHallCost(
+        training.userId,
+        {
+          studentId,
+          locationId,
+          hallPaymentType: pricing.paymentType,
+          timeSlot: isPrime ? 'prime' : 'regular',
+          trainingTime: training.time || '',
+          hallAmount: Number(isPrime ? rule.hallPrimeCost : rule.hallCost),
+          paidAt: training.date,
+        },
+        tx,
+      )
       hallCostId = hallCost.id
     }
-    return this.paymentsService.createPayment(training.userId, {
-      studentId,
-      locationId,
-      clientPaymentType: pricing.paymentType,
-      clientAmount: Number(isPrime ? rule.clientPrimePrice : rule.clientPrice),
-      hallCostId,
-      paidAt: training.date,
-    })
+    return this.paymentsService.createPayment(
+      training.userId,
+      {
+        studentId,
+        locationId,
+        clientPaymentType: pricing.paymentType,
+        clientAmount: Number(isPrime ? rule.clientPrimePrice : rule.clientPrice),
+        hallCostId,
+        paidAt: training.date,
+      },
+      tx,
+    )
   }
 
   /** Attach attendees and record visits WITHOUT deducting sessions (seeder). */
@@ -334,21 +364,33 @@ export class TrainingService extends OwnedCrudService<Training> {
    * удаляется в конце.
    */
   private async revertVisit(training: Training, studentId: string): Promise<void> {
-    const visit = await this.visitModel.findOne({
-      where: { trainingId: training.id, studentId },
+    // Весь откат — одна транзакция, визит читается с блокировкой (FOR UPDATE):
+    // параллельное снятие ждёт коммита первого, затем видит визит удалённым и
+    // выходит — возврат занятия/платежа не задваивается. Атомарность возврата
+    // и удаления визита также закрывает сбой между ними.
+    await this.sequelize.transaction(async (tx) => {
+      const visit = await this.visitModel.findOne({
+        where: { trainingId: training.id, studentId },
+        transaction: tx,
+        lock: tx.LOCK.UPDATE,
+      })
+      if (!visit) return
+      if (visit.billing === 'subscription' && visit.subscriptionId) {
+        await this.subscriptionsService.restoreById(visit.subscriptionId as string, tx)
+      } else if (visit.billing === 'payment' && visit.paymentId) {
+        // Платёж могли удалить вручную в Финансах — тогда молча пропускаем.
+        await this.paymentsService
+          .removePayment(training.userId, visit.paymentId)
+          .catch(() => undefined)
+      } else if (visit.billing == null) {
+        await this.subscriptionsService.restore(
+          studentId,
+          training.groupId,
+          training.sessionDuration,
+        )
+      }
+      await visit.destroy({ transaction: tx })
     })
-    if (!visit) return
-    if (visit.billing === 'subscription' && visit.subscriptionId) {
-      await this.subscriptionsService.restoreById(visit.subscriptionId)
-    } else if (visit.billing === 'payment' && visit.paymentId) {
-      // Платёж могли удалить вручную в Финансах — тогда молча пропускаем.
-      await this.paymentsService
-        .removePayment(training.userId, visit.paymentId)
-        .catch(() => undefined)
-    } else if (visit.billing == null) {
-      await this.subscriptionsService.restore(studentId, training.groupId, training.sessionDuration)
-    }
-    await visit.destroy()
   }
 
   /** Remove a student from a training: revert billing + delete visit. */

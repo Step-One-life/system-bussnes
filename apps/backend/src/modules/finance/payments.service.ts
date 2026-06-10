@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/sequelize'
+import type { Transaction } from 'sequelize'
 
 import { OwnedCrudService } from '../../common/services/owned-crud.service'
 import { DateUtil } from '../../common/utils/date.util'
@@ -19,20 +20,28 @@ export class PaymentsService extends OwnedCrudService<Payment> {
     super(paymentModel)
   }
 
-  async createPayment(userId: string, dto: CreatePaymentDto): Promise<Payment> {
+  async createPayment(
+    userId: string,
+    dto: CreatePaymentDto,
+    tx: Transaction | null = null,
+  ): Promise<Payment> {
     const sessions = FIN_SESSIONS[dto.clientPaymentType] ?? 1
-    return this.createForUser(userId, {
-      studentId: dto.studentId ?? null,
-      locationId: dto.locationId ?? null,
-      clientPaymentType: dto.clientPaymentType,
-      clientAmount: dto.clientAmount,
-      sessionsTotal: sessions,
-      sessionsRemaining: sessions,
-      paidAt: dto.paidAt ?? DateUtil.todayIso(),
-      status: 'active',
-      notes: dto.notes ?? '',
-      hallCostId: dto.hallCostId ?? null,
-    })
+    return this.paymentModel.create(
+      {
+        userId,
+        studentId: dto.studentId ?? null,
+        locationId: dto.locationId ?? null,
+        clientPaymentType: dto.clientPaymentType,
+        clientAmount: dto.clientAmount,
+        sessionsTotal: sessions,
+        sessionsRemaining: sessions,
+        paidAt: dto.paidAt ?? DateUtil.todayIso(),
+        status: 'active',
+        notes: dto.notes ?? '',
+        hallCostId: dto.hallCostId ?? null,
+      },
+      { transaction: tx ?? undefined },
+    )
   }
 
   /** Delete payment + cascade its linked hall cost. */

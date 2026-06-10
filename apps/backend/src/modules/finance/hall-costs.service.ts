@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/sequelize'
+import type { Transaction } from 'sequelize'
 
 import { OwnedCrudService } from '../../common/services/owned-crud.service'
 import { DateUtil } from '../../common/utils/date.util'
@@ -15,20 +16,28 @@ export class HallCostsService extends OwnedCrudService<HallCost> {
     super(hallCostModel)
   }
 
-  async createHallCost(userId: string, dto: CreateHallCostDto): Promise<HallCost> {
+  async createHallCost(
+    userId: string,
+    dto: CreateHallCostDto,
+    tx: Transaction | null = null,
+  ): Promise<HallCost> {
     const sessions = FIN_SESSIONS[dto.hallPaymentType] ?? 1
-    return this.createForUser(userId, {
-      studentId: dto.studentId ?? null,
-      locationId: dto.locationId ?? null,
-      hallPaymentType: dto.hallPaymentType,
-      timeSlot: dto.timeSlot ?? 'regular',
-      trainingTime: dto.trainingTime ?? '',
-      hallAmount: dto.hallAmount,
-      sessionsTotal: sessions,
-      sessionsRemaining: sessions,
-      paidAt: dto.paidAt ?? DateUtil.todayIso(),
-      status: 'active',
-      notes: dto.notes ?? '',
-    })
+    return this.hallCostModel.create(
+      {
+        userId,
+        studentId: dto.studentId ?? null,
+        locationId: dto.locationId ?? null,
+        hallPaymentType: dto.hallPaymentType,
+        timeSlot: dto.timeSlot ?? 'regular',
+        trainingTime: dto.trainingTime ?? '',
+        hallAmount: dto.hallAmount,
+        sessionsTotal: sessions,
+        sessionsRemaining: sessions,
+        paidAt: dto.paidAt ?? DateUtil.todayIso(),
+        status: 'active',
+        notes: dto.notes ?? '',
+      },
+      { transaction: tx ?? undefined },
+    )
   }
 }

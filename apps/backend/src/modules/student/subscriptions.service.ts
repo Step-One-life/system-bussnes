@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
 import { InjectModel } from '@nestjs/sequelize'
+import type { Transaction } from 'sequelize'
 
 import { SUB_TYPE_TOTALS } from '@trikick/shared'
 import type { DeductStatus, SubscriptionType, TimeSlot } from '@trikick/shared'
@@ -51,12 +52,18 @@ export class SubscriptionsService {
     studentId: string,
     groupId: string,
     sessionDuration: number | null = null,
+    tx: Transaction | null = null,
   ): Promise<{ sub: Subscription | null; status: DeductStatus }> {
     // Выбор абонемента — чистая функция pickSubForDeduct («свой» по длительности
     // → любой «свой» → общий). Истёкшие по сроку отсеиваются: isActive снимается
     // только при remaining=0, по дате его никто не деактивирует, поэтому без
     // фильтра здесь списание уходило на протухший абонемент вместо авто-платежа.
-    const subs = await this.subModel.findAll({ where: { studentId, isActive: true } })
+    // В транзакции строки блокируются (FOR UPDATE) — параллельные отметки не
+    // прочитают один и тот же remaining.
+    const subs = await this.subModel.findAll({
+      where: { studentId, isActive: true },
+      ...(tx ? { transaction: tx, lock: tx.LOCK.UPDATE } : {}),
+    })
     const sub = pickSubForDeduct(subs, groupId, sessionDuration, DateUtil.todayIso())
     if (!sub) return { sub: null, status: 'none' }
 
@@ -65,7 +72,7 @@ export class SubscriptionsService {
       sub.remaining = 0
       sub.isActive = false
     }
-    await sub.save()
+    await sub.save({ transaction: tx ?? undefined })
 
     let status: DeductStatus = 'ok'
     if (!sub.isActive) status = 'expired'
@@ -88,12 +95,17 @@ export class SubscriptionsService {
   }
 
   /** Точечный возврат занятия на конкретный абонемент (откат отметки). */
-  async restoreById(subscriptionId: string): Promise<Subscription | null> {
-    const sub = await this.subModel.findByPk(subscriptionId)
+  async restoreById(
+    subscriptionId: string,
+    tx: Transaction | null = null,
+  ): Promise<Subscription | null> {
+    const sub = await this.subModel.findByPk(subscriptionId, {
+      ...(tx ? { transaction: tx, lock: tx.LOCK.UPDATE } : {}),
+    })
     if (!sub) return null
     sub.remaining = Math.min(sub.remaining + 1, sub.total)
     if (sub.remaining > 0) sub.isActive = true
-    await sub.save()
+    await sub.save({ transaction: tx ?? undefined })
     return sub
   }
 
