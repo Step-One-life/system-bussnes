@@ -6,7 +6,11 @@ import { useTranslation } from 'react-i18next'
 import { useToast } from 'common/ui'
 import { useGroups } from 'entities/groups/api/use-groups'
 import { studentKeys, useStudents } from 'entities/students/api/use-students'
-import { getSubStatus, subTypeLabel } from 'entities/students/model/subscription-status'
+import {
+  findSubForGroup,
+  getSubStatus,
+  subTypeLabel,
+} from 'entities/students/model/subscription-status'
 
 import { useDeleteTrainingWithRestore } from '../api/use-training-actions'
 import { useTrainings } from '../api/use-trainings'
@@ -24,8 +28,9 @@ export interface AttendRow {
   status: SubStatus
 }
 
-function buildSubLine(student: Student, groupId: string): string {
-  const sub = student.subscriptions.find((s) => s.groupId === groupId && s.isActive) ?? null
+function buildSubLine(student: Student, groupId: string, duration: number | null): string {
+  // Тот же абонемент, что спишет бэк (свой по длительности → свой → общий).
+  const sub = findSubForGroup(student, groupId, duration)
   if (!sub) return ''
   const isSingle = sub.type === '1' || sub.type === '1_90'
   return isSingle
@@ -62,11 +67,15 @@ export function useCalendarTraining({ block, onDone }: UseCalendarTrainingOption
 
   const groupStudents = students.filter((s) => s.groups.includes(block.groupId))
 
+  // Длительность занятия участвует в выборе абонемента (бэк передаёт её в
+  // deduct), поэтому статус/подпись считаются с ней же.
+  const duration = training?.sessionDuration ?? null
+
   const groupRows: AttendRow[] = groupStudents.map((s) => ({
     studentId: s.id,
     name: s.name,
-    subLine: buildSubLine(s, block.groupId),
-    status: getSubStatus(s, block.groupId),
+    subLine: buildSubLine(s, block.groupId, duration),
+    status: getSubStatus(s, block.groupId, duration),
   }))
 
   // Отмеченные ∪ плановые: плановое занятие видно и отмечается из календаря
@@ -84,8 +93,8 @@ export function useCalendarTraining({ block, onDone }: UseCalendarTrainingOption
     return {
       studentId: id,
       name: s?.name ?? t('trainings.item.deleted'),
-      subLine: s ? buildSubLine(s, block.groupId) : '',
-      status: s ? getSubStatus(s, block.groupId) : { label: '—', type: 'none' },
+      subLine: s ? buildSubLine(s, block.groupId, duration) : '',
+      status: s ? getSubStatus(s, block.groupId, duration) : { label: '—', type: 'none' },
     }
   })
 

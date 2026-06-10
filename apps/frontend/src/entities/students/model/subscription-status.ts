@@ -28,12 +28,42 @@ export function getDaysRemaining(sub: Subscription | null): number | null {
   return Math.round((expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
 }
 
+/** Покрывает ли абонемент группу (общий — по списку groupIds). */
+function covers(sub: Subscription, groupId: string): boolean {
+  return sub.groupIds?.length ? sub.groupIds.includes(groupId) : sub.groupId === groupId
+}
+
+/**
+ * Активный абонемент, которым бэк спишет занятие в группе. Зеркало
+ * SubscriptionsService.deduct: «свой» абонемент группы с совпадающей
+ * длительностью → любой «свой» → общий, покрывающий группу.
+ */
+export function findSubForGroup(
+  student: Student,
+  groupId: string,
+  sessionDuration: number | null = null,
+): Subscription | null {
+  const active = student.subscriptions.filter((s) => s.isActive)
+  return (
+    (sessionDuration !== null
+      ? active.find((s) => s.groupId === groupId && s.sessionDuration === sessionDuration)
+      : undefined) ??
+    active.find((s) => s.groupId === groupId) ??
+    active.find((s) => covers(s, groupId)) ??
+    null
+  )
+}
+
 /** Subscription status for a student in a given group. */
-export function getSubStatus(student: Student, groupId: string): SubStatus {
-  const sub = find(student.subscriptions, (s) => s.groupId === groupId && s.isActive)
+export function getSubStatus(
+  student: Student,
+  groupId: string,
+  sessionDuration: number | null = null,
+): SubStatus {
+  const sub = findSubForGroup(student, groupId, sessionDuration)
 
   if (!sub) {
-    const any = find(student.subscriptions, (s) => s.groupId === groupId)
+    const any = find(student.subscriptions, (s) => covers(s, groupId))
     if (any) return { label: 'Нужно продлить', type: 'expired' }
     return { label: 'Нет абонемента', type: 'none' }
   }
