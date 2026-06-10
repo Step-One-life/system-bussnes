@@ -86,7 +86,7 @@
       "needRenew": "Нужно продлить"
     },
     "form": {
-      "deleteTitle": "Удалить группу?",
+      "deleteTitle": "Удалить группу «{{name}}»?",
       "deleteDescription": "Ученики останутся в системе.",
       "deleteImpact": "Безвозвратно удалятся: занятий — {{trainings}}, абонементов — {{subs}}, вся история посещений группы. Ученики останутся в системе.",
       "deleteImpactActive": "Среди удаляемых абонементов есть действующие: {{count}}!",
@@ -176,7 +176,7 @@
     },
     "subCard": {
       "indTraining": "Индивидуальная тренировка",
-      "deleteSubTitle": "Удалить абонемент?",
+      "deleteSubTitle": "Удалить абонемент «{{type}}»?",
       "deductSession": "Списать занятие",
       "newSub": "Новый абонемент",
       "markPaid": "Отметить оплату",
@@ -262,7 +262,7 @@
       "removeFromTraining": "Убрать с тренировки",
       "deleted": "Удалён",
       "noAttendees": "Нет записей об учениках",
-      "deleteTitle": "Удалить тренировку?",
+      "deleteTitle": "Удалить занятие «{{name}}»?",
       "deleteDescription": "Занятия будут возвращены ученикам.",
       "deleteTraining": "Удалить тренировку",
       "edit": "Редактировать"
@@ -370,7 +370,7 @@
       "noStudents": "Нет учеников",
       "attendance": "Посещаемость",
       "noGroupStudents": "В группе нет учеников",
-      "deleteTitle": "Удалить тренировку?",
+      "deleteTitle": "Удалить занятие «{{name}}»?",
       "deleteDescription": "Занятия будут возвращены ученикам.",
       "studentRemoved": "Ученик убран",
       "attendanceSaved": "Посещаемость сохранена",
@@ -429,7 +429,7 @@
       "sessions": "Занятий",
       "prime": "Prime",
       "edit": "Изменить",
-      "deleteTitle": "Удалить эту запись?"
+      "deleteTitle": "Удалить запись «{{name}}»?"
     },
     "form": {
       "addTitle": "Добавить финансовую запись",
@@ -538,7 +538,7 @@
         "hallPrimeCostLabel": "Расход зала — Prime",
         "validityDaysLabel": "Срок действия абонемента",
         "validityDaysSuffix": "дней",
-        "deleteTitle": "Удалить тариф?",
+        "deleteTitle": "Удалить тариф «{{name}}»?",
         "titleRequired": "Укажите название тарифа",
         "unsavedTitle": "Несохранённые изменения",
         "unsavedContent": "Вы изменили тариф, но не нажали «Сохранить». Если уйти сейчас, введённые данные пропадут.",
@@ -614,6 +614,7 @@
     "allSubsOk": "✓ Все абонементы в порядке",
     "attendanceSaved": "Посещаемость сохранена",
     "unpaidCount": "Ожидают оплаты ({{count}})",
+    "allPaid": "✓ Всё оплачено",
     "unpaidModal": {
       "title": "Ожидают оплаты",
       "allPaid": "✓ Все абонементы оплачены"
@@ -677,7 +678,7 @@
       "primeWeekendLabel": "Прайм-тайм в выходные",
       "primeStartPlaceholder": "Начало",
       "primeEndPlaceholder": "Конец",
-      "deleteTitle": "Удалить локацию?",
+      "deleteTitle": "Удалить локацию «{{name}}»?",
       "deleteDescription": "Тарифы локации также будут удалены"
     }
   },

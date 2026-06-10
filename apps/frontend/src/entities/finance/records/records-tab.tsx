@@ -5,7 +5,7 @@ import { PlusOutlined, SearchOutlined } from '@ant-design/icons'
 
 import { useTranslation } from 'react-i18next'
 
-import { EmptyState } from 'common/ui'
+import { EmptyState, ListSkeleton } from 'common/ui'
 
 import { AddPaymentModal } from '../form/add-payment-modal'
 import { EditPaymentModal } from '../form/edit-payment-modal'
@@ -44,7 +44,9 @@ export function RecordsTab() {
         </Button>
       </div>
 
-      {records.isEmpty ? (
+      {records.isLoading ? (
+        <ListSkeleton />
+      ) : records.isEmpty ? (
         <EmptyState
           title={t('finance.records.empty')}
           text={t('finance.records.emptyText')}

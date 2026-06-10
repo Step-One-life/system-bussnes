@@ -1,7 +1,7 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
-import { Button, Checkbox, Modal } from 'antd'
-import { CheckOutlined, ClockCircleOutlined } from '@ant-design/icons'
+import { Button, Checkbox, Input, Modal } from 'antd'
+import { CheckOutlined, ClockCircleOutlined, SearchOutlined } from '@ant-design/icons'
 
 import { useTranslation } from 'react-i18next'
 
@@ -10,7 +10,12 @@ import { getSubStatus, subTypeLabel } from 'entities/students'
 
 import { indKey, useMarkToday } from './use-mark-today'
 
+import type { ChangeEvent } from 'react'
+
 import './mark-today-modal.scss'
+
+/** Поиск появляется только на длинных списках — на коротких он шум. */
+const SEARCH_MIN = 8
 
 interface MarkTodayModalProps {
   open: boolean
@@ -32,10 +37,13 @@ export function MarkTodayModal({ open, onClose }: MarkTodayModalProps) {
     saving,
   } = useMarkToday(open, onClose)
 
+  const [query, setQuery] = useState('')
+
   const inited = useRef(false)
   useEffect(() => {
     if (!open) {
       inited.current = false
+      setQuery('')
       return
     }
     // Seed checkboxes once per open, after today's data is available — avoids
@@ -51,8 +59,28 @@ export function MarkTodayModal({ open, onClose }: MarkTodayModalProps) {
   const hasGroups = todayGroups.length > 0
   const hasContent = hasGroups || todayIndividuals.length > 0
 
+  // Фильтр чисто визуальный: отметки живут в checks/indChecks и при поиске
+  // не теряются. Группы без совпадений скрываются целиком.
+  const q = query.trim().toLowerCase()
+  const matches = (name: string) => !q || name.toLowerCase().includes(q)
+  const grouped = todayGroups.map((tg) => ({
+    tg,
+    all: students.filter((s) => s.groups.includes(tg.groupId)),
+  }))
+  const visibleIndividuals = todayIndividuals.filter((ti) => {
+    const st = students.find((s) => s.id === ti.studentId)
+    return !!st && matches(st.name)
+  })
+  const totalRows =
+    grouped.reduce((acc, g) => acc + g.all.length, 0) + todayIndividuals.length
+  const showSearch = totalRows > SEARCH_MIN
+  const anyVisible =
+    grouped.some(({ all }) => all.some((s) => matches(s.name))) ||
+    visibleIndividuals.length > 0
+
   const handleToggle = (groupId: string, studentId: string) => () =>
     toggle(groupId, studentId)
+  const handleQueryChange = (e: ChangeEvent<HTMLInputElement>) => setQuery(e.target.value)
 
   return (
     <Modal
@@ -80,8 +108,19 @@ export function MarkTodayModal({ open, onClose }: MarkTodayModalProps) {
         <p className="mark-empty">{t('home.markTodayModal.nothingScheduled')}</p>
       ) : (
         <div className="mark-today">
-          {todayGroups.map((tg) => {
-            const grpStudents = students.filter((s) => s.groups.includes(tg.groupId))
+          {showSearch && (
+            <Input
+              allowClear
+              prefix={<SearchOutlined />}
+              placeholder={t('students.filter.searchPlaceholder')}
+              value={query}
+              onChange={handleQueryChange}
+            />
+          )}
+          {q && !anyVisible && <p className="mark-empty">{t('students.notFound')}</p>}
+          {grouped.map(({ tg, all }) => {
+            const grpStudents = all.filter((s) => matches(s.name))
+            if (q && !grpStudents.length) return null
             return (
               <div key={tg.groupId} className="mark-group">
                 <div className="mark-group__head">
@@ -132,7 +171,7 @@ export function MarkTodayModal({ open, onClose }: MarkTodayModalProps) {
             )
           })}
 
-          {todayIndividuals.length > 0 && (
+          {visibleIndividuals.length > 0 && (
             <div className="mark-group">
               <div className="mark-group__head">
                 <span className="mark-group__name">
@@ -140,7 +179,7 @@ export function MarkTodayModal({ open, onClose }: MarkTodayModalProps) {
                 </span>
               </div>
               <div className="mark-group__list">
-                {todayIndividuals.map((ti) => {
+                {visibleIndividuals.map((ti) => {
                   const student = students.find((s) => s.id === ti.studentId)
                   if (!student) return null
                   const st = getSubStatus(student, ti.groupId)

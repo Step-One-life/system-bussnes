@@ -150,7 +150,7 @@ function CalendarTrainingModalInner({
     footer.push(
       <Popconfirm
         key="del"
-        title={t('trainings.cal.deleteTitle')}
+        title={t('trainings.cal.deleteTitle', { name: `${block.label} · ${block.time}` })}
         description={t('trainings.cal.deleteDescription')}
         okText={t('common.delete')}
         cancelText={t('common.cancel')}

@@ -72,7 +72,7 @@ export function IndividualSessionModal({
           </div>
         </Form.Item>
 
-        <Form.Item label={t('trainings.individual.clientLabel')}>
+        <Form.Item label={t('trainings.individual.clientLabel')} required>
           <Select
             value={form.clientId || undefined}
             placeholder={t('trainings.individual.clientPlaceholder')}
@@ -121,7 +121,7 @@ export function IndividualSessionModal({
         </Form.Item>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--sp-4)' }}>
-          <Form.Item label={t('trainings.individual.dateLabel')}>
+          <Form.Item label={t('trainings.individual.dateLabel')} required>
             <Input type="date" value={form.date} onChange={handleDateChange} />
           </Form.Item>
           <Form.Item label={t('trainings.individual.timeLabel')}>

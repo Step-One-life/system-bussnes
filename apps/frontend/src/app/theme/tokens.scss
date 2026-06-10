@@ -62,7 +62,8 @@
 
   --text-primary: #FFFFFF;
   --text-secondary: #EBEBF5CC;
-  --text-muted: #EBEBF566;
+  /* 60% вместо iOS-овских 40%: на --surface даёт ~5.3:1 (WCAG AA ≥ 4.5). */
+  --text-muted: #EBEBF599;
 
   --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.5);
   --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.6);
@@ -82,8 +83,10 @@
   --bottom-nav-bg: rgba(255, 255, 255, 0.75);
 
   --text-primary: #000000;
-  --text-secondary: rgba(60, 60, 67, 0.6);
-  --text-muted: rgba(60, 60, 67, 0.3);
+  /* Подняты до WCAG AA на белом: secondary ~6:1, muted ~4.7:1 (было 1.7:1).
+     Secondary поднят вместе с muted, чтобы не инвертировать иерархию. */
+  --text-secondary: rgba(60, 60, 67, 0.8);
+  --text-muted: rgba(60, 60, 67, 0.72);
 
   --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.04), 0 0 0 0.5px rgba(0,0,0,0.06);
   --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.07), 0 0 0 0.5px rgba(0,0,0,0.05);

@@ -14,7 +14,7 @@ export function useGroupsPage() {
   const { t } = useTranslation()
   const qc = useQueryClient()
   const toast = useToast()
-  const { data: groups = [] } = useGroups()
+  const { data: groups = [], isLoading } = useGroups()
   const deleteGroup = useDeleteGroup()
 
   const [openedGroup, setOpenedGroup] = useState<Group | null>(null)
@@ -63,6 +63,7 @@ export function useGroupsPage() {
 
   return {
     regularGroups,
+    isLoading,
     openedGroup,
     setOpenedGroup,
     formGroup,

@@ -56,7 +56,7 @@ export function StudentFormModal({ open, student, onClose }: StudentFormModalPro
       ]}
     >
       <Form layout="vertical">
-        <Form.Item label={t('students.form.nameLabel')}>
+        <Form.Item label={t('students.form.nameLabel')} required>
           <Input
             value={form.name}
             onChange={handleNameChange}

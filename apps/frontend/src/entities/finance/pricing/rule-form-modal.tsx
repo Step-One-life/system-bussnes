@@ -58,7 +58,7 @@ export function RuleFormModal({
     rule && onDelete && (
       <Popconfirm
         key="delete"
-        title={t('finance.pricing.ruleForm.deleteTitle')}
+        title={t('finance.pricing.ruleForm.deleteTitle', { name: rule.title })}
         okText={t('common.delete')}
         cancelText={t('common.cancel')}
         okButtonProps={{ danger: true }}
@@ -88,7 +88,7 @@ export function RuleFormModal({
       onCancel={handleCancel}
       footer={footer}
       destroyOnHidden
-      width={520}
+      width="min(520px, 95vw)"
     >
       <Form layout="vertical">
         <Form.Item label={t('finance.pricing.ruleForm.titleLabel')}>
@@ -157,6 +157,7 @@ export function RuleFormModal({
         <Form.Item label={t('finance.pricing.ruleForm.validityDaysLabel')}>
           <InputNumber
             min={1}
+            inputMode="numeric"
             value={form.validityDays}
             onChange={(v) => form.setValidityDays(typeof v === 'number' ? v : 35)}
             style={{ width: '100%' }}
@@ -167,6 +168,7 @@ export function RuleFormModal({
           <Form.Item label={t('finance.pricing.ruleForm.clientPriceLabel')}>
             <InputNumber
               min={0}
+              inputMode="decimal"
               value={form.clientPrice}
               onChange={handleNumberChange(form.setClientPrice)}
               style={{ width: '100%' }}
@@ -175,6 +177,7 @@ export function RuleFormModal({
           <Form.Item label={t('finance.pricing.ruleForm.clientPrimePriceLabel')}>
             <InputNumber
               min={0}
+              inputMode="decimal"
               value={form.clientPrimePrice}
               onChange={handleNumberChange(form.setClientPrimePrice)}
               style={{ width: '100%' }}
@@ -183,6 +186,7 @@ export function RuleFormModal({
           <Form.Item label={t('finance.pricing.ruleForm.hallCostLabel')}>
             <InputNumber
               min={0}
+              inputMode="decimal"
               value={form.hallCost}
               onChange={handleNumberChange(form.setHallCost)}
               style={{ width: '100%' }}
@@ -191,6 +195,7 @@ export function RuleFormModal({
           <Form.Item label={t('finance.pricing.ruleForm.hallPrimeCostLabel')}>
             <InputNumber
               min={0}
+              inputMode="decimal"
               value={form.hallPrimeCost}
               onChange={handleNumberChange(form.setHallPrimeCost)}
               style={{ width: '100%' }}

@@ -47,7 +47,7 @@ export function GroupTrainingModal({ open, onClose }: GroupTrainingModalProps) {
       destroyOnHidden
     >
       <Form layout="vertical">
-        <Form.Item label={t('trainings.group.groupLabel')}>
+        <Form.Item label={t('trainings.group.groupLabel')} required>
           <Select
             value={form.groupId || undefined}
             placeholder={t('trainings.group.groupPlaceholder')}
@@ -56,7 +56,7 @@ export function GroupTrainingModal({ open, onClose }: GroupTrainingModalProps) {
           />
         </Form.Item>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--sp-4)' }}>
-          <Form.Item label={t('trainings.group.dateLabel')}>
+          <Form.Item label={t('trainings.group.dateLabel')} required>
             <Input
               type="date"
               value={form.date}

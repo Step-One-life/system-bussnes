@@ -13,7 +13,7 @@ import {
 
 import { useTranslation } from 'react-i18next'
 
-import { KpiCard, PageHeader, WarningItem } from 'common/ui'
+import { KpiCard, ListSkeleton, PageHeader, WarningItem } from 'common/ui'
 import { StudentDrawer } from 'entities/students'
 import { RenewSubModal } from 'entities/students/subscriptions/renew-sub-modal'
 import {
@@ -119,7 +119,9 @@ export function HomePage() {
         title={t('nav.home')}
         actions={
           <>
-            {unpaidCount > 0 && (
+            {/* При нуле кнопка не исчезает (выглядит как пропажа функции), а
+                становится спокойным «✓ Всё оплачено». */}
+            {unpaidCount > 0 ? (
               <Button
                 className="btn-unpaid"
                 icon={<DollarOutlined />}
@@ -129,6 +131,11 @@ export function HomePage() {
                   {t('home.unpaidCount', { count: unpaidCount })}
                 </span>
                 <span className="btn-label--short">{unpaidCount}</span>
+              </Button>
+            ) : (
+              <Button className="btn-unpaid" disabled>
+                <span className="btn-label--full">{t('home.allPaid')}</span>
+                <span className="btn-label--short">✓</span>
               </Button>
             )}
             <Button
@@ -147,20 +154,14 @@ export function HomePage() {
       />
 
       {page.kpis && (
+        // Проблемные показатели первыми: тренер сперва видит, где беда.
         <div className="kpi-grid" style={{ marginBottom: 'var(--sp-6)' }}>
           <KpiCard
-            label={t('home.kpiTotal')}
-            value={page.kpis.total}
-            icon={<TeamOutlined />}
-            variant="accent"
-            onClick={handleSelectTotal}
-          />
-          <KpiCard
-            label={t('home.kpiMonth')}
-            value={page.kpis.monthTrainings}
-            icon={<CalendarOutlined />}
-            variant="ok"
-            onClick={handleSelectMonth}
+            label={t('home.kpiExpired')}
+            value={page.kpis.expired}
+            icon={<AlertOutlined />}
+            variant="danger"
+            onClick={handleSelectExpired}
           />
           <KpiCard
             label={t('home.kpiEnding')}
@@ -170,11 +171,18 @@ export function HomePage() {
             onClick={handleSelectEnding}
           />
           <KpiCard
-            label={t('home.kpiExpired')}
-            value={page.kpis.expired}
-            icon={<AlertOutlined />}
-            variant="danger"
-            onClick={handleSelectExpired}
+            label={t('home.kpiMonth')}
+            value={page.kpis.monthTrainings}
+            icon={<CalendarOutlined />}
+            variant="ok"
+            onClick={handleSelectMonth}
+          />
+          <KpiCard
+            label={t('home.kpiTotal')}
+            value={page.kpis.total}
+            icon={<TeamOutlined />}
+            variant="accent"
+            onClick={handleSelectTotal}
           />
         </div>
       )}
@@ -182,12 +190,16 @@ export function HomePage() {
       <div className="home-cols">
         <section className="home-cols__col">
           <div className="section-title">{t('home.trainingsToday')}</div>
-          <TrainingDayCalendar
-            trainings={page.trainings}
-            students={page.students}
-            groups={page.groups}
-            onBlockClick={setCalBlock}
-          />
+          {page.isLoading ? (
+            <ListSkeleton rows={2} />
+          ) : (
+            <TrainingDayCalendar
+              trainings={page.trainings}
+              students={page.students}
+              groups={page.groups}
+              onBlockClick={setCalBlock}
+            />
+          )}
         </section>
 
         <section className="home-cols__col">

@@ -3,7 +3,7 @@ import { PlusOutlined } from '@ant-design/icons'
 
 import { useTranslation } from 'react-i18next'
 
-import { EmptyState, PageHeader } from 'common/ui'
+import { EmptyState, ListSkeleton, PageHeader } from 'common/ui'
 import { GroupDetail, GroupFormModal, GroupList } from 'entities/groups'
 
 import { useGroupsPage } from './use-groups-page'
@@ -46,7 +46,9 @@ export function GroupsPage() {
         }
       />
 
-      {page.regularGroups.length ? (
+      {page.isLoading ? (
+        <ListSkeleton rows={3} />
+      ) : page.regularGroups.length ? (
         <GroupList
           groups={page.regularGroups}
           onOpen={page.setOpenedGroup}

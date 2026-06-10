@@ -5,7 +5,7 @@ import { UserAddOutlined } from '@ant-design/icons'
 
 import { useTranslation } from 'react-i18next'
 
-import { EmptyState, PageHeader } from 'common/ui'
+import { EmptyState, ListSkeleton, PageHeader } from 'common/ui'
 import { useGroups } from 'entities/groups'
 import {
   StudentDrawer,
@@ -18,7 +18,7 @@ import {
 
 export function StudentsPage() {
   const { t } = useTranslation()
-  const { data: students = [] } = useStudents()
+  const { data: students = [], isLoading } = useStudents()
   const { data: groups = [] } = useGroups()
   const { filter, setFilter, filtered, hasActiveFilter } = useStudentFilter(students)
 
@@ -63,7 +63,9 @@ export function StudentsPage() {
 
       <StudentToolbar filter={filter} onChange={setFilter} groupNames={groupNames} />
 
-      {filtered.length ? (
+      {isLoading ? (
+        <ListSkeleton />
+      ) : filtered.length ? (
         <StudentList students={filtered} indNames={indNames} onOpen={setDrawerId} />
       ) : (
         <EmptyState

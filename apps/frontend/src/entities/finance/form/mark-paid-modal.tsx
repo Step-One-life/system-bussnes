@@ -169,6 +169,7 @@ export function MarkPaidModal({
             min={0}
             value={amount}
             controls={false}
+            inputMode="decimal"
             style={{ width: '100%' }}
             onChange={handleAmountChange}
           />
@@ -178,6 +179,7 @@ export function MarkPaidModal({
             min={0}
             value={hallAmount}
             controls={false}
+            inputMode="decimal"
             style={{ width: '100%' }}
             onChange={handleHallChange}
           />

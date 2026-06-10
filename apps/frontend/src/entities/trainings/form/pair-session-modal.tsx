@@ -55,7 +55,7 @@ export function PairSessionModal({ open, indGroupId, onClose }: PairSessionModal
           </div>
         </Form.Item>
 
-        <Form.Item label={t('trainings.pair.clientA')}>
+        <Form.Item label={t('trainings.pair.clientA')} required>
           <Select
             value={form.clientA || undefined}
             placeholder={t('trainings.individual.clientPlaceholder')}
@@ -63,7 +63,7 @@ export function PairSessionModal({ open, indGroupId, onClose }: PairSessionModal
             options={options}
           />
         </Form.Item>
-        <Form.Item label={t('trainings.pair.clientB')}>
+        <Form.Item label={t('trainings.pair.clientB')} required>
           <Select
             value={form.clientB || undefined}
             placeholder={t('trainings.individual.clientPlaceholder')}
@@ -73,7 +73,7 @@ export function PairSessionModal({ open, indGroupId, onClose }: PairSessionModal
         </Form.Item>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--sp-4)' }}>
-          <Form.Item label={t('trainings.individual.dateLabel')}>
+          <Form.Item label={t('trainings.individual.dateLabel')} required>
             <Input type="date" value={form.date} onChange={handleDateChange} />
           </Form.Item>
           <Form.Item label={t('trainings.individual.timeLabel')}>

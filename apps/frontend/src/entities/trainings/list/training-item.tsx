@@ -155,7 +155,9 @@ export function TrainingItem({
             />
           )}
           <Popconfirm
-            title={t('trainings.item.deleteTitle')}
+            title={t('trainings.item.deleteTitle', {
+              name: [title, training.time].filter(Boolean).join(' · '),
+            })}
             description={t('trainings.item.deleteDescription')}
             okText={t('common.delete')}
             cancelText={t('common.cancel')}
