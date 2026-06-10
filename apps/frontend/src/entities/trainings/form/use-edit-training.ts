@@ -6,7 +6,7 @@ import { useToast } from 'common/ui'
 import { formatDateShort } from 'common/utils/date'
 
 import { useTrainings, useUpdateTraining, useUpdateTrainingSeries } from '../api/use-trainings'
-import { checkTrainingConflict } from '../model/training-logic'
+import { checkSeriesConflicts, checkTrainingConflict } from '../model/training-logic'
 
 import type { Training, TrainingConflict } from '../model/types'
 
@@ -108,11 +108,14 @@ export function useEditTraining({ training, onDone }: UseEditTrainingOptions) {
       // её дате с новым временем, исключая сами занятия серии.
       const series = trainings.filter((t) => t.recurringId === training.recurringId)
       const seriesIds = series.map((t) => t.id)
-      const conflictDates: string[] = []
-      for (const s of series) {
-        const c = await checkTrainingConflict(s.date, time, training.groupId, seriesIds, s.sessionDuration)
-        if (c.length) conflictDates.push(formatDateShort(s.date))
-      }
+      const conflictDates = (
+        await checkSeriesConflicts(
+          series.map((s) => ({ date: s.date, sessionDuration: s.sessionDuration })),
+          time,
+          training.groupId,
+          seriesIds,
+        )
+      ).map(formatDateShort)
       if (conflictDates.length) {
         toast({
           type: 'error',

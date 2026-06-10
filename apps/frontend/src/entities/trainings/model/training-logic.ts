@@ -21,21 +21,16 @@ import { isPrimeTime } from '@trikick/shared'
 // и бэка.
 export { isPrimeTime }
 
-/** Trainings that overlap with a proposed slot. */
-export async function checkTrainingConflict(
+/** Чистая проверка наслоения по уже загруженным данным. */
+function findConflicts(
+  allTrainings: Training[],
+  groupMap: Record<string, Group>,
   date: string,
   time: string,
   groupId: string,
-  excludeId: string | string[] | null = null,
+  excludeIds: string[],
   sessionDuration?: number,
-): Promise<TrainingConflict[]> {
-  if (!time) return []
-
-  const excludeIds = Array.isArray(excludeId) ? excludeId : excludeId ? [excludeId] : []
-
-  const [allTrainings, allGroups] = await Promise.all([getTrainings(), getGroups()])
-
-  const groupMap: Record<string, Group> = Object.fromEntries(map(allGroups, (g) => [g.name, g]))
+): TrainingConflict[] {
   // Для новой тренировки приоритет у явно переданной длительности (например,
   // индивидуальная сессия 90 мин), затем длительность группы, затем 60.
   const newDur = sessionDuration ?? groupMap[groupId]?.duration ?? 60
@@ -65,6 +60,51 @@ export async function checkTrainingConflict(
     const end = timeToMinutes(t.time) + durationOf(t)
     return { groupId: t.groupId, start: t.time, end: minutesToTime(end) }
   })
+}
+
+const toExcludeIds = (excludeId: string | string[] | null): string[] =>
+  Array.isArray(excludeId) ? excludeId : excludeId ? [excludeId] : []
+
+/** Trainings that overlap with a proposed slot. */
+export async function checkTrainingConflict(
+  date: string,
+  time: string,
+  groupId: string,
+  excludeId: string | string[] | null = null,
+  sessionDuration?: number,
+): Promise<TrainingConflict[]> {
+  if (!time) return []
+  const [allTrainings, allGroups] = await Promise.all([getTrainings(), getGroups()])
+  const groupMap: Record<string, Group> = Object.fromEntries(map(allGroups, (g) => [g.name, g]))
+  return findConflicts(allTrainings, groupMap, date, time, groupId, toExcludeIds(excludeId), sessionDuration)
+}
+
+export interface SeriesSlot {
+  date: string
+  sessionDuration?: number
+}
+
+/**
+ * Конфликтующие даты серии. Тренировки и группы грузятся ОДИН раз на всю
+ * серию (а не на каждую дату, как при checkTrainingConflict в цикле).
+ */
+export async function checkSeriesConflicts(
+  slots: SeriesSlot[],
+  time: string,
+  groupId: string,
+  excludeId: string | string[] | null = null,
+): Promise<string[]> {
+  if (!time || !slots.length) return []
+  const [allTrainings, allGroups] = await Promise.all([getTrainings(), getGroups()])
+  const groupMap: Record<string, Group> = Object.fromEntries(map(allGroups, (g) => [g.name, g]))
+  const excludeIds = toExcludeIds(excludeId)
+  return slots
+    .filter(
+      (s) =>
+        findConflicts(allTrainings, groupMap, s.date, time, groupId, excludeIds, s.sessionDuration)
+          .length > 0,
+    )
+    .map((s) => s.date)
 }
 
 export interface MarkResult {

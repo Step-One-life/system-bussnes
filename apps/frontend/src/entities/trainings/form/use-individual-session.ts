@@ -20,7 +20,7 @@ import {
 } from 'entities/students/model/students.repo'
 
 import { useCreateTraining } from '../api/use-trainings'
-import { checkTrainingConflict, isPrimeTime } from '../model/training-logic'
+import { checkSeriesConflicts, checkTrainingConflict, isPrimeTime } from '../model/training-logic'
 import { weeklySeriesDates } from '../model/weekly-series'
 
 import type { SubscriptionType } from 'entities/students/model/types'
@@ -136,11 +136,13 @@ export function useIndividualSession({ indGroupId, onDone, isOnline = false }: U
     const dates = weeklySeriesDates(date, seriesLen)
     // Проверяем конфликт по КАЖДОЙ дате серии, а не только по первой —
     // иначе будущие занятия серии могут наслоиться на существующие.
-    const conflictDates: string[] = []
-    for (const d of dates) {
-      const c = await checkTrainingConflict(d, time, indGroupId, null, duration)
-      if (c.length) conflictDates.push(formatDateShort(d))
-    }
+    const conflictDates = (
+      await checkSeriesConflicts(
+        dates.map((d) => ({ date: d, sessionDuration: duration })),
+        time,
+        indGroupId,
+      )
+    ).map(formatDateShort)
     if (conflictDates.length) {
       toast({
         type: 'error',

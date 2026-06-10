@@ -11,7 +11,7 @@ import { useLocations } from 'entities/locations'
 import { studentKeys, useStudents } from 'entities/students/api/use-students'
 
 import { useCreateTraining } from '../api/use-trainings'
-import { checkTrainingConflict, isPrimeTime } from '../model/training-logic'
+import { checkSeriesConflicts, isPrimeTime } from '../model/training-logic'
 import { weeklySeriesDates } from '../model/weekly-series'
 
 interface UsePairSessionOptions {
@@ -61,11 +61,13 @@ export function usePairSession({ indGroupId, onDone }: UsePairSessionOptions) {
     }
     const seriesLen = recurring ? Math.max(1, repeatCount) : 1
     const dates = weeklySeriesDates(date, seriesLen)
-    const conflictDates: string[] = []
-    for (const d of dates) {
-      const c = await checkTrainingConflict(d, time, indGroupId, null, duration)
-      if (c.length) conflictDates.push(formatDateShort(d))
-    }
+    const conflictDates = (
+      await checkSeriesConflicts(
+        dates.map((d) => ({ date: d, sessionDuration: duration })),
+        time,
+        indGroupId,
+      )
+    ).map(formatDateShort)
     if (conflictDates.length) {
       toast({
         type: 'error',
