@@ -6,6 +6,7 @@ import { SUB_TYPE_TOTALS } from '@trikick/shared'
 import type { DeductStatus, SubscriptionType, TimeSlot } from '@trikick/shared'
 
 import { DateUtil } from '../../common/utils/date.util'
+import { Payment } from '../finance/payment.model'
 import { covers, pickSubForDeduct } from './lib/pick-subscription'
 import { Subscription } from './subscription.model'
 
@@ -13,6 +14,7 @@ import { Subscription } from './subscription.model'
 export class SubscriptionsService {
   constructor(
     @InjectModel(Subscription) private readonly subModel: typeof Subscription,
+    @InjectModel(Payment) private readonly paymentModel: typeof Payment,
   ) {}
 
   async add(
@@ -127,8 +129,19 @@ export class SubscriptionsService {
     await sub.destroy()
   }
 
-  async linkPayment(subId: string, paymentId: string): Promise<void> {
-    await this.subModel.update({ finPaymentId: paymentId }, { where: { id: subId } })
+  async linkPayment(
+    userId: string,
+    studentId: string,
+    subId: string,
+    paymentId: string,
+  ): Promise<void> {
+    // Владение обязательно: абонемент — именно этого ученика, платёж — этого
+    // тренера. Раньше можно было пометить «оплаченным» чужой абонемент (IDOR).
+    const sub = await this.subModel.findOne({ where: { id: subId, studentId } })
+    if (!sub) throw new NotFoundException('Абонемент не найден')
+    const payment = await this.paymentModel.findOne({ where: { id: paymentId, userId } })
+    if (!payment) throw new NotFoundException('Платёж не найден')
+    await sub.update({ finPaymentId: paymentId })
   }
 
   private async findActiveOrLatest(

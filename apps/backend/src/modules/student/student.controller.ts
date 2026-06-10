@@ -121,7 +121,7 @@ export class StudentController {
     @Body() dto: LinkPaymentDto,
   ): Promise<Student> {
     await this.studentService.findOneForUser(user.id, id)
-    await this.subscriptionsService.linkPayment(subId, dto.paymentId)
+    await this.subscriptionsService.linkPayment(user.id, id, subId, dto.paymentId)
     return this.studentService.findOneForUser(user.id, id)
   }
 
