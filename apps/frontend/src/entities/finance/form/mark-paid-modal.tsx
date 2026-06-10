@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next'
 
 import { useToast } from 'common/ui'
 import { todayISO } from 'common/utils/date'
-import { FIN_LABELS } from 'entities/finance/model/finance-constants'
+import { finLabel } from 'entities/finance/model/finance-constants'
 import { useGroups } from 'entities/groups/api/use-groups'
 import { useLocations } from 'entities/locations'
 import { studentKeys } from 'entities/students/api/use-students'
@@ -57,7 +57,7 @@ export function MarkPaidModal({
   const { data: rules = [] } = usePricingRules(locationId)
 
   const paymentType = sub ? subPaymentType(sub.type, isIndividual) : null
-  const typeLabel = paymentType ? (FIN_LABELS[paymentType] ?? paymentType) : t('common.dash')
+  const typeLabel = paymentType ? finLabel(paymentType) : t('common.dash')
   const matchedRule = sub ? matchRule(rules, subTypeToTuple(sub.type, isIndividual)) : null
 
   // No training time on a subscription, so the trainer picks prime/regular;

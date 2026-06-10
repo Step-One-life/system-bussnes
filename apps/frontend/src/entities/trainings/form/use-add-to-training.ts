@@ -56,10 +56,11 @@ export function useAddToTraining({ training, onDone }: UseAddToTrainingOptions) 
       const sub = s.subscriptions.find((x) => x.groupId === training.groupId && x.isActive) ?? null
       const days = sub ? getDaysRemaining(sub) : null
       const metaLabel = sub
-        ? `${sub.remaining}/${sub.total} зан.${
-            days !== null ? ` · ${days < 0 ? 'срок истёк' : `${days} дн.`}` : ''
-          }`
-        : 'нет абонемента'
+        ? t('students.sub.sessionsShort', { remaining: sub.remaining, total: sub.total }) +
+          (days !== null
+            ? ` · ${days < 0 ? t('students.sub.expiredShort') : t('students.sub.daysShort', { count: days })}`
+            : '')
+        : t('students.sub.noSub')
       return { id: s.id, name: s.name, metaLabel, status: getSubStatus(s, training.groupId) }
     })
 

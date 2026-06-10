@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 
+import i18n from 'i18next'
 import { useTranslation } from 'react-i18next'
 
 import { useToast } from 'common/ui'
@@ -35,7 +36,7 @@ function buildSubLine(student: Student, groupId: string, duration: number | null
   const isSingle = sub.type === '1' || sub.type === '1_90'
   return isSingle
     ? subTypeLabel(sub.type)
-    : `${subTypeLabel(sub.type)} · осталось ${sub.remaining}`
+    : `${subTypeLabel(sub.type)} · ${i18n.t('students.sub.remainingShort', { count: sub.remaining })}`
 }
 
 interface UseCalendarTrainingOptions {

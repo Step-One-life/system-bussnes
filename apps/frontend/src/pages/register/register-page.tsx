@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { Button, Form, Input } from 'antd'
 import { LockOutlined, MailOutlined, UserOutlined } from '@ant-design/icons'
 
+import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
 
 import { useToast } from 'common/ui'
@@ -14,6 +15,7 @@ import type { RegisterInput } from 'entities/auth/model/types'
 import '../login/auth-layout.scss'
 
 export function RegisterPage() {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const toast = useToast()
   const { register } = useAuth()
@@ -23,10 +25,10 @@ export function RegisterPage() {
     setLoading(true)
     try {
       await register(values)
-      toast({ type: 'success', title: 'Аккаунт создан' })
+      toast({ type: 'success', title: t('auth.accountCreated') })
       navigate('/', { replace: true })
     } catch (e) {
-      toast({ type: 'error', title: e instanceof Error ? e.message : 'Ошибка регистрации' })
+      toast({ type: 'error', title: e instanceof Error ? e.message : t('auth.registerError') })
     } finally {
       setLoading(false)
     }
@@ -34,12 +36,12 @@ export function RegisterPage() {
 
   return (
     <AuthScreen
-      subtitle="Создание аккаунта"
+      subtitle={t('auth.registerSubtitle')}
       footer={
         <>
-          Уже есть аккаунт?{' '}
+          {t('auth.haveAccount')}{' '}
           <Link to="/login" className="auth-screen__link">
-            Войти
+            {t('auth.loginLink')}
           </Link>
         </>
       }
@@ -47,27 +49,27 @@ export function RegisterPage() {
       <Form layout="vertical" onFinish={handleSubmit} requiredMark={false}>
         <Form.Item
           name="name"
-          label="Имя"
-          rules={[{ required: true, message: 'Введите имя' }]}
+          label={t('auth.nameLabel')}
+          rules={[{ required: true, message: t('auth.nameRequired') }]}
         >
-          <Input prefix={<UserOutlined />} placeholder="Иван Тренеров" size="large" />
+          <Input prefix={<UserOutlined />} placeholder={t('auth.namePlaceholder')} size="large" />
         </Form.Item>
         <Form.Item
           name="email"
           label="Email"
-          rules={[{ required: true, type: 'email', message: 'Введите корректный email' }]}
+          rules={[{ required: true, type: 'email', message: t('auth.emailInvalid') }]}
         >
           <Input prefix={<MailOutlined />} placeholder="trainer@example.com" size="large" />
         </Form.Item>
         <Form.Item
           name="password"
-          label="Пароль"
-          rules={[{ required: true, min: 6, message: 'Минимум 6 символов' }]}
+          label={t('auth.passwordLabel')}
+          rules={[{ required: true, min: 6, message: t('auth.passwordMin') }]}
         >
           <Input.Password prefix={<LockOutlined />} placeholder="••••••••" size="large" />
         </Form.Item>
         <Button type="primary" htmlType="submit" block size="large" loading={loading}>
-          Зарегистрироваться
+          {t('auth.registerBtn')}
         </Button>
       </Form>
     </AuthScreen>

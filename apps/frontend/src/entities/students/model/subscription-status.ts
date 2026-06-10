@@ -1,20 +1,12 @@
+import i18n from 'i18next'
 import find from 'lodash/find'
 import isEmpty from 'lodash/isEmpty'
 import map from 'lodash/map'
 
 import type { Student, Subscription, SubStatus } from './types'
 
-const SUB_TYPE_LABELS: Record<string, string> = {
-  '1': 'Разовое',
-  '4': '4 занятия',
-  '8': '8 занятий',
-  '1_90': 'Разовое 1.5ч',
-  '4_90': '4 занятия 1.5ч',
-  '8_90': '8 занятий 1.5ч',
-}
-
 export function subTypeLabel(type: string): string {
-  return SUB_TYPE_LABELS[type] ?? type
+  return i18n.t(`students.subTypes.${type}`, { defaultValue: type })
 }
 
 /** Days until subscription expires (null if no expiresAt). */
@@ -64,27 +56,30 @@ export function getSubStatus(
 
   if (!sub) {
     const any = find(student.subscriptions, (s) => covers(s, groupId))
-    if (any) return { label: 'Нужно продлить', type: 'expired' }
-    return { label: 'Нет абонемента', type: 'none' }
+    if (any) return { label: i18n.t('students.status.renew'), type: 'expired' }
+    return { label: i18n.t('students.status.none'), type: 'none' }
   }
 
   const days = getDaysRemaining(sub)
 
-  if (days !== null && days < 0) return { label: 'Истёк срок', type: 'expired' }
-  if (sub.remaining === 0) return { label: 'Нужно продлить', type: 'expired' }
+  if (days !== null && days < 0)
+    return { label: i18n.t('students.status.expired'), type: 'expired' }
+  if (sub.remaining === 0)
+    return { label: i18n.t('students.status.renew'), type: 'expired' }
   if (
     sub.type !== '1' &&
     sub.type !== '1_90' &&
     (sub.remaining <= 1 || (days !== null && days <= 7))
   ) {
-    return { label: 'Заканчивается', type: 'ending' }
+    return { label: i18n.t('students.status.ending'), type: 'ending' }
   }
-  return { label: 'Активен', type: 'active' }
+  return { label: i18n.t('students.status.active'), type: 'active' }
 }
 
 /** Worst status across all of a student's groups. */
 export function getOverallSubStatus(student: Student): SubStatus {
-  if (isEmpty(student.groups)) return { label: 'Нет групп', type: 'none' }
+  if (isEmpty(student.groups))
+    return { label: i18n.t('students.status.noGroups'), type: 'none' }
 
   const statuses = map(student.groups, (g) => getSubStatus(student, g))
   const priority: Record<string, number> = { expired: 3, ending: 2, active: 1, none: 0 }

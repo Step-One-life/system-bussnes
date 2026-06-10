@@ -1,14 +1,14 @@
 import { useTranslation } from 'react-i18next'
 
 import { BreakdownChart, MonthlyChart, TopClientsChart } from './finance-charts'
-import { PERIOD_LABELS, useFinanceStats } from './use-finance-stats'
+import { useFinanceStats } from './use-finance-stats'
 
 import type { FinancePeriod } from './use-finance-stats'
 
 import './chart-setup'
 import './stats-tab.scss'
 
-const PERIODS = Object.keys(PERIOD_LABELS) as FinancePeriod[]
+const PERIODS: FinancePeriod[] = ['month', 'quarter', 'year', 'all']
 
 const PERIOD_KEYS: Record<FinancePeriod, string> = {
   month: 'finance.stats.periodMonth',

@@ -31,17 +31,10 @@ function today(): string {
   return todayISO()
 }
 
-const SUB_OPTIONS: Record<number, { value: SubscriptionType; label: string }[]> = {
-  60: [
-    { value: '1', label: 'Разовое посещение' },
-    { value: '4', label: '4 занятия' },
-    { value: '8', label: '8 занятий' },
-  ],
-  90: [
-    { value: '1_90', label: 'Разовое 1.5ч' },
-    { value: '4_90', label: '4 занятия 1.5ч' },
-    { value: '8_90', label: '8 занятий 1.5ч' },
-  ],
+// Метки — ключи subscriptions.add.type_<value> в локалях.
+const SUB_OPTIONS: Record<number, SubscriptionType[]> = {
+  60: ['1', '4', '8'],
+  90: ['1_90', '4_90', '8_90'],
 }
 
 type TimeSlot = 'regular' | 'prime'
@@ -99,7 +92,7 @@ export function useIndividualSession({ indGroupId, onDone, isOnline = false }: U
 
   const setDuration = (next: number) => {
     setDurationState(next)
-    setSubType(SUB_OPTIONS[next][0].value)
+    setSubType(SUB_OPTIONS[next][0])
   }
 
   const sortedStudents = useMemo(
@@ -113,7 +106,10 @@ export function useIndividualSession({ indGroupId, onDone, isOnline = false }: U
       (s) => s.groupId === indGroupId && s.isActive && (s.sessionDuration ?? 60) === duration,
     ) ?? null
 
-  const subOptions = SUB_OPTIONS[duration]
+  const subOptions = SUB_OPTIONS[duration].map((value) => ({
+    value,
+    label: t(`subscriptions.add.type_${value}`),
+  }))
 
   const { data: conflicts = [] } = useQuery({
     queryKey: ['training-conflict', indGroupId, date, time, duration],

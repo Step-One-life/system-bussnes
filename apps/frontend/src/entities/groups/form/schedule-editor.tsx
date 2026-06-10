@@ -2,7 +2,7 @@ import { Checkbox, TimePicker } from 'antd'
 
 import { useTranslation } from 'react-i18next'
 
-import { WEEK_DAYS } from './schedule-config'
+import { WEEKDAY_ABBRS, weekdayFullLabel } from 'common/utils/weekdays'
 
 import type { ScheduleEntry } from '../model/types'
 import type { CheckboxChangeEvent } from 'antd/es/checkbox'
@@ -39,13 +39,13 @@ export function ScheduleEditor({ value, onChange }: ScheduleEditorProps) {
 
   return (
     <div className="schedule-editor">
-      {WEEK_DAYS.map(({ abbr, full }) => {
+      {WEEKDAY_ABBRS.map((abbr) => {
         const entry = entryFor(abbr)
         const active = !!entry
         return (
           <div key={abbr} className={`schedule-row${active ? ' schedule-row--active' : ''}`}>
             <Checkbox checked={active} onChange={handleToggleDay(abbr)}>
-              {full}
+              {weekdayFullLabel(abbr)}
             </Checkbox>
             <TimePicker
               format="HH:mm"

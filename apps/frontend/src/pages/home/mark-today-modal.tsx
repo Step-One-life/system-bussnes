@@ -104,7 +104,7 @@ export function MarkTodayModal({ open, onClose }: MarkTodayModalProps) {
                       const subLine = sub
                         ? isSingle
                           ? subTypeLabel(sub.type)
-                          : `${subTypeLabel(sub.type)} · осталось ${sub.remaining}`
+                          : `${subTypeLabel(sub.type)} · ${t('students.sub.remainingShort', { count: sub.remaining })}`
                         : ''
                       const checked = checks[tg.groupId]?.has(s.id) ?? false
                       return (
@@ -152,7 +152,7 @@ export function MarkTodayModal({ open, onClose }: MarkTodayModalProps) {
                   const subLine = sub
                     ? isSingle
                       ? subTypeLabel(sub.type)
-                      : `${subTypeLabel(sub.type)} · осталось ${sub.remaining}`
+                      : `${subTypeLabel(sub.type)} · ${t('students.sub.remainingShort', { count: sub.remaining })}`
                     : ''
                   const checked =
                     indChecks[indKey(ti.trainingId, ti.studentId)] ?? ti.originalPresent

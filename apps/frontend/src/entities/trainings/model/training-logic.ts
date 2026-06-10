@@ -1,8 +1,10 @@
+import i18n from 'i18next'
 import filter from 'lodash/filter'
 import isEmpty from 'lodash/isEmpty'
 import map from 'lodash/map'
 
 import { minutesToTime, timeToMinutes } from 'common/utils/date'
+import { weekdayShortLabel } from 'common/utils/weekdays'
 import { getGroups } from 'entities/groups/model/groups.repo'
 import { getStudents } from 'entities/students/model/students.repo'
 
@@ -142,7 +144,7 @@ export function formatSchedule(group: Group | null): string {
   if (!group) return ''
 
   const schedule = group.schedule ?? []
-  if (isEmpty(schedule) && !group.duration) return 'Расписание не задано'
+  if (isEmpty(schedule) && !group.duration) return i18n.t('groups.schedule.notSet')
 
   let schedulePart = ''
   if (!isEmpty(schedule)) {
@@ -153,12 +155,12 @@ export function formatSchedule(group: Group | null): string {
       byTime.get(key)!.push(day)
     }
     schedulePart = [...byTime.entries()]
-      .map(([time, days]) => days.join(', ') + (time ? ' ' + time : ''))
+      .map(([time, days]) => days.map(weekdayShortLabel).join(', ') + (time ? ' ' + time : ''))
       .join(' | ')
   }
 
   const parts: string[] = []
   if (schedulePart) parts.push(schedulePart)
-  if (group.duration) parts.push(group.duration + ' мин')
-  return parts.join(' · ') || 'Расписание не задано'
+  if (group.duration) parts.push(i18n.t('groups.schedule.minutes', { count: group.duration }))
+  return parts.join(' · ') || i18n.t('groups.schedule.notSet')
 }

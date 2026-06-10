@@ -10,7 +10,7 @@ import { useTranslation } from 'react-i18next'
 
 import { useToast } from 'common/ui'
 import { formatDateShort } from 'common/utils/date'
-import { FIN_LABELS } from 'entities/finance/model/finance-constants'
+import { finLabel } from 'entities/finance/model/finance-constants'
 import { useStudents } from 'entities/students'
 
 import { useDeletePayment, useHallCosts, usePayments } from '../api/use-finance'
@@ -25,7 +25,7 @@ export interface FinanceRecordItem {
 }
 
 export function useFinanceRecords() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const toast = useToast()
   const { data: payments = [] } = usePayments()
   const { data: hallCosts = [] } = useHallCosts()
@@ -50,14 +50,16 @@ export function useFinanceRecords() {
         const searchValue = join(
           [
             studentName ?? '',
-            FIN_LABELS[p.client_payment_type] ?? p.client_payment_type,
+            finLabel(p.client_payment_type),
             formatDateShort(p.paid_at),
           ],
           ' ',
         ).toLowerCase()
         return { payment: p, hallCost, studentName, searchValue }
       }),
-    [payments, studentMap, hallMap],
+    // Язык в deps: после переключения языка поиск идёт по новым меткам.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [payments, studentMap, hallMap, i18n.language],
   )
 
   const filtered = useMemo(() => {
