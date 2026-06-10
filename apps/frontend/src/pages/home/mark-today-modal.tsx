@@ -8,7 +8,7 @@ import { useTranslation } from 'react-i18next'
 import { StatusBadge } from 'common/ui'
 import { getSubStatus, subTypeLabel } from 'entities/students'
 
-import { useMarkToday } from './use-mark-today'
+import { indKey, useMarkToday } from './use-mark-today'
 
 import './mark-today-modal.scss'
 
@@ -154,13 +154,17 @@ export function MarkTodayModal({ open, onClose }: MarkTodayModalProps) {
                       ? subTypeLabel(sub.type)
                       : `${subTypeLabel(sub.type)} · осталось ${sub.remaining}`
                     : ''
-                  const checked = indChecks[ti.trainingId] ?? ti.originalPresent
+                  const checked =
+                    indChecks[indKey(ti.trainingId, ti.studentId)] ?? ti.originalPresent
                   return (
                     <label
-                      key={ti.trainingId}
+                      key={indKey(ti.trainingId, ti.studentId)}
                       className={`mark-row${checked ? ' mark-row--checked' : ''}`}
                     >
-                      <Checkbox checked={checked} onChange={() => toggleInd(ti.trainingId)} />
+                      <Checkbox
+                        checked={checked}
+                        onChange={() => toggleInd(ti.trainingId, ti.studentId)}
+                      />
                       <div className="mark-row__info">
                         <span className="mark-row__name">{student.name}</span>
                         <span className="mark-row__sub">

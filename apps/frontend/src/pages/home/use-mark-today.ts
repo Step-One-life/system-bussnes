@@ -20,6 +20,9 @@ import {
 
 import type { Training } from 'entities/trainings'
 
+/** Ключ галочки индивидуальной строки: у парного занятия один trainingId на двоих. */
+export const indKey = (trainingId: string, studentId: string) => `${trainingId}:${studentId}`
+
 interface TodayGroup {
   groupId: string
   time: string
@@ -80,37 +83,19 @@ export function useMarkToday(open: boolean, onClose: () => void) {
       if (!g.isIndividual) continue
       const todayTrs = trainings.filter((t) => t.groupId === g.name && t.date === todayStr)
       for (const tr of todayTrs) {
-        if (tr.attendees.length) {
-          for (const sid of tr.attendees) {
-            result.push({
-              trainingId: tr.id,
-              studentId: sid,
-              time: tr.time ?? '',
-              groupId: g.name,
-              originalPresent: true,
-            })
-          }
-        } else if (tr.isPair) {
-          // Парное плановое занятие: показываем обоих учеников неотмеченными.
-          for (const sid of [tr.plannedStudentId, tr.plannedStudentId2]) {
-            if (!sid) continue
-            result.push({
-              trainingId: tr.id,
-              studentId: sid,
-              time: tr.time ?? '',
-              groupId: g.name,
-              originalPresent: false,
-            })
-          }
-        } else if (tr.plannedStudentId) {
-          // Запланированное занятие серии: показываем неотмеченным. Галочка →
-          // markAttendance спишет занятие. Не пришёл — не отмечаешь, не списано.
+        // Отмеченные ∪ плановые: наполовину отмеченное парное показывает обоих,
+        // плановый виден даже когда на занятии уже есть другие attendees.
+        const planned = [tr.plannedStudentId, tr.plannedStudentId2].filter(
+          (sid): sid is string => !!sid,
+        )
+        const ids = [...new Set([...tr.attendees, ...planned])]
+        for (const sid of ids) {
           result.push({
             trainingId: tr.id,
-            studentId: tr.plannedStudentId,
+            studentId: sid,
             time: tr.time ?? '',
             groupId: g.name,
-            originalPresent: false,
+            originalPresent: tr.attendees.includes(sid),
           })
         }
       }
@@ -127,7 +112,7 @@ export function useMarkToday(open: boolean, onClose: () => void) {
 
     const initInd: Record<string, boolean> = {}
     for (const ti of todayIndividuals) {
-      initInd[ti.trainingId] = ti.originalPresent
+      initInd[indKey(ti.trainingId, ti.studentId)] = ti.originalPresent
     }
     setIndChecks(initInd)
   }
@@ -143,8 +128,9 @@ export function useMarkToday(open: boolean, onClose: () => void) {
     })
   }
 
-  const toggleInd = (trainingId: string) => {
-    setIndChecks((prev) => ({ ...prev, [trainingId]: !prev[trainingId] }))
+  const toggleInd = (trainingId: string, studentId: string) => {
+    const key = indKey(trainingId, studentId)
+    setIndChecks((prev) => ({ ...prev, [key]: !prev[key] }))
   }
 
   const save = async () => {
@@ -179,7 +165,7 @@ export function useMarkToday(open: boolean, onClose: () => void) {
       }
 
       for (const ti of todayIndividuals) {
-        const isChecked = indChecks[ti.trainingId] ?? ti.originalPresent
+        const isChecked = indChecks[indKey(ti.trainingId, ti.studentId)] ?? ti.originalPresent
         if (!isChecked && ti.originalPresent) {
           await removeAttendee(ti.trainingId, ti.studentId)
         } else if (isChecked && !ti.originalPresent) {
