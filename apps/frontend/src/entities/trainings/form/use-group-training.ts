@@ -57,7 +57,8 @@ export function useGroupTraining({ onDone }: UseGroupTrainingOptions) {
     : []
 
   const { data: conflicts = [] } = useQuery({
-    queryKey: ['training-conflict', groupId, date, time],
+    // Длительность группы в ключе: её смена в настройках сбрасывает кэш.
+    queryKey: ['training-conflict', groupId, date, time, selectedGroup?.duration ?? 60],
     queryFn: () => checkTrainingConflict(date, time, groupId),
     enabled: !!date && !!time && !!groupId,
   })

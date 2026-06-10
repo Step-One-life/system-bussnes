@@ -27,28 +27,3 @@ export const FIN_LABELS: Record<string, string> = {
   single_pair: 'Парная разовая',
   single_pair_90: 'Парная 1.5ч',
 }
-
-// Default pricing keys (all zero) used to seed the pricing form.
-export const PRICING_DEFAULTS: Record<string, number> = {
-  client_single_individual_price: 0,
-  client_single_group_price: 0,
-  client_individual_sub_4_price: 0,
-  client_individual_sub_8_price: 0,
-  client_group_sub_4_price: 0,
-  client_group_sub_8_price: 0,
-  client_single_individual_90_price: 0,
-  client_individual_sub_4_90_price: 0,
-  client_individual_sub_8_90_price: 0,
-  hall_single_individual_regular_price: 0,
-  hall_single_individual_prime_price: 0,
-  hall_single_group_regular_price: 0,
-  hall_single_group_prime_price: 0,
-  hall_individual_sub_4_regular_price: 0,
-  hall_individual_sub_4_prime_price: 0,
-  hall_individual_sub_8_regular_price: 0,
-  hall_individual_sub_8_prime_price: 0,
-  hall_group_sub_4_regular_price: 0,
-  hall_group_sub_4_prime_price: 0,
-  hall_group_sub_8_regular_price: 0,
-  hall_group_sub_8_prime_price: 0,
-}

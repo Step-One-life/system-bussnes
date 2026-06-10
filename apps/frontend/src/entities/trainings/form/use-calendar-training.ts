@@ -13,7 +13,7 @@ import {
 } from 'entities/students/model/subscription-status'
 
 import { useDeleteTrainingWithRestore } from '../api/use-training-actions'
-import { useTrainings } from '../api/use-trainings'
+import { trainingKeys, useTrainings } from '../api/use-trainings'
 import { isIndividualTraining } from '../model/training-helpers'
 import { markAttendance } from '../model/training-logic'
 import { createTraining, removeAttendee as removeAttendeeApi } from '../model/trainings.repo'
@@ -162,7 +162,7 @@ export function useCalendarTraining({ block, onDone }: UseCalendarTrainingOption
       }
 
       qc.invalidateQueries({ queryKey: studentKeys.all })
-      qc.invalidateQueries({ queryKey: ['trainings', 'all'] })
+      qc.invalidateQueries({ queryKey: trainingKeys.all })
       toast({ type: 'success', title: t('trainings.cal.attendanceSaved') })
       onDone()
     } catch (e) {
