@@ -177,15 +177,19 @@ export function useMarkToday(open: boolean, onClose: () => void) {
         }
       }
 
-      qc.invalidateQueries({ queryKey: trainingKeys.all })
-      qc.invalidateQueries({ queryKey: studentKeys.all })
-      qc.invalidateQueries({ queryKey: groupKeys.all })
       if (noTariff.length) {
         toast({ type: 'warn', title: t('finance.autoRecord.noTariff'), msg: noTariff.join(', ') })
       }
       toast({ type: 'success', title: t('home.attendanceSaved') })
       onClose()
+    } catch (e) {
+      // Сбой посередине циклов: часть отметок уже применена — сообщаем об
+      // ошибке, а кэши перечитываются в finally, чтобы UI показал факт.
+      toast({ type: 'error', title: e instanceof Error ? e.message : t('common.error') })
     } finally {
+      qc.invalidateQueries({ queryKey: trainingKeys.all })
+      qc.invalidateQueries({ queryKey: studentKeys.all })
+      qc.invalidateQueries({ queryKey: groupKeys.all })
       setSaving(false)
     }
   }
