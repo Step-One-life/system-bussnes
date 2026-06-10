@@ -60,9 +60,16 @@ export function MarkPaidModal({
   const typeLabel = paymentType ? finLabel(paymentType) : t('common.dash')
   const matchedRule = sub ? matchRule(rules, subTypeToTuple(sub.type, isIndividual)) : null
 
-  // No training time on a subscription, so the trainer picks prime/regular;
-  // that drives both the client price and the hall expense from the tariff.
-  const [slot, setSlot] = useState<TimeSlot>('regular')
+  // Слот предзаполняется тем, по которому абонемент покупался (sub.timeSlot),
+  // чтобы прайм-абонемент не отметили оплаченным по обычной цене; тренер может
+  // переключить. Слот двигает и цену клиента, и расход зала из тарифа.
+  const [slot, setSlot] = useState<TimeSlot>(sub?.timeSlot ?? 'regular')
+  const [slotSubId, setSlotSubId] = useState(sub?.id)
+  if (slotSubId !== sub?.id) {
+    // Модалку переоткрыли с другим абонементом — пересинхронизировать слот.
+    setSlotSubId(sub?.id)
+    setSlot(sub?.timeSlot ?? 'regular')
+  }
   const defaultAmount =
     (slot === 'prime' ? matchedRule?.client_prime_price : matchedRule?.client_price) ?? 0
   const defaultHall =

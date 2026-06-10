@@ -10,7 +10,7 @@ import {
 
 import { useTranslation } from 'react-i18next'
 
-import { StatusBadge, SubProgressBar } from 'common/ui'
+import { Badge, StatusBadge, SubProgressBar } from 'common/ui'
 
 import { getSubStatus, subTypeLabel } from '../model/subscription-status'
 
@@ -55,6 +55,10 @@ export function SubCard({
     <div className="sub-card">
       <div className="sub-card__head">
         <span className="sub-card__title">{label}</span>
+        {/* Абонемент куплен по прайм-тарифу — видно без открытия оплаты. */}
+        {anySub?.timeSlot === 'prime' && (
+          <Badge variant="warn">{t('finance.markPaid.prime')}</Badge>
+        )}
         <span style={{ marginLeft: 'auto' }}>
           <StatusBadge status={status} />
         </span>
