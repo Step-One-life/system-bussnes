@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 
 import { LocationSelect } from 'entities/locations'
 
-import { CLIENT_TYPE_OPTIONS, HALL_TYPE_OPTIONS } from './payment-form-config'
+import { clientTypeOptions, hallTypeOptions } from './payment-form-config'
 
 import type { usePaymentForm } from './use-payment-form'
 import type { Dayjs } from 'dayjs'
@@ -64,7 +64,7 @@ export function PaymentFormFields({ form, students }: PaymentFormFieldsProps) {
           <Form.Item label={t('finance.form.paymentTypeLabel')}>
             <Select
               value={form.clientType}
-              options={CLIENT_TYPE_OPTIONS}
+              options={clientTypeOptions()}
               onChange={form.setClientType}
             />
           </Form.Item>
@@ -86,7 +86,7 @@ export function PaymentFormFields({ form, students }: PaymentFormFieldsProps) {
               value={form.hallType}
               options={[
                 { value: '', label: t('finance.form.hallTypeNone') },
-                ...HALL_TYPE_OPTIONS,
+                ...hallTypeOptions(),
               ]}
               onChange={form.setHallType}
             />

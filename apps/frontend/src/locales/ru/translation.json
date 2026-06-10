@@ -56,7 +56,9 @@
     "remove": "Убрать",
     "date": "Дата",
     "time": "Время",
-    "notePlaceholder": "Необязательно"
+    "notePlaceholder": "Необязательно",
+    "sessionExpired": "Сессия истекла",
+    "requestError": "Ошибка запроса ({{status}})"
   },
   "groups": {
     "create": "Создать группу",
@@ -97,6 +99,10 @@
       "durationLabel": "Длительность занятия",
       "durationOption": "{{minutes}} мин",
       "timePlaceholder": "Время"
+    },
+    "schedule": {
+      "notSet": "Расписание не задано",
+      "minutes": "{{count}} мин"
     }
   },
   "students": {
@@ -134,7 +140,29 @@
     "sub": {
       "single": "Разовое посещение",
       "sub4": "4 занятия",
-      "sub8": "8 занятий"
+      "sub8": "8 занятий",
+      "remainingShort": "осталось {{count}}",
+      "sessionsShort": "{{remaining}}/{{total}} зан.",
+      "daysShort": "{{count}} дн.",
+      "expiredShort": "срок истёк",
+      "noSub": "нет абонемента",
+      "noneActive": "Нет активных"
+    },
+    "subTypes": {
+      "1": "Разовое",
+      "4": "4 занятия",
+      "8": "8 занятий",
+      "1_90": "Разовое 1.5ч",
+      "4_90": "4 занятия 1.5ч",
+      "8_90": "8 занятий 1.5ч"
+    },
+    "status": {
+      "active": "Активен",
+      "ending": "Заканчивается",
+      "expired": "Истёк срок",
+      "renew": "Нужно продлить",
+      "none": "Нет абонемента",
+      "noGroups": "Нет групп"
     },
     "drawer": {
       "lastVisit": "Последнее посещение:",
@@ -198,6 +226,9 @@
       "type_1": "Разовое посещение",
       "type_4": "4 занятия",
       "type_8": "8 занятий",
+      "type_1_90": "Разовое 1.5ч",
+      "type_4_90": "4 занятия 1.5ч",
+      "type_8_90": "8 занятий 1.5ч",
       "dateLabel": "Дата начала",
       "pickGroup": "Выберите хотя бы одну группу",
       "created": "Абонемент создан"
@@ -546,10 +577,24 @@
       "periodYear": "Год",
       "periodAll": "Всё время",
       "periodPrev": "Предыдущий период",
-      "periodNext": "Следующий период"
+      "periodNext": "Следующий период",
+      "unknownClient": "Неизвестен"
     },
     "autoRecord": {
       "noTariff": "Тариф не настроен — запись в финансы не создана"
+    },
+    "types": {
+      "single_individual": "Разовая Индив.",
+      "single_group": "Разовая групп.",
+      "individual_sub_4": "Индив. ×4",
+      "individual_sub_8": "Индив. ×8",
+      "group_sub_4": "Групп. ×4",
+      "group_sub_8": "Групп. ×8",
+      "single_individual_90": "Индив. 1.5ч",
+      "individual_sub_4_90": "Индив. 1.5ч ×4",
+      "individual_sub_8_90": "Индив. 1.5ч ×8",
+      "single_pair": "Парная разовая",
+      "single_pair_90": "Парная 1.5ч"
     }
   },
   "home": {
@@ -635,5 +680,62 @@
       "deleteTitle": "Удалить локацию?",
       "deleteDescription": "Тарифы локации также будут удалены"
     }
+  },
+  "auth": {
+    "loginSubtitle": "Вход в систему",
+    "loginError": "Ошибка входа",
+    "loginBtn": "Войти",
+    "noAccount": "Нет аккаунта?",
+    "registerLink": "Зарегистрироваться",
+    "registerSubtitle": "Создание аккаунта",
+    "accountCreated": "Аккаунт создан",
+    "registerError": "Ошибка регистрации",
+    "haveAccount": "Уже есть аккаунт?",
+    "loginLink": "Войти",
+    "registerBtn": "Зарегистрироваться",
+    "nameLabel": "Имя",
+    "nameRequired": "Введите имя",
+    "namePlaceholder": "Иван Тренеров",
+    "emailInvalid": "Введите корректный email",
+    "passwordLabel": "Пароль",
+    "passwordRequired": "Введите пароль",
+    "passwordMin": "Минимум 6 символов"
+  },
+  "weekdays": {
+    "short": {
+      "mon": "Пн",
+      "tue": "Вт",
+      "wed": "Ср",
+      "thu": "Чт",
+      "fri": "Пт",
+      "sat": "Сб",
+      "sun": "Вс"
+    },
+    "full": {
+      "mon": "Понедельник",
+      "tue": "Вторник",
+      "wed": "Среда",
+      "thu": "Четверг",
+      "fri": "Пятница",
+      "sat": "Суббота",
+      "sun": "Воскресенье"
+    }
+  },
+  "timezones": {
+    "Europe/Kaliningrad": "Калининград (MSK−1)",
+    "Europe/Moscow": "Москва (MSK)",
+    "Europe/Samara": "Самара (MSK+1)",
+    "Asia/Yekaterinburg": "Екатеринбург (MSK+2)",
+    "Asia/Omsk": "Омск (MSK+3)",
+    "Asia/Krasnoyarsk": "Красноярск (MSK+4)",
+    "Asia/Irkutsk": "Иркутск (MSK+5)",
+    "Asia/Yakutsk": "Якутск (MSK+6)",
+    "Asia/Vladivostok": "Владивосток (MSK+7)",
+    "Asia/Magadan": "Магадан (MSK+8)",
+    "Asia/Kamchatka": "Камчатка (MSK+9)",
+    "Europe/Minsk": "Минск",
+    "Europe/Kyiv": "Киев",
+    "Asia/Almaty": "Алматы",
+    "Asia/Tashkent": "Ташкент"
   }
 }

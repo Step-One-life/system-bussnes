@@ -1,3 +1,5 @@
+import i18n from 'i18next'
+
 import { clearToken, getToken } from './token-storage'
 
 const BASE_URL = (import.meta.env.VITE_API_URL as string | undefined) ?? '/api'
@@ -56,7 +58,7 @@ async function request<T>(
 
   if (res.status === 401) {
     handleUnauthorized()
-    throw new ApiError(401, 'Сессия истекла')
+    throw new ApiError(401, i18n.t('common.sessionExpired'))
   }
 
   if (res.status === 204) {
@@ -70,7 +72,7 @@ async function request<T>(
     const body = (payload ?? {}) as ApiErrorBody
     const message = Array.isArray(body.message)
       ? body.message.join(', ')
-      : (body.message ?? body.error ?? `Ошибка запроса (${res.status})`)
+      : (body.message ?? body.error ?? i18n.t('common.requestError', { status: res.status }))
     throw new ApiError(res.status, message)
   }
 

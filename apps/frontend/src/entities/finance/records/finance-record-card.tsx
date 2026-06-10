@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next'
 
 import { Badge } from 'common/ui'
 import { formatDateShort } from 'common/utils/date'
-import { FIN_LABELS } from 'entities/finance/model/finance-constants'
+import { finLabel } from 'entities/finance/model/finance-constants'
 
 import type { HallCost, Payment } from '../model/types'
 
@@ -41,8 +41,7 @@ export function FinanceRecordCard({
   const net = payment.client_amount - (hallCost?.hall_amount ?? 0)
   const netColor = net >= 0 ? 'var(--success)' : 'var(--danger)'
   const status = statusMap[payment.status] ?? { variant: 'neutral', label: payment.status }
-  const clientLabel =
-    FIN_LABELS[payment.client_payment_type] ?? payment.client_payment_type
+  const clientLabel = finLabel(payment.client_payment_type)
 
   return (
     <div className={`fin-record${open ? ' is-open' : ''}`}>
@@ -84,7 +83,7 @@ export function FinanceRecordCard({
               <span className="fin-record__row-label">{t('finance.card.hallExpense')}</span>
               <span className="fin-record__row-value">
                 <Badge variant="neutral">
-                  {FIN_LABELS[hallCost.hall_payment_type] ?? hallCost.hall_payment_type}
+                  {finLabel(hallCost.hall_payment_type)}
                 </Badge>
                 {hallCost.time_slot === 'prime' && (
                   <Badge variant="warn">{t('finance.card.prime')}</Badge>

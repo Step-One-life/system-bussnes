@@ -2,6 +2,7 @@ import filter from 'lodash/filter'
 import find from 'lodash/find'
 
 import { getMondayOfWeek } from 'common/utils/date'
+import { WEEKDAY_ABBRS, weekdayShortLabel } from 'common/utils/weekdays'
 
 import { isIndividualTraining } from '../model/training-helpers'
 
@@ -24,7 +25,6 @@ const DOW_IDX: Record<string, number> = {
   Вс: 6,
 }
 
-const DOW_SHORT = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс']
 
 export interface CalendarBlock {
   key: string
@@ -204,7 +204,7 @@ export function buildCalendarDay(
     day: {
       date: dateStr,
       dayLabel: String(d.getDate()),
-      dayOfWeek: DOW_SHORT[dayIndexOf(dateStr)],
+      dayOfWeek: weekdayShortLabel(WEEKDAY_ABBRS[dayIndexOf(dateStr)]),
       isToday: dateStr === todayDateStr(),
       blocks,
     },

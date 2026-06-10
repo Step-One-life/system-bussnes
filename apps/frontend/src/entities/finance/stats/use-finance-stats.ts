@@ -1,41 +1,30 @@
 import { useMemo, useState } from 'react'
 
+import i18n from 'i18next'
+import { useTranslation } from 'react-i18next'
+
 import { toLocalISODate } from 'common/utils/date'
-import { FIN_LABELS } from 'entities/finance/model/finance-constants'
+import { finLabel } from 'entities/finance/model/finance-constants'
 import { useStudents } from 'entities/students'
 
 import { useHallCosts, usePayments } from '../api/use-finance'
 
 import type { HallCost, Payment } from '../model/types'
 
-export type FinancePeriod = 'month' | 'quarter' | 'year' | 'all'
+import { roundMoney, sumMoney } from '@trikick/shared'
 
-export const PERIOD_LABELS: Record<FinancePeriod, string> = {
-  month: 'Месяц',
-  quarter: 'Квартал',
-  year: 'Год',
-  all: 'Всё время',
-}
+export type FinancePeriod = 'month' | 'quarter' | 'year' | 'all'
 
 interface PeriodRange {
   start: string | null
   end: string | null
 }
 
-const RU_MONTHS = [
-  'Январь',
-  'Февраль',
-  'Март',
-  'Апрель',
-  'Май',
-  'Июнь',
-  'Июль',
-  'Август',
-  'Сентябрь',
-  'Октябрь',
-  'Ноябрь',
-  'Декабрь',
-]
+/** Название месяца на текущем языке с заглавной буквы («Июнь» / "June"). */
+function monthName(d: Date): string {
+  const name = d.toLocaleString(i18n.language, { month: 'long' })
+  return name.charAt(0).toUpperCase() + name.slice(1)
+}
 
 /** Границы периода со сдвигом назад на `offset` единиц. Без UTC-сдвигов. */
 function periodRange(period: FinancePeriod, offset: number): PeriodRange {
@@ -65,7 +54,7 @@ function periodLabelFor(period: FinancePeriod, offset: number): string {
   const now = new Date()
   if (period === 'month') {
     const d = new Date(now.getFullYear(), now.getMonth() - offset, 1)
-    return `${RU_MONTHS[d.getMonth()]} ${d.getFullYear()}`
+    return `${monthName(d)} ${d.getFullYear()}`
   }
   if (period === 'quarter') {
     const curQuarter = Math.floor(now.getMonth() / 3)
@@ -123,6 +112,10 @@ export interface FinanceStats {
 }
 
 export function useFinanceStats(): FinanceStats {
+  // Подписка на язык: метки месяцев/типов в useMemo пересчитываются после
+  // переключения языка.
+  const { i18n: i18nInstance } = useTranslation()
+  const lang = i18nInstance.language
   const { data: payments = [] } = usePayments()
   const { data: hallCosts = [] } = useHallCosts()
   const { data: students = [] } = useStudents()
@@ -158,9 +151,9 @@ export function useFinanceStats(): FinanceStats {
     (p.hall_cost_id ? hallMap.get(p.hall_cost_id)?.hall_amount : 0) ?? 0
 
   const totals = useMemo<FinanceTotals>(() => {
-    const totalIncome = filtered.reduce((s, p) => s + p.client_amount, 0)
-    const totalHall = filtered.reduce((s, p) => s + hallAmount(p), 0)
-    const netIncome = totalIncome - totalHall
+    const totalIncome = sumMoney(filtered.map((p) => p.client_amount))
+    const totalHall = sumMoney(filtered.map(hallAmount))
+    const netIncome = roundMoney(totalIncome - totalHall)
     return {
       totalIncome,
       totalHall,
@@ -187,23 +180,28 @@ export function useFinanceStats(): FinanceStats {
       .map((m) => {
         const acc = byMonth.get(m)!
         const [y, mo] = m.split('-')
-        const label = new Date(+y, +mo - 1, 1).toLocaleString('ru', {
+        const label = new Date(+y, +mo - 1, 1).toLocaleString(lang, {
           month: 'short',
           year: '2-digit',
         })
-        return { label, income: acc.income, hall: acc.hall, net: acc.income - acc.hall }
+        return {
+          label,
+          income: roundMoney(acc.income),
+          hall: roundMoney(acc.hall),
+          net: roundMoney(acc.income - acc.hall),
+        }
       })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [payments, hallMap])
+  }, [payments, hallMap, lang])
 
   const clientTypes = useMemo<TypeBreakdown>(() => {
     const map = new Map<string, number>()
     for (const p of filtered) {
-      const label = FIN_LABELS[p.client_payment_type] ?? p.client_payment_type
+      const label = finLabel(p.client_payment_type)
       map.set(label, (map.get(label) ?? 0) + p.client_amount)
     }
-    return { labels: [...map.keys()], values: [...map.values()] }
-  }, [filtered])
+    return { labels: [...map.keys()], values: [...map.values()].map(roundMoney) }
+  }, [filtered, lang])
 
   const hallTypes = useMemo<TypeBreakdown>(() => {
     const map = new Map<string, number>()
@@ -212,24 +210,25 @@ export function useFinanceStats(): FinanceStats {
         ? hallMap.get(p.hall_cost_id)
         : undefined
       if (!hc) continue
-      const label = FIN_LABELS[hc.hall_payment_type] ?? hc.hall_payment_type
+      const label = finLabel(hc.hall_payment_type)
       map.set(label, (map.get(label) ?? 0) + hc.hall_amount)
     }
-    return { labels: [...map.keys()], values: [...map.values()] }
-  }, [filtered, hallMap])
+    return { labels: [...map.keys()], values: [...map.values()].map(roundMoney) }
+  }, [filtered, hallMap, lang])
 
   const topClients = useMemo<TopClient[]>(() => {
     const map = new Map<string, number>()
     for (const p of filtered) {
       if (!p.student_id) continue
-      const name = studentMap.get(p.student_id)?.name ?? 'Неизвестен'
+      const name = studentMap.get(p.student_id)?.name ?? i18n.t('finance.stats.unknownClient')
       map.set(name, (map.get(name) ?? 0) + p.client_amount)
     }
     return [...map.entries()]
       .sort((a, b) => b[1] - a[1])
       .slice(0, 8)
-      .map(([name, amount]) => ({ name, amount }))
-  }, [filtered, studentMap])
+      .map(([name, amount]) => ({ name, amount: roundMoney(amount) }))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filtered, studentMap, lang])
 
   return {
     period,

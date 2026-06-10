@@ -1,3 +1,5 @@
+import i18n from 'i18next'
+
 // Finance payment type → session count.
 export const FIN_SESSIONS: Record<string, number> = {
   single_individual: 1,
@@ -13,17 +15,7 @@ export const FIN_SESSIONS: Record<string, number> = {
   single_pair_90: 1,
 }
 
-// Human-readable payment type labels.
-export const FIN_LABELS: Record<string, string> = {
-  single_individual: 'Разовая Индив.',
-  single_group: 'Разовая групп.',
-  individual_sub_4: 'Индив. ×4',
-  individual_sub_8: 'Индив. ×8',
-  group_sub_4: 'Групп. ×4',
-  group_sub_8: 'Групп. ×8',
-  single_individual_90: 'Индив. 1.5ч',
-  individual_sub_4_90: 'Индив. 1.5ч ×4',
-  individual_sub_8_90: 'Индив. 1.5ч ×8',
-  single_pair: 'Парная разовая',
-  single_pair_90: 'Парная 1.5ч',
+// Human-readable payment type label (translated via i18n).
+export function finLabel(type: string): string {
+  return i18n.t(`finance.types.${type}`, { defaultValue: type })
 }

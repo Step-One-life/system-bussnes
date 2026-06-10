@@ -1,9 +1,5 @@
-import 'dayjs/locale/ru'
+// Локаль dayjs выставляется в app/i18n.ts и следует за языком интерфейса.
 import dayjs from 'dayjs'
-
-dayjs.locale('ru')
-
-const DOW = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб']
 
 /** "15 мая" */
 export function formatDateShort(isoDate?: string | null): string {
@@ -29,10 +25,11 @@ export function formatDay(isoDate?: string | null): string {
   return String(dayjs(isoDate).date())
 }
 
-/** Short day-of-week, e.g. "Пн" */
+/** Short day-of-week, e.g. "Пн" / "Mo" (current locale, capitalised). */
 export function formatDayOfWeek(isoDate?: string | null): string {
   if (!isoDate) return ''
-  return DOW[new Date(isoDate + 'T00:00:00').getDay()]
+  const wd = dayjs(isoDate).format('dd')
+  return wd.charAt(0).toUpperCase() + wd.slice(1)
 }
 
 export function timeToMinutes(time: string): number {

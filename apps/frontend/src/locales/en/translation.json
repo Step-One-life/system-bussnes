@@ -56,7 +56,9 @@
     "remove": "Remove",
     "date": "Date",
     "time": "Time",
-    "notePlaceholder": "Optional"
+    "notePlaceholder": "Optional",
+    "sessionExpired": "Session expired",
+    "requestError": "Request error ({{status}})"
   },
   "groups": {
     "create": "Create group",
@@ -97,6 +99,10 @@
       "durationLabel": "Session duration",
       "durationOption": "{{minutes}} min",
       "timePlaceholder": "Time"
+    },
+    "schedule": {
+      "notSet": "No schedule",
+      "minutes": "{{count}} min"
     }
   },
   "students": {
@@ -134,7 +140,29 @@
     "sub": {
       "single": "Single visit",
       "sub4": "4 sessions",
-      "sub8": "8 sessions"
+      "sub8": "8 sessions",
+      "remainingShort": "{{count}} left",
+      "sessionsShort": "{{remaining}}/{{total}} sess.",
+      "daysShort": "{{count}} d",
+      "expiredShort": "expired",
+      "noSub": "no subscription",
+      "noneActive": "None active"
+    },
+    "subTypes": {
+      "1": "Single",
+      "4": "4 sessions",
+      "8": "8 sessions",
+      "1_90": "Single 1.5h",
+      "4_90": "4 sessions 1.5h",
+      "8_90": "8 sessions 1.5h"
+    },
+    "status": {
+      "active": "Active",
+      "ending": "Ending soon",
+      "expired": "Expired",
+      "renew": "Needs renewal",
+      "none": "No subscription",
+      "noGroups": "No groups"
     },
     "drawer": {
       "lastVisit": "Last visit:",
@@ -198,6 +226,9 @@
       "type_1": "Single visit",
       "type_4": "4 sessions",
       "type_8": "8 sessions",
+      "type_1_90": "Single 1.5h",
+      "type_4_90": "4 sessions 1.5h",
+      "type_8_90": "8 sessions 1.5h",
       "dateLabel": "Start date",
       "pickGroup": "Select at least one group",
       "created": "Subscription created"
@@ -544,10 +575,24 @@
       "periodYear": "Year",
       "periodAll": "All time",
       "periodPrev": "Previous period",
-      "periodNext": "Next period"
+      "periodNext": "Next period",
+      "unknownClient": "Unknown"
     },
     "autoRecord": {
       "noTariff": "No tariff configured — finance record not created"
+    },
+    "types": {
+      "single_individual": "Single individual",
+      "single_group": "Single group",
+      "individual_sub_4": "Individual ×4",
+      "individual_sub_8": "Individual ×8",
+      "group_sub_4": "Group ×4",
+      "group_sub_8": "Group ×8",
+      "single_individual_90": "Individual 1.5h",
+      "individual_sub_4_90": "Individual 1.5h ×4",
+      "individual_sub_8_90": "Individual 1.5h ×8",
+      "single_pair": "Single pair",
+      "single_pair_90": "Pair 1.5h"
     }
   },
   "home": {
@@ -633,5 +678,62 @@
       "deleteTitle": "Delete location?",
       "deleteDescription": "The location's tariffs will also be deleted"
     }
+  },
+  "auth": {
+    "loginSubtitle": "Sign in",
+    "loginError": "Login error",
+    "loginBtn": "Sign in",
+    "noAccount": "No account?",
+    "registerLink": "Sign up",
+    "registerSubtitle": "Create account",
+    "accountCreated": "Account created",
+    "registerError": "Registration error",
+    "haveAccount": "Already have an account?",
+    "loginLink": "Sign in",
+    "registerBtn": "Sign up",
+    "nameLabel": "Name",
+    "nameRequired": "Enter your name",
+    "namePlaceholder": "John Coach",
+    "emailInvalid": "Enter a valid email",
+    "passwordLabel": "Password",
+    "passwordRequired": "Enter password",
+    "passwordMin": "At least 6 characters"
+  },
+  "weekdays": {
+    "short": {
+      "mon": "Mon",
+      "tue": "Tue",
+      "wed": "Wed",
+      "thu": "Thu",
+      "fri": "Fri",
+      "sat": "Sat",
+      "sun": "Sun"
+    },
+    "full": {
+      "mon": "Monday",
+      "tue": "Tuesday",
+      "wed": "Wednesday",
+      "thu": "Thursday",
+      "fri": "Friday",
+      "sat": "Saturday",
+      "sun": "Sunday"
+    }
+  },
+  "timezones": {
+    "Europe/Kaliningrad": "Kaliningrad (MSK−1)",
+    "Europe/Moscow": "Moscow (MSK)",
+    "Europe/Samara": "Samara (MSK+1)",
+    "Asia/Yekaterinburg": "Yekaterinburg (MSK+2)",
+    "Asia/Omsk": "Omsk (MSK+3)",
+    "Asia/Krasnoyarsk": "Krasnoyarsk (MSK+4)",
+    "Asia/Irkutsk": "Irkutsk (MSK+5)",
+    "Asia/Yakutsk": "Yakutsk (MSK+6)",
+    "Asia/Vladivostok": "Vladivostok (MSK+7)",
+    "Asia/Magadan": "Magadan (MSK+8)",
+    "Asia/Kamchatka": "Kamchatka (MSK+9)",
+    "Europe/Minsk": "Minsk",
+    "Europe/Kyiv": "Kyiv",
+    "Asia/Almaty": "Almaty",
+    "Asia/Tashkent": "Tashkent"
   }
 }

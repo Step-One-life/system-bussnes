@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/sequelize'
 
+import { roundMoney, sumMoney } from '@trikick/shared'
+
 import { HallCost } from './hall-cost.model'
 import { Payment } from './payment.model'
 
@@ -29,9 +31,9 @@ export class FinanceStatsService {
     const paid = payments.filter((p) => inRange(p.paidAt))
     const costs = hallCosts.filter((c) => inRange(c.paidAt))
 
-    const income = paid.reduce((sum, p) => sum + Number(p.clientAmount), 0)
-    const expense = costs.reduce((sum, c) => sum + Number(c.hallAmount), 0)
-    const profit = income - expense
+    const income = sumMoney(paid.map((p) => Number(p.clientAmount)))
+    const expense = sumMoney(costs.map((c) => Number(c.hallAmount)))
+    const profit = roundMoney(income - expense)
     const margin = income > 0 ? Math.round((profit / income) * 100) : 0
 
     return {
