@@ -86,7 +86,7 @@
       "needRenew": "Needs renewal"
     },
     "form": {
-      "deleteTitle": "Delete group?",
+      "deleteTitle": "Delete group \"{{name}}\"?",
       "deleteDescription": "Students will remain in the system.",
       "deleteImpact": "This permanently deletes {{trainings}} sessions, {{subs}} subscriptions and the group's entire visit history. Students remain in the system.",
       "deleteImpactActive": "{{count}} of the deleted subscriptions are still active!",
@@ -176,7 +176,7 @@
     },
     "subCard": {
       "indTraining": "Individual training",
-      "deleteSubTitle": "Delete subscription?",
+      "deleteSubTitle": "Delete subscription \"{{type}}\"?",
       "deductSession": "Deduct session",
       "newSub": "New subscription",
       "markPaid": "Mark paid",
@@ -262,7 +262,7 @@
       "removeFromTraining": "Remove from training",
       "deleted": "Deleted",
       "noAttendees": "No attendee records",
-      "deleteTitle": "Delete training?",
+      "deleteTitle": "Delete session \"{{name}}\"?",
       "deleteDescription": "Sessions will be returned to students.",
       "deleteTraining": "Delete training",
       "edit": "Edit"
@@ -370,7 +370,7 @@
       "noStudents": "No students",
       "attendance": "Attendance",
       "noGroupStudents": "No students in the group",
-      "deleteTitle": "Delete training?",
+      "deleteTitle": "Delete session \"{{name}}\"?",
       "deleteDescription": "Sessions will be returned to students.",
       "studentRemoved": "Student removed",
       "attendanceSaved": "Attendance saved",
@@ -429,7 +429,7 @@
       "sessions": "Sessions",
       "prime": "Prime",
       "edit": "Edit",
-      "deleteTitle": "Delete this record?"
+      "deleteTitle": "Delete record \"{{name}}\"?"
     },
     "form": {
       "addTitle": "Add financial record",
@@ -537,7 +537,7 @@
         "hallPrimeCostLabel": "Hall cost — Prime",
         "validityDaysLabel": "Subscription validity",
         "validityDaysSuffix": "days",
-        "deleteTitle": "Delete tariff?",
+        "deleteTitle": "Delete tariff \"{{name}}\"?",
         "titleRequired": "Specify a tariff name",
         "unsavedTitle": "Unsaved changes",
         "unsavedContent": "You changed the tariff but didn't click Save. If you leave now, your edits will be lost.",
@@ -612,6 +612,7 @@
     "allSubsOk": "✓ All subscriptions are fine",
     "attendanceSaved": "Attendance saved",
     "unpaidCount": "Awaiting payment ({{count}})",
+    "allPaid": "✓ All paid",
     "unpaidModal": {
       "title": "Awaiting payment",
       "allPaid": "✓ All subscriptions are paid"
@@ -675,7 +676,7 @@
       "primeWeekendLabel": "Prime time (weekends)",
       "primeStartPlaceholder": "From",
       "primeEndPlaceholder": "To",
-      "deleteTitle": "Delete location?",
+      "deleteTitle": "Delete location \"{{name}}\"?",
       "deleteDescription": "The location's tariffs will also be deleted"
     }
   },

@@ -108,7 +108,7 @@ export function StudentDrawer({ studentId, onClose, onEdit }: StudentDrawerProps
       <Drawer
         open={!!studentId}
         onClose={onClose}
-        width={460}
+        width="min(460px, 100vw)"
         title={student?.name ?? ''}
         extra={
           student && (

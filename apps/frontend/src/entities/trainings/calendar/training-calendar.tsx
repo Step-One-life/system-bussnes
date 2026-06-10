@@ -110,6 +110,8 @@ export function TrainingCalendar({
                       b.isScheduled ? ' cal-block--scheduled' : ''
                     }`}
                     style={{ top: b.topPx, height: b.heightPx }}
+                    // На коротких блоках подпись времени скрыта — тултип её заменяет.
+                    title={`${b.label} · ${b.time}`}
                     onClick={handleBlockClick(b)}
                   >
                     <div className="cal-block__name">{b.label}</div>

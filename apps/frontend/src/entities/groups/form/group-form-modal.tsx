@@ -58,7 +58,7 @@ export function GroupFormModal({ open, group, onClose, onDelete }: GroupFormModa
     group && onDelete && (
       <Popconfirm
         key="delete"
-        title={t('groups.form.deleteTitle')}
+        title={t('groups.form.deleteTitle', { name: group.name })}
         description={
           <div style={{ maxWidth: 320 }}>
             <p style={{ margin: 0 }}>
@@ -102,7 +102,7 @@ export function GroupFormModal({ open, group, onClose, onDelete }: GroupFormModa
       destroyOnHidden
     >
       <Form layout="vertical">
-        <Form.Item label={t('groups.form.nameLabel')}>
+        <Form.Item label={t('groups.form.nameLabel')} required={!form.isEdit}>
           {form.isEdit ? (
             <Input value={form.name} disabled />
           ) : (

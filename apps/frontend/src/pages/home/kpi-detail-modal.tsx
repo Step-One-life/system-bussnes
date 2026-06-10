@@ -163,7 +163,7 @@ export function KpiDetailModal({
   }
 
   return (
-    <Modal open title={title} onCancel={onClose} footer={null} width={520}>
+    <Modal open title={title} onCancel={onClose} footer={null} width="min(520px, 95vw)">
       {body}
     </Modal>
   )

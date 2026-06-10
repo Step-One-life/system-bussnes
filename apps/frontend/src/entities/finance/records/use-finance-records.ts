@@ -27,7 +27,7 @@ export interface FinanceRecordItem {
 export function useFinanceRecords() {
   const { t, i18n } = useTranslation()
   const toast = useToast()
-  const { data: payments = [] } = usePayments()
+  const { data: payments = [], isLoading } = usePayments()
   const { data: hallCosts = [] } = useHallCosts()
   const { data: students = [] } = useStudents()
   const deletePayment = useDeletePayment()
@@ -80,5 +80,6 @@ export function useFinanceRecords() {
     setQuery,
     handleDelete,
     isEmpty: isEmpty(payments),
+    isLoading,
   }
 }

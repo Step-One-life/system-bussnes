@@ -63,6 +63,7 @@ export function PresetPicker({
       {isCustom && (
         <InputNumber
           min={1}
+          inputMode="numeric"
           value={value}
           onChange={handleCustomChange}
           style={{ width: 120 }}

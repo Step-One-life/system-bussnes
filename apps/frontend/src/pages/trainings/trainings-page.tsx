@@ -7,7 +7,7 @@ import {
 
 import { useTranslation } from 'react-i18next'
 
-import { EmptyState, PageHeader } from 'common/ui'
+import { EmptyState, ListSkeleton, PageHeader } from 'common/ui'
 import {
   AddToTrainingModal,
   CalendarTrainingModal,
@@ -69,7 +69,9 @@ export function TrainingsPage() {
         }
       />
 
-      {page.view === 'calendar' ? (
+      {page.isLoading ? (
+        <ListSkeleton />
+      ) : page.view === 'calendar' ? (
         <TrainingCalendar
           trainings={page.trainings}
           students={page.students}

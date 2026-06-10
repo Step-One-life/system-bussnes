@@ -82,7 +82,7 @@ export function AddPaymentModal({ open, onClose }: AddPaymentModalProps) {
     <Modal
       open={open}
       title={t('finance.form.addTitle')}
-      width={620}
+      width="min(620px, 95vw)"
       onCancel={onClose}
       destroyOnHidden
       footer={[

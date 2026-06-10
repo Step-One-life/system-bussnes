@@ -12,7 +12,7 @@ import { useTranslation } from 'react-i18next'
 
 import { StatusBadge, SubProgressBar } from 'common/ui'
 
-import { getSubStatus } from '../model/subscription-status'
+import { getSubStatus, subTypeLabel } from '../model/subscription-status'
 
 import type { Student } from '../model/types'
 
@@ -60,7 +60,7 @@ export function SubCard({
         </span>
         {anySub && (
           <Popconfirm
-            title={t('students.subCard.deleteSubTitle')}
+            title={t('students.subCard.deleteSubTitle', { type: subTypeLabel(anySub.type) })}
             okText={t('common.delete')}
             cancelText={t('common.cancel')}
             okButtonProps={{ danger: true }}

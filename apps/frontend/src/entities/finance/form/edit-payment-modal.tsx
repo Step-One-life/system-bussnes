@@ -138,7 +138,7 @@ function EditPaymentModalInner({
     <Modal
       open={open}
       title={t('finance.form.editTitle')}
-      width={620}
+      width="min(620px, 95vw)"
       onCancel={onClose}
       destroyOnHidden
       footer={[

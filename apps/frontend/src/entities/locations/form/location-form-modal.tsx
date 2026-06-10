@@ -55,7 +55,7 @@ export function LocationFormModal({
     location && onDelete && (
       <Popconfirm
         key="delete"
-        title={t('locations.form.deleteTitle')}
+        title={t('locations.form.deleteTitle', { name: location.name })}
         description={t('locations.form.deleteDescription')}
         okText={t('common.delete')}
         cancelText={t('common.cancel')}
@@ -84,7 +84,7 @@ export function LocationFormModal({
       destroyOnHidden
     >
       <Form layout="vertical">
-        <Form.Item label={t('locations.form.nameLabel')}>
+        <Form.Item label={t('locations.form.nameLabel')} required>
           <Input
             value={form.name}
             onChange={handleNameChange}

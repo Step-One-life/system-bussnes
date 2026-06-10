@@ -117,7 +117,11 @@ export function FinanceRecordCard({
               {t('finance.card.edit')}
             </Button>
             <Popconfirm
-              title={t('finance.card.deleteTitle')}
+              title={t('finance.card.deleteTitle', {
+                name: [studentName ?? clientLabel, formatDateShort(payment.paid_at)].join(
+                  ' · ',
+                ),
+              })}
               okText={t('common.delete')}
               cancelText={t('common.cancel')}
               okButtonProps={{ danger: true }}

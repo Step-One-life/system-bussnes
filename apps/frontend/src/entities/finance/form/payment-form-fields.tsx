@@ -73,6 +73,7 @@ export function PaymentFormFields({ form, students }: PaymentFormFieldsProps) {
               min={0}
               value={form.clientAmount}
               controls={false}
+              inputMode="decimal"
               style={{ width: '100%' }}
               onChange={handleClientAmountChange}
             />
@@ -114,6 +115,7 @@ export function PaymentFormFields({ form, students }: PaymentFormFieldsProps) {
               min={0}
               value={form.hallAmount}
               controls={false}
+              inputMode="decimal"
               style={{ width: '100%' }}
               onChange={handleHallAmountChange}
             />
@@ -132,7 +134,7 @@ export function PaymentFormFields({ form, students }: PaymentFormFieldsProps) {
       </div>
 
       <div className="fin-modal-row-3">
-        <Form.Item label={t('finance.form.dateLabel')}>
+        <Form.Item label={t('finance.form.dateLabel')} required>
           <DatePicker
             value={form.date ? dayjs(form.date) : null}
             format="DD.MM.YYYY"

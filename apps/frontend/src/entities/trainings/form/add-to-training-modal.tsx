@@ -1,4 +1,7 @@
+import { useState } from 'react'
+
 import { Button, Checkbox, Form, Input, Modal, Segmented, Select } from 'antd'
+import { SearchOutlined } from '@ant-design/icons'
 
 import { useTranslation } from 'react-i18next'
 
@@ -17,6 +20,9 @@ const STATUS_VARIANT = {
   expired: 'danger',
   none: 'neutral',
 } as const
+
+/** Поиск появляется только на длинных списках — на коротких он шум. */
+const SEARCH_MIN = 8
 
 interface AddToTrainingModalProps {
   open: boolean
@@ -41,6 +47,14 @@ function AddToTrainingModalInner({
   const { t } = useTranslation()
   const form = useAddToTraining({ training, onDone: onClose })
 
+  // Сбрасывать query не нужно: модалка с destroyOnHidden размонтируется.
+  const [query, setQuery] = useState('')
+  const q = query.trim().toLowerCase()
+  const visibleCandidates = form.candidates.filter(
+    (c) => !q || c.name.toLowerCase().includes(q),
+  )
+  const showSearch = form.candidates.length > SEARCH_MIN
+
   const newSubOptions = [
     { value: '', label: t('trainings.addTo.subNone') },
     { value: '1', label: t('students.sub.single') },
@@ -56,6 +70,7 @@ function AddToTrainingModalInner({
     form.setNewName(e.target.value)
   const handleNewSubTypeChange = (v: string) =>
     form.setNewSubType(v as SubscriptionType | '')
+  const handleQueryChange = (e: ChangeEvent<HTMLInputElement>) => setQuery(e.target.value)
 
   const footer = [
     <Button key="cancel" onClick={onClose}>
@@ -88,9 +103,19 @@ function AddToTrainingModalInner({
       {form.tab === 'group' ? (
         <Form layout="vertical">
           <Form.Item label={t('trainings.addTo.groupStudents', { group: training.groupId })}>
-            {form.candidates.length ? (
+            {showSearch && (
+              <Input
+                allowClear
+                prefix={<SearchOutlined />}
+                placeholder={t('students.filter.searchPlaceholder')}
+                value={query}
+                onChange={handleQueryChange}
+                style={{ marginBottom: 'var(--sp-3)' }}
+              />
+            )}
+            {visibleCandidates.length ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-2)' }}>
-                {form.candidates.map((c) => (
+                {visibleCandidates.map((c) => (
                   <div
                     key={c.id}
                     style={{
@@ -124,7 +149,7 @@ function AddToTrainingModalInner({
               </div>
             ) : (
               <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>
-                {t('trainings.addTo.allAdded')}
+                {q ? t('students.notFound') : t('trainings.addTo.allAdded')}
               </p>
             )}
           </Form.Item>
