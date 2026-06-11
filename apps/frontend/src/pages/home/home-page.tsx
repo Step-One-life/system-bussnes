@@ -14,6 +14,7 @@ import {
 import { useTranslation } from 'react-i18next'
 
 import { ErrorState, KpiCard, ListSkeleton, PageHeader, WarningItem } from 'common/ui'
+import { MarkPaidModal } from 'entities/finance'
 import { StudentDrawer } from 'entities/students'
 import { RenewSubModal } from 'entities/students/subscriptions/renew-sub-modal'
 import {
@@ -23,26 +24,29 @@ import {
   GroupTrainingModal,
   IndividualSessionModal,
   PairSessionModal,
-  TrainingDayCalendar,
   TrainingTypeModal,
 } from 'entities/trainings'
 
 import { KpiDetailModal } from './kpi-detail-modal'
 import { MarkTodayModal } from './mark-today-modal'
+import { TodayAgenda } from './today-agenda'
 import { UnpaidSubsModal } from './unpaid-subs-modal'
 import { useHomePage } from './use-home-page'
 import { useUnpaidSubs } from './use-unpaid-subs'
 
+import type { UnpaidSub } from './use-unpaid-subs'
 import type { CalendarBlock, Training } from 'entities/trainings'
 
 import './home-page.scss'
+import dayjs from 'dayjs'
 
 export function HomePage() {
   const { t } = useTranslation()
   const page = useHomePage()
-  const { count: unpaidCount } = useUnpaidSubs()
+  const { unpaid, count: unpaidCount } = useUnpaidSubs()
 
   const [drawerId, setDrawerId] = useState<string | null>(null)
+  const [paying, setPaying] = useState<UnpaidSub | null>(null)
   const [unpaidOpen, setUnpaidOpen] = useState(false)
   const [renew, setRenew] = useState<{ studentId: string; groupId: string } | null>(null)
   const [typeOpen, setTypeOpen] = useState(false)
@@ -93,6 +97,11 @@ export function HomePage() {
       e.stopPropagation()
       setRenew({ studentId, groupId })
     }
+  const handlePayUnpaid = (u: UnpaidSub) => (e: { stopPropagation: () => void }) => {
+    e.stopPropagation()
+    setPaying(u)
+  }
+  const handleClosePaying = () => setPaying(null)
 
   const handleCloseKpi = () => page.setKpiType(null)
   const handleRenew = (studentId: string, groupId: string) => setRenew({ studentId, groupId })
@@ -113,10 +122,37 @@ export function HomePage() {
   const handleEditNoop = () => {}
   const handleCloseRenew = () => setRenew(null)
 
+  // «Четверг, 11 июня · 3 тренировки» — dayjs локализован через i18n.
+  const dateLine = dayjs().format('dddd, D MMMM')
+  const subtitle = `${dateLine.charAt(0).toUpperCase()}${dateLine.slice(1)} · ${t(
+    'home.trainingsCount',
+    { count: page.agendaBlocks.length },
+  )}`
+
+  const renderWarning = (w: (typeof page.warnings)[number]) => (
+    <WarningItem
+      key={`${w.student.id}-${w.groupId}`}
+      name={w.student.name}
+      detail={`${page.indNames.includes(w.groupId) ? t('home.indTraining') : w.groupId} · ${w.status.label}`}
+      danger={w.status.type === 'expired'}
+      onClick={handleOpenStudentDrawer(w.student.id)}
+      action={
+        <Button
+          type="primary"
+          size="small"
+          onClick={handleRenewWarning(w.student.id, w.groupId)}
+        >
+          {t('home.extend')}
+        </Button>
+      }
+    />
+  )
+
   return (
-    <div>
+    <div className="home-header">
       <PageHeader
         title={t('nav.home')}
+        subtitle={subtitle}
         actions={
           <>
             {/* При нуле кнопка не исчезает (выглядит как пропажа функции), а
@@ -154,6 +190,28 @@ export function HomePage() {
         }
       />
 
+      {/* Мобайл: «+» остаётся иконкой в шапке, главные действия — пилюлями
+          отдельной строкой (на десктопе блок скрыт, кнопки живут в шапке). */}
+      <div className="home-actions">
+        <Button
+          className="btn-mark"
+          icon={<CheckSquareOutlined />}
+          onClick={handleOpenMarkToday}
+        >
+          {t('home.markToday')}
+        </Button>
+        {unpaidCount > 0 ? (
+          <Button className="btn-unpaid" icon={<DollarOutlined />} onClick={handleOpenUnpaid}>
+            {t('home.unpaidModal.title')}
+            <span className="home-actions__count">{unpaidCount}</span>
+          </Button>
+        ) : (
+          <Button className="btn-unpaid" disabled>
+            {t('home.allPaid')}
+          </Button>
+        )}
+      </div>
+
       {page.kpis && (
         // Проблемные показатели первыми: тренер сперва видит, где беда.
         <div className="kpi-grid" style={{ marginBottom: 'var(--sp-6)' }}>
@@ -162,6 +220,7 @@ export function HomePage() {
             value={page.kpis.expired}
             icon={<AlertOutlined />}
             variant="danger"
+            dimZero
             onClick={handleSelectExpired}
           />
           <KpiCard
@@ -169,6 +228,7 @@ export function HomePage() {
             value={page.kpis.ending}
             icon={<WarningOutlined />}
             variant="warn"
+            dimZero
             onClick={handleSelectEnding}
           />
           <KpiCard
@@ -176,6 +236,7 @@ export function HomePage() {
             value={page.kpis.monthTrainings}
             icon={<CalendarOutlined />}
             variant="ok"
+            dimZero
             onClick={handleSelectMonth}
           />
           <KpiCard
@@ -183,6 +244,7 @@ export function HomePage() {
             value={page.kpis.total}
             icon={<TeamOutlined />}
             variant="accent"
+            dimZero
             onClick={handleSelectTotal}
           />
         </div>
@@ -196,39 +258,43 @@ export function HomePage() {
           ) : page.isError ? (
             <ErrorState onRetry={page.refetch} />
           ) : (
-            <TrainingDayCalendar
+            <TodayAgenda
+              rows={page.agendaBlocks}
               trainings={page.trainings}
-              students={page.students}
               groups={page.groups}
-              onBlockClick={setCalBlock}
+              students={page.students}
+              onRowClick={setCalBlock}
+              onCreate={handleOpenType}
             />
           )}
         </section>
 
         <section className="home-cols__col">
           <div className="section-title">
-            {page.warnings.length ? t('home.attention') : t('home.subStatus')}
+            {page.warnings.length || unpaid.length ? t('home.attention') : t('home.subStatus')}
           </div>
-          {page.warnings.length ? (
+          {page.warnings.length || unpaid.length ? (
             <div className="warning-list">
-              {page.warnings.map((w) => (
+              {/* Серьёзность по убыванию: истёкшие → неоплаченные → заканчивающиеся. */}
+              {page.warnings
+                .filter((w) => w.status.type === 'expired')
+                .map(renderWarning)}
+              {unpaid.map((u) => (
                 <WarningItem
-                  key={`${w.student.id}-${w.groupId}`}
-                  name={w.student.name}
-                  detail={`${page.indNames.includes(w.groupId) ? t('home.indTraining') : w.groupId} · ${w.status.label}`}
-                  danger={w.status.type === 'expired'}
-                  onClick={handleOpenStudentDrawer(w.student.id)}
+                  key={`unpaid-${u.sub.id}`}
+                  name={u.student.name}
+                  detail={`${u.isIndividual ? t('home.indTraining') : u.groupId} · ${t('home.attentionUnpaid')}`}
+                  onClick={handleOpenStudentDrawer(u.student.id)}
                   action={
-                    <Button
-                      type="primary"
-                      size="small"
-                      onClick={handleRenewWarning(w.student.id, w.groupId)}
-                    >
-                      {t('home.extend')}
+                    <Button size="small" onClick={handlePayUnpaid(u)}>
+                      {t('students.subCard.markPaid')}
                     </Button>
                   }
                 />
               ))}
+              {page.warnings
+                .filter((w) => w.status.type !== 'expired')
+                .map(renderWarning)}
             </div>
           ) : (
             <div className="home-empty-card home-empty-card--ok">{t('home.allSubsOk')}</div>
@@ -313,6 +379,16 @@ export function HomePage() {
           studentName={renewStudent.name}
           groupId={renew.groupId}
           onClose={handleCloseRenew}
+        />
+      )}
+
+      {paying && (
+        <MarkPaidModal
+          open
+          student={paying.student}
+          sub={paying.sub}
+          isIndividual={paying.isIndividual}
+          onClose={handleClosePaying}
         />
       )}
     </div>

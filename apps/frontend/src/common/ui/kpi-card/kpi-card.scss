@@ -88,4 +88,15 @@
     background: var(--success-dim);
     color: var(--success);
   }
+
+  // Нулевой показатель (opt-in через dimZero): серые цифра и иконка.
+  // После вариантных правил, чтобы перебить их по каскаду.
+  &--dim &__value {
+    color: var(--text-muted);
+  }
+
+  &--dim &__icon {
+    background: var(--surface-2);
+    color: var(--text-muted);
+  }
 }

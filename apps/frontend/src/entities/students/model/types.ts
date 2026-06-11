@@ -19,10 +19,15 @@ export interface Subscription {
   timeSlot: TimeSlot
 }
 
+/** Как списано посещение: абонемент, разовый платёж или без оплаты. */
+export type VisitBilling = 'subscription' | 'payment' | 'none'
+
 export interface VisitRecord {
   date: string
   groupId: string
   trainingId: string
+  /** null у старых визитов, созданных до появления биллинга. */
+  billing: VisitBilling | null
 }
 
 export interface Student {

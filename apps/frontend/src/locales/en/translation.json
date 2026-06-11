@@ -643,7 +643,17 @@
       "nothingScheduled": "Nothing scheduled for today by group timetable",
       "noGroupStudents": "No students in the group",
       "individualSessions": "Individual"
-    }
+    },
+    "agendaNow": "NOW",
+    "agendaSoon": "Soon",
+    "agendaInProgress": "Ongoing",
+    "agendaUnpaid": "Unpaid",
+    "agendaUnmarked": "Not marked",
+    "agendaAttendees": "{{count}} ppl.",
+    "minutesShort": "{{count}} min",
+    "trainingsCount_one": "{{count}} training",
+    "trainingsCount_other": "{{count}} trainings",
+    "attentionUnpaid": "Awaiting payment"
   },
   "locations": {
     "title": "Locations",

@@ -647,7 +647,18 @@
       "nothingScheduled": "По расписанию групп на сегодня ничего не запланировано",
       "noGroupStudents": "В группе нет учеников",
       "individualSessions": "Индивидуальные"
-    }
+    },
+    "agendaNow": "СЕЙЧАС",
+    "agendaSoon": "Скоро",
+    "agendaInProgress": "Идёт",
+    "agendaUnpaid": "Не оплачено",
+    "agendaUnmarked": "Не отмечено",
+    "agendaAttendees": "{{count}} чел.",
+    "minutesShort": "{{count}} мин",
+    "trainingsCount": "{{count}} тренировка",
+    "trainingsCount_few": "{{count}} тренировки",
+    "trainingsCount_many": "{{count}} тренировок",
+    "attentionUnpaid": "Ожидает оплаты"
   },
   "locations": {
     "title": "Локации",
