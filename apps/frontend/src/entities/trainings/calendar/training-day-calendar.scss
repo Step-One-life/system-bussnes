@@ -16,6 +16,9 @@
     -webkit-overflow-scrolling: touch;
     overscroll-behavior-y: contain;
     max-height: min(420px, calc(100vh - 320px));
+    /* Метки часов центрированы по линии (translateY(-50%)) — без зазора
+       верхняя половина первой метки срезается краем скролл-области. */
+    padding-top: 6px;
   }
 
   &__grid {
