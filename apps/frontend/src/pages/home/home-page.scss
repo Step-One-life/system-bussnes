@@ -15,6 +15,15 @@
   }
 }
 
+/* Счётчик «1/3» справа от линии: ::after-линия идёт в порядке исходника
+   последней, order сдвигает счётчик за неё. */
+.section-title__count {
+  order: 2;
+  font-weight: 400;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
 /* "Отметить за сегодня" — зелёная кнопка как legacy .btn--mark */
 .btn-mark.ant-btn {
   background: var(--success);
@@ -36,11 +45,26 @@
   }
 }
 
-/* «Ожидают оплаты» — приглушённая янтарная пилюля-статус (как сигнал
-   проблем с оплатой по приложению). Disabled-вид («Всё оплачено») — antd. */
+/* «Отметить день» — тинтовая зелёная пилюля (премиальный приглушённый вид,
+   в отличие от заливной .btn-mark, которая остаётся в модалке отметки). */
+.btn-mark-tint.ant-btn:not(:disabled) {
+  background: var(--success-dim);
+  border-color: rgba(52, 199, 89, 0.35);
+  color: var(--success);
+
+  &:hover,
+  &:focus {
+    background: rgba(52, 199, 89, 0.2) !important;
+    border-color: var(--success) !important;
+    color: var(--success) !important;
+  }
+}
+
+/* «Оплаты» — приглушённая янтарная пилюля-статус (как сигнал проблем
+   с оплатой по приложению). Disabled-вид («Всё оплачено») — antd. */
 .btn-unpaid.ant-btn:not(:disabled) {
   background: var(--warning-dim);
-  border-color: transparent;
+  border-color: rgba(255, 149, 0, 0.35);
   color: var(--warning);
 
   &:hover,
@@ -68,7 +92,7 @@
     width: auto;
     flex: 0 0 auto;
 
-    .btn-mark,
+    .btn-mark-tint,
     .btn-unpaid {
       display: none;
     }
@@ -111,7 +135,7 @@
     }
 
     /* Зелёная пилюля главного действия шире янтарной */
-    .btn-mark {
+    .btn-mark-tint {
       flex: 1.3;
     }
   }

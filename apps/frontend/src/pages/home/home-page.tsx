@@ -1,19 +1,12 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 
 import { Button } from 'antd'
-import {
-  AlertOutlined,
-  CalendarOutlined,
-  CheckSquareOutlined,
-  DollarOutlined,
-  PlusOutlined,
-  TeamOutlined,
-  WarningOutlined,
-} from '@ant-design/icons'
+import { CheckSquareOutlined, DollarOutlined, PlusOutlined } from '@ant-design/icons'
 
 import { useTranslation } from 'react-i18next'
 
-import { ErrorState, KpiCard, ListSkeleton, PageHeader, WarningItem } from 'common/ui'
+import { useNow } from 'common/hooks/use-now'
+import { ErrorState, ListSkeleton, PageHeader, WarningItem } from 'common/ui'
 import { MarkPaidModal } from 'entities/finance'
 import { StudentDrawer } from 'entities/students'
 import { RenewSubModal } from 'entities/students/subscriptions/renew-sub-modal'
@@ -27,7 +20,9 @@ import {
   TrainingTypeModal,
 } from 'entities/trainings'
 
+import { buildAgendaItems, minutesOfDay } from './agenda-model'
 import { KpiDetailModal } from './kpi-detail-modal'
+import { KpiStrip } from './kpi-strip'
 import { MarkTodayModal } from './mark-today-modal'
 import { TodayAgenda } from './today-agenda'
 import { UnpaidSubsModal } from './unpaid-subs-modal'
@@ -86,11 +81,6 @@ export function HomePage() {
   const handleOpenUnpaid = () => setUnpaidOpen(true)
   const handleCloseUnpaid = () => setUnpaidOpen(false)
 
-  const handleSelectTotal = () => page.setKpiType('total')
-  const handleSelectMonth = () => page.setKpiType('month')
-  const handleSelectEnding = () => page.setKpiType('ending')
-  const handleSelectExpired = () => page.setKpiType('expired')
-
   const handleOpenStudentDrawer = (id: string) => () => setDrawerId(id)
   const handleRenewWarning =
     (studentId: string, groupId: string) => (e: { stopPropagation: () => void }) => {
@@ -122,12 +112,26 @@ export function HomePage() {
   const handleEditNoop = () => {}
   const handleCloseRenew = () => setRenew(null)
 
-  // «Четверг, 11 июня · 3 тренировки» — dayjs локализован через i18n.
-  const dateLine = dayjs().format('dddd, D MMMM')
-  const subtitle = `${dateLine.charAt(0).toUpperCase()}${dateLine.slice(1)} · ${t(
-    'home.trainingsCount',
-    { count: page.agendaBlocks.length },
-  )}`
+  const now = useNow()
+
+  // «Чт, 11 июня» над приветствием — dayjs локализован через i18n.
+  const dateLine = dayjs(now).format('dd, D MMMM')
+  const overline = `${dateLine.charAt(0).toUpperCase()}${dateLine.slice(1)}`
+  const hour = now.getHours()
+  const greeting =
+    hour >= 5 && hour < 12
+      ? t('home.greetingMorning')
+      : hour < 18
+        ? t('home.greetingDay')
+        : hour < 23
+          ? t('home.greetingEvening')
+          : t('home.greetingNight')
+
+  const agendaItems = useMemo(
+    () => buildAgendaItems(page.agendaBlocks, page.trainings, page.groups),
+    [page.agendaBlocks, page.trainings, page.groups],
+  )
+  const doneCount = agendaItems.filter((it) => it.endMin <= minutesOfDay(now)).length
 
   const renderWarning = (w: (typeof page.warnings)[number]) => (
     <WarningItem
@@ -151,8 +155,8 @@ export function HomePage() {
   return (
     <div className="home-header">
       <PageHeader
-        title={t('nav.home')}
-        subtitle={subtitle}
+        title={greeting}
+        overline={overline}
         actions={
           <>
             {/* При нуле кнопка не исчезает (выглядит как пропажа функции), а
@@ -175,7 +179,7 @@ export function HomePage() {
               </Button>
             )}
             <Button
-              className="btn-mark"
+              className="btn-mark-tint"
               icon={<CheckSquareOutlined />}
               onClick={handleOpenMarkToday}
             >
@@ -194,7 +198,7 @@ export function HomePage() {
           отдельной строкой (на десктопе блок скрыт, кнопки живут в шапке). */}
       <div className="home-actions">
         <Button
-          className="btn-mark"
+          className="btn-mark-tint"
           icon={<CheckSquareOutlined />}
           onClick={handleOpenMarkToday}
         >
@@ -214,55 +218,30 @@ export function HomePage() {
 
       {page.kpis && (
         // Проблемные показатели первыми: тренер сперва видит, где беда.
-        <div className="kpi-grid" style={{ marginBottom: 'var(--sp-6)' }}>
-          <KpiCard
-            label={t('home.kpiExpired')}
-            value={page.kpis.expired}
-            icon={<AlertOutlined />}
-            variant="danger"
-            dimZero
-            onClick={handleSelectExpired}
-          />
-          <KpiCard
-            label={t('home.kpiEnding')}
-            value={page.kpis.ending}
-            icon={<WarningOutlined />}
-            variant="warn"
-            dimZero
-            onClick={handleSelectEnding}
-          />
-          <KpiCard
-            label={t('home.kpiMonth')}
-            value={page.kpis.monthTrainings}
-            icon={<CalendarOutlined />}
-            variant="ok"
-            dimZero
-            onClick={handleSelectMonth}
-          />
-          <KpiCard
-            label={t('home.kpiTotal')}
-            value={page.kpis.total}
-            icon={<TeamOutlined />}
-            variant="accent"
-            dimZero
-            onClick={handleSelectTotal}
-          />
+        <div style={{ marginBottom: 'var(--sp-6)' }}>
+          <KpiStrip kpis={page.kpis} onSelect={page.setKpiType} />
         </div>
       )}
 
       <div className="home-cols">
         <section className="home-cols__col">
-          <div className="section-title">{t('home.trainingsToday')}</div>
+          <div className="section-title">
+            {t('home.today')}
+            {agendaItems.length > 0 && (
+              <span className="section-title__count">
+                {doneCount}/{agendaItems.length}
+              </span>
+            )}
+          </div>
           {page.isLoading ? (
             <ListSkeleton rows={2} />
           ) : page.isError ? (
             <ErrorState onRetry={page.refetch} />
           ) : (
             <TodayAgenda
-              rows={page.agendaBlocks}
-              trainings={page.trainings}
-              groups={page.groups}
+              items={agendaItems}
               students={page.students}
+              now={now}
               onRowClick={setCalBlock}
               onCreate={handleOpenType}
             />
