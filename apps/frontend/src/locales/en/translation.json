@@ -181,7 +181,7 @@
       "deleteSubTitle": "Delete subscription \"{{type}}\"?",
       "deductSession": "Deduct session",
       "newSub": "New subscription",
-      "markPaid": "Mark paid",
+      "markPaid": "Record payment",
       "askNextTraining": "Ask about next training",
       "extendTerm": "Extend term"
     },
@@ -461,8 +461,8 @@
       "notePlaceholder": "Optional"
     },
     "markPaid": {
-      "title": "Mark paid",
-      "markPaidBtn": "Mark as paid",
+      "title": "Record payment",
+      "markPaidBtn": "Record payment",
       "dateRequired": "Specify a date",
       "paid": "Payment recorded",
       "client": "Client",
