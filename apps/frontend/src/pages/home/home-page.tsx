@@ -149,7 +149,7 @@ export function HomePage() {
   )
 
   return (
-    <div>
+    <div className="home-header">
       <PageHeader
         title={t('nav.home')}
         subtitle={subtitle}
@@ -190,6 +190,28 @@ export function HomePage() {
         }
       />
 
+      {/* Мобайл: «+» остаётся иконкой в шапке, главные действия — пилюлями
+          отдельной строкой (на десктопе блок скрыт, кнопки живут в шапке). */}
+      <div className="home-actions">
+        <Button
+          className="btn-mark"
+          icon={<CheckSquareOutlined />}
+          onClick={handleOpenMarkToday}
+        >
+          {t('home.markToday')}
+        </Button>
+        {unpaidCount > 0 ? (
+          <Button className="btn-unpaid" icon={<DollarOutlined />} onClick={handleOpenUnpaid}>
+            {t('home.unpaidModal.title')}
+            <span className="home-actions__count">{unpaidCount}</span>
+          </Button>
+        ) : (
+          <Button className="btn-unpaid" disabled>
+            {t('home.allPaid')}
+          </Button>
+        )}
+      </div>
+
       {page.kpis && (
         // Проблемные показатели первыми: тренер сперва видит, где беда.
         <div className="kpi-grid" style={{ marginBottom: 'var(--sp-6)' }}>
@@ -198,6 +220,7 @@ export function HomePage() {
             value={page.kpis.expired}
             icon={<AlertOutlined />}
             variant="danger"
+            dimZero
             onClick={handleSelectExpired}
           />
           <KpiCard
@@ -205,6 +228,7 @@ export function HomePage() {
             value={page.kpis.ending}
             icon={<WarningOutlined />}
             variant="warn"
+            dimZero
             onClick={handleSelectEnding}
           />
           <KpiCard
@@ -212,6 +236,7 @@ export function HomePage() {
             value={page.kpis.monthTrainings}
             icon={<CalendarOutlined />}
             variant="ok"
+            dimZero
             onClick={handleSelectMonth}
           />
           <KpiCard
@@ -219,6 +244,7 @@ export function HomePage() {
             value={page.kpis.total}
             icon={<TeamOutlined />}
             variant="accent"
+            dimZero
             onClick={handleSelectTotal}
           />
         </div>
