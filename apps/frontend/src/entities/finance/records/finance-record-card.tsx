@@ -54,7 +54,8 @@ export function FinanceRecordCard({
           <span className="fin-record__income">
             +{payment.client_amount.toLocaleString('ru')} ₽
           </span>
-          {hallCost && (
+          {/* Нулевой расход в свёрнутой строке — шум («−0 ₽»), скрываем */}
+          {hallCost && hallCost.hall_amount > 0 && (
             <span className="fin-record__expense">
               −{hallCost.hall_amount.toLocaleString('ru')} ₽
             </span>
@@ -88,8 +89,13 @@ export function FinanceRecordCard({
                 {hallCost.time_slot === 'prime' && (
                   <Badge variant="warn">{t('finance.card.prime')}</Badge>
                 )}
-                <span style={{ color: 'var(--danger)' }}>
-                  −{hallCost.hall_amount.toLocaleString('ru')} ₽
+                <span
+                  style={{
+                    color: hallCost.hall_amount > 0 ? 'var(--danger)' : 'var(--text-muted)',
+                  }}
+                >
+                  {hallCost.hall_amount > 0 ? '−' : ''}
+                  {hallCost.hall_amount.toLocaleString('ru')} ₽
                 </span>
               </span>
             </div>
