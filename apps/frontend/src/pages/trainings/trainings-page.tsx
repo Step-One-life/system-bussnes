@@ -7,7 +7,7 @@ import {
 
 import { useTranslation } from 'react-i18next'
 
-import { EmptyState, ListSkeleton, PageHeader } from 'common/ui'
+import { EmptyState, ErrorState, ListSkeleton, PageHeader } from 'common/ui'
 import {
   AddToTrainingModal,
   CalendarTrainingModal,
@@ -50,6 +50,7 @@ export function TrainingsPage() {
               <button
                 className={`view-toggle__btn${page.view === 'calendar' ? ' view-toggle__btn--active' : ''}`}
                 title={t('trainings.viewWeek')}
+                aria-label={t('trainings.viewWeek')}
                 onClick={handleSelectCalendarView}
               >
                 <CalendarOutlined />
@@ -57,6 +58,7 @@ export function TrainingsPage() {
               <button
                 className={`view-toggle__btn${page.view === 'list' ? ' view-toggle__btn--active' : ''}`}
                 title={t('trainings.viewList')}
+                aria-label={t('trainings.viewList')}
                 onClick={handleSelectListView}
               >
                 <UnorderedListOutlined />
@@ -71,6 +73,8 @@ export function TrainingsPage() {
 
       {page.isLoading ? (
         <ListSkeleton />
+      ) : page.isError ? (
+        <ErrorState onRetry={page.refetch} />
       ) : page.view === 'calendar' ? (
         <TrainingCalendar
           trainings={page.trainings}

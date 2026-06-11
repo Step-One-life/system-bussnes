@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 
+import { useSearchParams } from 'react-router-dom'
+
 import { useTranslation } from 'react-i18next'
 
 import { useToast } from 'common/ui'
@@ -17,7 +19,13 @@ export function useGroupsPage() {
   const { data: groups = [], isLoading } = useGroups()
   const deleteGroup = useDeleteGroup()
 
-  const [openedGroup, setOpenedGroup] = useState<Group | null>(null)
+  // Открытая группа живёт в URL (?group=<id>): браузерное «назад» возвращает
+  // к списку, а обновление страницы не теряет открытую деталь. Сам объект
+  // всегда берётся из свежего списка групп — после редактирования не устаревает.
+  const [searchParams, setSearchParams] = useSearchParams()
+  const openedGroup = groups.find((g) => g.id === searchParams.get('group')) ?? null
+  const setOpenedGroup = (group: Group | null) =>
+    setSearchParams(group ? { group: group.id } : {})
   const [formGroup, setFormGroup] = useState<Group | null>(null)
   const [formOpen, setFormOpen] = useState(false)
   // formKey меняется при каждом открытии формы (новая или другая группа),
@@ -38,14 +46,7 @@ export function useGroupsPage() {
     setFormOpen(true)
   }
 
-  const closeForm = () => {
-    setFormOpen(false)
-    // keep openedGroup in sync after edit
-    if (openedGroup) {
-      const fresh = groups.find((g) => g.id === openedGroup.id)
-      if (fresh) setOpenedGroup(fresh)
-    }
-  }
+  const closeForm = () => setFormOpen(false)
 
   const handleDelete = async (group: Group) => {
     await deleteGroup.mutateAsync(group.id)

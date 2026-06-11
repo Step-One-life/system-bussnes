@@ -112,12 +112,30 @@ function CalendarTrainingModalInner({
   const handleToggleAttendee = (studentId: string) => () =>
     m.toggle(studentId)
 
+  // Порядок как в остальных модалках: разрушительное действие отдельно слева,
+  // primary («Сохранить») — крайним справа.
   const footer: React.ReactNode[] = []
-  footer.push(
-    <Button key="save" type="primary" loading={m.saving} onClick={m.saveAttendance}>
-      {t('common.save')}
-    </Button>,
-  )
+  if (m.training) {
+    footer.push(
+      <Popconfirm
+        key="del"
+        title={t('trainings.cal.deleteTitle', { name: `${block.label} · ${block.time}` })}
+        description={t('trainings.cal.deleteDescription')}
+        okText={t('common.delete')}
+        cancelText={t('common.cancel')}
+        okButtonProps={{ danger: true }}
+        onConfirm={m.handleDelete}
+      >
+        <Button
+          type="text"
+          danger
+          icon={<DeleteOutlined />}
+          style={{ marginRight: 'auto' }}
+          aria-label={t('common.delete')}
+        />
+      </Popconfirm>,
+    )
+  }
   if (m.isInd) {
     footer.push(
       <Button
@@ -130,37 +148,27 @@ function CalendarTrainingModalInner({
       </Button>,
     )
   }
-  if (m.training) {
-    if (onEdit) {
-      footer.push(
-        <Button
-          key="edit"
-          icon={<EditOutlined />}
-          onClick={() => {
-            if (m.training && onEdit) {
-              onClose()
-              onEdit(m.training)
-            }
-          }}
-        >
-          {t('trainings.cal.edit')}
-        </Button>,
-      )
-    }
+  if (m.training && onEdit) {
     footer.push(
-      <Popconfirm
-        key="del"
-        title={t('trainings.cal.deleteTitle', { name: `${block.label} · ${block.time}` })}
-        description={t('trainings.cal.deleteDescription')}
-        okText={t('common.delete')}
-        cancelText={t('common.cancel')}
-        okButtonProps={{ danger: true }}
-        onConfirm={m.handleDelete}
+      <Button
+        key="edit"
+        icon={<EditOutlined />}
+        onClick={() => {
+          if (m.training && onEdit) {
+            onClose()
+            onEdit(m.training)
+          }
+        }}
       >
-        <Button type="text" danger icon={<DeleteOutlined />} style={{ marginRight: 'auto' }} />
-      </Popconfirm>,
+        {t('trainings.cal.edit')}
+      </Button>,
     )
   }
+  footer.push(
+    <Button key="save" type="primary" loading={m.saving} onClick={m.saveAttendance}>
+      {t('common.save')}
+    </Button>,
+  )
 
   return (
     <Modal open={open} title={m.title} onCancel={onClose} footer={footer} destroyOnHidden>

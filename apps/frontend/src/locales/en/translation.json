@@ -58,7 +58,9 @@
     "time": "Time",
     "notePlaceholder": "Optional",
     "sessionExpired": "Session expired",
-    "requestError": "Request error ({{status}})"
+    "requestError": "Request error ({{status}})",
+    "loadError": "Failed to load data",
+    "retry": "Retry"
   },
   "groups": {
     "create": "Create group",
@@ -269,7 +271,9 @@
     },
     "calendar": {
       "today": "Today",
-      "attendeesCount": "{{count}} ppl."
+      "attendeesCount": "{{count}} ppl.",
+      "prevWeek": "Previous week",
+      "nextWeek": "Next week"
     },
     "edit": {
       "title": "Edit session",
@@ -504,7 +508,8 @@
       "actionsMenu": {
         "edit": "Edit",
         "duplicate": "Duplicate",
-        "delete": "Delete"
+        "delete": "Delete",
+        "title": "Rule actions"
       },
       "lessonKind": {
         "individual": "Individual",

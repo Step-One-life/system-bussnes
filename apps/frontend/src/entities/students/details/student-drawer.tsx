@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 
-import { Button, Drawer, Popconfirm } from 'antd'
+import { Button, Collapse, Drawer, Popconfirm } from 'antd'
 import { DeleteOutlined, EditOutlined, PlusOutlined, UserOutlined } from '@ant-design/icons'
 
 import { useTranslation } from 'react-i18next'
@@ -115,6 +115,7 @@ export function StudentDrawer({ studentId, onClose, onEdit }: StudentDrawerProps
             <Button
               type="text"
               icon={<EditOutlined />}
+              aria-label={t('common.edit')}
               onClick={handleEditStudent}
             />
           )
@@ -192,11 +193,24 @@ export function StudentDrawer({ studentId, onClose, onEdit }: StudentDrawerProps
               </>
             )}
 
-            <div className="section-title">{t('students.drawer.visitHistory')}</div>
-            <VisitHistory
-              student={student}
-              indNames={indNames}
-              onRemoveVisit={handleRemoveVisit}
+            {/* История свёрнута по умолчанию: дровер и так длинный, на мобильном
+                много скролла; счётчик в заголовке показывает объём без раскрытия. */}
+            <Collapse
+              ghost
+              className="visit-collapse"
+              items={[
+                {
+                  key: 'visits',
+                  label: `${t('students.drawer.visitHistory')} · ${student.visitHistory.length}`,
+                  children: (
+                    <VisitHistory
+                      student={student}
+                      indNames={indNames}
+                      onRemoveVisit={handleRemoveVisit}
+                    />
+                  ),
+                },
+              ]}
             />
 
             <div style={{ marginTop: 'var(--sp-6)' }}>

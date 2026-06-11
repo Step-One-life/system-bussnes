@@ -63,9 +63,21 @@ export function TrainingCalendar({
     <div className="cal-week">
       <div className="cal-week__topbar">
         <div className="cal-week__nav">
-          <Button size="small" type="text" icon={<LeftOutlined />} onClick={handlePrevWeek} />
+          <Button
+            size="small"
+            type="text"
+            icon={<LeftOutlined />}
+            aria-label={t('trainings.calendar.prevWeek')}
+            onClick={handlePrevWeek}
+          />
           <span className="cal-week__label">{formatWeekRange(weekStart)}</span>
-          <Button size="small" type="text" icon={<RightOutlined />} onClick={handleNextWeek} />
+          <Button
+            size="small"
+            type="text"
+            icon={<RightOutlined />}
+            aria-label={t('trainings.calendar.nextWeek')}
+            onClick={handleNextWeek}
+          />
         </div>
         <Button size="small" onClick={handleToday}>
           {t('trainings.calendar.today')}

@@ -20,7 +20,7 @@ export type TrainingsView = 'list' | 'calendar'
 export function useTrainingsPage() {
   const { t } = useTranslation()
   const toast = useToast()
-  const { data: trainings = [], isLoading } = useTrainings()
+  const { data: trainings = [], isLoading, isError, refetch } = useTrainings()
   const { data: students = [] } = useStudents()
   const { data: groups = [] } = useGroups()
   const removeFromTraining = useRemoveFromTraining()
@@ -89,6 +89,8 @@ export function useTrainingsPage() {
     students,
     groups,
     isLoading,
+    isError,
+    refetch,
     view,
     setView,
     typeModalOpen,

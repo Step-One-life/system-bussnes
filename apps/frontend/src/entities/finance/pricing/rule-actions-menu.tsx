@@ -41,7 +41,12 @@ export function RuleActionsMenu({ rule, onEdit, onDuplicate, onDelete }: RuleAct
 
   return (
     <Dropdown menu={{ items, onClick: handleClick }} trigger={['click']}>
-      <Button type="text" size="small" icon={<MoreOutlined />} />
+      <Button
+        type="text"
+        size="small"
+        icon={<MoreOutlined />}
+        aria-label={t('finance.pricing.actionsMenu.title')}
+      />
     </Dropdown>
   )
 }

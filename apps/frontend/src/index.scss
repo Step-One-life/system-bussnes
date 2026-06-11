@@ -35,3 +35,10 @@ button {
   border: none;
   background: none;
 }
+
+/* Клавиатурная навигация: обводка только при focus-visible (не от клика).
+   antd-компоненты сохраняют свои фокус-стили — их селекторы специфичнее. */
+:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
