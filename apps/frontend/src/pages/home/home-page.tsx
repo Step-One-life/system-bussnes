@@ -147,7 +147,8 @@ export function HomePage() {
               <span className="btn-label--short">{t('home.markTodayShort')}</span>
             </Button>
             <Button type="primary" icon={<PlusOutlined />} onClick={handleOpenType}>
-              {t('home.recordTraining')}
+              <span className="btn-label--full">{t('home.recordTraining')}</span>
+              <span className="btn-label--short">{t('home.recordTrainingShort')}</span>
             </Button>
           </>
         }
