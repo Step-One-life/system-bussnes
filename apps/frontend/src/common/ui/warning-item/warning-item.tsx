@@ -19,9 +19,11 @@ export function WarningItem({ name, detail, danger, action, onClick }: WarningIt
       onClick={onClick}
       style={onClick ? { cursor: 'pointer' } : undefined}
     >
-      <span className="warning-item__status-dot" />
       <div className="warning-item__main">
-        <div className="warning-item__name">{name}</div>
+        <div className="warning-item__name">
+          <span className="warning-item__status-dot" />
+          {name}
+        </div>
         <div className="warning-item__detail">{detail}</div>
       </div>
       {action}

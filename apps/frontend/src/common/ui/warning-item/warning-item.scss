@@ -33,8 +33,9 @@
     color: var(--text-secondary);
   }
 
-  /* Токен-скин (компонент WarningItem): точка статуса вместо цветной полосы.
-     Сырая разметка .warning-item на других экранах остаётся на легаси-виде. */
+  /* Токен-скин (компонент WarningItem): точка статуса перед именем вместо
+     цветной полосы — единый индикатор с агендой и метриками. Сырая разметка
+     .warning-item на других экранах остаётся на легаси-виде. */
   &--dot {
     background: var(--tk-surface-card);
     border: 1px solid var(--tk-border-default);
@@ -42,19 +43,24 @@
     padding: var(--sp-4) var(--sp-5);
 
     .warning-item__status-dot {
-      width: 7px;
-      height: 7px;
+      width: 5px;
+      height: 5px;
       border-radius: 50%;
       flex-shrink: 0;
       background: var(--tk-warning-dot);
     }
 
     .warning-item__name {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-2);
       color: var(--tk-text-primary);
     }
 
     .warning-item__detail {
       color: var(--tk-text-secondary);
+      /* Текст причины под именем, а не под точкой */
+      padding-left: calc(5px + var(--sp-2));
     }
   }
 
