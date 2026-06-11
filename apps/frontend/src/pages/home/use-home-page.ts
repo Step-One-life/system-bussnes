@@ -5,7 +5,7 @@ import { getKPIs, getWarningStudents } from 'common/lib/kpi'
 import { todayISO } from 'common/utils/date'
 import { useGroups } from 'entities/groups'
 import { useStudents } from 'entities/students'
-import { useTrainings } from 'entities/trainings'
+import { buildCalendarDay, useTrainings } from 'entities/trainings'
 
 import type { KpiType } from './kpi-detail-modal'
 
@@ -37,6 +37,13 @@ export function useHomePage() {
     [trainings, todayStr],
   )
 
+  // Строки агенды: записанные занятия + слоты расписаний групп на сегодня,
+  // отсортированы по времени (та же модель, что у календаря).
+  const agendaBlocks = useMemo(
+    () => buildCalendarDay(todayStr, trainings, students, groups).day.blocks,
+    [todayStr, trainings, students, groups],
+  )
+
   return {
     kpis,
     warnings,
@@ -49,6 +56,7 @@ export function useHomePage() {
     indNames,
     regularNames,
     todayTrainings,
+    agendaBlocks,
     kpiType,
     setKpiType,
     markTodayOpen,

@@ -11,6 +11,7 @@ import {
   WarningOutlined,
 } from '@ant-design/icons'
 
+import dayjs from 'dayjs'
 import { useTranslation } from 'react-i18next'
 
 import { ErrorState, KpiCard, ListSkeleton, PageHeader, WarningItem } from 'common/ui'
@@ -23,12 +24,12 @@ import {
   GroupTrainingModal,
   IndividualSessionModal,
   PairSessionModal,
-  TrainingDayCalendar,
   TrainingTypeModal,
 } from 'entities/trainings'
 
 import { KpiDetailModal } from './kpi-detail-modal'
 import { MarkTodayModal } from './mark-today-modal'
+import { TodayAgenda } from './today-agenda'
 import { UnpaidSubsModal } from './unpaid-subs-modal'
 import { useHomePage } from './use-home-page'
 import { useUnpaidSubs } from './use-unpaid-subs'
@@ -113,10 +114,18 @@ export function HomePage() {
   const handleEditNoop = () => {}
   const handleCloseRenew = () => setRenew(null)
 
+  // «Четверг, 11 июня · 3 тренировки» — dayjs локализован через i18n.
+  const dateLine = dayjs().format('dddd, D MMMM')
+  const subtitle = `${dateLine.charAt(0).toUpperCase()}${dateLine.slice(1)} · ${t(
+    'home.trainingsCount',
+    { count: page.agendaBlocks.length },
+  )}`
+
   return (
     <div>
       <PageHeader
         title={t('nav.home')}
+        subtitle={subtitle}
         actions={
           <>
             {/* При нуле кнопка не исчезает (выглядит как пропажа функции), а
@@ -196,11 +205,13 @@ export function HomePage() {
           ) : page.isError ? (
             <ErrorState onRetry={page.refetch} />
           ) : (
-            <TrainingDayCalendar
+            <TodayAgenda
+              rows={page.agendaBlocks}
               trainings={page.trainings}
-              students={page.students}
               groups={page.groups}
-              onBlockClick={setCalBlock}
+              students={page.students}
+              onRowClick={setCalBlock}
+              onCreate={handleOpenType}
             />
           )}
         </section>
