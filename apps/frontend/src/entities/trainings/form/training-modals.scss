@@ -78,38 +78,6 @@
   color: #f59e0b;
 }
 
-.dur-toggle {
-  display: flex;
-  gap: 0;
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  border-radius: var(--r-md);
-  padding: 3px;
-
-  &__btn {
-    flex: 1;
-    padding: var(--sp-2) var(--sp-4);
-    border: none;
-    border-radius: calc(var(--r-md) - 2px);
-    background: transparent;
-    color: var(--text-secondary);
-    font-family: var(--font);
-    font-size: 0.875rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition:
-      background var(--dur) var(--ease),
-      color var(--dur) var(--ease);
-    min-height: 38px;
-
-    &--active {
-      background: var(--accent);
-      color: #fff;
-      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
-    }
-  }
-}
-
 .rec-toggle-card {
   display: flex;
   align-items: center;

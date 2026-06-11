@@ -1,4 +1,4 @@
-import { Button, Form, Input, InputNumber, Modal, Select } from 'antd'
+import { Button, Form, Input, InputNumber, Modal, Segmented, Select } from 'antd'
 import { CheckOutlined, SyncOutlined } from '@ant-design/icons'
 
 import { useTranslation } from 'react-i18next'
@@ -21,7 +21,6 @@ export function PairSessionModal({ open, indGroupId, onClose }: PairSessionModal
   const { t } = useTranslation()
   const form = usePairSession({ indGroupId, onDone: onClose })
 
-  const handleSelectDuration = (d: number) => () => form.setDuration(d)
   const handleDateChange = (e: ChangeEvent<HTMLInputElement>) => form.setDate(e.target.value)
   const handleTimeChange = (e: ChangeEvent<HTMLInputElement>) => form.setTime(e.target.value)
   const handleNoteChange = (e: ChangeEvent<HTMLTextAreaElement>) => form.setNote(e.target.value)
@@ -42,17 +41,15 @@ export function PairSessionModal({ open, indGroupId, onClose }: PairSessionModal
     <Modal open={open} title={t('trainings.pair.title')} onCancel={onClose} footer={footer} destroyOnHidden>
       <Form layout="vertical">
         <Form.Item label={t('trainings.individual.durationLabel')}>
-          <div className="dur-toggle">
-            {[60, 90].map((d) => (
-              <button
-                key={d}
-                className={`dur-toggle__btn${form.duration === d ? ' dur-toggle__btn--active' : ''}`}
-                onClick={handleSelectDuration(d)}
-              >
-                {d === 90 ? t('trainings.individual.duration90') : t('trainings.individual.duration60')}
-              </button>
-            ))}
-          </div>
+          <Segmented
+            block
+            value={form.duration}
+            onChange={(v) => form.setDuration(v as number)}
+            options={[
+              { label: t('trainings.individual.duration60'), value: 60 },
+              { label: t('trainings.individual.duration90'), value: 90 },
+            ]}
+          />
         </Form.Item>
 
         <Form.Item label={t('trainings.pair.clientA')} required>
