@@ -42,3 +42,19 @@ button {
   outline: 2px solid var(--border-focus);
   outline-offset: 2px;
 }
+
+/* Футер модалок: в antd v6 это display:block — кнопки переносятся, а паттерн
+   «удаление слева через margin-right:auto» не работает. Делаем флексом. */
+.ant-modal .ant-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+
+  // !important — перебиваем margin между кнопками из CSS-in-JS antd
+  // (равная специфичность, но его стили инжектятся позже); отступы даёт gap.
+  > * {
+    margin-inline-start: 0 !important;
+  }
+}
