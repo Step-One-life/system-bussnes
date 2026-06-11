@@ -11,17 +11,14 @@ interface KpiCardProps {
   value: number
   icon?: ReactNode
   variant?: KpiVariant
-  /** Приглушить карточку при value = 0, чтобы нулевой показатель не тянул внимание. */
-  dimZero?: boolean
   onClick?: () => void
 }
 
-export function KpiCard({ label, value, icon, variant = 'accent', dimZero, onClick }: KpiCardProps) {
+export function KpiCard({ label, value, icon, variant = 'accent', onClick }: KpiCardProps) {
   const animated = useCountUp(value)
-  const dim = dimZero && value === 0
   return (
     <div
-      className={`kpi-card kpi-card--${variant}${dim ? ' kpi-card--dim' : ''}${onClick ? ' kpi-card--clickable' : ''}`}
+      className={`kpi-card kpi-card--${variant}${onClick ? ' kpi-card--clickable' : ''}`}
       onClick={onClick}
     >
       {icon && <div className="kpi-card__icon">{icon}</div>}
