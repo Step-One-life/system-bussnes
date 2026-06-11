@@ -653,7 +653,8 @@
     "minutesShort": "{{count}} min",
     "trainingsCount_one": "{{count}} training",
     "trainingsCount_other": "{{count}} trainings",
-    "attentionUnpaid": "Awaiting payment"
+    "attentionUnpaid": "Awaiting payment",
+    "paymentsShort": "Payments"
   },
   "locations": {
     "title": "Locations",
