@@ -54,6 +54,16 @@ export function getAntdTheme(mode: ThemeMode): ThemeConfig {
     },
     components: {
       Button: buttonComponent,
+      // Единый вид переключателей (как legacy .dur-toggle): серый трек,
+      // активный сегмент — фирменный фиолетовый. На чёрной базе дефолтный
+      // trackBg сливался с фоном модалки.
+      Segmented: {
+        trackBg: mode === 'dark' ? '#3A3A3C' : '#F2F2F7', // --surface-2
+        itemColor: mode === 'dark' ? 'rgba(235,235,245,0.8)' : 'rgba(60,60,67,0.8)',
+        itemSelectedBg: '#5856D6',
+        itemSelectedColor: '#FFFFFF',
+        controlHeight: 44,
+      },
     },
   }
 }

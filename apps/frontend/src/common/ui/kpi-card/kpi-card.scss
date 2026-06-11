@@ -1,7 +1,13 @@
 .kpi-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  // Явные брейкпоинты вместо auto-fit: на промежуточных ширинах auto-fit
+  // давал «3+1» с карточкой-сиротой на второй строке.
+  grid-template-columns: repeat(4, 1fr);
   gap: var(--sp-4);
+
+  @media (max-width: 1100px) {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 
 .kpi-card {

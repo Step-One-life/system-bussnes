@@ -108,7 +108,9 @@ export function StudentDrawer({ studentId, onClose, onEdit }: StudentDrawerProps
       <Drawer
         open={!!studentId}
         onClose={onClose}
-        width="min(460px, 100vw)"
+        // antd v6: проп width у Drawer deprecated, а size принимает только
+        // default/large — адаптивную ширину задаём через styles.wrapper.
+        styles={{ wrapper: { width: 'min(460px, 100vw)' } }}
         title={student?.name ?? ''}
         extra={
           student && (

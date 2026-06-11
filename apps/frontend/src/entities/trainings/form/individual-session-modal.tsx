@@ -29,7 +29,6 @@ export function IndividualSessionModal({
   const { t } = useTranslation()
   const form = useIndividualSession({ indGroupId, onDone: onClose, isOnline })
 
-  const handleSelectDuration = (d: number) => () => form.setDuration(d)
   const handleDateChange = (e: ChangeEvent<HTMLInputElement>) =>
     form.setDate(e.target.value)
   const handleTimeChange = (e: ChangeEvent<HTMLInputElement>) =>
@@ -57,19 +56,15 @@ export function IndividualSessionModal({
     >
       <Form layout="vertical">
         <Form.Item label={t('trainings.individual.durationLabel')}>
-          <div className="dur-toggle">
-            {[60, 90].map((d) => (
-              <button
-                key={d}
-                className={`dur-toggle__btn${form.duration === d ? ' dur-toggle__btn--active' : ''}`}
-                onClick={handleSelectDuration(d)}
-              >
-                {d === 90
-                  ? t('trainings.individual.duration90')
-                  : t('trainings.individual.duration60')}
-              </button>
-            ))}
-          </div>
+          <Segmented
+            block
+            value={form.duration}
+            onChange={(v) => form.setDuration(v as number)}
+            options={[
+              { label: t('trainings.individual.duration60'), value: 60 },
+              { label: t('trainings.individual.duration90'), value: 90 },
+            ]}
+          />
         </Form.Item>
 
         <Form.Item label={t('trainings.individual.clientLabel')} required>

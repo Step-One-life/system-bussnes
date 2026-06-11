@@ -39,11 +39,12 @@ export function TrainingDayCalendar({
   )
   const totalH = (hEnd - hStart) * DAY_H_PX
 
-  // Start the day in view by scrolling to the earliest block.
+  // Start the day in view by scrolling to the earliest block. Snap to the
+  // hour boundary so the hour label above the block isn't half-clipped.
   useEffect(() => {
     if (!bodyRef.current || !day.blocks.length) return
     const top = Math.min(...day.blocks.map((b) => b.topPx))
-    bodyRef.current.scrollTop = Math.max(0, top - 12)
+    bodyRef.current.scrollTop = Math.max(0, Math.floor(top / DAY_H_PX) * DAY_H_PX)
   }, [day.blocks])
 
   const handleBlockClick = (block: CalendarBlock) => () => onBlockClick(block)

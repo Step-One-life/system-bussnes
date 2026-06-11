@@ -181,7 +181,7 @@
       "deleteSubTitle": "Удалить абонемент «{{type}}»?",
       "deductSession": "Списать занятие",
       "newSub": "Новый абонемент",
-      "markPaid": "Отметить оплату",
+      "markPaid": "Записать оплату",
       "askNextTraining": "Узнать о следующей тренировке",
       "extendTerm": "Продлить срок"
     },
@@ -463,7 +463,7 @@
       "notePlaceholder": "Необязательно"
     },
     "markPaid": {
-      "title": "Отметить оплату",
+      "title": "Записать оплату",
       "markPaidBtn": "Записать оплату",
       "dateRequired": "Укажите дату",
       "paid": "Оплата отмечена",

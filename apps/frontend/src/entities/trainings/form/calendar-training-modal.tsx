@@ -1,5 +1,5 @@
 import { Button, Modal, Popconfirm } from 'antd'
-import { CloseOutlined, DeleteOutlined, EditOutlined, UserAddOutlined } from '@ant-design/icons'
+import { CloseOutlined, DeleteOutlined } from '@ant-design/icons'
 
 import { useTranslation } from 'react-i18next'
 
@@ -138,12 +138,7 @@ function CalendarTrainingModalInner({
   }
   if (m.isInd) {
     footer.push(
-      <Button
-        key="add"
-        icon={<UserAddOutlined />}
-        disabled={!m.training}
-        onClick={handleAddStudent}
-      >
+      <Button key="add" disabled={!m.training} onClick={handleAddStudent}>
         {t('common.add')}
       </Button>,
     )
@@ -152,7 +147,6 @@ function CalendarTrainingModalInner({
     footer.push(
       <Button
         key="edit"
-        icon={<EditOutlined />}
         onClick={() => {
           if (m.training && onEdit) {
             onClose()

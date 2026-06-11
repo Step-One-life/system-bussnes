@@ -45,6 +45,26 @@
     gap: var(--sp-2);
     flex-wrap: wrap;
     align-items: center;
+
+    // На узком дровере флекс заворачивает кнопки рваной лесенкой —
+    // выравниваем сеткой из двух равных колонок.
+    @media (max-width: 480px) {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+
+      .ant-btn {
+        width: 100%;
+        min-width: 0; // иначе grid-ячейка не даёт кнопке ужаться — вылезает за карточку
+        padding-inline: var(--sp-2);
+        font-size: 0.8rem;
+
+        > span:last-child {
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+      }
+    }
   }
 
   &__hint {
