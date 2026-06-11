@@ -1,3 +1,10 @@
+import {
+  BarChartOutlined,
+  CheckCircleOutlined,
+  CreditCardOutlined,
+  FileTextOutlined,
+} from '@ant-design/icons'
+
 import { useTranslation } from 'react-i18next'
 
 import { BreakdownChart, MonthlyChart, TopClientsChart } from './finance-charts'
@@ -96,24 +103,24 @@ export function StatsTab() {
 
       <div className="fin-pills">
         <div className="fin-pill">
-          <span className="fin-pill__icon">📊</span>
+          <span className="fin-pill__icon"><BarChartOutlined /></span>
           <span className="fin-pill__label">{t('finance.stats.margin')}</span>
           <span className="fin-pill__value" style={{ color: marginColor }}>
             {totals.margin}%
           </span>
         </div>
         <div className="fin-pill">
-          <span className="fin-pill__icon">🧾</span>
+          <span className="fin-pill__icon"><FileTextOutlined /></span>
           <span className="fin-pill__label">{t('finance.stats.records')}</span>
           <span className="fin-pill__value">{totals.recordCount}</span>
         </div>
         <div className="fin-pill">
-          <span className="fin-pill__icon">✅</span>
+          <span className="fin-pill__icon"><CheckCircleOutlined /></span>
           <span className="fin-pill__label">{t('finance.stats.active')}</span>
           <span className="fin-pill__value">{totals.activeCount}</span>
         </div>
         <div className="fin-pill">
-          <span className="fin-pill__icon">💳</span>
+          <span className="fin-pill__icon"><CreditCardOutlined /></span>
           <span className="fin-pill__label">{t('finance.stats.avgCheck')}</span>
           <span className="fin-pill__value">
             {totals.avgCheck.toLocaleString('ru')} ₽
