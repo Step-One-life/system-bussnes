@@ -142,7 +142,7 @@ export function HomePage() {
       onClick={handleOpenStudentDrawer(w.student.id)}
       action={
         <Button
-          type="primary"
+          className="tk-btn-primary"
           size="small"
           onClick={handleRenewWarning(w.student.id, w.groupId)}
         >
@@ -161,32 +161,36 @@ export function HomePage() {
           <>
             {/* При нуле кнопка не исчезает (выглядит как пропажа функции), а
                 становится спокойным «✓ Всё оплачено». */}
+            {/* Десктоп: оба вспомогательных действия нейтральные, у оплат —
+                янтарный счётчик; единственная контрастная кнопка — «+ Занятие». */}
             {unpaidCount > 0 ? (
               <Button
-                className="btn-unpaid"
+                className="tk-btn-secondary"
                 icon={<DollarOutlined />}
                 onClick={handleOpenUnpaid}
               >
-                <span className="btn-label--full">
-                  {t('home.unpaidCount', { count: unpaidCount })}
-                </span>
-                <span className="btn-label--short">{unpaidCount}</span>
+                <span className="btn-label--full">{t('home.unpaidModal.title')}</span>
+                <span className="home-unpaid-count tk-num">{unpaidCount}</span>
               </Button>
             ) : (
-              <Button className="btn-unpaid" disabled>
+              <Button className="tk-btn-secondary" disabled>
                 <span className="btn-label--full">{t('home.allPaid')}</span>
                 <span className="btn-label--short">✓</span>
               </Button>
             )}
             <Button
-              className="btn-mark-tint"
+              className="tk-btn-secondary"
               icon={<CheckSquareOutlined />}
               onClick={handleOpenMarkToday}
             >
               <span className="btn-label--full">{t('home.markToday')}</span>
               <span className="btn-label--short">{t('home.markTodayShort')}</span>
             </Button>
-            <Button type="primary" icon={<PlusOutlined />} onClick={handleOpenType}>
+            <Button
+              className="tk-btn-primary"
+              icon={<PlusOutlined />}
+              onClick={handleOpenType}
+            >
               <span className="btn-label--full">{t('home.recordTraining')}</span>
               <span className="btn-label--short">{t('home.recordTrainingShort')}</span>
             </Button>
@@ -265,7 +269,11 @@ export function HomePage() {
                   detail={`${u.isIndividual ? t('home.indTraining') : u.groupId} · ${t('home.attentionUnpaid')}`}
                   onClick={handleOpenStudentDrawer(u.student.id)}
                   action={
-                    <Button size="small" onClick={handlePayUnpaid(u)}>
+                    <Button
+                      className="tk-btn-secondary"
+                      size="small"
+                      onClick={handlePayUnpaid(u)}
+                    >
                       {t('students.subCard.markPaid')}
                     </Button>
                   }

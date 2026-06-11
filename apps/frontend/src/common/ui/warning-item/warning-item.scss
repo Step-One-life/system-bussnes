@@ -32,4 +32,37 @@
     font-size: 0.78rem;
     color: var(--text-secondary);
   }
+
+  /* Токен-скин (компонент WarningItem): точка статуса вместо цветной полосы.
+     Сырая разметка .warning-item на других экранах остаётся на легаси-виде. */
+  &--dot {
+    background: var(--tk-surface-card);
+    border: 1px solid var(--tk-border-default);
+    border-radius: var(--tk-radius-card);
+    padding: var(--sp-4) var(--sp-5);
+
+    .warning-item__status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      background: var(--tk-warning-dot);
+    }
+
+    .warning-item__name {
+      color: var(--tk-text-primary);
+    }
+
+    .warning-item__detail {
+      color: var(--tk-text-secondary);
+    }
+  }
+
+  &--dot#{&}--danger {
+    border-left-color: var(--tk-border-default);
+
+    .warning-item__status-dot {
+      background: var(--tk-danger-dot);
+    }
+  }
 }

@@ -20,11 +20,34 @@
 .section-title__count {
   order: 2;
   font-weight: 400;
-  font-size: 0.85rem;
-  color: var(--text-secondary);
+  font-size: var(--tk-fs-label);
+  font-variant-numeric: tabular-nums;
+  color: var(--tk-text-tertiary);
 }
 
-/* "Отметить за сегодня" — зелёная кнопка как legacy .btn--mark */
+/* Главная мигрирована на токены --tk- (см. design-tokens.scss): скоупим
+   через .home-header, чтобы общие классы на других экранах остались на
+   легаси-стилях до их миграции. */
+.home-header {
+  .page-overline {
+    color: var(--tk-text-secondary);
+  }
+
+  .page-title {
+    color: var(--tk-text-primary);
+  }
+
+  .section-title {
+    color: var(--tk-text-primary);
+
+    &::after {
+      background: var(--tk-border-default);
+    }
+  }
+}
+
+/* "Отметить за сегодня" в модалке отметки — легаси-зелёная (мигрирует
+   вместе с модалками). */
 .btn-mark.ant-btn {
   background: var(--success);
   border-color: var(--success);
@@ -45,34 +68,48 @@
   }
 }
 
-/* «Отметить день» — тинтовая зелёная пилюля (премиальный приглушённый вид,
-   в отличие от заливной .btn-mark, которая остаётся в модалке отметки). */
+/* Мобильная пилюля «Отметить день» — success-subtle заливка */
 .btn-mark-tint.ant-btn:not(:disabled) {
-  background: var(--success-dim);
-  border-color: rgba(52, 199, 89, 0.35);
-  color: var(--success);
+  background: var(--tk-success-subtle-bg);
+  border-color: var(--tk-success-subtle-border);
+  color: var(--tk-success-text);
 
   &:hover,
   &:focus {
-    background: rgba(52, 199, 89, 0.2) !important;
-    border-color: var(--success) !important;
-    color: var(--success) !important;
+    background: var(--tk-success-subtle-bg) !important;
+    border-color: var(--tk-success-text) !important;
+    color: var(--tk-success-text) !important;
   }
 }
 
-/* «Оплаты» — приглушённая янтарная пилюля-статус (как сигнал проблем
-   с оплатой по приложению). Disabled-вид («Всё оплачено») — antd. */
+/* Мобильная пилюля «Оплаты» — warning-subtle заливка */
 .btn-unpaid.ant-btn:not(:disabled) {
-  background: var(--warning-dim);
-  border-color: rgba(255, 149, 0, 0.35);
-  color: var(--warning);
+  background: var(--tk-warning-subtle-bg);
+  border-color: var(--tk-warning-subtle-border);
+  color: var(--tk-warning-text);
 
   &:hover,
   &:focus {
-    background: var(--warning-dim) !important;
-    border-color: var(--warning) !important;
-    color: var(--warning) !important;
+    background: var(--tk-warning-subtle-bg) !important;
+    border-color: var(--tk-warning-text) !important;
+    color: var(--tk-warning-text) !important;
   }
+}
+
+/* Янтарный счётчик в нейтральной десктопной кнопке «Ожидают оплаты» */
+.home-unpaid-count {
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 10px;
+  background: var(--tk-warning-subtle-bg);
+  border: 1px solid var(--tk-warning-subtle-border);
+  color: var(--tk-warning-text);
+  font-size: var(--tk-fs-caption);
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Мобильная строка главных действий: на десктопе скрыта (кнопки в шапке). */
@@ -92,8 +129,7 @@
     width: auto;
     flex: 0 0 auto;
 
-    .btn-mark-tint,
-    .btn-unpaid {
+    .tk-btn-secondary {
       display: none;
     }
 
@@ -141,15 +177,16 @@
   }
 }
 
-/* Круглый бейдж-счётчик в янтарной пилюле — тёмный текст на янтаре (как в макете) */
+/* Круглый бейдж-счётчик в янтарной пилюле: сплошной янтарь,
+   текст контрастный теме (тёмный на тёмной, кремовый на светлой) */
 .home-actions__count {
   min-width: 20px;
   height: 20px;
   padding: 0 6px;
   border-radius: 10px;
-  background: var(--warning);
-  color: #1C1C1E;
-  font-size: 0.75rem;
+  background: var(--tk-warning-dot);
+  color: var(--tk-text-inverse);
+  font-size: var(--tk-fs-caption);
   font-weight: 600;
   display: inline-flex;
   align-items: center;
@@ -157,21 +194,21 @@
 }
 
 .home-empty-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--r-lg);
+  background: var(--tk-surface-card);
+  border: 1px solid var(--tk-border-default);
+  border-radius: var(--tk-radius-card);
   padding: var(--sp-5);
   text-align: center;
-  color: var(--text-muted);
-  font-size: 0.9rem;
+  color: var(--tk-text-tertiary);
+  font-size: var(--tk-fs-body);
 
   &--ok {
-    color: var(--success);
+    color: var(--tk-success-text);
     padding: var(--sp-6);
   }
 }
 
-/* Главная: таймлайн дня и «Требуют внимания» рядом на десктопе,
+/* Главная: агенда дня и «Требуют внимания» рядом на десктопе,
    друг под другом — на мобильном. */
 .home-cols {
   display: grid;

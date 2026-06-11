@@ -40,22 +40,18 @@ function systemMode(): ThemeMode {
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [preference, setPreferenceState] = useState<ThemePreference>(readInitialPreference)
-  const [mode, setMode] = useState<ThemeMode>(() =>
-    preference === 'system' ? systemMode() : preference,
-  )
+  const [systemDark, setSystemDark] = useState(() => systemMode() === 'dark')
 
-  // Системная тема может смениться на лету — следим, пока выбран режим system.
+  // Системная тема может смениться на лету — подписка на prefers-color-scheme.
   useEffect(() => {
-    if (preference !== 'system') {
-      setMode(preference)
-      return
-    }
-    setMode(systemMode())
     const mq = window.matchMedia(DARK_QUERY)
-    const onChange = (e: MediaQueryListEvent) => setMode(e.matches ? 'dark' : 'light')
+    const onChange = (e: MediaQueryListEvent) => setSystemDark(e.matches)
     mq.addEventListener('change', onChange)
     return () => mq.removeEventListener('change', onChange)
-  }, [preference])
+  }, [])
+
+  const mode: ThemeMode =
+    preference === 'system' ? (systemDark ? 'dark' : 'light') : preference
 
   useEffect(() => {
     document.documentElement.dataset.theme = mode

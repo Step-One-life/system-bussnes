@@ -45,6 +45,37 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* Кнопки токен-системы поверх antd Button. Primary — нейтральная контрастная
+   (НЕ индиго: акцент зарезервирован за подсветкой состояния); на экране она
+   должна быть одна. Secondary — нейтральная с обводкой. */
+.tk-btn-primary.ant-btn:not(:disabled) {
+  background: var(--tk-btn-primary-bg);
+  border-color: transparent;
+  color: var(--tk-btn-primary-text);
+  box-shadow: none;
+
+  &:hover,
+  &:focus {
+    background: var(--tk-btn-primary-bg-hover) !important;
+    border-color: transparent !important;
+    color: var(--tk-btn-primary-text) !important;
+  }
+}
+
+.tk-btn-secondary.ant-btn:not(:disabled) {
+  background: var(--tk-btn-secondary-bg);
+  border-color: var(--tk-btn-secondary-border);
+  color: var(--tk-btn-secondary-text);
+  box-shadow: none;
+
+  &:hover,
+  &:focus {
+    background: var(--tk-btn-secondary-bg-hover) !important;
+    border-color: var(--tk-border-strong) !important;
+    color: var(--tk-btn-secondary-text) !important;
+  }
+}
+
 [data-theme='dark'] {
   --tk-surface-page: #0a0a0c;
   --tk-surface-card: #111114;

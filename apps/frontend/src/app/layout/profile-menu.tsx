@@ -1,7 +1,4 @@
-import type { ReactNode } from 'react'
-
 import { Dropdown } from 'antd'
-import type { MenuProps } from 'antd'
 import { BulbOutlined, LogoutOutlined, SettingOutlined } from '@ant-design/icons'
 
 import { useTranslation } from 'react-i18next'
@@ -9,6 +6,9 @@ import { useNavigate } from 'react-router-dom'
 
 import { useTheme } from 'common/hooks/use-theme'
 import { useAuth } from 'entities/auth/api/use-auth'
+
+import type { MenuProps } from 'antd'
+import type { ReactNode } from 'react'
 
 interface ProfileMenuProps {
   /** Trigger element rendered inside the dropdown. */
