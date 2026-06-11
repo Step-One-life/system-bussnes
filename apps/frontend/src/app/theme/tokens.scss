@@ -49,8 +49,10 @@
 }
 
 [data-theme='dark'] {
-  /* iOS dark background layers */
-  --bg: #000000;
+  /* iOS dark background layers.
+     --bg выровнен с --tk-surface-page (design-tokens.scss): фон страницы
+     общий для layout, расхождение между экранами заметнее сдвига тона. */
+  --bg: #0a0a0c;
   --bg-elevated: #1C1C1E;
   --surface: #2C2C2E;
   --surface-2: #3A3A3C;
@@ -71,8 +73,9 @@
 }
 
 [data-theme='light'] {
-  /* iOS light — grouped background style */
-  --bg: #F2F2F7;
+  /* iOS light — grouped background style.
+     --bg выровнен с --tk-surface-page (тёплый крем, см. design-tokens.scss). */
+  --bg: #faf9f6;
   --bg-elevated: #FFFFFF;
   --surface: #FFFFFF;
   --surface-2: #F2F2F7;

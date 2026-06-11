@@ -51,7 +51,7 @@ export function TodayAgenda({ items, students, now, onRowClick, onCreate }: Toda
         icon={<CalendarOutlined />}
         title={t('home.noTrainingsToday')}
         action={
-          <Button type="primary" icon={<PlusOutlined />} onClick={onCreate}>
+          <Button className="tk-btn-primary" icon={<PlusOutlined />} onClick={onCreate}>
             {t('home.recordTraining')}
           </Button>
         }
@@ -128,7 +128,10 @@ export function TodayAgenda({ items, students, now, onRowClick, onCreate }: Toda
         <span className="agenda__time">{it.block.time}</span>
         <span className="agenda__main">
           <span className="agenda__name">{it.block.label}</span>
-          <span className={`agenda__sub ${subClass}`.trim()}>{subText}</span>
+          <span className={`agenda__sub ${subClass}`.trim()}>
+            {unpaid && <i className="agenda__sub-dot" />}
+            {subText}
+          </span>
         </span>
         {done ? (
           <CheckOutlined className="agenda__check" />

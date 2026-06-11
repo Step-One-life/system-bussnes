@@ -1,7 +1,4 @@
-import type { ReactNode } from 'react'
-
 import { Dropdown } from 'antd'
-import type { MenuProps } from 'antd'
 import { BulbOutlined, LogoutOutlined, SettingOutlined } from '@ant-design/icons'
 
 import { useTranslation } from 'react-i18next'
@@ -9,6 +6,9 @@ import { useNavigate } from 'react-router-dom'
 
 import { useTheme } from 'common/hooks/use-theme'
 import { useAuth } from 'entities/auth/api/use-auth'
+
+import type { MenuProps } from 'antd'
+import type { ReactNode } from 'react'
 
 interface ProfileMenuProps {
   /** Trigger element rendered inside the dropdown. */
@@ -23,7 +23,7 @@ interface ProfileMenuProps {
  */
 export function ProfileMenu({ children, placement = 'topLeft' }: ProfileMenuProps) {
   const { t } = useTranslation()
-  const { mode, toggle } = useTheme()
+  const { preference, setPreference } = useTheme()
   const { logout } = useAuth()
   const navigate = useNavigate()
 
@@ -31,6 +31,12 @@ export function ProfileMenu({ children, placement = 'topLeft' }: ProfileMenuProp
     logout()
     navigate('/login', { replace: true })
   }
+
+  const themeOption = (pref: 'light' | 'dark' | 'system', label: string) => ({
+    key: `theme-${pref}`,
+    label: preference === pref ? `✓ ${label}` : label,
+    onClick: () => setPreference(pref),
+  })
 
   const items: MenuProps['items'] = [
     {
@@ -42,8 +48,12 @@ export function ProfileMenu({ children, placement = 'topLeft' }: ProfileMenuProp
     {
       key: 'theme',
       icon: <BulbOutlined />,
-      label: mode === 'dark' ? t('common.themeLight') : t('common.themeDark'),
-      onClick: toggle,
+      label: t('common.theme'),
+      children: [
+        themeOption('light', t('common.themeOptionLight')),
+        themeOption('dark', t('common.themeOptionDark')),
+        themeOption('system', t('common.themeOptionSystem')),
+      ],
     },
     { type: 'divider' },
     {

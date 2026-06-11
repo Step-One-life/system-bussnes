@@ -41,8 +41,6 @@
     "logout": "Log out",
     "profile": "Profile",
     "calendarSettings": "Calendar settings",
-    "themeDark": "Dark theme",
-    "themeLight": "Light theme",
     "cancel": "Cancel",
     "save": "Save",
     "create": "Create",
@@ -60,7 +58,11 @@
     "sessionExpired": "Session expired",
     "requestError": "Request error ({{status}})",
     "loadError": "Failed to load data",
-    "retry": "Retry"
+    "retry": "Retry",
+    "theme": "Theme",
+    "themeOptionLight": "Light",
+    "themeOptionDark": "Dark",
+    "themeOptionSystem": "System"
   },
   "groups": {
     "create": "Create group",
