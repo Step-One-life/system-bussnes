@@ -658,7 +658,8 @@
     "trainingsCount": "{{count}} тренировка",
     "trainingsCount_few": "{{count}} тренировки",
     "trainingsCount_many": "{{count}} тренировок",
-    "attentionUnpaid": "Ожидает оплаты"
+    "attentionUnpaid": "Ожидает оплаты",
+    "paymentsShort": "Оплаты"
   },
   "locations": {
     "title": "Локации",

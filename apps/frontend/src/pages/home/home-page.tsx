@@ -202,7 +202,7 @@ export function HomePage() {
         </Button>
         {unpaidCount > 0 ? (
           <Button className="btn-unpaid" icon={<DollarOutlined />} onClick={handleOpenUnpaid}>
-            {t('home.unpaidModal.title')}
+            {t('home.paymentsShort')}
             <span className="home-actions__count">{unpaidCount}</span>
           </Button>
         ) : (

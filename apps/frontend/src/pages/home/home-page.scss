@@ -117,14 +117,14 @@
   }
 }
 
-/* Круглый бейдж-счётчик в янтарной пилюле */
+/* Круглый бейдж-счётчик в янтарной пилюле — тёмный текст на янтаре (как в макете) */
 .home-actions__count {
   min-width: 20px;
   height: 20px;
   padding: 0 6px;
   border-radius: 10px;
   background: var(--warning);
-  color: #fff;
+  color: #1C1C1E;
   font-size: 0.75rem;
   font-weight: 600;
   display: inline-flex;
