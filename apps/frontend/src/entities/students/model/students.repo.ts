@@ -26,6 +26,7 @@ interface RawVisit {
   date: string
   groupId: string
   trainingId: string | null
+  billing?: 'subscription' | 'payment' | 'none' | null
 }
 
 interface RawStudent {
@@ -54,6 +55,7 @@ function toStudent(raw: RawStudent, byId: Map<string, string>): Student {
       date: v.date,
       groupId: byId.get(v.groupId) ?? v.groupId,
       trainingId: v.trainingId ?? '',
+      billing: v.billing ?? null,
     })),
     createdAt: raw.createdAt,
   }
