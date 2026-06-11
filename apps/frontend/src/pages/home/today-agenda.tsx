@@ -104,7 +104,8 @@ export function TodayAgenda({ items, students, now, onRowClick, onCreate }: Toda
       subClass = 'agenda__sub--unpaid'
       subText = t('home.agendaUnpaid')
     } else if (unmarked) {
-      subClass = 'agenda__sub--muted'
+      // «Не отмечено» — сигнал к действию, тот же warning-стиль, что у оплаты.
+      subClass = 'agenda__sub--unpaid'
       subText = t('home.agendaUnmarked')
     } else if (ongoing) {
       subClass = 'agenda__sub--accent'
@@ -116,7 +117,9 @@ export function TodayAgenda({ items, students, now, onRowClick, onCreate }: Toda
     const highlight = ongoing || it.block.key === nextKey
     const cls = [
       'agenda__row',
-      past && !unpaid ? 'agenda__row--past' : '',
+      // Приглушаем только закрытые занятия: «не оплачено» и «не отмечено» —
+      // открытые сигналы, им полная непрозрачность.
+      done ? 'agenda__row--past' : '',
       highlight ? 'agenda__row--next' : '',
     ]
       .filter(Boolean)
@@ -129,7 +132,7 @@ export function TodayAgenda({ items, students, now, onRowClick, onCreate }: Toda
         <span className="agenda__main">
           <span className="agenda__name">{it.block.label}</span>
           <span className={`agenda__sub ${subClass}`.trim()}>
-            {unpaid && <i className="agenda__sub-dot" />}
+            {(unpaid || unmarked) && <i className="agenda__sub-dot" />}
             {subText}
           </span>
         </span>
