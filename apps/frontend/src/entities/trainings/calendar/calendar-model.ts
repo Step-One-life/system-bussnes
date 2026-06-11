@@ -12,8 +12,6 @@ import type { Group } from 'entities/groups/model/types'
 export const CAL_H_START = 10
 export const CAL_H_END = 22
 export const CAL_H_PX = 60
-/** Denser vertical scale for the compact home "today" widget. */
-export const DAY_H_PX = 46
 
 const DOW_IDX: Record<string, number> = {
   Пн: 0,
