@@ -11,7 +11,6 @@ import {
   WarningOutlined,
 } from '@ant-design/icons'
 
-import dayjs from 'dayjs'
 import { useTranslation } from 'react-i18next'
 
 import { ErrorState, KpiCard, ListSkeleton, PageHeader, WarningItem } from 'common/ui'
@@ -39,6 +38,7 @@ import type { UnpaidSub } from './use-unpaid-subs'
 import type { CalendarBlock, Training } from 'entities/trainings'
 
 import './home-page.scss'
+import dayjs from 'dayjs'
 
 export function HomePage() {
   const { t } = useTranslation()

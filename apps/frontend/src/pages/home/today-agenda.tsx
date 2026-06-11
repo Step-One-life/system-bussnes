@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import { Button } from 'antd'
 import {
@@ -8,16 +8,16 @@ import {
   TeamOutlined,
 } from '@ant-design/icons'
 
-import dayjs from 'dayjs'
 import { useTranslation } from 'react-i18next'
 
 import { EmptyState } from 'common/ui'
 
-import type { CalendarBlock, Training } from 'entities/trainings'
 import type { Group } from 'entities/groups'
 import type { Student, VisitBilling } from 'entities/students'
+import type { CalendarBlock, Training } from 'entities/trainings'
 
 import './today-agenda.scss'
+import dayjs from 'dayjs'
 
 interface TodayAgendaProps {
   rows: CalendarBlock[]
@@ -112,10 +112,14 @@ export function TodayAgenda({
   }
 
   const nowMin = now.getHours() * 60 + now.getMinutes()
-  const pastCount = items.filter((it) => it.endMin <= nowMin).length
-  const nextIdx = items.findIndex((it) => it.startMin > nowMin)
+  // Сортировка списка — по началу, а «прошедшесть» — по концу занятия, поэтому
+  // прошедшие не обязаны быть префиксом (длинное идущее может начаться раньше
+  // уже закончившегося короткого). Разделитель «СЕЙЧАС» рисуем между частями.
+  const pastItems = items.filter((it) => it.endMin <= nowMin)
+  const restItems = items.filter((it) => it.endMin > nowMin)
+  const nextKey = items.find((it) => it.startMin > nowMin)?.block.key
 
-  const statusOf = (it: (typeof items)[number], idx: number): StatusKind => {
+  const statusOf = (it: (typeof items)[number]): StatusKind => {
     if (it.endMin <= nowMin) {
       if (it.block.attendeesCount === 0) return 'unmarked'
       const billings = it.block.trainingId
@@ -124,7 +128,7 @@ export function TodayAgenda({
       return billings.some((b) => b === 'none') ? 'unpaid' : 'done'
     }
     if (it.startMin <= nowMin) return 'ongoing'
-    if (idx === nextIdx) return 'soon'
+    if (it.block.key === nextKey) return 'soon'
     return null
   }
 
@@ -169,51 +173,49 @@ export function TodayAgenda({
     </div>
   )
 
+  const renderRow = (it: (typeof items)[number]) => {
+    const kind = statusOf(it)
+    // Неоплаченное прошедшее не приглушаем: это сигнал, а не история.
+    const past = it.endMin <= nowMin && kind !== 'unpaid'
+    const highlight = kind === 'ongoing' || kind === 'soon'
+    const cls = [
+      'agenda__row',
+      past ? 'agenda__row--past' : '',
+      highlight ? 'agenda__row--next' : '',
+    ]
+      .filter(Boolean)
+      .join(' ')
+    const handleClick = () => onRowClick(it.block)
+    return (
+      <button type="button" key={it.block.key} className={cls} onClick={handleClick}>
+        <span className="agenda__time">
+          <span className="agenda__time-start">{it.block.time}</span>
+          <span className="agenda__time-dur">
+            {t('home.minutesShort', { count: it.duration })}
+          </span>
+        </span>
+        <span className={`agenda__avatar${it.block.isInd ? ' agenda__avatar--ind' : ''}`}>
+          {it.block.isInd ? initialsOf(it.block.label) : <TeamOutlined />}
+        </span>
+        <span className="agenda__main">
+          <span className="agenda__name">{it.block.label}</span>
+          <span className="agenda__sub">
+            {t(`trainings.type.${it.typeKey}`)}
+            {it.typeKey === 'group' && it.block.attendeesCount > 0
+              ? ` · ${t('home.agendaAttendees', { count: it.block.attendeesCount })}`
+              : ''}
+          </span>
+        </span>
+        {statusNode(kind)}
+      </button>
+    )
+  }
+
   return (
     <div className="agenda">
-      {items.map((it, idx) => {
-        const kind = statusOf(it, idx)
-        // Неоплаченное прошедшее не приглушаем: это сигнал, а не история.
-        const past = it.endMin <= nowMin && kind !== 'unpaid'
-        const highlight = kind === 'ongoing' || idx === nextIdx
-        const cls = [
-          'agenda__row',
-          past ? 'agenda__row--past' : '',
-          highlight ? 'agenda__row--next' : '',
-        ]
-          .filter(Boolean)
-          .join(' ')
-        const handleClick = () => onRowClick(it.block)
-        return (
-          <Fragment key={it.block.key}>
-            {idx === pastCount && divider}
-            <button type="button" className={cls} onClick={handleClick}>
-              <span className="agenda__time">
-                <span className="agenda__time-start">{it.block.time}</span>
-                <span className="agenda__time-dur">
-                  {t('home.minutesShort', { count: it.duration })}
-                </span>
-              </span>
-              <span
-                className={`agenda__avatar${it.block.isInd ? ' agenda__avatar--ind' : ''}`}
-              >
-                {it.block.isInd ? initialsOf(it.block.label) : <TeamOutlined />}
-              </span>
-              <span className="agenda__main">
-                <span className="agenda__name">{it.block.label}</span>
-                <span className="agenda__sub">
-                  {t(`trainings.type.${it.typeKey}`)}
-                  {it.typeKey === 'group' && it.block.attendeesCount > 0
-                    ? ` · ${t('home.agendaAttendees', { count: it.block.attendeesCount })}`
-                    : ''}
-                </span>
-              </span>
-              {statusNode(kind)}
-            </button>
-          </Fragment>
-        )
-      })}
-      {pastCount === items.length && divider}
+      {pastItems.map(renderRow)}
+      {divider}
+      {restItems.map(renderRow)}
     </div>
   )
 }
