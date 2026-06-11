@@ -56,6 +56,24 @@
   }
 }
 
+// Свёрнутая история посещений: заголовок повторяет .section-title,
+// селекторы уровня .ant-collapse нужны, чтобы перебить паддинги antd.
+.visit-collapse.ant-collapse {
+  margin-top: var(--sp-5);
+
+  > .ant-collapse-item > .ant-collapse-header {
+    padding: 0;
+    align-items: center;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .ant-collapse-content > .ant-collapse-content-box {
+    padding: 0;
+  }
+}
+
 .visit-row {
   display: flex;
   align-items: center;

@@ -36,6 +36,7 @@ export function GroupCard({ group, onOpen, onEdit }: GroupCardProps) {
           type="text"
           size="small"
           icon={<EditOutlined />}
+          aria-label={t('common.edit')}
           onClick={handleEdit}
         />
       </div>

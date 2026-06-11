@@ -13,7 +13,7 @@ import {
 
 import { useTranslation } from 'react-i18next'
 
-import { KpiCard, ListSkeleton, PageHeader, WarningItem } from 'common/ui'
+import { ErrorState, KpiCard, ListSkeleton, PageHeader, WarningItem } from 'common/ui'
 import { StudentDrawer } from 'entities/students'
 import { RenewSubModal } from 'entities/students/subscriptions/renew-sub-modal'
 import {
@@ -192,6 +192,8 @@ export function HomePage() {
           <div className="section-title">{t('home.trainingsToday')}</div>
           {page.isLoading ? (
             <ListSkeleton rows={2} />
+          ) : page.isError ? (
+            <ErrorState onRetry={page.refetch} />
           ) : (
             <TrainingDayCalendar
               trainings={page.trainings}

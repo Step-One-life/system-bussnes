@@ -58,7 +58,9 @@
     "time": "Время",
     "notePlaceholder": "Необязательно",
     "sessionExpired": "Сессия истекла",
-    "requestError": "Ошибка запроса ({{status}})"
+    "requestError": "Ошибка запроса ({{status}})",
+    "loadError": "Не удалось загрузить данные",
+    "retry": "Повторить"
   },
   "groups": {
     "create": "Создать группу",
@@ -236,40 +238,44 @@
   },
   "trainings": {
     "title": "Тренировки",
-    "record": "Записать тренировку",
-    "recordsCount": "{{count}} записей",
-    "empty": "Тренировок пока нет",
-    "emptyText": "Запишите первую тренировку",
+    "record": "Создать занятие",
+    "recordsCount": "{{count}} занятие",
+    "recordsCount_few": "{{count}} занятия",
+    "recordsCount_many": "{{count}} занятий",
+    "empty": "Занятий пока нет",
+    "emptyText": "Создайте первое занятие",
     "viewList": "Список",
     "viewWeek": "Неделя",
-    "removedFromTraining": "Убран с тренировки",
+    "removedFromTraining": "Ученик убран с занятия",
     "seriesDeleted": "Серия удалена",
-    "trainingDeleted": "Тренировка удалена",
+    "trainingDeleted": "Занятие удалено",
     "type": {
-      "title": "Новая тренировка",
-      "group": "Групповая",
-      "individual": "Индивидуальная",
+      "title": "Новое занятие",
+      "group": "Групповое",
+      "individual": "Индивидуальное",
       "online": "Онлайн",
-      "pair": "Парная"
+      "pair": "Парное"
     },
     "online": {
-      "title": "Онлайн тренировка"
+      "title": "Онлайн-занятие"
     },
     "item": {
       "indWith": "Индивидуальная тренировка с {{name}}",
       "weekly": "Еженедельно",
       "addStudent": "Добавить ученика",
-      "removeFromTraining": "Убрать с тренировки",
+      "removeFromTraining": "Убрать с занятия",
       "deleted": "Удалён",
       "noAttendees": "Нет записей об учениках",
       "deleteTitle": "Удалить занятие «{{name}}»?",
       "deleteDescription": "Занятия будут возвращены ученикам.",
-      "deleteTraining": "Удалить тренировку",
+      "deleteTraining": "Удалить занятие",
       "edit": "Редактировать"
     },
     "calendar": {
       "today": "Сегодня",
-      "attendeesCount": "{{count}} чел."
+      "attendeesCount": "{{count}} чел.",
+      "prevWeek": "Предыдущая неделя",
+      "nextWeek": "Следующая неделя"
     },
     "edit": {
       "title": "Редактировать занятие",
@@ -283,11 +289,11 @@
       "scopeBody": "Это повторяющееся занятие. Применить правки только к нему или ко всей серии?",
       "scopeSingle": "Только это занятие",
       "scopeSeries": "Вся серия",
-      "saved": "Тренировка обновлена",
+      "saved": "Занятие обновлено",
       "seriesSaved": "Серия обновлена"
     },
     "group": {
-      "title": "Групповая тренировка",
+      "title": "Групповое занятие",
       "saveAndDeduct": "Сохранить и списать",
       "groupLabel": "Группа",
       "groupPlaceholder": "Выберите группу",
@@ -300,11 +306,11 @@
       "notePlaceholder": "Например: работали над флипами...",
       "fillGroupAndDate": "Заполните группу и дату",
       "scheduleConflict": "Конфликт расписания",
-      "recorded": "Тренировка записана",
+      "recorded": "Занятие создано",
       "recordedMsg": "{{group}} · {{count}} чел."
     },
     "individual": {
-      "title": "Записать индивидуальное занятие",
+      "title": "Новое индивидуальное занятие",
       "recordAndDeduct": "Создать занятие",
       "durationLabel": "Длительность",
       "duration60": "1 час",
@@ -326,7 +332,7 @@
       "notePlaceholder": "Например: работали над акробатикой...",
       "pickClientAndDate": "Выберите клиента и дату",
       "scheduleConflict": "Конфликт расписания",
-      "recorded": "Занятие записано",
+      "recorded": "Занятие создано",
       "recordedRecurringMsg": "{{name}} · плановые занятия добавлены",
       "paymentLabel": "Оплата",
       "paymentSubscription": "Абонемент",
@@ -334,19 +340,19 @@
       "repeatLabel": "Сколько занятий в серии"
     },
     "pair": {
-      "title": "Записать парную тренировку",
+      "title": "Новое парное занятие",
       "create": "Создать занятие",
       "clientA": "Первый ученик",
       "clientB": "Второй ученик",
       "pickBoth": "Выберите обоих учеников и дату",
       "sameClient": "Выберите двух разных учеников",
       "scheduleConflict": "Конфликт расписания",
-      "recorded": "Парное занятие записано",
+      "recorded": "Парное занятие создано",
       "weeklyHint": "Создать парные занятия на каждую неделю (оплата по мере подтверждения)",
       "label": "Парная: {{names}}"
     },
     "addTo": {
-      "saving": "Добавить на тренировку — {{group}}",
+      "saving": "Добавить на занятие — {{group}}",
       "fromGroup": "Из группы",
       "newStudent": "Новый ученик",
       "groupStudents": "Ученики группы «{{group}}»",
@@ -357,13 +363,13 @@
       "subNone": "— без абонемента —",
       "pickAtLeastOne": "Выберите хотя бы одного ученика",
       "added": "Добавлено",
-      "addedMsg": "{{count}} чел. на тренировку",
+      "addedMsg": "{{count}} чел. на занятие",
       "subExpired": "Абонемент закончился — нужно продлить",
       "remaining": "Осталось {{count}} занятий",
       "noActiveSub": "Нет активного абонемента",
       "nameRequired": "Введите имя ученика",
       "studentAdded": "Ученик добавлен",
-      "studentAddedMsg": "{{name}} записан на тренировку"
+      "studentAddedMsg": "{{name}} записан на занятие"
     },
     "cal": {
       "indWith": "Инд. с {{name}}",
@@ -386,11 +392,11 @@
   "individual": {
     "title": "Индивидуальные занятия",
     "subtitle": "{{count}} клиентов",
-    "record": "Записать занятие",
+    "record": "Создать занятие",
     "recordOnline": "Онлайн",
-    "removedFromTraining": "Убран с тренировки",
+    "removedFromTraining": "Ученик убран с занятия",
     "seriesDeleted": "Серия удалена",
-    "trainingDeleted": "Тренировка удалена",
+    "trainingDeleted": "Занятие удалено",
     "kpiClients": "Всего клиентов",
     "kpiMonth": "Занятий за месяц",
     "kpiWeek": "За эту неделю",
@@ -401,7 +407,7 @@
     "session": "Занятие: {{date}}",
     "noSessions": "Занятий ещё не было",
     "noClients": "Нет клиентов",
-    "noClientsText": "Нажмите «Записать занятие», чтобы добавить клиента",
+    "noClientsText": "Нажмите «Создать занятие», чтобы добавить клиента",
     "recentSessions": "Последние занятия"
   },
   "finance": {
@@ -458,7 +464,7 @@
     },
     "markPaid": {
       "title": "Отметить оплату",
-      "markPaidBtn": "Отметить оплачено",
+      "markPaidBtn": "Записать оплату",
       "dateRequired": "Укажите дату",
       "paid": "Оплата отмечена",
       "client": "Клиент",
@@ -505,7 +511,8 @@
       "actionsMenu": {
         "edit": "Редактировать",
         "duplicate": "Дублировать",
-        "delete": "Удалить"
+        "delete": "Удалить",
+        "title": "Действия с тарифом"
       },
       "lessonKind": {
         "individual": "Индивидуальное",
@@ -600,7 +607,7 @@
   "home": {
     "markToday": "Отметить за сегодня",
     "markTodayShort": "Отметить",
-    "recordTraining": "Записать тренировку",
+    "recordTraining": "Создать занятие",
     "kpiTotal": "Активных учеников",
     "kpiMonth": "Тренировок за месяц",
     "kpiEnding": "Заканчиваются",

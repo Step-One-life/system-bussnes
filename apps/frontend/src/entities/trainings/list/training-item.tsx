@@ -111,6 +111,7 @@ export function TrainingItem({
           size="small"
           icon={<UserAddOutlined />}
           title={t('trainings.item.addStudent')}
+          aria-label={t('trainings.item.addStudent')}
           onClick={handleHeaderAddStudent}
         />
         <DownOutlined className="training-item__chevron" />
@@ -127,6 +128,7 @@ export function TrainingItem({
                   <button
                     className="attendee-tag__remove"
                     title={t('trainings.item.removeFromTraining')}
+                    aria-label={t('trainings.item.removeFromTraining')}
                     onClick={handleRemoveStudent(id)}
                   >
                     <CloseOutlined />
@@ -151,6 +153,7 @@ export function TrainingItem({
               size="small"
               icon={<EditOutlined />}
               title={t('trainings.item.edit')}
+              aria-label={t('trainings.item.edit')}
               onClick={handleEdit}
             />
           )}
@@ -170,6 +173,7 @@ export function TrainingItem({
               danger
               icon={<DeleteOutlined />}
               title={t('trainings.item.deleteTraining')}
+              aria-label={t('trainings.item.deleteTraining')}
             />
           </Popconfirm>
         </div>

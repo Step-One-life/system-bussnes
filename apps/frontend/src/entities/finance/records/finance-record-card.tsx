@@ -127,7 +127,13 @@ export function FinanceRecordCard({
               okButtonProps={{ danger: true }}
               onConfirm={handleDelete}
             >
-              <Button type="text" size="small" danger icon={<DeleteOutlined />} />
+              <Button
+                type="text"
+                size="small"
+                danger
+                icon={<DeleteOutlined />}
+                aria-label={t('common.delete')}
+              />
             </Popconfirm>
           </div>
         </div>

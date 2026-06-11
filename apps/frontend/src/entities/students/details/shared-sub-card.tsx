@@ -42,7 +42,12 @@ export function SharedSubCard({ student, sub, onDeleteSub, onMarkPaid }: SharedS
           okButtonProps={{ danger: true }}
           onConfirm={handleDelete}
         >
-          <Button type="text" size="small" icon={<DeleteOutlined />} />
+          <Button
+            type="text"
+            size="small"
+            icon={<DeleteOutlined />}
+            aria-label={t('common.delete')}
+          />
         </Popconfirm>
       </div>
 

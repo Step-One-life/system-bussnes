@@ -30,7 +30,13 @@ export function LocationCard({ location, onEdit }: LocationCardProps) {
     <div className="location-card">
       <div className="location-card__head">
         <div className="location-card__name">{location.name}</div>
-        <Button type="text" size="small" icon={<EditOutlined />} onClick={handleEdit} />
+        <Button
+          type="text"
+          size="small"
+          icon={<EditOutlined />}
+          aria-label={t('common.edit')}
+          onClick={handleEdit}
+        />
       </div>
       <div className="location-card__address">
         {location.address || t('locations.card.noAddress')}

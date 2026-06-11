@@ -70,7 +70,12 @@ export function SubCard({
             okButtonProps={{ danger: true }}
             onConfirm={handleDeleteSub}
           >
-            <Button type="text" size="small" icon={<DeleteOutlined />} />
+            <Button
+              type="text"
+              size="small"
+              icon={<DeleteOutlined />}
+              aria-label={t('common.delete')}
+            />
           </Popconfirm>
         )}
       </div>

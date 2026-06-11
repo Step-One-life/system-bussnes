@@ -44,6 +44,7 @@ export function VisitHistory({ student, indNames, onRemoveVisit }: VisitHistoryP
               size="small"
               icon={<CloseOutlined />}
               style={{ marginLeft: 'auto' }}
+              aria-label={t('common.remove')}
               onClick={handleRemoveVisit(v._i)}
             />
           </div>

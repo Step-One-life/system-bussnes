@@ -16,7 +16,7 @@ export function useHomePage() {
     queryFn: getWarningStudents,
   })
   const { data: students = [] } = useStudents()
-  const { data: trainings = [], isLoading } = useTrainings()
+  const { data: trainings = [], isLoading, isError, refetch } = useTrainings()
   const { data: groups = [] } = useGroups()
 
   const [kpiType, setKpiType] = useState<KpiType | null>(null)
@@ -44,6 +44,8 @@ export function useHomePage() {
     trainings,
     groups,
     isLoading,
+    isError,
+    refetch,
     indNames,
     regularNames,
     todayTrainings,
