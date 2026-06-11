@@ -1,0 +1,139 @@
+/* ============================================================================
+   Дизайн-токены TriKick (v2) — семантические роли, две темы.
+
+   КАК ПОЛЬЗОВАТЬСЯ
+   - В компонентах ссылаться ТОЛЬКО на роли (--tk-text-secondary), никогда
+     на сырые хексы. Если роли не хватает — добавить её сюда в ОБЕ темы.
+   - Префикс --tk- отличает новую систему от легаси-токенов tokens.scss
+     (--accent, --surface…), на которых пока живут остальные экраны.
+     Мигрировали экран — его scss использует только --tk-*.
+   - Тему ставит ThemeProvider атрибутом data-theme на <html>
+     (light/dark — уже разрешённое значение, режим «системная» разрешается
+     в провайдере через prefers-color-scheme).
+
+   ГРУППЫ РОЛЕЙ
+   - surface-*  — фоны: страница, карточка, приподнятое (модалки/поповеры)
+   - border-*   — границы: обычная, сильная, фокус
+   - text-*     — текст по убыванию значимости + disabled (нулевые значения)
+                  + inverse (на контрастных кнопках)
+   - accent-*   — бренд-индиго: ТОЛЬКО подсветка состояния (текущее занятие,
+                  активный пункт меню), не «каждая кнопка»
+   - success/warning/danger-* — статусы; у каждого: text / subtle-bg /
+                  subtle-border / dot
+   - btn-*      — кнопки: primary НЕЙТРАЛЬНАЯ контрастная (не индиго),
+                  secondary — нейтральная с обводкой
+   - геометрия  — радиусы карточек/контролов, размерная шкала текста
+   ========================================================================== */
+
+/* Геометрия и типографика — общие для тем */
+:root {
+  --tk-radius-card: 14px;
+  --tk-radius-control: 10px;
+
+  /* Размерная шкала: caption 11, small 12, label 13, body 14,
+     title 20, display 26 (px при html 15px → rem) */
+  --tk-fs-caption: 0.733rem;
+  --tk-fs-small: 0.8rem;
+  --tk-fs-label: 0.867rem;
+  --tk-fs-body: 0.933rem;
+  --tk-fs-title: 1.333rem;
+  --tk-fs-display: 1.733rem;
+}
+
+/* Числа (время, деньги, счётчики) — моноширинные цифры без смены шрифта */
+.tk-num {
+  font-variant-numeric: tabular-nums;
+}
+
+[data-theme='dark'] {
+  --tk-surface-page: #0a0a0c;
+  --tk-surface-card: #111114;
+  --tk-surface-raised: #1a1a1f;
+  --tk-surface-hover: #17171b;
+
+  --tk-border-default: #1c1c21;
+  --tk-border-strong: #2c2c33;
+  --tk-border-focus: rgba(139, 126, 240, 0.6);
+
+  --tk-text-primary: #f2f2f5;
+  --tk-text-secondary: #8a8a92;
+  --tk-text-tertiary: #5c5c64;
+  --tk-text-disabled: #3c3c43;
+  --tk-text-inverse: #16151c;
+
+  --tk-accent: #8b7ef0;
+  --tk-accent-subtle-bg: rgba(139, 126, 240, 0.1);
+  --tk-accent-subtle-border: rgba(139, 126, 240, 0.4);
+  --tk-accent-text: #a89ef5;
+
+  --tk-success-text: #7da588;
+  --tk-success-subtle-bg: rgba(125, 165, 136, 0.12);
+  --tk-success-subtle-border: rgba(125, 165, 136, 0.35);
+  --tk-success-dot: #7da588;
+
+  --tk-warning-text: #d9b36a;
+  --tk-warning-subtle-bg: rgba(217, 179, 106, 0.12);
+  --tk-warning-subtle-border: rgba(217, 179, 106, 0.35);
+  --tk-warning-dot: #d9b36a;
+
+  --tk-danger-text: #d97f6a;
+  --tk-danger-subtle-bg: rgba(217, 127, 106, 0.12);
+  --tk-danger-subtle-border: rgba(217, 127, 106, 0.35);
+  --tk-danger-dot: #d97f6a;
+
+  /* Главная кнопка — светлая нейтральная (лаванда), индиго не используем */
+  --tk-btn-primary-bg: #e8e6f8;
+  --tk-btn-primary-bg-hover: #f4f3fb;
+  --tk-btn-primary-text: #16151c;
+  --tk-btn-secondary-bg: transparent;
+  --tk-btn-secondary-border: #2c2c33;
+  --tk-btn-secondary-text: #f2f2f5;
+  --tk-btn-secondary-bg-hover: #17171b;
+}
+
+[data-theme='light'] {
+  /* Светлая — тёплый крем, не белый */
+  --tk-surface-page: #faf9f6;
+  --tk-surface-card: #ffffff;
+  --tk-surface-raised: #ffffff;
+  --tk-surface-hover: #f4f2ec;
+
+  --tk-border-default: #e7e3d9;
+  --tk-border-strong: #d6d0c2;
+  --tk-border-focus: rgba(108, 92, 240, 0.5);
+
+  --tk-text-primary: #211f1a;
+  --tk-text-secondary: #6e6a60;
+  --tk-text-tertiary: #98927f;
+  --tk-text-disabled: #cfcabb;
+  --tk-text-inverse: #faf9f6;
+
+  --tk-accent: #6c5cf0;
+  --tk-accent-subtle-bg: rgba(108, 92, 240, 0.08);
+  --tk-accent-subtle-border: rgba(108, 92, 240, 0.35);
+  --tk-accent-text: #5b4ce0;
+
+  --tk-success-text: #4a8a56;
+  --tk-success-subtle-bg: rgba(74, 138, 86, 0.1);
+  --tk-success-subtle-border: rgba(74, 138, 86, 0.3);
+  --tk-success-dot: #4a8a56;
+
+  --tk-warning-text: #a87e2a;
+  --tk-warning-subtle-bg: rgba(199, 154, 61, 0.12);
+  --tk-warning-subtle-border: rgba(199, 154, 61, 0.35);
+  --tk-warning-dot: #c79a3d;
+
+  --tk-danger-text: #c25b3f;
+  --tk-danger-subtle-bg: rgba(194, 91, 63, 0.1);
+  --tk-danger-subtle-border: rgba(194, 91, 63, 0.3);
+  --tk-danger-dot: #c25b3f;
+
+  /* Главная кнопка — графит со светлым текстом */
+  --tk-btn-primary-bg: #211f1a;
+  --tk-btn-primary-bg-hover: #38352d;
+  --tk-btn-primary-text: #faf9f6;
+  --tk-btn-secondary-bg: transparent;
+  --tk-btn-secondary-border: #d6d0c2;
+  --tk-btn-secondary-text: #211f1a;
+  --tk-btn-secondary-bg-hover: #f4f2ec;
+}

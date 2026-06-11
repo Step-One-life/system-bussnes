@@ -23,7 +23,7 @@ interface ProfileMenuProps {
  */
 export function ProfileMenu({ children, placement = 'topLeft' }: ProfileMenuProps) {
   const { t } = useTranslation()
-  const { mode, toggle } = useTheme()
+  const { preference, setPreference } = useTheme()
   const { logout } = useAuth()
   const navigate = useNavigate()
 
@@ -31,6 +31,12 @@ export function ProfileMenu({ children, placement = 'topLeft' }: ProfileMenuProp
     logout()
     navigate('/login', { replace: true })
   }
+
+  const themeOption = (pref: 'light' | 'dark' | 'system', label: string) => ({
+    key: `theme-${pref}`,
+    label: preference === pref ? `✓ ${label}` : label,
+    onClick: () => setPreference(pref),
+  })
 
   const items: MenuProps['items'] = [
     {
@@ -42,8 +48,12 @@ export function ProfileMenu({ children, placement = 'topLeft' }: ProfileMenuProp
     {
       key: 'theme',
       icon: <BulbOutlined />,
-      label: mode === 'dark' ? t('common.themeLight') : t('common.themeDark'),
-      onClick: toggle,
+      label: t('common.theme'),
+      children: [
+        themeOption('light', t('common.themeOptionLight')),
+        themeOption('dark', t('common.themeOptionDark')),
+        themeOption('system', t('common.themeOptionSystem')),
+      ],
     },
     { type: 'divider' },
     {

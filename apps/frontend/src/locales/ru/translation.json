@@ -41,8 +41,6 @@
     "logout": "Выйти",
     "profile": "Профиль",
     "calendarSettings": "Настройки календаря",
-    "themeDark": "Тёмная тема",
-    "themeLight": "Светлая тема",
     "cancel": "Отмена",
     "save": "Сохранить",
     "create": "Создать",
@@ -60,7 +58,11 @@
     "sessionExpired": "Сессия истекла",
     "requestError": "Ошибка запроса ({{status}})",
     "loadError": "Не удалось загрузить данные",
-    "retry": "Повторить"
+    "retry": "Повторить",
+    "theme": "Тема",
+    "themeOptionLight": "Светлая",
+    "themeOptionDark": "Тёмная",
+    "themeOptionSystem": "Системная"
   },
   "groups": {
     "create": "Создать группу",
