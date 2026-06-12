@@ -1,7 +1,12 @@
 import { useState } from 'react'
 
 import { Button, Dropdown, Modal } from 'antd'
-import { CloseOutlined, MoreOutlined, PlusOutlined } from '@ant-design/icons'
+import {
+  CloseOutlined,
+  ExclamationCircleOutlined,
+  MoreOutlined,
+  PlusOutlined,
+} from '@ant-design/icons'
 
 import { useTranslation } from 'react-i18next'
 
@@ -56,6 +61,8 @@ function RowItem({
   row,
   checkbox,
   checked,
+  gated,
+  legacyWarn,
   onToggle,
   onRemove,
   onIssueSub,
@@ -63,6 +70,8 @@ function RowItem({
   row: AttendRow
   checkbox: boolean
   checked?: boolean
+  gated?: boolean
+  legacyWarn?: boolean
   onToggle?: () => void
   onRemove?: () => void
   onIssueSub?: () => void
@@ -74,12 +83,30 @@ function RowItem({
     e.stopPropagation()
     onIssueSub?.()
   }
+  // Гейт: чекбокс заблокирован, любой тап по строке ведёт в оформление.
+  const handleGatedRow =
+    gated && onIssueSub
+      ? (e: React.MouseEvent) => {
+          e.preventDefault()
+          onIssueSub()
+        }
+      : undefined
   return (
-    <label className={`cal-attend-row${checked ? ' cal-attend-row--checked' : ''}`}>
-      {checkbox && <input type="checkbox" checked={!!checked} onChange={onToggle} />}
+    <label
+      className={`cal-attend-row${checked ? ' cal-attend-row--checked' : ''}${gated ? ' cal-attend-row--gated' : ''}`}
+      onClick={handleGatedRow}
+    >
+      {checkbox && (
+        <input type="checkbox" checked={!!checked} disabled={gated} onChange={onToggle} />
+      )}
       <div className="cal-attend-info">
         <span className="cal-attend-name">{row.name}</span>
         {row.subLine && <span className="cal-attend-sub">{row.subLine}</span>}
+        {legacyWarn && (
+          <span className="cal-attend-warn">
+            <ExclamationCircleOutlined /> {t('trainings.cal.markedNoSub')}
+          </span>
+        )}
       </div>
       <Badge variant={STATUS_VARIANT[row.status.type]}>{row.status.label}</Badge>
       {onIssueSub && (
@@ -129,17 +156,23 @@ function CalendarTrainingModalInner({
       onAddStudent(m.training)
     }
   }
-  // Отметить ученика без абонемента нельзя — вместо галочки открывается
-  // оформление; после успеха галочка ставится (onCreated → toggle).
+  // Отметить ученика без активного абонемента нельзя: чекбокс disabled, тап
+  // по строке/кнопке открывает оформление; после успеха галочка ставится
+  // (onCreated → toggle). Уже отмеченный без абонемента (легаси в данных) —
+  // галочка остаётся, но с warning-индикатором.
+  const needsSub = (row: AttendRow) =>
+    row.status.type === 'none' || row.status.type === 'expired'
+  const isGated = (row: AttendRow) => needsSub(row) && !m.checked.has(row.studentId)
+  const isLegacyMarked = (row: AttendRow) => needsSub(row) && m.checked.has(row.studentId)
   const handleToggleAttendee = (row: AttendRow) => () => {
-    if (!m.checked.has(row.studentId) && row.status.type === 'none') {
+    if (isGated(row)) {
       setIssueFor(row)
       return
     }
     m.toggle(row.studentId)
   }
   const rowIssueHandler = (row: AttendRow) =>
-    row.status.type === 'none' ? () => setIssueFor(row) : undefined
+    isGated(row) ? () => setIssueFor(row) : undefined
 
   const handleCloseIssue = () => setIssueFor(null)
   const handleIssued = () => {
@@ -205,7 +238,12 @@ function CalendarTrainingModalInner({
     )
   }
   footer.push(
-    <Button key="save" type="primary" loading={m.saving} onClick={m.saveAttendance}>
+    <Button
+      key="save"
+      className="tk-btn-primary"
+      loading={m.saving}
+      onClick={m.saveAttendance}
+    >
       {t('common.save')}
     </Button>,
   )
@@ -225,6 +263,8 @@ function CalendarTrainingModalInner({
                     row={row}
                     checkbox
                     checked={m.checked.has(row.studentId)}
+                    gated={isGated(row)}
+                    legacyWarn={isLegacyMarked(row)}
                     onToggle={handleToggleAttendee(row)}
                     onIssueSub={rowIssueHandler(row)}
                   />
@@ -255,6 +295,8 @@ function CalendarTrainingModalInner({
                       row={row}
                       checkbox
                       checked={m.checked.has(row.studentId)}
+                      gated={isGated(row)}
+                      legacyWarn={isLegacyMarked(row)}
                       onToggle={handleToggleAttendee(row)}
                       onIssueSub={rowIssueHandler(row)}
                     />

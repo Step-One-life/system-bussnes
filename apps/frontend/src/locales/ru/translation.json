@@ -190,7 +190,8 @@
       "deleteSub": "Удалить абонемент",
       "noSubYet": "Нет абонемента",
       "zeroSessions": "0 занятий",
-      "expiredAgo": "истёк {{count}} дн. назад"
+      "expiredAgo": "истёк {{count}} дн. назад",
+      "addSub": "Абонемент"
     },
     "visits": {
       "empty": "Посещений пока нет",
@@ -230,7 +231,7 @@
     },
     "add": {
       "title": "Новый абонемент",
-      "openBtn": "Абонемент",
+      "openBtn": "Общий абонемент",
       "createBtn": "Создать",
       "groupsLabel": "Группы",
       "groupsPlaceholder": "Выберите одну или несколько групп",
@@ -406,7 +407,8 @@
       "edit": "Редактировать",
       "addStudentShort": "Ученик",
       "deleteTraining": "Удалить тренировку",
-      "issueSub": "Оформить"
+      "issueSub": "Оформить",
+      "markedNoSub": "Отмечен без абонемента"
     },
     "hint": {
       "prime": "Прайм-тайм",

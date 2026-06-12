@@ -87,6 +87,38 @@
   box-shadow: inset 0 0 0 1px var(--tk-accent-subtle-border);
 }
 
+/* Модалки с длинным контентом: тело скроллится, шапка и футер с кнопками
+   остаются в пределах экрана (футер не уезжает за нижний край). */
+.ant-modal {
+  top: 48px;
+  padding-bottom: 0;
+}
+
+/* antd v6: контейнер модалки — .ant-modal-container (бывший -content) */
+.ant-modal .ant-modal-container {
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 96px);
+  max-height: calc(100dvh - 96px);
+}
+
+.ant-modal .ant-modal-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+@media (max-width: 680px) {
+  .ant-modal {
+    top: 16px;
+  }
+
+  .ant-modal .ant-modal-container {
+    max-height: calc(100vh - 32px);
+    max-height: calc(100dvh - 32px);
+  }
+}
+
 [data-theme='dark'] {
   --tk-surface-page: #0a0a0c;
   --tk-surface-card: #111114;

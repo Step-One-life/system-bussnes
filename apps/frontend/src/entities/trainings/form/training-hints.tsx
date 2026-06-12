@@ -55,9 +55,14 @@ export function PrimeHint({
 
   if (!prime) return null
 
+  // Суммы — только из «Настройки цен» (pricing_rules); обе цены должны быть
+  // заполнены и различаться, иначе чип без сумм.
   const rule = priceLookup?.rule ?? null
   const showPrice =
-    !!rule && rule.client_prime_price > 0 && rule.client_prime_price !== rule.client_price
+    !!rule &&
+    rule.client_price > 0 &&
+    rule.client_prime_price > 0 &&
+    rule.client_prime_price !== rule.client_price
 
   return (
     <div className="prime-hint">
