@@ -42,6 +42,13 @@ interface MarkTodayModalProps {
 
 export function MarkTodayModal({ open, onClose }: MarkTodayModalProps) {
   const { t } = useTranslation()
+  const [query, setQuery] = useState('')
+  // Сброс поиска на закрытии — в обработчике, не в эффекте (любой путь
+  // закрытия идёт через handleClose: и крестик, и успешное сохранение).
+  const handleClose = () => {
+    setQuery('')
+    onClose()
+  }
   const {
     todayGroups,
     todayIndividuals,
@@ -53,16 +60,14 @@ export function MarkTodayModal({ open, onClose }: MarkTodayModalProps) {
     initChecks,
     save,
     saving,
-  } = useMarkToday(open, onClose)
+  } = useMarkToday(open, handleClose)
 
-  const [query, setQuery] = useState('')
   const [issueFor, setIssueFor] = useState<IssueTarget | null>(null)
 
   const inited = useRef(false)
   useEffect(() => {
     if (!open) {
       inited.current = false
-      setQuery('')
       return
     }
     // Seed checkboxes once per open, after today's data is available — avoids
@@ -125,7 +130,7 @@ export function MarkTodayModal({ open, onClose }: MarkTodayModalProps) {
     <Modal
       open={open}
       title={t('home.markTodayModal.title')}
-      onCancel={onClose}
+      onCancel={handleClose}
       footer={
         hasContent
           ? [

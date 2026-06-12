@@ -1,7 +1,8 @@
-import i18n from 'i18next'
 import find from 'lodash/find'
 import isEmpty from 'lodash/isEmpty'
 import map from 'lodash/map'
+
+import i18n from 'i18next'
 
 import type { Student, Subscription, SubStatus } from './types'
 

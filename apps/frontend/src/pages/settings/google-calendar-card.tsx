@@ -1,11 +1,13 @@
-import { Alert, Button, Card, List, Modal, Select, Space, Tag, Typography, message } from 'antd'
 import { useEffect, useState } from 'react'
+
+import { Alert, Button, Card, List, message,Modal, Select, Space, Tag, Typography } from 'antd'
+
 import { useTranslation } from 'react-i18next'
 
 import {
-  calendarRepo,
   type CalendarConnectionState,
   type CalendarOption,
+  calendarRepo,
 } from 'entities/calendar/calendar.repo'
 import { buildTimeZoneOptions } from 'entities/calendar/timezones'
 
@@ -26,7 +28,8 @@ export function GoogleCalendarCard() {
     void refresh()
     const params = new URLSearchParams(window.location.search)
     if (params.get('google') === 'connected') {
-      void openPicker()
+      // setPicker в колбэке промиса — не синхронно в теле эффекта
+      void calendarRepo.listCalendars().then(({ calendars }) => setPicker(calendars))
       window.history.replaceState({}, '', window.location.pathname)
     } else if (params.get('google') === 'error') {
       message.error(t('settings.google.error'))

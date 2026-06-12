@@ -1,10 +1,11 @@
-import 'dayjs/locale/ru'
-import dayjs from 'dayjs'
 import i18n from 'i18next'
 import { initReactI18next } from 'react-i18next'
 
 import en from '../locales/en/translation.json'
 import ru from '../locales/ru/translation.json'
+
+import 'dayjs/locale/ru'
+import dayjs from 'dayjs'
 
 void i18n.use(initReactI18next).init({
   resources: {

@@ -1,9 +1,10 @@
-import i18n from 'i18next'
 import filter from 'lodash/filter'
 import includes from 'lodash/includes'
 import isEmpty from 'lodash/isEmpty'
 import join from 'lodash/join'
 import map from 'lodash/map'
+
+import i18n from 'i18next'
 
 import type { Student } from './types'
 
