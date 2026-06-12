@@ -72,7 +72,7 @@ export function IndividualPage() {
               {t('individual.recordOnline')}
             </Button>
             <Button
-              type="primary"
+              className="tk-btn-primary"
               icon={<PlusOutlined />}
               disabled={!page.indGroupId}
               onClick={handleOpenSession}

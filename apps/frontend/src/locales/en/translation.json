@@ -242,6 +242,8 @@
     "title": "Trainings",
     "record": "Record training",
     "recordsCount": "{{count}} records",
+    "weekCount": "This week: {{count}} session",
+    "weekCount_other": "This week: {{count}} sessions",
     "empty": "No trainings yet",
     "emptyText": "Record your first training",
     "viewList": "List",
@@ -275,7 +277,10 @@
       "today": "Today",
       "attendeesCount": "{{count}} ppl.",
       "prevWeek": "Previous week",
-      "nextWeek": "Next week"
+      "nextWeek": "Next week",
+      "legendNormal": "Session",
+      "legendScheduled": "Planned",
+      "legendPast": "Past"
     },
     "edit": {
       "title": "Edit session",

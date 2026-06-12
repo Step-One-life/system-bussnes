@@ -55,7 +55,7 @@ export function StudentsPage() {
         title={t('nav.students')}
         subtitle={t('students.count', { count: filtered.length })}
         actions={
-          <Button type="primary" icon={<UserAddOutlined />} onClick={openCreate}>
+          <Button className="tk-btn-primary" icon={<UserAddOutlined />} onClick={openCreate}>
             {t('students.add')}
           </Button>
         }

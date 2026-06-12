@@ -16,8 +16,11 @@
    - border-*   — границы: обычная, сильная, фокус
    - text-*     — текст по убыванию значимости + disabled (нулевые значения)
                   + inverse (на контрастных кнопках)
-   - accent-*   — бренд-индиго: ТОЛЬКО подсветка состояния (текущее занятие,
-                  активный пункт меню), не «каждая кнопка»
+   - accent-*   — бренд-индиго. Насыщенная заливка var(--tk-accent) разрешена
+                  ТОЛЬКО мелким элементам: кружок текущей даты, активный пункт
+                  навигации, бейджи-счётчики, мелкие индикаторы. Крупные
+                  (активные табы/сегменты, кнопки) — subtle-вариант:
+                  accent-subtle-bg + accent-text + accent-subtle-border
    - success/warning/danger-* — статусы; у каждого: text / subtle-bg /
                   subtle-border / dot
    - btn-*      — кнопки: primary НЕЙТРАЛЬНАЯ контрастная (не индиго),
@@ -76,6 +79,14 @@
   }
 }
 
+/* antd Segmented: заливка выбранного сегмента задаётся в antd-theme.ts
+   (subtle-подложка), а тонкую обводку antd-токенами не выразить — добиваем
+   здесь. Inset-тень вместо border, чтобы не сдвигать геометрию сегмента. */
+.ant-segmented .ant-segmented-item-selected,
+.ant-segmented .ant-segmented-thumb {
+  box-shadow: inset 0 0 0 1px var(--tk-accent-subtle-border);
+}
+
 [data-theme='dark'] {
   --tk-surface-page: #0a0a0c;
   --tk-surface-card: #111114;
@@ -92,6 +103,7 @@
   --tk-cat-ind: #a855f7;
   --tk-cat-ind-text: #c89df2;
   --tk-cat-ind-subtle-bg: rgba(168, 85, 247, 0.14);
+  --tk-cat-ind-subtle-border: rgba(168, 85, 247, 0.4);
 
   /* Полупрозрачные blur-подложки навигации (сайдбар, нижний таб-бар) */
   --tk-nav-sidebar-bg: rgba(16, 16, 19, 0.88);
@@ -167,6 +179,7 @@
   --tk-cat-ind: #a855f7;
   --tk-cat-ind-text: #8d3ed6;
   --tk-cat-ind-subtle-bg: rgba(168, 85, 247, 0.1);
+  --tk-cat-ind-subtle-border: rgba(168, 85, 247, 0.35);
 
   --tk-nav-sidebar-bg: rgba(244, 242, 236, 0.86);
   --tk-nav-bottom-bg: rgba(250, 249, 246, 0.78);

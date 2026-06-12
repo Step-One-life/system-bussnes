@@ -40,7 +40,7 @@ export function GroupsPage() {
       <PageHeader
         title={t('nav.groups')}
         actions={
-          <Button type="primary" icon={<PlusOutlined />} onClick={page.openCreate}>
+          <Button className="tk-btn-primary" icon={<PlusOutlined />} onClick={page.openCreate}>
             {t('groups.create')}
           </Button>
         }
