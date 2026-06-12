@@ -1,0 +1,27 @@
+/* Скруглённый верх шторки + грабер; крупные зоны тапа внутри задают
+   сами потребители. Цвета — токены, фон панели рисует antd-тема. */
+.adaptive-sheet {
+  .ant-drawer-content {
+    border-radius: var(--tk-radius-card) var(--tk-radius-card) 0 0;
+  }
+
+  .ant-drawer-header {
+    position: relative;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 6px;
+      left: 50%;
+      width: 32px;
+      height: 3px;
+      transform: translateX(-50%);
+      border-radius: 2px;
+      background: var(--tk-border-strong);
+    }
+  }
+
+  .ant-drawer-body {
+    overflow-y: auto;
+  }
+}

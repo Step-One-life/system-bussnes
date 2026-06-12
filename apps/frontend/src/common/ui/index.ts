@@ -1,3 +1,4 @@
+export { AdaptiveSheet } from './adaptive-sheet/adaptive-sheet'
 export type { BadgeVariant } from './badge/status-badge'
 export { Badge, StatusBadge } from './badge/status-badge'
 export { EmptyState } from './empty-state/empty-state'
