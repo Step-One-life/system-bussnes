@@ -2,12 +2,11 @@
    сами потребители. Цвета — токены, фон панели рисует antd-тема. */
 .adaptive-sheet {
   .ant-drawer-content {
-    border-radius: var(--tk-radius-card) var(--tk-radius-card) 0 0;
-  }
-
-  .ant-drawer-header {
     position: relative;
+    border-radius: var(--tk-radius-card) var(--tk-radius-card) 0 0;
 
+    /* Грабер не на header'е: antd рендерит header только при title,
+       а грабер должен быть всегда. */
     &::before {
       content: '';
       position: absolute;
@@ -18,6 +17,7 @@
       transform: translateX(-50%);
       border-radius: 2px;
       background: var(--tk-border-strong);
+      z-index: 1;
     }
   }
 
