@@ -10,7 +10,7 @@ import {
 import { AuthContext } from 'entities/auth/model/auth-context'
 import { invalidateLocations } from 'entities/locations'
 
-import { queryClient } from './query-provider'
+import { queryClient } from './query-client'
 
 import type { AuthContextValue } from 'entities/auth/model/auth-context'
 import type { AuthUser, LoginInput, RegisterInput } from 'entities/auth/model/types'

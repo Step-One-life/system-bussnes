@@ -65,6 +65,22 @@
     font-size: 0.75rem;
     color: var(--tk-text-tertiary);
   }
+
+  /* Легаси-отметка без абонемента: галочка показана, но с предупреждением. */
+  &__warn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--tk-warning-text);
+  }
+
+  /* Гейт «без абонемента»: чекбокс выключен, клик проваливается в строку,
+     которая открывает оформление абонемента. */
+  &--gated .ant-checkbox-wrapper {
+    pointer-events: none;
+  }
 }
 
 .mark-empty {

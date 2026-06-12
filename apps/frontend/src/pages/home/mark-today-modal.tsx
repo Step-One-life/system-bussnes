@@ -1,12 +1,18 @@
 import { useEffect, useRef, useState } from 'react'
 
 import { Button, Checkbox, Input, Modal } from 'antd'
-import { CheckOutlined, ClockCircleOutlined, SearchOutlined } from '@ant-design/icons'
+import {
+  CheckOutlined,
+  ClockCircleOutlined,
+  ExclamationCircleOutlined,
+  SearchOutlined,
+} from '@ant-design/icons'
 
 import { useTranslation } from 'react-i18next'
 
 import { StatusBadge } from 'common/ui'
 import { getSubStatus, subTypeLabel } from 'entities/students'
+import { RenewSubModal } from 'entities/students/subscriptions/renew-sub-modal'
 
 import { indKey, useMarkToday } from './use-mark-today'
 
@@ -17,6 +23,18 @@ import './mark-today-modal.scss'
 /** Поиск появляется только на длинных списках — на коротких он шум. */
 const SEARCH_MIN = 8
 
+/** Ученик, которому оформляется абонемент из строки отметки. */
+interface IssueTarget {
+  studentId: string
+  name: string
+  groupId: string
+  /** Есть только у индивидуальной строки — определяет, какой toggle звать. */
+  trainingId?: string
+}
+
+/** Отметить без активного абонемента нельзя — тап ведёт в оформление. */
+const needsSub = (type: string) => type === 'none' || type === 'expired'
+
 interface MarkTodayModalProps {
   open: boolean
   onClose: () => void
@@ -24,6 +42,13 @@ interface MarkTodayModalProps {
 
 export function MarkTodayModal({ open, onClose }: MarkTodayModalProps) {
   const { t } = useTranslation()
+  const [query, setQuery] = useState('')
+  // Сброс поиска на закрытии — в обработчике, не в эффекте (любой путь
+  // закрытия идёт через handleClose: и крестик, и успешное сохранение).
+  const handleClose = () => {
+    setQuery('')
+    onClose()
+  }
   const {
     todayGroups,
     todayIndividuals,
@@ -35,15 +60,14 @@ export function MarkTodayModal({ open, onClose }: MarkTodayModalProps) {
     initChecks,
     save,
     saving,
-  } = useMarkToday(open, onClose)
+  } = useMarkToday(open, handleClose)
 
-  const [query, setQuery] = useState('')
+  const [issueFor, setIssueFor] = useState<IssueTarget | null>(null)
 
   const inited = useRef(false)
   useEffect(() => {
     if (!open) {
       inited.current = false
-      setQuery('')
       return
     }
     // Seed checkboxes once per open, after today's data is available — avoids
@@ -82,11 +106,31 @@ export function MarkTodayModal({ open, onClose }: MarkTodayModalProps) {
     toggle(groupId, studentId)
   const handleQueryChange = (e: ChangeEvent<HTMLInputElement>) => setQuery(e.target.value)
 
+  // Гейт как в календарной модалке: клик по строке открывает оформление,
+  // кнопка «Оформить» работает сама по себе (без переключения чекбокса).
+  const handleGatedRow = (target: IssueTarget) => (e: React.MouseEvent) => {
+    e.preventDefault()
+    setIssueFor(target)
+  }
+  const handleIssueClick = (target: IssueTarget) => (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIssueFor(target)
+  }
+  const handleCloseIssue = () => setIssueFor(null)
+  // Успешное оформление → галочка ставится сама (как onCreated → toggle в календаре).
+  const handleIssued = () => {
+    if (!issueFor) return
+    if (issueFor.trainingId) toggleInd(issueFor.trainingId, issueFor.studentId)
+    else toggle(issueFor.groupId, issueFor.studentId)
+  }
+
   return (
+    <>
     <Modal
       open={open}
       title={t('home.markTodayModal.title')}
-      onCancel={onClose}
+      onCancel={handleClose}
       footer={
         hasContent
           ? [
@@ -146,20 +190,40 @@ export function MarkTodayModal({ open, onClose }: MarkTodayModalProps) {
                           : `${subTypeLabel(sub.type)} · ${t('students.sub.remainingShort', { count: sub.remaining })}`
                         : ''
                       const checked = checks[tg.groupId]?.has(s.id) ?? false
+                      const gated = needsSub(st.type) && !checked
+                      const legacyWarn = needsSub(st.type) && checked
+                      const target: IssueTarget = {
+                        studentId: s.id,
+                        name: s.name,
+                        groupId: tg.groupId,
+                      }
                       return (
                         <label
                           key={s.id}
-                          className={`mark-row${checked ? ' mark-row--checked' : ''}`}
+                          className={`mark-row${checked ? ' mark-row--checked' : ''}${gated ? ' mark-row--gated' : ''}`}
+                          onClick={gated ? handleGatedRow(target) : undefined}
                         >
                           <Checkbox
                             checked={checked}
+                            disabled={gated}
                             onChange={handleToggle(tg.groupId, s.id)}
                           />
                           <div className="mark-row__info">
                             <span className="mark-row__name">{s.name}</span>
                             {subLine && <span className="mark-row__sub">{subLine}</span>}
+                            {legacyWarn && (
+                              <span className="mark-row__warn">
+                                <ExclamationCircleOutlined />{' '}
+                                {t('trainings.cal.markedNoSub')}
+                              </span>
+                            )}
                           </div>
                           <StatusBadge status={st} />
+                          {gated && (
+                            <Button size="small" onClick={handleIssueClick(target)}>
+                              {t('trainings.cal.issueSub')}
+                            </Button>
+                          )}
                         </label>
                       )
                     })
@@ -195,13 +259,23 @@ export function MarkTodayModal({ open, onClose }: MarkTodayModalProps) {
                     : ''
                   const checked =
                     indChecks[indKey(ti.trainingId, ti.studentId)] ?? ti.originalPresent
+                  const gated = needsSub(st.type) && !checked
+                  const legacyWarn = needsSub(st.type) && checked
+                  const target: IssueTarget = {
+                    studentId: ti.studentId,
+                    name: student.name,
+                    groupId: ti.groupId,
+                    trainingId: ti.trainingId,
+                  }
                   return (
                     <label
                       key={indKey(ti.trainingId, ti.studentId)}
-                      className={`mark-row${checked ? ' mark-row--checked' : ''}`}
+                      className={`mark-row${checked ? ' mark-row--checked' : ''}${gated ? ' mark-row--gated' : ''}`}
+                      onClick={gated ? handleGatedRow(target) : undefined}
                     >
                       <Checkbox
                         checked={checked}
+                        disabled={gated}
                         onChange={() => toggleInd(ti.trainingId, ti.studentId)}
                       />
                       <div className="mark-row__info">
@@ -215,8 +289,19 @@ export function MarkTodayModal({ open, onClose }: MarkTodayModalProps) {
                           )}
                           {subLine}
                         </span>
+                        {legacyWarn && (
+                          <span className="mark-row__warn">
+                            <ExclamationCircleOutlined />{' '}
+                            {t('trainings.cal.markedNoSub')}
+                          </span>
+                        )}
                       </div>
                       <StatusBadge status={st} />
+                      {gated && (
+                        <Button size="small" onClick={handleIssueClick(target)}>
+                          {t('trainings.cal.issueSub')}
+                        </Button>
+                      )}
                     </label>
                   )
                 })}
@@ -226,5 +311,18 @@ export function MarkTodayModal({ open, onClose }: MarkTodayModalProps) {
         </div>
       )}
     </Modal>
+
+    {issueFor && (
+      <RenewSubModal
+        open
+        issueMode
+        studentId={issueFor.studentId}
+        studentName={issueFor.name}
+        groupId={issueFor.groupId}
+        onCreated={handleIssued}
+        onClose={handleCloseIssue}
+      />
+    )}
+    </>
   )
 }

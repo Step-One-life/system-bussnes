@@ -179,7 +179,7 @@ export function TrainingCalendar({
             <div className="cal-gutter" style={{ height: totalH }}>
               {hours.map((h, i) => (
                 <div key={h} className="cal-gutter__label" style={{ top: i * CAL_H_PX }}>
-                  {String(h).padStart(2, '0')}:00
+                  {String(h % 24).padStart(2, '0')}:00
                 </div>
               ))}
             </div>

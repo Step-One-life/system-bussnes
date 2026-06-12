@@ -28,37 +28,43 @@ export function useEditTraining({ training, onDone }: UseEditTrainingOptions) {
   const [locationId, setLocationId] = useState<string | null>(null)
   const [isOnline, setIsOnline] = useState(false)
   const [isPrime, setIsPrime] = useState(false)
-  const [conflicts, setConflicts] = useState<TrainingConflict[]>([])
   const [scopeOpen, setScopeOpen] = useState(false)
 
-  // Предзаполнение при смене редактируемой тренировки.
-  useEffect(() => {
-    if (!training) return
+  // Предзаполнение при смене редактируемой тренировки — «adjust state during
+  // render» вместо setState в эффекте.
+  const [prevTraining, setPrevTraining] = useState<Training | null>(null)
+  if (training && training !== prevTraining) {
+    setPrevTraining(training)
     setDate(training.date)
     setTime(training.time)
     setNote(training.note)
     setLocationId(training.locationId)
     setIsOnline(training.isOnline)
     setIsPrime(training.isPrime)
-  }, [training])
+  }
 
   const isRecurring = !!training?.recurring && !!training?.recurringId
   const saving = update.isPending || updateSeries.isPending
 
-  // Живая проверка конфликтов, исключая саму тренировку.
+  // Живая проверка конфликтов, исключая саму тренировку. Результат хранится
+  // вместе с ключом входов: при их смене показываем пусто (не устаревший
+  // список), setState только в колбэке промиса.
+  const [conflictResult, setConflictResult] = useState<{
+    key: string
+    list: TrainingConflict[]
+  }>({ key: '', list: [] })
+  const conflictKey = training && date && time ? `${training.id}|${date}|${time}` : ''
   useEffect(() => {
+    if (!conflictKey || !training) return
     let active = true
-    if (training && date && time) {
-      checkTrainingConflict(date, time, training.groupId, training.id).then((c) => {
-        if (active) setConflicts(c)
-      })
-    } else {
-      setConflicts([])
-    }
+    checkTrainingConflict(date, time, training.groupId, training.id).then((c) => {
+      if (active) setConflictResult({ key: conflictKey, list: c })
+    })
     return () => {
       active = false
     }
-  }, [training, date, time])
+  }, [conflictKey, training, date, time])
+  const conflicts = conflictKey && conflictResult.key === conflictKey ? conflictResult.list : []
 
   const saveSingle = async () => {
     if (!training) return

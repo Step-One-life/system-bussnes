@@ -201,6 +201,8 @@ export function useFinanceStats(): FinanceStats {
       map.set(label, (map.get(label) ?? 0) + p.client_amount)
     }
     return { labels: [...map.keys()], values: [...map.values()].map(roundMoney) }
+    // lang нужен: finLabel читает язык внутри — лейблы пересчитываются при его смене
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filtered, lang])
 
   const hallTypes = useMemo<TypeBreakdown>(() => {
@@ -214,6 +216,8 @@ export function useFinanceStats(): FinanceStats {
       map.set(label, (map.get(label) ?? 0) + hc.hall_amount)
     }
     return { labels: [...map.keys()], values: [...map.values()].map(roundMoney) }
+    // lang нужен: finLabel читает язык внутри — лейблы пересчитываются при его смене
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filtered, hallMap, lang])
 
   const topClients = useMemo<TopClient[]>(() => {

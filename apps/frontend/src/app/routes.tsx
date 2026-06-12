@@ -1,3 +1,6 @@
+/* eslint-disable react-refresh/only-export-components --
+   файл экспортирует router (не компонент), создаваемый на уровне модуля:
+   fast refresh к нему неприменим, правка роутов — всегда полная перезагрузка */
 import { lazy, Suspense } from 'react'
 
 import { createBrowserRouter, Navigate } from 'react-router-dom'

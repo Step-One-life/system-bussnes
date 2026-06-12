@@ -1,9 +1,8 @@
 import { useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 
-import { useSearchParams } from 'react-router-dom'
-
 import { useTranslation } from 'react-i18next'
+import { useSearchParams } from 'react-router-dom'
 
 import { useToast } from 'common/ui'
 import { useDeleteGroup, useGroups } from 'entities/groups'

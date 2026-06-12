@@ -1,7 +1,8 @@
-import i18n from 'i18next'
 import filter from 'lodash/filter'
 import isEmpty from 'lodash/isEmpty'
 import map from 'lodash/map'
+
+import i18n from 'i18next'
 
 import { minutesToTime, timeToMinutes } from 'common/utils/date'
 import { weekdayShortLabel } from 'common/utils/weekdays'
