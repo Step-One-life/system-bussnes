@@ -1,10 +1,13 @@
-import { Button, Modal, Popconfirm } from 'antd'
-import { CloseOutlined, DeleteOutlined } from '@ant-design/icons'
+import { useState } from 'react'
+
+import { Button, Dropdown, Modal } from 'antd'
+import { CloseOutlined, MoreOutlined, PlusOutlined } from '@ant-design/icons'
 
 import { useTranslation } from 'react-i18next'
 
 import { Badge } from 'common/ui'
 import { formatDateFull } from 'common/utils/date'
+import { RenewSubModal } from 'entities/students/subscriptions/renew-sub-modal'
 
 import { useCalendarTraining } from './use-calendar-training'
 
@@ -55,14 +58,22 @@ function RowItem({
   checked,
   onToggle,
   onRemove,
+  onIssueSub,
 }: {
   row: AttendRow
   checkbox: boolean
   checked?: boolean
   onToggle?: () => void
   onRemove?: () => void
+  onIssueSub?: () => void
 }) {
   const { t } = useTranslation()
+  const handleIssueClick = (e: React.MouseEvent) => {
+    // label вокруг строки переключил бы чекбокс — кнопка работает сама по себе
+    e.preventDefault()
+    e.stopPropagation()
+    onIssueSub?.()
+  }
   return (
     <label className={`cal-attend-row${checked ? ' cal-attend-row--checked' : ''}`}>
       {checkbox && <input type="checkbox" checked={!!checked} onChange={onToggle} />}
@@ -71,6 +82,11 @@ function RowItem({
         {row.subLine && <span className="cal-attend-sub">{row.subLine}</span>}
       </div>
       <Badge variant={STATUS_VARIANT[row.status.type]}>{row.status.label}</Badge>
+      {onIssueSub && (
+        <Button size="small" onClick={handleIssueClick}>
+          {t('trainings.cal.issueSub')}
+        </Button>
+      )}
       {onRemove && (
         <button
           type="button"
@@ -101,6 +117,10 @@ function CalendarTrainingModalInner({
   const { t } = useTranslation()
   const m = useCalendarTraining({ block, onDone: onClose })
 
+  // Ученик, которому оформляется абонемент из строки отметки.
+  const [issueFor, setIssueFor] = useState<AttendRow | null>(null)
+  const [confirmDelete, setConfirmDelete] = useState(false)
+
   const dateLabel = `${formatDateFull(block.date)}${block.time ? ` · ${block.time}` : ''}`
 
   const handleAddStudent = () => {
@@ -109,37 +129,63 @@ function CalendarTrainingModalInner({
       onAddStudent(m.training)
     }
   }
-  const handleToggleAttendee = (studentId: string) => () =>
-    m.toggle(studentId)
-
-  // Порядок как в остальных модалках: разрушительное действие отдельно слева,
-  // primary («Сохранить») — крайним справа.
-  const footer: React.ReactNode[] = []
-  if (m.training) {
-    footer.push(
-      <Popconfirm
-        key="del"
-        title={t('trainings.cal.deleteTitle', { name: `${block.label} · ${block.time}` })}
-        description={t('trainings.cal.deleteDescription')}
-        okText={t('common.delete')}
-        cancelText={t('common.cancel')}
-        okButtonProps={{ danger: true }}
-        onConfirm={m.handleDelete}
-      >
-        <Button
-          type="text"
-          danger
-          icon={<DeleteOutlined />}
-          style={{ marginRight: 'auto' }}
-          aria-label={t('common.delete')}
-        />
-      </Popconfirm>,
-    )
+  // Отметить ученика без абонемента нельзя — вместо галочки открывается
+  // оформление; после успеха галочка ставится (onCreated → toggle).
+  const handleToggleAttendee = (row: AttendRow) => () => {
+    if (!m.checked.has(row.studentId) && row.status.type === 'none') {
+      setIssueFor(row)
+      return
+    }
+    m.toggle(row.studentId)
   }
+  const rowIssueHandler = (row: AttendRow) =>
+    row.status.type === 'none' ? () => setIssueFor(row) : undefined
+
+  const handleCloseIssue = () => setIssueFor(null)
+  const handleIssued = () => {
+    if (issueFor) m.toggle(issueFor.studentId)
+  }
+  const handleOpenConfirmDelete = () => setConfirmDelete(true)
+  const handleCloseConfirmDelete = () => setConfirmDelete(false)
+
+  const title = (
+    <div className="cal-modal-head">
+      <span className="cal-modal-head__title">{m.title}</span>
+      {m.training && (
+        <Dropdown
+          trigger={['click']}
+          menu={{
+            items: [
+              {
+                key: 'delete',
+                danger: true,
+                label: t('trainings.cal.deleteTraining'),
+                onClick: handleOpenConfirmDelete,
+              },
+            ],
+          }}
+        >
+          <Button
+            type="text"
+            size="small"
+            icon={<MoreOutlined />}
+            aria-label={t('common.more')}
+          />
+        </Dropdown>
+      )}
+    </div>
+  )
+
+  const footer: React.ReactNode[] = []
   if (m.isInd) {
     footer.push(
-      <Button key="add" disabled={!m.training} onClick={handleAddStudent}>
-        {t('common.add')}
+      <Button
+        key="add"
+        icon={<PlusOutlined />}
+        disabled={!m.training}
+        onClick={handleAddStudent}
+      >
+        {t('trainings.cal.addStudentShort')}
       </Button>,
     )
   }
@@ -165,60 +211,91 @@ function CalendarTrainingModalInner({
   )
 
   return (
-    <Modal open={open} title={m.title} onCancel={onClose} footer={footer} destroyOnHidden>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-4)' }}>
-        <div style={{ fontSize: '0.875rem', color: 'var(--tk-text-secondary)' }}>{dateLabel}</div>
+    <>
+      <Modal open={open} title={title} onCancel={onClose} footer={footer} destroyOnHidden>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-4)' }}>
+          <div style={{ fontSize: '0.875rem', color: 'var(--tk-text-secondary)' }}>{dateLabel}</div>
 
-        {m.isInd ? (
-          <div className="cal-attend-list">
-            {m.indRows.length ? (
-              m.indRows.map((row) => (
-                <RowItem
-                  key={row.studentId}
-                  row={row}
-                  checkbox
-                  checked={m.checked.has(row.studentId)}
-                  onToggle={handleToggleAttendee(row.studentId)}
-                />
-              ))
-            ) : (
-              <p style={{ fontSize: '0.875rem', color: 'var(--tk-text-tertiary)' }}>
-                {t('trainings.cal.noStudents')}
-              </p>
-            )}
-          </div>
-        ) : (
-          <div>
-            <div
-              style={{
-                fontSize: '0.8rem',
-                fontWeight: 600,
-                marginBottom: 'var(--sp-2)',
-                color: 'var(--tk-text-secondary)',
-              }}
-            >
-              {t('trainings.cal.attendance')}
-            </div>
+          {m.isInd ? (
             <div className="cal-attend-list">
-              {m.groupRows.length ? (
-                m.groupRows.map((row) => (
+              {m.indRows.length ? (
+                m.indRows.map((row) => (
                   <RowItem
                     key={row.studentId}
                     row={row}
                     checkbox
                     checked={m.checked.has(row.studentId)}
-                    onToggle={handleToggleAttendee(row.studentId)}
+                    onToggle={handleToggleAttendee(row)}
+                    onIssueSub={rowIssueHandler(row)}
                   />
                 ))
               ) : (
                 <p style={{ fontSize: '0.875rem', color: 'var(--tk-text-tertiary)' }}>
-                  {t('trainings.cal.noGroupStudents')}
+                  {t('trainings.cal.noStudents')}
                 </p>
               )}
             </div>
-          </div>
-        )}
-      </div>
-    </Modal>
+          ) : (
+            <div>
+              <div
+                style={{
+                  fontSize: '0.8rem',
+                  fontWeight: 600,
+                  marginBottom: 'var(--sp-2)',
+                  color: 'var(--tk-text-secondary)',
+                }}
+              >
+                {t('trainings.cal.attendance')}
+              </div>
+              <div className="cal-attend-list">
+                {m.groupRows.length ? (
+                  m.groupRows.map((row) => (
+                    <RowItem
+                      key={row.studentId}
+                      row={row}
+                      checkbox
+                      checked={m.checked.has(row.studentId)}
+                      onToggle={handleToggleAttendee(row)}
+                      onIssueSub={rowIssueHandler(row)}
+                    />
+                  ))
+                ) : (
+                  <p style={{ fontSize: '0.875rem', color: 'var(--tk-text-tertiary)' }}>
+                    {t('trainings.cal.noGroupStudents')}
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      </Modal>
+
+      <Modal
+        open={confirmDelete}
+        title={t('trainings.cal.deleteTitle', { name: `${block.label} · ${block.time}` })}
+        okText={t('common.delete')}
+        cancelText={t('common.cancel')}
+        okButtonProps={{ danger: true }}
+        onOk={async () => {
+          setConfirmDelete(false)
+          await m.handleDelete()
+        }}
+        onCancel={handleCloseConfirmDelete}
+      >
+        {t('trainings.cal.deleteDescription')}
+      </Modal>
+
+      {issueFor && (
+        <RenewSubModal
+          open
+          issueMode
+          studentId={issueFor.studentId}
+          studentName={issueFor.name}
+          groupId={block.groupId}
+          onCreated={handleIssued}
+          onClose={handleCloseIssue}
+        />
+      )}
+    </>
   )
 }

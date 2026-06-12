@@ -46,6 +46,7 @@
     "create": "Создать",
     "delete": "Удалить",
     "add": "Добавить",
+    "more": "Ещё",
     "edit": "Редактировать",
     "extend": "Продлить",
     "error": "Ошибка",
@@ -185,7 +186,11 @@
       "newSub": "Новый абонемент",
       "markPaid": "Записать оплату",
       "askNextTraining": "Узнать о следующей тренировке",
-      "extendTerm": "Продлить срок"
+      "extendTerm": "Продлить срок",
+      "deleteSub": "Удалить абонемент",
+      "noSubYet": "Нет абонемента",
+      "zeroSessions": "0 занятий",
+      "expiredAgo": "истёк {{count}} дн. назад"
     },
     "visits": {
       "empty": "Посещений пока нет",
@@ -217,6 +222,11 @@
       "group": "Группа:",
       "typeLabel": "Тип абонемента",
       "dateLabel": "Дата начала"
+    },
+    "issue": {
+      "title": "Оформить абонемент",
+      "createBtn": "Оформить",
+      "created": "Абонемент оформлен"
     },
     "add": {
       "title": "Новый абонемент",
@@ -250,7 +260,7 @@
     "empty": "Занятий пока нет",
     "emptyText": "Создайте первое занятие",
     "viewList": "Список",
-    "viewWeek": "Неделя",
+    "viewCalendar": "Календарь",
     "removedFromTraining": "Ученик убран с занятия",
     "seriesDeleted": "Серия удалена",
     "trainingDeleted": "Занятие удалено",
@@ -281,6 +291,10 @@
       "attendeesCount": "{{count}} чел.",
       "prevWeek": "Предыдущая неделя",
       "nextWeek": "Следующая неделя",
+      "prevDay": "Предыдущий день",
+      "nextDay": "Следующий день",
+      "modeDay": "День",
+      "modeWeek": "Неделя",
       "legendNormal": "Занятие",
       "legendScheduled": "Запланировано",
       "legendPast": "Прошедшее"
@@ -389,11 +403,14 @@
       "studentRemoved": "Ученик убран",
       "attendanceSaved": "Посещаемость сохранена",
       "recordDeleted": "Запись удалена",
-      "edit": "Редактировать"
+      "edit": "Редактировать",
+      "addStudentShort": "Ученик",
+      "deleteTraining": "Удалить тренировку",
+      "issueSub": "Оформить"
     },
     "hint": {
-      "prime": "⭐ Prime",
-      "regular": "Обычное",
+      "prime": "Прайм-тайм",
+      "primePrice": "занятие {{prime}} вместо {{regular}}",
       "conflict": "Конфликт: {{detail}}"
     }
   },

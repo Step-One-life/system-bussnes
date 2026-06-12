@@ -30,6 +30,8 @@ export function TrainingsPage() {
 
   const handleSelectListView = () => page.setView('list')
   const handleSelectCalendarView = () => page.setView('calendar')
+  const handleSelectDayMode = () => page.setCalMode('day')
+  const handleSelectWeekMode = () => page.setCalMode('week')
   const handleCloseTypeModal = () => page.setTypeModalOpen(false)
   const handleCloseGroupModal = () => page.setGroupModalOpen(false)
   const handleCloseIndModal = () => page.setIndModalOpen(false)
@@ -50,11 +52,27 @@ export function TrainingsPage() {
         }
         actions={
           <>
+            {page.view === 'calendar' && (
+              <div className="view-toggle">
+                <button
+                  className={`view-toggle__btn view-toggle__btn--text${page.calMode === 'day' ? ' view-toggle__btn--active' : ''}`}
+                  onClick={handleSelectDayMode}
+                >
+                  {t('trainings.calendar.modeDay')}
+                </button>
+                <button
+                  className={`view-toggle__btn view-toggle__btn--text${page.calMode === 'week' ? ' view-toggle__btn--active' : ''}`}
+                  onClick={handleSelectWeekMode}
+                >
+                  {t('trainings.calendar.modeWeek')}
+                </button>
+              </div>
+            )}
             <div className="view-toggle">
               <button
                 className={`view-toggle__btn${page.view === 'calendar' ? ' view-toggle__btn--active' : ''}`}
-                title={t('trainings.viewWeek')}
-                aria-label={t('trainings.viewWeek')}
+                title={t('trainings.viewCalendar')}
+                aria-label={t('trainings.viewCalendar')}
                 onClick={handleSelectCalendarView}
               >
                 <CalendarOutlined />
@@ -84,8 +102,9 @@ export function TrainingsPage() {
           trainings={page.trainings}
           students={page.students}
           groups={page.groups}
-          weekStart={page.weekStart}
-          onWeekStartChange={page.setWeekStart}
+          mode={page.calMode}
+          date={page.calDate}
+          onDateChange={page.setCalDate}
           onBlockClick={page.setCalendarBlock}
         />
       ) : page.trainings.length ? (

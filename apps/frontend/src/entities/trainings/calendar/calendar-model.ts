@@ -171,18 +171,28 @@ function collectDayItems(
   return items
 }
 
-/** Hour range covering all items, never narrower than the base window. */
-function hourRange(items: DayItem[], baseStart: number, baseEnd: number): [number, number] {
+/**
+ * Hour range covering all items, never narrower than the base window.
+ * `padEndHours` добавляет запас после последнего занятия (если оно позже
+ * базового конца) — чтобы вечерний блок не упирался в нижний край сетки.
+ */
+function hourRange(
+  items: DayItem[],
+  baseStart: number,
+  baseEnd: number,
+  padEndHours = 0,
+): [number, number] {
   let start = baseStart
-  let end = baseEnd
+  let itemsEnd = 0
   for (const it of items) {
     if (!it.time) continue
     const [hh, mm] = it.time.split(':').map(Number)
     const startMin = hh * 60 + (mm || 0)
     const dur = it.training?.sessionDuration || it.groupDur || 60
     start = Math.min(start, Math.floor(startMin / 60))
-    end = Math.max(end, Math.ceil((startMin + dur) / 60))
+    itemsEnd = Math.max(itemsEnd, Math.ceil((startMin + dur) / 60))
   }
+  const end = itemsEnd > baseEnd ? itemsEnd + padEndHours : baseEnd
   return [start, end]
 }
 
@@ -239,9 +249,10 @@ export function buildCalendarWeek(
   })
 
   // Единый диапазон часов на всю неделю: базовое окно 09–21, растянутое
-  // до самого раннего/позднего занятия недели.
+  // до самого раннего/позднего занятия недели (+1 ч снизу, чтобы позднее
+  // занятие не обрезалось краем сетки).
   const allItems = dates.flatMap((d) => collectDayItems(d, trainings, students, groups))
-  const [hStart, hEnd] = hourRange(allItems, CAL_WEEK_H_START, CAL_WEEK_H_END)
+  const [hStart, hEnd] = hourRange(allItems, CAL_WEEK_H_START, CAL_WEEK_H_END, 1)
 
   return {
     days: dates.map(
@@ -250,6 +261,30 @@ export function buildCalendarWeek(
     hStart,
     hEnd,
   }
+}
+
+/**
+ * Один день для режима «День» (мобильный по умолчанию): то же базовое окно
+ * 09–21 с запасом +1 ч, что и у недели, — переключение режимов не «прыгает».
+ */
+export function buildCalendarSingleDay(
+  anchor: Date,
+  trainings: Training[],
+  students: { id: string; name: string }[],
+  groups: Group[],
+): CalendarWeek {
+  const dateStr = toDateStr(anchor)
+  const items = collectDayItems(dateStr, trainings, students, groups)
+  const [hStart, hEnd] = hourRange(items, CAL_WEEK_H_START, CAL_WEEK_H_END, 1)
+  return {
+    days: [buildCalendarDay(dateStr, trainings, students, groups, [hStart, hEnd]).day],
+    hStart,
+    hEnd,
+  }
+}
+
+export function formatDayLabel(d: Date): string {
+  return d.toLocaleDateString('ru-RU', { weekday: 'short', day: 'numeric', month: 'long' })
 }
 
 export function formatWeekRange(weekStart: Date): string {

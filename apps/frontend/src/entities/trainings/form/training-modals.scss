@@ -67,15 +67,55 @@
   }
 }
 
+/* Контекстный индикатор прайм-тайма у поля «Время»: warning-чип + влияние
+   на цену. В обычное время не рендерится вовсе. */
 .prime-hint {
-  min-height: 1.5rem;
-  margin-top: var(--sp-1);
-  margin-bottom: var(--sp-1);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+  margin-top: var(--sp-2);
+
+  &__chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 1px 8px;
+    border-radius: 999px;
+    background: var(--tk-warning-subtle-bg);
+    border: 1px solid var(--tk-warning-subtle-border);
+    color: var(--tk-warning-text);
+    font-size: var(--tk-fs-caption);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  &__price {
+    font-size: var(--tk-fs-small);
+    color: var(--tk-text-secondary);
+    font-variant-numeric: tabular-nums;
+  }
 }
 
 .badge--prime {
   background: var(--tk-warning-subtle-bg);
   color: var(--tk-warning-text);
+}
+
+/* Шапка модалки отметки: название + меню «…» рядом (X antd — правее). */
+.cal-modal-head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-width: 0;
+
+  &__title {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 }
 
 .rec-toggle-card {
@@ -125,25 +165,6 @@
     font-size: 0.75rem;
     color: var(--tk-text-tertiary);
     margin-top: 2px;
-  }
-
-  &__check {
-    width: 22px;
-    height: 22px;
-    border: 2px solid var(--tk-border-default);
-    border-radius: var(--r-sm);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    color: transparent;
-    font-size: 12px;
-  }
-
-  &--checked &__check {
-    background: var(--tk-accent);
-    border-color: var(--tk-accent);
-    color: var(--tk-accent-contrast);
   }
 }
 

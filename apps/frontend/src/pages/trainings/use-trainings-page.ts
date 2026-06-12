@@ -3,10 +3,10 @@ import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { useToast } from 'common/ui'
+import { getMondayOfWeek } from 'common/utils/date'
 import { useGroups } from 'entities/groups'
 import { useStudents } from 'entities/students'
 import {
-  currentWeekStart,
   ensureIndividualGroup,
   useDeleteTrainingWithRestore,
   useRemoveFromTraining,
@@ -14,7 +14,7 @@ import {
 } from 'entities/trainings'
 
 import type { Training } from 'entities/trainings'
-import type { CalendarBlock } from 'entities/trainings'
+import type { CalendarBlock, CalendarMode } from 'entities/trainings'
 
 export type TrainingsView = 'list' | 'calendar'
 
@@ -28,11 +28,18 @@ export function useTrainingsPage() {
   const deleteTraining = useDeleteTrainingWithRestore()
 
   const [view, setView] = useState<TrainingsView>('calendar')
-  const [weekStart, setWeekStart] = useState(currentWeekStart)
+  // На мобильном по умолчанию режим «День», недельная сетка — опция.
+  const [calMode, setCalMode] = useState<CalendarMode>(() =>
+    typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches
+      ? 'day'
+      : 'week',
+  )
+  const [calDate, setCalDate] = useState(() => new Date())
 
-  // Счётчик подзаголовка в виде «календарь»: записанные занятия видимой недели.
+  // Счётчик подзаголовка в виде «календарь»: записанные занятия недели,
+  // в которую попадает опорная дата (и в режиме «День» тоже).
   const weekCount = useMemo(() => {
-    const start = new Date(weekStart)
+    const start = getMondayOfWeek(calDate)
     start.setHours(0, 0, 0, 0)
     const end = new Date(start)
     end.setDate(start.getDate() + 7)
@@ -40,7 +47,7 @@ export function useTrainingsPage() {
       const d = new Date(tr.date + 'T00:00:00')
       return d >= start && d < end
     }).length
-  }, [trainings, weekStart])
+  }, [trainings, calDate])
 
   const [typeModalOpen, setTypeModalOpen] = useState(false)
   const [groupModalOpen, setGroupModalOpen] = useState(false)
@@ -107,8 +114,10 @@ export function useTrainingsPage() {
     refetch,
     view,
     setView,
-    weekStart,
-    setWeekStart,
+    calMode,
+    setCalMode,
+    calDate,
+    setCalDate,
     weekCount,
     typeModalOpen,
     setTypeModalOpen,

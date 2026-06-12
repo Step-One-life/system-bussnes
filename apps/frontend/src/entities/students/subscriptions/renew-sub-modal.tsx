@@ -22,6 +22,10 @@ interface RenewSubModalProps {
   studentName: string
   groupId: string
   onClose: () => void
+  /** «Оформить абонемент» вместо «Продлить» — для ученика без абонемента. */
+  issueMode?: boolean
+  /** Вызывается только при успешном создании (onClose зовётся и при отмене). */
+  onCreated?: () => void
 }
 
 export function RenewSubModal({
@@ -30,6 +34,8 @@ export function RenewSubModal({
   studentName,
   groupId,
   onClose,
+  issueMode = false,
+  onCreated,
 }: RenewSubModalProps) {
   const { t } = useTranslation()
   const toast = useToast()
@@ -65,9 +71,10 @@ export function RenewSubModal({
     })
     toast({
       type: 'success',
-      title: t('subscriptions.renew.subRenewed'),
+      title: issueMode ? t('subscriptions.issue.created') : t('subscriptions.renew.subRenewed'),
       msg: `${studentName} · ${groupId}`,
     })
+    onCreated?.()
     onClose()
   }
 
@@ -78,7 +85,7 @@ export function RenewSubModal({
   return (
     <Modal
       open={open}
-      title={t('subscriptions.renew.title')}
+      title={issueMode ? t('subscriptions.issue.title') : t('subscriptions.renew.title')}
       onCancel={onClose}
       destroyOnHidden
       footer={[
@@ -86,7 +93,7 @@ export function RenewSubModal({
           {t('common.cancel')}
         </Button>,
         <Button key="save" type="primary" loading={addSubscription.isPending} onClick={submit}>
-          {t('common.extend')}
+          {issueMode ? t('subscriptions.issue.createBtn') : t('common.extend')}
         </Button>,
       ]}
     >

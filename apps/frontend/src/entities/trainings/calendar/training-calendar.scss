@@ -40,13 +40,22 @@
 
   /* Общий вертикальный скролл для шапки и тела: скроллбар одинаково
      сужает обе grid-сетки, поэтому колонки заголовка и тела не
-     рассинхронизируются (крайний левый столбец ПН не обрезается). */
+     рассинхронизируются (крайний левый столбец ПН не обрезается).
+     Высота — вся доступная под шапкой страницы, без фикс-капа. */
   &__scroll {
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior-y: contain;
-    max-height: min(480px, calc(100vh - 300px));
+    max-height: calc(100vh - 250px);
+    max-height: calc(100dvh - 250px);
   }
+}
+
+/* Режим «День»: одна колонка на всю ширину. */
+.cal-head.cal--day,
+.cal-body.cal--day {
+  grid-template-columns: 48px 1fr;
+  min-width: 0;
 }
 
 .cal-head,
@@ -370,5 +379,11 @@
 
   .cal-week__label {
     font-size: 0.82rem;
+  }
+
+  /* Под нижним таб-баром меньше места, чем на десктопе */
+  .cal-week__scroll {
+    max-height: calc(100vh - 350px);
+    max-height: calc(100dvh - 350px);
   }
 }

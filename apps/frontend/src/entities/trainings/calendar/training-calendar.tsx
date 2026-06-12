@@ -5,10 +5,13 @@ import { LeftOutlined, RightOutlined } from '@ant-design/icons'
 
 import { useTranslation } from 'react-i18next'
 
+import { getMondayOfWeek } from 'common/utils/date'
+
 import {
+  buildCalendarSingleDay,
   buildCalendarWeek,
   CAL_H_PX,
-  currentWeekStart,
+  formatDayLabel,
   formatWeekRange,
   todayDateStr,
 } from './calendar-model'
@@ -20,12 +23,16 @@ import type { Student } from 'entities/students/model/types'
 
 import './training-calendar.scss'
 
+export type CalendarMode = 'week' | 'day'
+
 interface TrainingCalendarProps {
   trainings: Training[]
   students: Student[]
   groups: Group[]
-  weekStart: Date
-  onWeekStartChange: (weekStart: Date) => void
+  mode: CalendarMode
+  /** Опорная дата: в режиме «Неделя» показывается её неделя, в «День» — она сама. */
+  date: Date
+  onDateChange: (date: Date) => void
   onBlockClick: (block: CalendarBlock) => void
 }
 
@@ -38,12 +45,14 @@ export function TrainingCalendar({
   trainings,
   students,
   groups,
-  weekStart,
-  onWeekStartChange,
+  mode,
+  date,
+  onDateChange,
   onBlockClick,
 }: TrainingCalendarProps) {
   const { t } = useTranslation()
   const scrollRef = useRef<HTMLDivElement>(null)
+  const touchStartX = useRef<number | null>(null)
 
   // «Сейчас» обновляется раз в минуту: двигает now-линию и переводит
   // завершившиеся занятия в приглушённый вид без перезагрузки страницы.
@@ -54,8 +63,11 @@ export function TrainingCalendar({
   }, [])
 
   const { days, hStart, hEnd } = useMemo(
-    () => buildCalendarWeek(weekStart, trainings, students, groups),
-    [weekStart, trainings, students, groups],
+    () =>
+      mode === 'day'
+        ? buildCalendarSingleDay(date, trainings, students, groups)
+        : buildCalendarWeek(getMondayOfWeek(date), trainings, students, groups),
+    [mode, date, trainings, students, groups],
   )
 
   const totalH = (hEnd - hStart) * CAL_H_PX
@@ -66,27 +78,44 @@ export function TrainingCalendar({
   const nowTop = (nowMin - hStart * 60) * (CAL_H_PX / 60)
   const nowVisible = hasToday && nowTop >= 0 && nowTop <= totalH
 
-  // При открытии текущей недели — автоскролл к линии времени (минус ~час,
-  // чтобы был виден контекст перед «сейчас»).
+  // При открытии сегодняшнего дня / текущей недели — автоскролл к линии
+  // времени (минус ~час, чтобы был виден контекст перед «сейчас»).
   useEffect(() => {
     if (!nowVisible || !scrollRef.current) return
     scrollRef.current.scrollTop = Math.max(0, nowTop - CAL_H_PX)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [weekStart, nowVisible])
+  }, [mode, date, nowVisible])
 
   const isPastBlock = (b: CalendarBlock) =>
     b.date < todayStr || (b.date === todayStr && b.startMin + b.durMin <= nowMin)
 
-  const shiftWeek = (delta: number) => {
-    const d = new Date(weekStart)
+  const shiftDate = (delta: number) => {
+    const d = new Date(date)
     d.setDate(d.getDate() + delta)
-    onWeekStartChange(d)
+    onDateChange(d)
+  }
+  const navStep = mode === 'day' ? 1 : 7
+
+  const handlePrev = () => shiftDate(-navStep)
+  const handleNext = () => shiftDate(navStep)
+  const handleToday = () => onDateChange(new Date())
+  const handleBlockClick = (block: CalendarBlock) => () => onBlockClick(block)
+
+  // Горизонтальный свайп в режиме «День» листает дни.
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX
+  }
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (mode !== 'day' || touchStartX.current === null) return
+    const dx = e.changedTouches[0].clientX - touchStartX.current
+    touchStartX.current = null
+    if (Math.abs(dx) < 50) return
+    shiftDate(dx < 0 ? 1 : -1)
   }
 
-  const handlePrevWeek = () => shiftWeek(-7)
-  const handleNextWeek = () => shiftWeek(7)
-  const handleToday = () => onWeekStartChange(currentWeekStart())
-  const handleBlockClick = (block: CalendarBlock) => () => onBlockClick(block)
+  const label =
+    mode === 'day' ? formatDayLabel(date) : formatWeekRange(getMondayOfWeek(date))
+  const gridMod = mode === 'day' ? ' cal--day' : ''
 
   return (
     <div className="cal-week">
@@ -96,16 +125,16 @@ export function TrainingCalendar({
             size="small"
             type="text"
             icon={<LeftOutlined />}
-            aria-label={t('trainings.calendar.prevWeek')}
-            onClick={handlePrevWeek}
+            aria-label={t(mode === 'day' ? 'trainings.calendar.prevDay' : 'trainings.calendar.prevWeek')}
+            onClick={handlePrev}
           />
-          <span className="cal-week__label">{formatWeekRange(weekStart)}</span>
+          <span className="cal-week__label">{label}</span>
           <Button
             size="small"
             type="text"
             icon={<RightOutlined />}
-            aria-label={t('trainings.calendar.nextWeek')}
-            onClick={handleNextWeek}
+            aria-label={t(mode === 'day' ? 'trainings.calendar.nextDay' : 'trainings.calendar.nextWeek')}
+            onClick={handleNext}
           />
         </div>
         <Button size="small" onClick={handleToday}>
@@ -128,9 +157,13 @@ export function TrainingCalendar({
         </span>
       </div>
 
-      <div className="cal-week__canvas">
+      <div
+        className="cal-week__canvas"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
         <div className="cal-week__scroll" ref={scrollRef}>
-          <div className="cal-head">
+          <div className={`cal-head${gridMod}`}>
             <div className="cal-head__corner" />
             {days.map((d) => (
               <div
@@ -142,7 +175,7 @@ export function TrainingCalendar({
               </div>
             ))}
           </div>
-          <div className="cal-body">
+          <div className={`cal-body${gridMod}`}>
             <div className="cal-gutter" style={{ height: totalH }}>
               {hours.map((h, i) => (
                 <div key={h} className="cal-gutter__label" style={{ top: i * CAL_H_PX }}>
