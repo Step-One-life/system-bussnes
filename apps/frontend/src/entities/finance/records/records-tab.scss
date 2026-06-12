@@ -15,14 +15,14 @@
 }
 
 .fin-record {
-  background: var(--surface);
-  border: 1px solid var(--border);
+  background: var(--tk-surface-card);
+  border: 1px solid var(--tk-border-default);
   border-radius: var(--r-lg);
   overflow: hidden;
   transition: border-color var(--dur) var(--ease);
 
   &.is-open {
-    border-color: var(--accent);
+    border-color: var(--tk-accent);
   }
 
   &__header {
@@ -47,7 +47,7 @@
 
   &__date {
     font-size: 0.75rem;
-    color: var(--text-muted);
+    color: var(--tk-text-tertiary);
   }
 
   &__summary {
@@ -60,12 +60,12 @@
 
   &__income {
     font-size: 0.85rem;
-    color: var(--success);
+    color: var(--tk-success-text);
   }
 
   &__expense {
     font-size: 0.85rem;
-    color: var(--danger);
+    color: var(--tk-danger-text);
   }
 
   &__net {
@@ -74,7 +74,7 @@
   }
 
   &__chevron {
-    color: var(--text-muted);
+    color: var(--tk-text-tertiary);
     font-size: 0.75rem;
     transition: transform var(--dur) var(--ease);
   }
@@ -88,7 +88,7 @@
     flex-direction: column;
     gap: var(--sp-2);
     padding: 0 var(--sp-4) var(--sp-4);
-    border-top: 1px solid var(--border);
+    border-top: 1px solid var(--tk-border-default);
     padding-top: var(--sp-3);
   }
 
@@ -101,13 +101,14 @@
   }
 
   &__row-label {
-    color: var(--text-muted);
+    color: var(--tk-text-tertiary);
   }
 
   &__row-value {
     display: inline-flex;
     align-items: center;
     gap: var(--sp-2);
+    font-variant-numeric: tabular-nums;
   }
 
   &__actions {

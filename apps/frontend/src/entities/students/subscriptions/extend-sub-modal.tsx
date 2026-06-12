@@ -60,13 +60,13 @@ export function ExtendSubModal({
         </Button>,
       ]}
     >
-      <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
+      <p style={{ color: 'var(--tk-text-secondary)', fontSize: '0.85rem' }}>
         {t('subscriptions.extend.student')} <strong>{studentName}</strong>
         <br />
         {t('subscriptions.extend.group')} <strong>{groupId}</strong>
       </p>
       {sub?.expiresAt && (
-        <div style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginTop: 8 }}>
+        <div style={{ color: 'var(--tk-text-secondary)', fontSize: '0.85rem', marginTop: 8 }}>
           {t('subscriptions.extend.currentTerm')} <strong>{formatDateFull(sub.expiresAt)}</strong>
         </div>
       )}

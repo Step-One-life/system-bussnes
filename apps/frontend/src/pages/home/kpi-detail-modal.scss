@@ -10,14 +10,14 @@
   gap: var(--sp-3);
   padding: var(--sp-3);
   border-radius: var(--r-md);
-  border: 1px solid var(--border);
+  border: 1px solid var(--tk-border-default);
   transition: background var(--dur) var(--ease);
 
   &--clickable {
     cursor: pointer;
 
     &:hover {
-      background: var(--surface-2);
+      background: var(--tk-surface-hover);
     }
   }
 }
@@ -26,8 +26,8 @@
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: var(--accent-dim);
-  color: var(--accent-light);
+  background: var(--tk-accent-subtle-bg);
+  color: var(--tk-accent-text);
   font-size: 0.75rem;
   font-weight: 700;
   display: flex;
@@ -45,11 +45,11 @@
   align-items: center;
   justify-content: center;
   border-radius: var(--r-sm);
-  background: var(--surface-2);
+  background: var(--tk-surface-hover);
 
   &__dow {
     font-size: 0.6rem;
-    color: var(--text-muted);
+    color: var(--tk-text-tertiary);
     text-transform: uppercase;
   }
 
@@ -61,7 +61,7 @@
 
   &__mon {
     font-size: 0.6rem;
-    color: var(--text-muted);
+    color: var(--tk-text-tertiary);
   }
 }
 
@@ -76,7 +76,7 @@
 .kpi-list-name {
   font-size: 0.875rem;
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--tk-text-primary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -84,11 +84,11 @@
 
 .kpi-list-meta {
   font-size: 0.75rem;
-  color: var(--text-muted);
+  color: var(--tk-text-tertiary);
 }
 
 .kpi-empty {
-  color: var(--text-muted);
+  color: var(--tk-text-tertiary);
   font-size: 0.875rem;
   text-align: center;
   padding: var(--sp-4) 0;

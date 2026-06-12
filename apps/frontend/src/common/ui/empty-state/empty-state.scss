@@ -5,7 +5,7 @@
   justify-content: center;
   gap: var(--sp-4);
   padding: var(--sp-10) var(--sp-6);
-  color: var(--text-muted);
+  color: var(--tk-text-tertiary);
   text-align: center;
 
   &__icon {
@@ -16,7 +16,7 @@
   &__title {
     font-size: 0.95rem;
     font-weight: 600;
-    color: var(--text-secondary);
+    color: var(--tk-text-secondary);
   }
 
   &__text {

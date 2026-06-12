@@ -1,7 +1,7 @@
 .individual-section {
   font-size: 1rem;
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--tk-text-primary);
   margin-bottom: var(--sp-4);
   display: flex;
   align-items: center;
@@ -11,7 +11,7 @@
     content: '';
     flex: 1;
     height: 1px;
-    background: var(--border);
+    background: var(--tk-border-default);
   }
 }
 
@@ -26,13 +26,13 @@
   align-items: center;
   gap: var(--sp-4);
   padding: var(--sp-3) var(--sp-5);
-  background: var(--surface);
-  border: 1px solid var(--border);
+  background: var(--tk-surface-card);
+  border: 1px solid var(--tk-border-default);
   border-radius: var(--r-md);
-  border-left: 3px solid var(--warning);
+  border-left: 3px solid var(--tk-warning-dot);
 
   &--danger {
-    border-left-color: var(--danger);
+    border-left-color: var(--tk-danger-dot);
   }
 
   &__main {
@@ -47,7 +47,7 @@
 
   &__detail {
     font-size: 0.78rem;
-    color: var(--text-secondary);
+    color: var(--tk-text-secondary);
   }
 }
 
@@ -62,8 +62,8 @@
   align-items: center;
   gap: var(--sp-3);
   padding: var(--sp-4);
-  background: var(--surface);
-  border: 1px solid var(--border);
+  background: var(--tk-surface-card);
+  border: 1px solid var(--tk-border-default);
   border-radius: var(--r-lg);
   min-height: 60px;
 
@@ -71,8 +71,8 @@
     width: 40px;
     height: 40px;
     border-radius: var(--r-md);
-    background: var(--accent-dim);
-    color: var(--accent-light);
+    background: var(--tk-accent-subtle-bg);
+    color: var(--tk-accent-text);
     font-weight: 700;
     font-size: 0.85rem;
     display: flex;
@@ -92,7 +92,7 @@
   &__name {
     font-size: 0.95rem;
     font-weight: 600;
-    color: var(--text-primary);
+    color: var(--tk-text-primary);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -100,7 +100,7 @@
 
   &__visit {
     font-size: 0.75rem;
-    color: var(--text-muted);
+    color: var(--tk-text-tertiary);
   }
 
   &__side {

@@ -31,13 +31,13 @@ export function StatsTab() {
 
   const handleSelectPeriod = (p: FinancePeriod) => () => stats.setPeriod(p)
 
-  const netColor = totals.netIncome >= 0 ? 'var(--success)' : 'var(--danger)'
+  const netColor = totals.netIncome >= 0 ? 'var(--tk-success-text)' : 'var(--tk-danger-text)'
   const marginColor =
     totals.margin >= 50
-      ? 'var(--success)'
+      ? 'var(--tk-success-text)'
       : totals.margin >= 20
-        ? 'var(--warning)'
-        : 'var(--danger)'
+        ? 'var(--tk-warning-text)'
+        : 'var(--tk-danger-text)'
 
   return (
     <div>
@@ -77,14 +77,14 @@ export function StatsTab() {
       <div className="fin-hero">
         <div className="fin-hero__item">
           <span className="fin-hero__label">{t('finance.stats.income')}</span>
-          <span className="fin-hero__value" style={{ color: 'var(--success)' }}>
+          <span className="fin-hero__value" style={{ color: 'var(--tk-success-text)' }}>
             {totals.totalIncome.toLocaleString('ru')} ₽
           </span>
         </div>
         <div className="fin-hero__op">−</div>
         <div className="fin-hero__item">
           <span className="fin-hero__label">{t('finance.stats.hallExpense')}</span>
-          <span className="fin-hero__value" style={{ color: 'var(--danger)' }}>
+          <span className="fin-hero__value" style={{ color: 'var(--tk-danger-text)' }}>
             {totals.totalHall.toLocaleString('ru')} ₽
           </span>
         </div>

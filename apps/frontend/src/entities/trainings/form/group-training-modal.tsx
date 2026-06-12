@@ -78,7 +78,7 @@ export function GroupTrainingModal({ open, onClose }: GroupTrainingModalProps) {
         </Form.Item>
         <Form.Item label={t('trainings.group.studentsLabel')}>
           {!form.groupId ? (
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>
+            <p style={{ color: 'var(--tk-text-tertiary)', fontSize: '0.8rem' }}>
               {t('trainings.group.pickGroupFirst')}
             </p>
           ) : form.groupStudents.length ? (
@@ -94,7 +94,7 @@ export function GroupTrainingModal({ open, onClose }: GroupTrainingModalProps) {
               ))}
             </div>
           ) : (
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>
+            <p style={{ color: 'var(--tk-text-tertiary)', fontSize: '0.8rem' }}>
               {t('trainings.group.noStudents')}
             </p>
           )}

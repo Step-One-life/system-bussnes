@@ -39,7 +39,7 @@ export function FinanceRecordCard({
   const handleDelete = () => onDelete(payment)
 
   const net = payment.client_amount - (hallCost?.hall_amount ?? 0)
-  const netColor = net >= 0 ? 'var(--success)' : 'var(--danger)'
+  const netColor = net >= 0 ? 'var(--tk-success-text)' : 'var(--tk-danger-text)'
   const status = statusMap[payment.status] ?? { variant: 'neutral', label: payment.status }
   const clientLabel = finLabel(payment.client_payment_type)
 
@@ -74,7 +74,7 @@ export function FinanceRecordCard({
             <span className="fin-record__row-label">{t('finance.card.clientPays')}</span>
             <span className="fin-record__row-value">
               <Badge variant="neutral">{clientLabel}</Badge>
-              <span style={{ color: 'var(--success)' }}>
+              <span style={{ color: 'var(--tk-success-text)' }}>
                 +{payment.client_amount.toLocaleString('ru')} ₽
               </span>
             </span>
@@ -91,7 +91,7 @@ export function FinanceRecordCard({
                 )}
                 <span
                   style={{
-                    color: hallCost.hall_amount > 0 ? 'var(--danger)' : 'var(--text-muted)',
+                    color: hallCost.hall_amount > 0 ? 'var(--tk-danger-text)' : 'var(--tk-text-tertiary)',
                   }}
                 >
                   {hallCost.hall_amount > 0 ? '−' : ''}

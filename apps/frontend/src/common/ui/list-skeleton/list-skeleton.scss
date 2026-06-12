@@ -4,8 +4,8 @@
   gap: var(--sp-3);
 
   &__card {
-    background: var(--surface);
-    border: 1px solid var(--border);
+    background: var(--tk-surface-card);
+    border: 1px solid var(--tk-border-default);
     border-radius: var(--r-lg);
     padding: var(--sp-4);
   }

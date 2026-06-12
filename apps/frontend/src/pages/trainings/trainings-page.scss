@@ -1,8 +1,8 @@
 .view-toggle {
   display: flex;
   gap: 0;
-  background: var(--surface-2);
-  border: 1px solid var(--border);
+  background: var(--tk-surface-hover);
+  border: 1px solid var(--tk-border-default);
   border-radius: var(--r-md);
   padding: 3px;
 
@@ -15,19 +15,19 @@
     border: none;
     border-radius: calc(var(--r-md) - 2px);
     background: transparent;
-    color: var(--text-muted);
+    color: var(--tk-text-tertiary);
     cursor: pointer;
     transition:
       background var(--dur) var(--ease),
       color var(--dur) var(--ease);
 
     &:hover {
-      color: var(--text-primary);
+      color: var(--tk-text-primary);
     }
 
     &--active {
-      background: var(--accent);
-      color: #fff;
+      background: var(--tk-accent);
+      color: var(--tk-accent-contrast);
       box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
     }
   }

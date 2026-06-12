@@ -5,8 +5,8 @@
 }
 
 .student-card {
-  background: var(--surface);
-  border: 0.5px solid var(--border);
+  background: var(--tk-surface-card);
+  border: 0.5px solid var(--tk-border-default);
   border-radius: var(--r-xl);
   padding: var(--sp-4) var(--sp-5);
   cursor: pointer;
@@ -38,8 +38,8 @@
     width: 44px;
     height: 44px;
     border-radius: 50%;
-    background: var(--accent-dim);
-    color: var(--accent);
+    background: var(--tk-accent-subtle-bg);
+    color: var(--tk-accent);
     font-weight: 700;
     font-size: 0.9rem;
     display: flex;
@@ -56,7 +56,7 @@
   &__name {
     font-size: 0.95rem;
     font-weight: 600;
-    color: var(--text-primary);
+    color: var(--tk-text-primary);
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
@@ -77,16 +77,16 @@
     justify-content: space-between;
     align-items: center;
     padding-top: var(--sp-2);
-    border-top: 0.5px solid var(--border);
+    border-top: 0.5px solid var(--tk-border-default);
     font-size: 0.78rem;
   }
 
   &__sub {
-    color: var(--text-secondary);
+    color: var(--tk-text-secondary);
   }
 
   &__visit {
-    color: var(--text-muted);
+    color: var(--tk-text-tertiary);
   }
 }
 

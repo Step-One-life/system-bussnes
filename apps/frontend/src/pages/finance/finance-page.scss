@@ -1,8 +1,8 @@
 .fin-tabs {
   display: flex;
   gap: var(--sp-2);
-  background: var(--surface);
-  border: 1px solid var(--border);
+  background: var(--tk-surface-card);
+  border: 1px solid var(--tk-border-default);
   border-radius: var(--r-lg);
   padding: var(--sp-2);
   margin-bottom: var(--sp-6);
@@ -15,7 +15,7 @@
   border-radius: var(--r-md);
   border: none;
   background: transparent;
-  color: var(--text-secondary);
+  color: var(--tk-text-secondary);
   font-family: var(--font);
   font-size: 0.875rem;
   font-weight: 500;
@@ -26,12 +26,12 @@
     color var(--dur) var(--ease);
 
   &:hover {
-    background: var(--surface-2);
+    background: var(--tk-surface-hover);
   }
 
   &--active {
-    background: var(--accent);
-    color: #fff;
+    background: var(--tk-accent);
+    color: var(--tk-accent-contrast);
   }
 }
 

@@ -4,13 +4,13 @@
   align-items: center;
   justify-content: center;
   padding: var(--sp-5);
-  background: var(--bg);
+  background: var(--tk-surface-page);
 
   &__card {
     width: 100%;
     max-width: 400px;
-    background: var(--surface);
-    border: 1px solid var(--border);
+    background: var(--tk-surface-card);
+    border: 1px solid var(--tk-border-default);
     border-radius: var(--r-xl);
     padding: var(--sp-8);
     box-shadow: var(--shadow-lg);
@@ -26,14 +26,14 @@
     margin-bottom: var(--sp-2);
 
     &-icon {
-      color: var(--accent-light);
+      color: var(--tk-accent-text);
       font-size: 1.5rem;
     }
   }
 
   &__subtitle {
     text-align: center;
-    color: var(--text-secondary);
+    color: var(--tk-text-secondary);
     font-size: 0.88rem;
     margin-bottom: var(--sp-6);
   }
@@ -42,11 +42,11 @@
     text-align: center;
     margin-top: var(--sp-5);
     font-size: 0.85rem;
-    color: var(--text-secondary);
+    color: var(--tk-text-secondary);
   }
 
   &__link {
-    color: var(--accent-light);
+    color: var(--tk-accent-text);
     font-weight: 600;
   }
 }

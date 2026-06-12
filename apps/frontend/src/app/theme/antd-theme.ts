@@ -4,29 +4,36 @@ import type { ThemeConfig } from 'antd'
 
 export type ThemeMode = 'dark' | 'light'
 
-const sharedToken = {
-  colorPrimary: '#5856D6',
-  colorSuccess: '#34C759',
-  colorWarning: '#FF9500',
-  colorError: '#FF3B30',
-  borderRadius: 12,
-  fontFamily: "-apple-system, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif",
-}
-
-const darkColors = {
-  colorBgBase: '#000000',
-  colorBgContainer: '#1C1C1E',
-  colorBgElevated: '#2C2C2E',
-  colorTextBase: '#FFFFFF',
-  colorBorder: 'rgba(255,255,255,0.08)',
-}
-
-const lightColors = {
-  colorBgBase: '#F2F2F7',
-  colorBgContainer: '#FFFFFF',
-  colorBgElevated: '#FFFFFF',
-  colorTextBase: '#000000',
-  colorBorder: 'rgba(60,60,67,0.13)',
+/* TS-зеркало палитры design-tokens.scss: antd ConfigProvider не умеет
+   CSS-переменные в этих токенах (выводит из них производные цвета).
+   Меняя цвет в design-tokens.scss — обновить и здесь. */
+const tkColors = {
+  dark: {
+    accent: '#8b7ef0', // --tk-accent
+    success: '#97c7a3', // --tk-success-dot
+    warning: '#d9b36a', // --tk-warning-dot
+    danger: '#d97f6a', // --tk-danger-dot
+    bgBase: '#0a0a0c', // --tk-surface-page
+    bgContainer: '#111114', // --tk-surface-card
+    bgElevated: '#1a1a1f', // --tk-surface-raised
+    textBase: '#f2f2f5', // --tk-text-primary
+    border: '#1c1c21', // --tk-border-default
+    segTrack: '#17171b', // --tk-surface-hover
+    segItem: '#8a8a92', // --tk-text-secondary
+  },
+  light: {
+    accent: '#6c5cf0',
+    success: '#4a8a56',
+    warning: '#c79a3d',
+    danger: '#c25b3f',
+    bgBase: '#faf9f6',
+    bgContainer: '#ffffff',
+    bgElevated: '#ffffff',
+    textBase: '#211f1a',
+    border: '#e7e3d9',
+    segTrack: '#f4f2ec',
+    segItem: '#6e6a60',
+  },
 }
 
 // Button sizing aligned with legacy .btn / .btn--sm / .btn--lg.
@@ -46,22 +53,32 @@ const buttonComponent = {
 }
 
 export function getAntdTheme(mode: ThemeMode): ThemeConfig {
+  const c = tkColors[mode]
   return {
     algorithm: mode === 'dark' ? antdTheme.darkAlgorithm : antdTheme.defaultAlgorithm,
     token: {
-      ...sharedToken,
-      ...(mode === 'dark' ? darkColors : lightColors),
+      colorPrimary: c.accent,
+      colorSuccess: c.success,
+      colorWarning: c.warning,
+      colorError: c.danger,
+      borderRadius: 12,
+      fontFamily:
+        "-apple-system, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif",
+      colorBgBase: c.bgBase,
+      colorBgContainer: c.bgContainer,
+      colorBgElevated: c.bgElevated,
+      colorTextBase: c.textBase,
+      colorBorder: c.border,
     },
     components: {
       Button: buttonComponent,
-      // Единый вид переключателей (как legacy .dur-toggle): серый трек,
-      // активный сегмент — фирменный фиолетовый. На чёрной базе дефолтный
-      // trackBg сливался с фоном модалки.
+      // Единый вид переключателей: трек на --tk-surface-hover, активный
+      // сегмент — акцент с контрастным текстом.
       Segmented: {
-        trackBg: mode === 'dark' ? '#3A3A3C' : '#F2F2F7', // --surface-2
-        itemColor: mode === 'dark' ? 'rgba(235,235,245,0.8)' : 'rgba(60,60,67,0.8)',
-        itemSelectedBg: '#5856D6',
-        itemSelectedColor: '#FFFFFF',
+        trackBg: c.segTrack,
+        itemColor: c.segItem,
+        itemSelectedBg: c.accent,
+        itemSelectedColor: '#ffffff', // --tk-accent-contrast
         controlHeight: 44,
       },
     },

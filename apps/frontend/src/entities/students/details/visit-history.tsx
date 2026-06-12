@@ -18,7 +18,7 @@ export function VisitHistory({ student, indNames, onRemoveVisit }: VisitHistoryP
   const { t } = useTranslation()
   if (!student.visitHistory.length) {
     return (
-      <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+      <p style={{ color: 'var(--tk-text-tertiary)', fontSize: '0.85rem' }}>
         {t('students.visits.empty')}
       </p>
     )
@@ -37,7 +37,7 @@ export function VisitHistory({ student, indNames, onRemoveVisit }: VisitHistoryP
         const label = indNames.includes(v.groupId) ? t('students.visits.indTraining') : v.groupId
         return (
           <div key={v._i} className="visit-row">
-            <span style={{ color: 'var(--text-secondary)' }}>{formatDateShort(v.date)}</span>
+            <span style={{ color: 'var(--tk-text-secondary)' }}>{formatDateShort(v.date)}</span>
             <Badge variant="accent">{label}</Badge>
             <Button
               type="text"

@@ -16,8 +16,8 @@ html {
 
 body {
   font-family: var(--font);
-  background: var(--bg);
-  color: var(--text-primary);
+  background: var(--tk-surface-page);
+  color: var(--tk-text-primary);
   min-height: 100dvh;
   transition:
     background var(--dur) var(--ease),
@@ -39,7 +39,7 @@ button {
 /* Клавиатурная навигация: обводка только при focus-visible (не от клика).
    antd-компоненты сохраняют свои фокус-стили — их селекторы специфичнее. */
 :focus-visible {
-  outline: 2px solid var(--border-focus);
+  outline: 2px solid var(--tk-border-focus);
   outline-offset: 2px;
 }
 

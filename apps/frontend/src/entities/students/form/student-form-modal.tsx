@@ -78,7 +78,7 @@ export function StudentFormModal({ open, student, onClose }: StudentFormModalPro
               ))}
             </div>
           ) : (
-            <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+            <span style={{ color: 'var(--tk-text-tertiary)', fontSize: '0.85rem' }}>
               {t('students.form.noGroups')}
             </span>
           )}

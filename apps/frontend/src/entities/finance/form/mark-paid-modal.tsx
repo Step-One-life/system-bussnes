@@ -148,13 +148,13 @@ export function MarkPaidModal({
       ]}
     >
       <div style={{ marginBottom: 'var(--sp-4)' }}>
-        <div style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>
+        <div style={{ color: 'var(--tk-text-secondary)', fontSize: '0.8rem' }}>
           {t('finance.markPaid.client')}
         </div>
         <div style={{ fontWeight: 600 }}>{student.name}</div>
       </div>
       <div style={{ marginBottom: 'var(--sp-4)' }}>
-        <div style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>
+        <div style={{ color: 'var(--tk-text-secondary)', fontSize: '0.8rem' }}>
           {t('finance.markPaid.type')}
         </div>
         <div style={{ fontWeight: 600 }}>{typeLabel}</div>
