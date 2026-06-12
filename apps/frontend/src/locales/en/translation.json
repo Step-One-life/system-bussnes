@@ -190,7 +190,8 @@
       "deleteSub": "Delete subscription",
       "noSubYet": "No subscription",
       "zeroSessions": "0 sessions",
-      "expiredAgo": "expired {{count}} d. ago"
+      "expiredAgo": "expired {{count}} d. ago",
+      "addSub": "Subscription"
     },
     "visits": {
       "empty": "No visits yet",
@@ -230,7 +231,7 @@
     },
     "add": {
       "title": "New subscription",
-      "openBtn": "Subscription",
+      "openBtn": "Shared subscription",
       "createBtn": "Create",
       "groupsLabel": "Groups",
       "groupsPlaceholder": "Select one or more groups",
@@ -403,7 +404,8 @@
       "edit": "Edit",
       "addStudentShort": "Student",
       "deleteTraining": "Delete training",
-      "issueSub": "Issue"
+      "issueSub": "Issue",
+      "markedNoSub": "Marked without subscription"
     },
     "hint": {
       "prime": "Prime time",

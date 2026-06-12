@@ -205,6 +205,24 @@
     flex-shrink: 0;
     cursor: pointer;
   }
+
+  /* Гейт «без абонемента»: чекбокс выключен, клик проваливается в строку,
+     которая открывает оформление абонемента. */
+  &--gated input[type='checkbox'] {
+    pointer-events: none;
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+
+/* Легаси-отметка без абонемента: галочка показана, но с предупреждением. */
+.cal-attend-warn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--tk-fs-caption);
+  font-weight: 500;
+  color: var(--tk-warning-text);
 }
 
 .cal-attend-info {

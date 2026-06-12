@@ -8,6 +8,7 @@ import {
   MinusCircleOutlined,
   MoreOutlined,
   PhoneOutlined,
+  PlusOutlined,
   ReloadOutlined,
 } from '@ant-design/icons'
 
@@ -97,13 +98,14 @@ export function SubCard({
     )
   }
 
-  // Без активного абонемента вместо прогресс-бара — осмысленный статус.
+  // Был абонемент, но не активен — осмысленный статус вместо прогресс-бара.
+  // Совсем без абонемента текст не дублирует бейдж шапки — там кнопка
+  // «+ Абонемент».
   const emptyDays = anySub ? getDaysRemaining(anySub) : null
-  const emptyText = !anySub
-    ? t('students.subCard.noSubYet')
-    : emptyDays !== null && emptyDays < 0
+  const emptyText =
+    emptyDays !== null && emptyDays < 0
       ? t('students.subCard.expiredAgo', { count: -emptyDays })
-      : anySub.remaining === 0
+      : anySub?.remaining === 0
         ? t('students.subCard.zeroSessions')
         : t('students.subCard.noSubYet')
 
@@ -130,26 +132,38 @@ export function SubCard({
 
       {activeSub ? (
         <SubProgressBar sub={activeSub} />
-      ) : (
+      ) : anySub ? (
         <span className="sub-card__empty">{emptyText}</span>
+      ) : (
+        <Button
+          className="sub-card__add"
+          size="small"
+          icon={<PlusOutlined />}
+          onClick={onRenew}
+        >
+          {t('students.subCard.addSub')}
+        </Button>
       )}
 
-      <div className="sub-card__actions">
-        <Button
-          type="primary"
-          size="small"
-          icon={<MinusCircleOutlined />}
-          disabled={!activeSub || activeSub.remaining <= 0}
-          onClick={onDeduct}
-        >
-          {t('students.subCard.deductSession')}
-        </Button>
-        {isIndividual && isRazovoe && (
-          <span className="sub-card__hint">
-            <PhoneOutlined /> {t('students.subCard.askNextTraining')}
-          </span>
-        )}
-      </div>
+      {/* «Списать занятие» без активного абонемента скрыта, а не disabled. */}
+      {activeSub && (
+        <div className="sub-card__actions">
+          <Button
+            type="primary"
+            size="small"
+            icon={<MinusCircleOutlined />}
+            disabled={activeSub.remaining <= 0}
+            onClick={onDeduct}
+          >
+            {t('students.subCard.deductSession')}
+          </Button>
+          {isIndividual && isRazovoe && (
+            <span className="sub-card__hint">
+              <PhoneOutlined /> {t('students.subCard.askNextTraining')}
+            </span>
+          )}
+        </div>
+      )}
 
       {anySub && (
         <Modal
