@@ -82,6 +82,36 @@
   --tk-surface-raised: #1a1a1f;
   --tk-surface-hover: #17171b;
 
+  /* Текст/контент ПОВЕРХ цветных заливок (accent, категории) — белый в обеих
+     темах (text-inverse не подходит: он тёмный в тёмной теме) */
+  --tk-accent-contrast: #ffffff;
+
+  /* Категории занятий (календарь, бейджи): групповое = акцент, индивидуальное —
+     свой цвет; не статусы, поэтому отдельная группа ролей */
+  --tk-cat-group: #8b7ef0;
+  --tk-cat-ind: #a855f7;
+  --tk-cat-ind-text: #c89df2;
+  --tk-cat-ind-subtle-bg: rgba(168, 85, 247, 0.14);
+
+  /* Полупрозрачные blur-подложки навигации (сайдбар, нижний таб-бар) */
+  --tk-nav-sidebar-bg: rgba(16, 16, 19, 0.88);
+  --tk-nav-bottom-bg: rgba(20, 20, 24, 0.82);
+
+  /* Диаграммы (chart.js): значения читаются из JS через getComputedStyle,
+     поэтому только готовые цвета — без color-mix и var() */
+  --tk-chart-1: #01696f;
+  --tk-chart-2: #22c55e;
+  --tk-chart-3: #f59e0b;
+  --tk-chart-4: #b47aff;
+  --tk-chart-5: #3b82f6;
+  --tk-chart-6: #06b6d4;
+  --tk-chart-7: #f97316;
+  --tk-chart-8: #84cc16;
+  --tk-chart-income: rgba(151, 199, 163, 0.75);
+  --tk-chart-expense: rgba(217, 127, 106, 0.6);
+  --tk-chart-net: rgba(1, 105, 111, 0.85);
+  --tk-chart-grid: rgba(255, 255, 255, 0.05);
+
   --tk-border-default: #1c1c21;
   --tk-border-strong: #2c2c33;
   --tk-border-focus: rgba(139, 126, 240, 0.6);
@@ -130,6 +160,29 @@
   --tk-surface-card: #ffffff;
   --tk-surface-raised: #ffffff;
   --tk-surface-hover: #f4f2ec;
+
+  --tk-accent-contrast: #ffffff;
+
+  --tk-cat-group: #6c5cf0;
+  --tk-cat-ind: #a855f7;
+  --tk-cat-ind-text: #8d3ed6;
+  --tk-cat-ind-subtle-bg: rgba(168, 85, 247, 0.1);
+
+  --tk-nav-sidebar-bg: rgba(244, 242, 236, 0.86);
+  --tk-nav-bottom-bg: rgba(250, 249, 246, 0.78);
+
+  --tk-chart-1: #01696f;
+  --tk-chart-2: #22c55e;
+  --tk-chart-3: #f59e0b;
+  --tk-chart-4: #b47aff;
+  --tk-chart-5: #3b82f6;
+  --tk-chart-6: #06b6d4;
+  --tk-chart-7: #f97316;
+  --tk-chart-8: #84cc16;
+  --tk-chart-income: rgba(74, 138, 86, 0.75);
+  --tk-chart-expense: rgba(194, 91, 63, 0.6);
+  --tk-chart-net: rgba(1, 105, 111, 0.85);
+  --tk-chart-grid: rgba(0, 0, 0, 0.05);
 
   --tk-border-default: #e7e3d9;
   --tk-border-strong: #d6d0c2;

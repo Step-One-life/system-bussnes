@@ -139,7 +139,7 @@ function AddToTrainingModalInner({
                         flexShrink: 0,
                       }}
                     >
-                      <span style={{ color: 'var(--text-muted)', fontSize: '0.78rem' }}>
+                      <span style={{ color: 'var(--tk-text-tertiary)', fontSize: '0.78rem' }}>
                         {c.metaLabel}
                       </span>
                       <Badge variant={STATUS_VARIANT[c.status.type]}>{c.status.label}</Badge>
@@ -148,7 +148,7 @@ function AddToTrainingModalInner({
                 ))}
               </div>
             ) : (
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>
+              <p style={{ color: 'var(--tk-text-tertiary)', fontSize: '0.8rem' }}>
                 {q ? t('students.notFound') : t('trainings.addTo.allAdded')}
               </p>
             )}

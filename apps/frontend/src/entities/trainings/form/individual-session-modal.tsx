@@ -87,7 +87,7 @@ export function IndividualSessionModal({
               style={{
                 marginTop: 'var(--sp-2)',
                 padding: 'var(--sp-3)',
-                background: 'var(--surface-2)',
+                background: 'var(--tk-surface-hover)',
                 borderRadius: 'var(--r-md)',
               }}
             >
@@ -95,7 +95,7 @@ export function IndividualSessionModal({
             </div>
           )}
           {form.client && !form.activeSub && (
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginTop: 'var(--sp-2)' }}>
+            <p style={{ color: 'var(--tk-text-tertiary)', fontSize: '0.8rem', marginTop: 'var(--sp-2)' }}>
               {form.duration === 90
                 ? t('trainings.individual.noActiveSub90')
                 : t('trainings.individual.noActiveSub60')}

@@ -18,35 +18,35 @@
   }
 
   &--active {
-    background: var(--success-dim);
-    color: var(--success);
+    background: var(--tk-success-subtle-bg);
+    color: var(--tk-success-text);
   }
 
   &--warn,
   &--ending {
-    background: var(--warning-dim);
-    color: var(--warning);
+    background: var(--tk-warning-subtle-bg);
+    color: var(--tk-warning-text);
   }
 
   &--danger,
   &--expired {
-    background: var(--danger-dim);
-    color: var(--danger);
+    background: var(--tk-danger-subtle-bg);
+    color: var(--tk-danger-text);
   }
 
   &--neutral,
   &--none {
-    background: var(--surface-2);
-    color: var(--text-secondary);
+    background: var(--tk-surface-hover);
+    color: var(--tk-text-secondary);
   }
 
   &--accent {
-    background: var(--accent-dim);
-    color: var(--accent-light);
+    background: var(--tk-accent-subtle-bg);
+    color: var(--tk-accent-text);
   }
 
   &--ind {
-    background: var(--ind-dim);
-    color: var(--ind);
+    background: var(--tk-cat-ind-subtle-bg);
+    color: var(--tk-cat-ind-text);
   }
 }

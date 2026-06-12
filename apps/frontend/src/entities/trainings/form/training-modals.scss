@@ -11,13 +11,13 @@
   justify-content: center;
   gap: var(--sp-3);
   padding: var(--sp-8) var(--sp-4);
-  background: var(--surface-2);
-  border: 2px solid var(--border);
+  background: var(--tk-surface-hover);
+  border: 2px solid var(--tk-border-default);
   border-radius: var(--r-xl);
   cursor: pointer;
   font-size: 0.95rem;
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--tk-text-primary);
   font-family: var(--font);
   transition:
     background var(--dur) var(--ease),
@@ -27,14 +27,14 @@
 
   .anticon {
     font-size: 32px;
-    color: var(--accent-light);
+    color: var(--tk-accent-text);
     transition: color var(--dur) var(--ease);
   }
 
   &:hover {
-    background: var(--accent-dim);
-    border-color: var(--accent);
-    color: var(--accent-light);
+    background: var(--tk-accent-subtle-bg);
+    border-color: var(--tk-accent);
+    color: var(--tk-accent-text);
   }
 
   &:active {
@@ -49,9 +49,9 @@
   padding: var(--sp-2) var(--sp-3);
   margin-bottom: var(--sp-3);
   border-radius: var(--r-md);
-  background: color-mix(in srgb, var(--danger) 12%, transparent);
-  border: 1px solid color-mix(in srgb, var(--danger) 30%, transparent);
-  color: var(--danger);
+  background: var(--tk-danger-subtle-bg);
+  border: 1px solid var(--tk-danger-subtle-border);
+  color: var(--tk-danger-text);
   font-size: 0.8125rem;
   font-weight: 500;
   line-height: 1.4;
@@ -74,8 +74,8 @@
 }
 
 .badge--prime {
-  background: rgba(245, 158, 11, 0.15);
-  color: #f59e0b;
+  background: var(--tk-warning-subtle-bg);
+  color: var(--tk-warning-text);
 }
 
 .rec-toggle-card {
@@ -83,8 +83,8 @@
   align-items: center;
   gap: var(--sp-3);
   padding: var(--sp-3) var(--sp-4);
-  background: var(--surface-2);
-  border: 1.5px solid var(--border);
+  background: var(--tk-surface-hover);
+  border: 1.5px solid var(--tk-border-default);
   border-radius: var(--r-md);
   cursor: pointer;
   transition:
@@ -94,18 +94,18 @@
   min-height: 52px;
 
   &--checked {
-    border-color: var(--accent);
-    background: var(--accent-dim);
+    border-color: var(--tk-accent);
+    background: var(--tk-accent-subtle-bg);
   }
 
   &__icon {
     font-size: 18px;
-    color: var(--text-muted);
+    color: var(--tk-text-tertiary);
     flex-shrink: 0;
   }
 
   &--checked &__icon {
-    color: var(--accent);
+    color: var(--tk-accent);
   }
 
   &__text {
@@ -117,20 +117,20 @@
     display: block;
     font-size: 0.875rem;
     font-weight: 600;
-    color: var(--text-primary);
+    color: var(--tk-text-primary);
   }
 
   &__hint {
     display: block;
     font-size: 0.75rem;
-    color: var(--text-muted);
+    color: var(--tk-text-tertiary);
     margin-top: 2px;
   }
 
   &__check {
     width: 22px;
     height: 22px;
-    border: 2px solid var(--border);
+    border: 2px solid var(--tk-border-default);
     border-radius: var(--r-sm);
     display: flex;
     align-items: center;
@@ -141,9 +141,9 @@
   }
 
   &--checked &__check {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: #fff;
+    background: var(--tk-accent);
+    border-color: var(--tk-accent);
+    color: var(--tk-accent-contrast);
   }
 }
 
@@ -161,7 +161,7 @@
   gap: var(--sp-3);
   padding: var(--sp-3);
   border-radius: var(--r-md);
-  border: 1px solid var(--border);
+  border: 1px solid var(--tk-border-default);
   cursor: pointer;
   transition:
     background var(--dur) var(--ease),
@@ -169,16 +169,16 @@
   user-select: none;
 
   &:hover {
-    background: var(--surface-2);
+    background: var(--tk-surface-hover);
   }
 
   &--checked {
-    background: color-mix(in srgb, var(--accent) 8%, transparent);
-    border-color: var(--accent);
+    background: color-mix(in srgb, var(--tk-accent) 8%, transparent);
+    border-color: var(--tk-accent);
   }
 
   input[type='checkbox'] {
-    accent-color: var(--accent);
+    accent-color: var(--tk-accent);
     width: 16px;
     height: 16px;
     flex-shrink: 0;
@@ -197,7 +197,7 @@
 .cal-attend-name {
   font-size: 0.875rem;
   font-weight: 500;
-  color: var(--text-primary);
+  color: var(--tk-text-primary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -205,7 +205,7 @@
 
 .cal-attend-sub {
   font-size: 0.75rem;
-  color: var(--text-muted);
+  color: var(--tk-text-tertiary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

@@ -17,29 +17,33 @@ ChartJS.register(
   Legend,
 )
 
-export const CHART_COLORS = [
-  '#01696f',
-  '#22c55e',
-  '#f59e0b',
-  '#b47aff',
-  '#3b82f6',
-  '#06b6d4',
-  '#f97316',
-  '#84cc16',
-]
+/* Цвета диаграмм — токены --tk-chart-* (design-tokens.scss). Canvas не умеет
+   CSS-переменные, поэтому значения читаются из активной темы в момент
+   построения графика. */
+function tkVar(name: string): string {
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim()
+}
 
-export const CHART_INCOME = 'rgba(34, 197, 94, 0.75)'
-export const CHART_EXPENSE = 'rgba(239, 68, 68, 0.6)'
-export const CHART_NET = 'rgba(1, 105, 111, 0.85)'
+export function chartColors(): string[] {
+  return [1, 2, 3, 4, 5, 6, 7, 8].map((n) => tkVar(`--tk-chart-${n}`))
+}
 
-function isDark(): boolean {
-  return document.documentElement.dataset.theme === 'dark'
+export function chartIncomeColor(): string {
+  return tkVar('--tk-chart-income')
+}
+
+export function chartExpenseColor(): string {
+  return tkVar('--tk-chart-expense')
+}
+
+export function chartNetColor(): string {
+  return tkVar('--tk-chart-net')
 }
 
 export function chartTextColor(): string {
-  return '#6b7280'
+  return tkVar('--tk-text-secondary')
 }
 
 export function chartGridColor(): string {
-  return isDark() ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'
+  return tkVar('--tk-chart-grid')
 }

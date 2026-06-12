@@ -9,8 +9,8 @@
   align-items: center;
   gap: var(--sp-4);
   padding: var(--sp-4);
-  background: var(--surface);
-  border: 1px solid var(--border);
+  background: var(--tk-surface-card);
+  border: 1px solid var(--tk-border-default);
   border-radius: var(--r-lg);
   cursor: pointer;
   transition:
@@ -18,7 +18,7 @@
     transform var(--dur) var(--ease);
 
   &:hover {
-    border-color: var(--border-focus);
+    border-color: var(--tk-border-focus);
     transform: translateY(-1px);
   }
 
@@ -26,8 +26,8 @@
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background: var(--accent-dim);
-    color: var(--accent-light);
+    background: var(--tk-accent-subtle-bg);
+    color: var(--tk-accent-text);
     font-size: 0.8rem;
     font-weight: 700;
     display: flex;
@@ -46,11 +46,11 @@
 
   &__name {
     font-weight: 600;
-    color: var(--text-primary);
+    color: var(--tk-text-primary);
   }
 
   &__visit {
     font-size: 0.78rem;
-    color: var(--text-muted);
+    color: var(--tk-text-tertiary);
   }
 }

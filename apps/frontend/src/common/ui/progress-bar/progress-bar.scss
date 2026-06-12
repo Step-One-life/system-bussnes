@@ -6,7 +6,7 @@
 
 .progress-label {
   font-size: 0.78rem;
-  color: var(--text-secondary);
+  color: var(--tk-text-secondary);
   display: flex;
   justify-content: space-between;
 }
@@ -14,7 +14,7 @@
 .progress-track {
   height: 6px;
   border-radius: 100px;
-  background: var(--surface-2);
+  background: var(--tk-surface-hover);
   overflow: hidden;
 }
 
@@ -26,14 +26,14 @@
     background 300ms;
 
   &--ok {
-    background: var(--success);
+    background: var(--tk-success-dot);
   }
 
   &--warn {
-    background: var(--warning);
+    background: var(--tk-warning-dot);
   }
 
   &--danger {
-    background: var(--danger);
+    background: var(--tk-danger-dot);
   }
 }

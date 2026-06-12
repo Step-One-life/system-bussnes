@@ -138,7 +138,7 @@ export function TrainingItem({
             })}
           </div>
         ) : (
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>
+          <p style={{ color: 'var(--tk-text-tertiary)', fontSize: '0.8rem' }}>
             {t('trainings.item.noAttendees')}
           </p>
         )}

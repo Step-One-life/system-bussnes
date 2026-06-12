@@ -45,13 +45,15 @@ export class ErrorBoundary extends Component<Props, State> {
           padding: '24px',
           textAlign: 'center',
           fontFamily: 'system-ui, sans-serif',
-          background: '#16181d',
-          color: '#e6e6e6',
+          // Фолбэки обязательны: при краше до установки data-theme токены
+          // не определены, экран должен остаться читаемым.
+          background: 'var(--tk-surface-page, #16181d)',
+          color: 'var(--tk-text-primary, #e6e6e6)',
         }}
       >
         <div style={{ fontSize: '40px' }}>⚠️</div>
         <h1 style={{ fontSize: '1.2rem', margin: 0 }}>Что-то пошло не так</h1>
-        <p style={{ color: '#9aa0a6', maxWidth: 360, margin: 0 }}>
+        <p style={{ color: 'var(--tk-text-secondary, #9aa0a6)', maxWidth: 360, margin: 0 }}>
           Произошла ошибка в интерфейсе. Попробуйте перезагрузить страницу — данные не
           потеряны.
         </p>
@@ -62,8 +64,8 @@ export class ErrorBoundary extends Component<Props, State> {
             padding: '10px 20px',
             borderRadius: '8px',
             border: 'none',
-            background: '#6366f1',
-            color: '#fff',
+            background: 'var(--tk-accent, #6366f1)',
+            color: 'var(--tk-accent-contrast, #fff)',
             fontSize: '0.95rem',
             cursor: 'pointer',
           }}

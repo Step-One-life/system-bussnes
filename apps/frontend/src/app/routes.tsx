@@ -42,7 +42,7 @@ function fallback(): ReactNode {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        color: 'var(--text-muted, #9aa0a6)',
+        color: 'var(--tk-text-secondary, #8a8a92)',
       }}
     >
       Загрузка…

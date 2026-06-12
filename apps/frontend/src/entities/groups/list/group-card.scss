@@ -9,8 +9,8 @@
 }
 
 .group-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
+  background: var(--tk-surface-card);
+  border: 1px solid var(--tk-border-default);
   border-radius: var(--r-xl);
   padding: var(--sp-6);
   cursor: pointer;
@@ -28,7 +28,7 @@
     left: 0;
     right: 0;
     height: 3px;
-    background: var(--accent);
+    background: var(--tk-accent);
     opacity: 0;
     transition: opacity var(--dur) var(--ease);
   }
@@ -36,7 +36,7 @@
   &:hover {
     transform: translateY(-3px);
     box-shadow: var(--shadow-md);
-    border-color: var(--border-focus);
+    border-color: var(--tk-border-focus);
 
     &::before {
       opacity: 1;
@@ -58,12 +58,12 @@
   &__name {
     font-size: 1.05rem;
     font-weight: 700;
-    color: var(--text-primary);
+    color: var(--tk-text-primary);
   }
 
   &__schedule {
     font-size: 0.83rem;
-    color: var(--text-muted);
+    color: var(--tk-text-tertiary);
     margin-bottom: var(--sp-4);
   }
 
@@ -81,19 +81,19 @@
   font-size: 0.83rem;
 
   &__label {
-    color: var(--text-secondary);
+    color: var(--tk-text-secondary);
   }
 
   &__value {
     font-weight: 600;
-    color: var(--text-primary);
+    color: var(--tk-text-primary);
 
     &--warn {
-      color: var(--warning);
+      color: var(--tk-warning-text);
     }
 
     &--danger {
-      color: var(--danger);
+      color: var(--tk-danger-text);
     }
   }
 }

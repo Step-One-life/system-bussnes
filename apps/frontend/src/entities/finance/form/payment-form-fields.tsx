@@ -126,7 +126,7 @@ export function PaymentFormFields({ form, students }: PaymentFormFieldsProps) {
       <div className="fin-preview">
         {t('finance.form.netIncome')}{' '}
         <strong
-          style={{ color: form.net >= 0 ? 'var(--success)' : 'var(--danger)' }}
+          style={{ color: form.net >= 0 ? 'var(--tk-success-text)' : 'var(--tk-danger-text)' }}
         >
           {form.net >= 0 ? '+' : ''}
           {form.net.toLocaleString('ru')} ₽

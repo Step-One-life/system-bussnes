@@ -22,7 +22,7 @@
   &__label {
     font-size: 0.9rem;
     font-weight: 600;
-    color: var(--text-primary);
+    color: var(--tk-text-primary);
     text-align: center;
     flex: 1;
     white-space: nowrap;
@@ -31,9 +31,9 @@
   }
 
   &__canvas {
-    border: 1px solid var(--border);
+    border: 1px solid var(--tk-border-default);
     border-radius: var(--r-lg);
-    background: var(--surface);
+    background: var(--tk-surface-card);
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
   }
@@ -66,11 +66,11 @@
   position: sticky;
   top: 0;
   z-index: 3;
-  border-bottom: 2px solid var(--border);
-  background: var(--surface);
+  border-bottom: 2px solid var(--tk-border-default);
+  background: var(--tk-surface-card);
 
   &__corner {
-    border-right: 1px solid var(--border);
+    border-right: 1px solid var(--tk-border-default);
   }
 
   &__day {
@@ -79,7 +79,7 @@
     align-items: center;
     justify-content: center;
     padding: var(--sp-2) var(--sp-1);
-    border-right: 1px solid var(--border);
+    border-right: 1px solid var(--tk-border-default);
     gap: 2px;
 
     &:last-child {
@@ -92,13 +92,13 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      background: var(--accent);
-      color: #fff;
+      background: var(--tk-accent);
+      color: var(--tk-accent-contrast);
       border-radius: 50%;
     }
 
     &--today .cal-head__dow {
-      color: var(--accent);
+      color: var(--tk-accent);
     }
   }
 
@@ -107,26 +107,26 @@
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.06em;
-    color: var(--text-muted);
+    color: var(--tk-text-tertiary);
   }
 
   &__num {
     font-size: 1rem;
     font-weight: 700;
-    color: var(--text-primary);
+    color: var(--tk-text-primary);
     line-height: 1;
   }
 }
 
 .cal-gutter {
   position: relative;
-  border-right: 1px solid var(--border);
+  border-right: 1px solid var(--tk-border-default);
 
   &__label {
     position: absolute;
     right: 6px;
     font-size: 0.6rem;
-    color: var(--text-muted);
+    color: var(--tk-text-tertiary);
     transform: translateY(-50%);
     white-space: nowrap;
     line-height: 1;
@@ -135,21 +135,21 @@
 
 .cal-col {
   position: relative;
-  border-right: 1px solid var(--border);
+  border-right: 1px solid var(--tk-border-default);
 
   &:last-child {
     border-right: none;
   }
 
   &--today {
-    background: color-mix(in srgb, var(--accent) 4%, transparent);
+    background: color-mix(in srgb, var(--tk-accent) 4%, transparent);
   }
 
   &__line {
     position: absolute;
     left: 0;
     right: 0;
-    border-top: 1px solid var(--border);
+    border-top: 1px solid var(--tk-border-default);
     opacity: 0.5;
   }
 }
@@ -182,13 +182,13 @@
   }
 
   &--group {
-    background: var(--accent);
-    color: #fff;
+    background: var(--tk-cat-group);
+    color: var(--tk-accent-contrast);
   }
 
   &--ind {
-    background: #a855f7;
-    color: #fff;
+    background: var(--tk-cat-ind);
+    color: var(--tk-accent-contrast);
   }
 
   &__name {

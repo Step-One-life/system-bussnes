@@ -11,8 +11,8 @@
 }
 
 .kpi-card {
-  background: var(--surface);
-  border: 0.5px solid var(--border);
+  background: var(--tk-surface-card);
+  border: 0.5px solid var(--tk-border-default);
   border-radius: var(--r-xl);
   padding: var(--sp-5) var(--sp-6);
   box-shadow: var(--shadow-sm);
@@ -42,7 +42,7 @@
   &__label {
     font-size: 0.75rem;
     font-weight: 500;
-    color: var(--text-secondary);
+    color: var(--tk-text-secondary);
     text-transform: uppercase;
     letter-spacing: 0.05em;
     padding-right: 44px;
@@ -53,7 +53,7 @@
     font-weight: 700;
     letter-spacing: -0.03em;
     line-height: 1;
-    color: var(--text-primary);
+    color: var(--tk-text-primary);
   }
 
   &__icon {
@@ -70,22 +70,22 @@
   }
 
   &--accent &__icon {
-    background: var(--accent-dim);
-    color: var(--accent);
+    background: var(--tk-accent-subtle-bg);
+    color: var(--tk-accent);
   }
 
   &--warn &__icon {
-    background: var(--warning-dim);
-    color: var(--warning);
+    background: var(--tk-warning-subtle-bg);
+    color: var(--tk-warning-text);
   }
 
   &--danger &__icon {
-    background: var(--danger-dim);
-    color: var(--danger);
+    background: var(--tk-danger-subtle-bg);
+    color: var(--tk-danger-text);
   }
 
   &--ok &__icon {
-    background: var(--success-dim);
-    color: var(--success);
+    background: var(--tk-success-subtle-bg);
+    color: var(--tk-success-text);
   }
 }

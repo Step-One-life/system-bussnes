@@ -5,8 +5,8 @@
   padding: var(--sp-1);
   margin-bottom: var(--sp-5);
   max-width: 100%;
-  background: var(--surface);
-  border: 0.5px solid var(--border);
+  background: var(--tk-surface-card);
+  border: 0.5px solid var(--tk-border-default);
   border-radius: var(--r-lg);
   box-shadow: var(--shadow-sm);
   overflow-x: auto;
@@ -22,7 +22,7 @@
     border-radius: var(--r-md);
     font-size: 0.9rem;
     font-weight: 600;
-    color: var(--text-secondary);
+    color: var(--tk-text-secondary);
     white-space: nowrap;
     -webkit-tap-highlight-color: transparent;
     transition:
@@ -30,12 +30,12 @@
       color var(--dur) var(--ease);
 
     &:hover {
-      color: var(--text-primary);
+      color: var(--tk-text-primary);
     }
 
     &.active {
-      background: var(--accent);
-      color: #fff;
+      background: var(--tk-accent);
+      color: var(--tk-accent-contrast);
     }
   }
 }

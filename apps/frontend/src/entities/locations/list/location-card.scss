@@ -9,8 +9,8 @@
 }
 
 .location-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
+  background: var(--tk-surface-card);
+  border: 1px solid var(--tk-border-default);
   border-radius: var(--r-xl);
   padding: var(--sp-6);
 
@@ -24,12 +24,12 @@
   &__name {
     font-size: 1.05rem;
     font-weight: 700;
-    color: var(--text-primary);
+    color: var(--tk-text-primary);
   }
 
   &__address {
     font-size: 0.83rem;
-    color: var(--text-muted);
+    color: var(--tk-text-tertiary);
     margin-bottom: var(--sp-4);
   }
 

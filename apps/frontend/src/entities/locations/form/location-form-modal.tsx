@@ -124,7 +124,7 @@ export function LocationFormModal({
               placeholder={t('locations.form.primeStartPlaceholder')}
               style={{ flex: 1 }}
             />
-            <span style={{ color: 'var(--text-muted)' }}>—</span>
+            <span style={{ color: 'var(--tk-text-tertiary)' }}>—</span>
             <TimePicker
               format="HH:mm"
               minuteStep={15}
@@ -146,7 +146,7 @@ export function LocationFormModal({
               placeholder={t('locations.form.primeStartPlaceholder')}
               style={{ flex: 1 }}
             />
-            <span style={{ color: 'var(--text-muted)' }}>—</span>
+            <span style={{ color: 'var(--tk-text-tertiary)' }}>—</span>
             <TimePicker
               format="HH:mm"
               minuteStep={15}

@@ -1,7 +1,7 @@
 .section-title {
   font-size: 0.95rem;
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--tk-text-primary);
   margin: var(--sp-5) 0 var(--sp-3);
   display: flex;
   align-items: center;
@@ -11,7 +11,7 @@
     content: '';
     flex: 1;
     height: 1px;
-    background: var(--border);
+    background: var(--tk-border-default);
   }
 
   &:first-child {
@@ -20,8 +20,8 @@
 }
 
 .sub-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
+  background: var(--tk-surface-card);
+  border: 1px solid var(--tk-border-default);
   border-radius: var(--r-md);
   padding: var(--sp-4);
   display: flex;
@@ -69,7 +69,7 @@
 
   &__hint {
     font-size: 0.8rem;
-    color: var(--text-muted);
+    color: var(--tk-text-tertiary);
     display: flex;
     align-items: center;
     gap: 4px;
@@ -86,7 +86,7 @@
     align-items: center;
     font-size: 0.95rem;
     font-weight: 600;
-    color: var(--text-primary);
+    color: var(--tk-text-primary);
   }
 
   .ant-collapse-content > .ant-collapse-content-box {
@@ -99,6 +99,6 @@
   align-items: center;
   gap: var(--sp-3);
   padding: var(--sp-2) 0;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--tk-border-default);
   font-size: 0.85rem;
 }

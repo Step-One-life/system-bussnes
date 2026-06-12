@@ -9,13 +9,13 @@
   align-items: center;
   gap: var(--sp-4);
   padding: var(--sp-3) var(--sp-5);
-  background: var(--surface);
-  border: 1px solid var(--border);
+  background: var(--tk-surface-card);
+  border: 1px solid var(--tk-border-default);
   border-radius: var(--r-md);
-  border-left: 3px solid var(--warning);
+  border-left: 3px solid var(--tk-warning-dot);
 
   &--danger {
-    border-left-color: var(--danger);
+    border-left-color: var(--tk-danger-dot);
   }
 
   &__main {
@@ -30,7 +30,7 @@
 
   &__detail {
     font-size: 0.78rem;
-    color: var(--text-secondary);
+    color: var(--tk-text-secondary);
   }
 
   /* Токен-скин (компонент WarningItem): точка статуса перед именем вместо

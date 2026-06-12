@@ -1,7 +1,7 @@
 .section-title {
   font-size: 1rem;
   font-weight: 600;
-  color: var(--text-primary);
+  color: var(--tk-text-primary);
   margin-bottom: var(--sp-4);
   display: flex;
   align-items: center;
@@ -11,7 +11,7 @@
     content: '';
     flex: 1;
     height: 1px;
-    background: var(--border);
+    background: var(--tk-border-default);
   }
 }
 
@@ -46,25 +46,25 @@
   }
 }
 
-/* "Отметить за сегодня" в модалке отметки — легаси-зелёная (мигрирует
-   вместе с модалками). */
+/* "Отметить за сегодня" в модалке отметки — заливная success-кнопка;
+   hover/active — затемнение базового цвета через color-mix. */
 .btn-mark.ant-btn {
-  background: var(--success);
-  border-color: var(--success);
-  color: #fff;
-  box-shadow: 0 2px 8px rgba(34, 197, 94, 0.25);
+  background: var(--tk-success-dot);
+  border-color: var(--tk-success-dot);
+  color: var(--tk-accent-contrast);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 
   &:hover,
   &:focus {
-    background: #16a34a !important;
-    border-color: #16a34a !important;
-    color: #fff !important;
-    box-shadow: 0 4px 16px rgba(34, 197, 94, 0.35);
+    background: color-mix(in srgb, var(--tk-success-dot) 88%, #000) !important;
+    border-color: color-mix(in srgb, var(--tk-success-dot) 88%, #000) !important;
+    color: var(--tk-accent-contrast) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
   }
 
   &:active {
-    background: #15803d !important;
-    border-color: #15803d !important;
+    background: color-mix(in srgb, var(--tk-success-dot) 78%, #000) !important;
+    border-color: color-mix(in srgb, var(--tk-success-dot) 78%, #000) !important;
   }
 }
 

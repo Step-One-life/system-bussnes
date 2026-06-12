@@ -167,7 +167,7 @@ function CalendarTrainingModalInner({
   return (
     <Modal open={open} title={m.title} onCancel={onClose} footer={footer} destroyOnHidden>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-4)' }}>
-        <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>{dateLabel}</div>
+        <div style={{ fontSize: '0.875rem', color: 'var(--tk-text-secondary)' }}>{dateLabel}</div>
 
         {m.isInd ? (
           <div className="cal-attend-list">
@@ -182,7 +182,7 @@ function CalendarTrainingModalInner({
                 />
               ))
             ) : (
-              <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>
+              <p style={{ fontSize: '0.875rem', color: 'var(--tk-text-tertiary)' }}>
                 {t('trainings.cal.noStudents')}
               </p>
             )}
@@ -194,7 +194,7 @@ function CalendarTrainingModalInner({
                 fontSize: '0.8rem',
                 fontWeight: 600,
                 marginBottom: 'var(--sp-2)',
-                color: 'var(--text-secondary)',
+                color: 'var(--tk-text-secondary)',
               }}
             >
               {t('trainings.cal.attendance')}
@@ -211,7 +211,7 @@ function CalendarTrainingModalInner({
                   />
                 ))
               ) : (
-                <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>
+                <p style={{ fontSize: '0.875rem', color: 'var(--tk-text-tertiary)' }}>
                   {t('trainings.cal.noGroupStudents')}
                 </p>
               )}

@@ -9,11 +9,11 @@
   align-items: center;
   justify-content: space-between;
   padding: var(--sp-2) var(--sp-3);
-  border: 1px solid var(--border);
+  border: 1px solid var(--tk-border-default);
   border-radius: var(--r-md);
   transition: border-color var(--dur) var(--ease);
 
   &--active {
-    border-color: var(--border-focus);
+    border-color: var(--tk-border-focus);
   }
 }

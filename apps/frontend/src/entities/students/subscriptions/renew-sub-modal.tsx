@@ -90,7 +90,7 @@ export function RenewSubModal({
         </Button>,
       ]}
     >
-      <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
+      <p style={{ color: 'var(--tk-text-secondary)', fontSize: '0.85rem' }}>
         {t('subscriptions.renew.student')} <strong>{studentName}</strong>
         <br />
         {t('subscriptions.renew.group')} <strong>{groupId}</strong>

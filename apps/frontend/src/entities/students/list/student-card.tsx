@@ -40,7 +40,7 @@ export function StudentCard({ student, indNames, onClick }: StudentCardProps) {
             ))}
             {hasInd && <Badge variant="ind">{t('students.indShort')}</Badge>}
             {!regularGroups.length && !hasInd && (
-              <span style={{ color: 'var(--text-muted)', fontSize: '0.78rem' }}>
+              <span style={{ color: 'var(--tk-text-tertiary)', fontSize: '0.78rem' }}>
                 {t('students.noGroup')}
               </span>
             )}

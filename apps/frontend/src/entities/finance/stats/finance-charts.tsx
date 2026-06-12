@@ -5,11 +5,11 @@ import { useTranslation } from 'react-i18next'
 import { EmptyState } from 'common/ui'
 
 import {
-  CHART_COLORS,
-  CHART_EXPENSE,
-  CHART_INCOME,
-  CHART_NET,
+  chartColors,
+  chartExpenseColor,
   chartGridColor,
+  chartIncomeColor,
+  chartNetColor,
   chartTextColor,
 } from './chart-setup'
 
@@ -67,9 +67,9 @@ export function MonthlyChart({ data }: { data: MonthlyPoint[] }) {
         data={{
           labels: data.map((d) => d.label),
           datasets: [
-            { label: t('finance.stats.datasetIncome'), data: data.map((d) => d.income), backgroundColor: CHART_INCOME, borderRadius: 6 },
-            { label: t('finance.stats.datasetHall'), data: data.map((d) => d.hall), backgroundColor: CHART_EXPENSE, borderRadius: 6 },
-            { label: t('finance.stats.datasetNet'), data: data.map((d) => d.net), backgroundColor: CHART_NET, borderRadius: 6 },
+            { label: t('finance.stats.datasetIncome'), data: data.map((d) => d.income), backgroundColor: chartIncomeColor(), borderRadius: 6 },
+            { label: t('finance.stats.datasetHall'), data: data.map((d) => d.hall), backgroundColor: chartExpenseColor(), borderRadius: 6 },
+            { label: t('finance.stats.datasetNet'), data: data.map((d) => d.net), backgroundColor: chartNetColor(), borderRadius: 6 },
           ],
         }}
       />
@@ -101,7 +101,7 @@ export function BreakdownChart({ title, data, colorOffset = 0 }: BreakdownChartP
           datasets: [
             {
               data: data.values,
-              backgroundColor: CHART_COLORS.slice(colorOffset),
+              backgroundColor: chartColors().slice(colorOffset),
               borderWidth: 0,
               hoverOffset: 6,
             },
@@ -116,6 +116,7 @@ export function TopClientsChart({ data }: { data: TopClient[] }) {
   const { t } = useTranslation()
   const text = chartTextColor()
   const grid = chartGridColor()
+  const palette = chartColors()
   const options: ChartOptions<'bar'> = {
     responsive: true,
     maintainAspectRatio: true,
@@ -144,7 +145,7 @@ export function TopClientsChart({ data }: { data: TopClient[] }) {
             {
               label: t('finance.stats.datasetIncome'),
               data: data.map((c) => c.amount),
-              backgroundColor: data.map((_, i) => CHART_COLORS[i % CHART_COLORS.length]),
+              backgroundColor: data.map((_, i) => palette[i % palette.length]),
               borderRadius: 6,
             },
           ],

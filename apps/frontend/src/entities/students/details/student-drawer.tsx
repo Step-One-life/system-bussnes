@@ -125,7 +125,7 @@ export function StudentDrawer({ studentId, onClose, onEdit }: StudentDrawerProps
       >
         {student && (
           <>
-            <div style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
+            <div style={{ color: 'var(--tk-text-secondary)', fontSize: '0.85rem' }}>
               {t('students.drawer.lastVisit')}{' '}
               <strong>{lastVisit ? formatDateShort(lastVisit) : t('common.dash')}</strong>
             </div>
@@ -148,7 +148,7 @@ export function StudentDrawer({ studentId, onClose, onEdit }: StudentDrawerProps
                 />
               ))
             ) : (
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+              <p style={{ color: 'var(--tk-text-tertiary)', fontSize: '0.85rem' }}>
                 {t('students.drawer.noGroupSessions')}
               </p>
             )}

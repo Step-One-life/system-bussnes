@@ -1,6 +1,6 @@
 .training-item {
-  background: var(--surface);
-  border: 1px solid var(--border);
+  background: var(--tk-surface-card);
+  border: 1px solid var(--tk-border-default);
   border-radius: var(--r-lg);
   overflow: hidden;
   transition: box-shadow var(--dur) var(--ease);
@@ -26,7 +26,7 @@
     width: 48px;
     height: 58px;
     border-radius: var(--r-sm);
-    background: var(--accent-dim);
+    background: var(--tk-accent-subtle-bg);
     flex-shrink: 0;
     gap: 1px;
   }
@@ -34,7 +34,7 @@
   &__dow {
     font-size: 0.6rem;
     font-weight: 600;
-    color: var(--text-muted);
+    color: var(--tk-text-tertiary);
     text-transform: uppercase;
     letter-spacing: 0.04em;
     line-height: 1;
@@ -43,14 +43,14 @@
   &__day {
     font-size: 1.15rem;
     font-weight: 700;
-    color: var(--accent-light);
+    color: var(--tk-accent-text);
     line-height: 1;
   }
 
   &__mon {
     font-size: 0.62rem;
     font-weight: 600;
-    color: var(--accent);
+    color: var(--tk-accent);
     text-transform: uppercase;
     letter-spacing: 0.05em;
   }
@@ -63,7 +63,7 @@
   &__group {
     font-size: 0.9rem;
     font-weight: 600;
-    color: var(--text-primary);
+    color: var(--tk-text-primary);
     display: flex;
     align-items: center;
     gap: var(--sp-2);
@@ -72,12 +72,12 @@
 
   &__meta {
     font-size: 0.78rem;
-    color: var(--text-secondary);
+    color: var(--tk-text-secondary);
     margin-top: 2px;
   }
 
   &__chevron {
-    color: var(--text-muted);
+    color: var(--tk-text-tertiary);
     transition: transform var(--dur) var(--ease);
     flex-shrink: 0;
   }
@@ -89,7 +89,7 @@
   &__body {
     display: none;
     padding: var(--sp-4) var(--sp-5) var(--sp-5);
-    border-top: 1px solid var(--border);
+    border-top: 1px solid var(--tk-border-default);
   }
 
   &.expanded &__body {
@@ -118,8 +118,8 @@
   font-weight: 600;
   padding: 2px 6px;
   border-radius: var(--r-sm);
-  background: color-mix(in srgb, var(--accent) 15%, transparent);
-  color: var(--accent-light);
+  background: color-mix(in srgb, var(--tk-accent) 15%, transparent);
+  color: var(--tk-accent-text);
 }
 
 .attendee-tag {
@@ -130,8 +130,8 @@
   border-radius: 100px;
   font-size: 0.75rem;
   font-weight: 600;
-  background: var(--surface-2);
-  color: var(--text-secondary);
+  background: var(--tk-surface-hover);
+  color: var(--tk-text-secondary);
   letter-spacing: 0.01em;
 
   &__remove {
@@ -142,7 +142,7 @@
     height: 16px;
     border: none;
     background: transparent;
-    color: var(--text-muted);
+    color: var(--tk-text-tertiary);
     cursor: pointer;
     border-radius: 50%;
     padding: 0;
@@ -153,8 +153,8 @@
       color var(--dur) var(--ease);
 
     &:hover {
-      background: var(--danger-dim);
-      color: var(--danger);
+      background: var(--tk-danger-subtle-bg);
+      color: var(--tk-danger-text);
     }
   }
 }

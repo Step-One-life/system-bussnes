@@ -1,24 +1,8 @@
-/* Design tokens — iOS-style design system */
+/* Легаси-токены: ТОЛЬКО геометрия, типографика и тени.
+   Все цветовые роли мигрированы в design-tokens.scss (--tk-*) — новые
+   цвета добавлять туда, сюда не возвращать. */
 
 :root {
-  /* Accent — iOS system indigo */
-  --accent: #5856D6;
-  --accent-light: #7775E0;
-  --accent-dim: rgba(88, 86, 214, 0.13);
-  --accent-glow: rgba(88, 86, 214, 0.35);
-
-  /* Status colours — iOS system palette */
-  --success: #34C759;
-  --warning: #FF9500;
-  --danger: #FF3B30;
-  --success-dim: rgba(52, 199, 89, 0.12);
-  --warning-dim: rgba(255, 149, 0, 0.12);
-  --danger-dim: rgba(255, 59, 48, 0.12);
-
-  /* Individual session colour */
-  --ind: #AF52DE;
-  --ind-dim: rgba(175, 82, 222, 0.12);
-
   /* Layout */
   --sidebar-w: 240px;
   --bottom-nav-h: 60px;
@@ -49,49 +33,13 @@
 }
 
 [data-theme='dark'] {
-  /* iOS dark background layers.
-     --bg выровнен с --tk-surface-page (design-tokens.scss): фон страницы
-     общий для layout, расхождение между экранами заметнее сдвига тона. */
-  --bg: #0a0a0c;
-  --bg-elevated: #1C1C1E;
-  --surface: #2C2C2E;
-  --surface-2: #3A3A3C;
-  --border: rgba(255, 255, 255, 0.08);
-  --border-focus: rgba(88, 86, 214, 0.6);
-
-  --sidebar-bg: rgba(18, 18, 20, 0.88);
-  --bottom-nav-bg: rgba(28, 28, 30, 0.82);
-
-  --text-primary: #FFFFFF;
-  --text-secondary: #EBEBF5CC;
-  /* 60% вместо iOS-овских 40%: на --surface даёт ~5.3:1 (WCAG AA ≥ 4.5). */
-  --text-muted: #EBEBF599;
-
   --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.5);
   --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.6);
   --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.7);
 }
 
 [data-theme='light'] {
-  /* iOS light — grouped background style.
-     --bg выровнен с --tk-surface-page (тёплый крем, см. design-tokens.scss). */
-  --bg: #faf9f6;
-  --bg-elevated: #FFFFFF;
-  --surface: #FFFFFF;
-  --surface-2: #F2F2F7;
-  --border: rgba(60, 60, 67, 0.13);
-  --border-focus: rgba(88, 86, 214, 0.5);
-
-  --sidebar-bg: rgba(242, 242, 247, 0.85);
-  --bottom-nav-bg: rgba(255, 255, 255, 0.75);
-
-  --text-primary: #000000;
-  /* Подняты до WCAG AA на белом: secondary ~6:1, muted ~4.7:1 (было 1.7:1).
-     Secondary поднят вместе с muted, чтобы не инвертировать иерархию. */
-  --text-secondary: rgba(60, 60, 67, 0.8);
-  --text-muted: rgba(60, 60, 67, 0.72);
-
-  --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.04), 0 0 0 0.5px rgba(0,0,0,0.06);
-  --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.07), 0 0 0 0.5px rgba(0,0,0,0.05);
-  --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.10);
+  --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.04), 0 0 0 0.5px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.07), 0 0 0 0.5px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.1);
 }
