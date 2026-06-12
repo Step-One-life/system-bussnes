@@ -1,9 +1,12 @@
-import { Button, Popconfirm } from 'antd'
+import { useState } from 'react'
+
+import { Button, Dropdown, Modal } from 'antd'
 import {
   ClockCircleOutlined,
   DeleteOutlined,
   DollarOutlined,
   MinusCircleOutlined,
+  MoreOutlined,
   PhoneOutlined,
   ReloadOutlined,
 } from '@ant-design/icons'
@@ -12,9 +15,10 @@ import { useTranslation } from 'react-i18next'
 
 import { Badge, StatusBadge, SubProgressBar } from 'common/ui'
 
-import { getSubStatus, subTypeLabel } from '../model/subscription-status'
+import { getDaysRemaining, getSubStatus, subTypeLabel } from '../model/subscription-status'
 
 import type { Student } from '../model/types'
+import type { MenuProps } from 'antd'
 
 interface SubCardProps {
   student: Student
@@ -38,6 +42,8 @@ export function SubCard({
   onMarkPaid,
 }: SubCardProps) {
   const { t } = useTranslation()
+  const [confirmDelete, setConfirmDelete] = useState(false)
+
   const activeSub = student.subscriptions.find((s) => s.groupId === groupId && s.isActive)
   const anySub =
     activeSub ??
@@ -50,6 +56,56 @@ export function SubCard({
 
   const handleDeleteSub = () => anySub && onDeleteSub(anySub.id)
   const handleMarkPaid = () => anySub && onMarkPaid?.(anySub.id)
+  const handleCloseConfirmDelete = () => setConfirmDelete(false)
+
+  // Вторичные действия — в меню «…», видимой остаётся только частая
+  // кнопка «Списать занятие».
+  const menuItems: MenuProps['items'] = [
+    {
+      key: 'renew',
+      icon: <ReloadOutlined />,
+      label: t('students.subCard.newSub'),
+      onClick: onRenew,
+    },
+  ]
+  if (onMarkPaid && anySub && !anySub.finPaymentId) {
+    menuItems.push({
+      key: 'markPaid',
+      icon: <DollarOutlined />,
+      label: t('students.subCard.markPaid'),
+      onClick: handleMarkPaid,
+    })
+  }
+  if (!(isIndividual && isRazovoe)) {
+    menuItems.push({
+      key: 'extend',
+      icon: <ClockCircleOutlined />,
+      label: t('students.subCard.extendTerm'),
+      onClick: onExtend,
+    })
+  }
+  if (anySub) {
+    menuItems.push(
+      { type: 'divider' },
+      {
+        key: 'deleteSub',
+        danger: true,
+        icon: <DeleteOutlined />,
+        label: t('students.subCard.deleteSub'),
+        onClick: () => setConfirmDelete(true),
+      },
+    )
+  }
+
+  // Без активного абонемента вместо прогресс-бара — осмысленный статус.
+  const emptyDays = anySub ? getDaysRemaining(anySub) : null
+  const emptyText = !anySub
+    ? t('students.subCard.noSubYet')
+    : emptyDays !== null && emptyDays < 0
+      ? t('students.subCard.expiredAgo', { count: -emptyDays })
+      : anySub.remaining === 0
+        ? t('students.subCard.zeroSessions')
+        : t('students.subCard.noSubYet')
 
   return (
     <div className="sub-card">
@@ -62,25 +118,21 @@ export function SubCard({
         <span style={{ marginLeft: 'auto' }}>
           <StatusBadge status={status} />
         </span>
-        {anySub && (
-          <Popconfirm
-            title={t('students.subCard.deleteSubTitle', { type: subTypeLabel(anySub.type) })}
-            okText={t('common.delete')}
-            cancelText={t('common.cancel')}
-            okButtonProps={{ danger: true }}
-            onConfirm={handleDeleteSub}
-          >
-            <Button
-              type="text"
-              size="small"
-              icon={<DeleteOutlined />}
-              aria-label={t('common.delete')}
-            />
-          </Popconfirm>
-        )}
+        <Dropdown trigger={['click']} menu={{ items: menuItems }}>
+          <Button
+            type="text"
+            size="small"
+            icon={<MoreOutlined />}
+            aria-label={t('common.more')}
+          />
+        </Dropdown>
       </div>
 
-      <SubProgressBar sub={activeSub ?? null} />
+      {activeSub ? (
+        <SubProgressBar sub={activeSub} />
+      ) : (
+        <span className="sub-card__empty">{emptyText}</span>
+      )}
 
       <div className="sub-card__actions">
         <Button
@@ -92,28 +144,27 @@ export function SubCard({
         >
           {t('students.subCard.deductSession')}
         </Button>
-        <Button size="small" icon={<ReloadOutlined />} onClick={onRenew}>
-          {t('students.subCard.newSub')}
-        </Button>
-        {onMarkPaid && anySub && !anySub.finPaymentId && (
-          <Button
-            size="small"
-            icon={<DollarOutlined />}
-            onClick={handleMarkPaid}
-          >
-            {t('students.subCard.markPaid')}
-          </Button>
-        )}
-        {isIndividual && isRazovoe ? (
+        {isIndividual && isRazovoe && (
           <span className="sub-card__hint">
             <PhoneOutlined /> {t('students.subCard.askNextTraining')}
           </span>
-        ) : (
-          <Button type="text" size="small" icon={<ClockCircleOutlined />} onClick={onExtend}>
-            {t('students.subCard.extendTerm')}
-          </Button>
         )}
       </div>
+
+      {anySub && (
+        <Modal
+          open={confirmDelete}
+          title={t('students.subCard.deleteSubTitle', { type: subTypeLabel(anySub.type) })}
+          okText={t('common.delete')}
+          cancelText={t('common.cancel')}
+          okButtonProps={{ danger: true }}
+          onOk={() => {
+            setConfirmDelete(false)
+            handleDeleteSub()
+          }}
+          onCancel={handleCloseConfirmDelete}
+        />
+      )}
     </div>
   )
 }

@@ -74,6 +74,12 @@
     align-items: center;
     gap: 4px;
   }
+
+  /* Нет активного абонемента: вместо прогресс-бара — статус словами */
+  &__empty {
+    font-size: 0.85rem;
+    color: var(--tk-text-tertiary);
+  }
 }
 
 // Свёрнутая история посещений: заголовок повторяет .section-title,

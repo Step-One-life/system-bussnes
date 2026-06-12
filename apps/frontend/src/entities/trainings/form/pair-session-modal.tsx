@@ -1,5 +1,5 @@
-import { Button, Form, Input, InputNumber, Modal, Segmented, Select } from 'antd'
-import { CheckOutlined, SyncOutlined } from '@ant-design/icons'
+import { Button, Form, Input, InputNumber, Modal, Segmented, Select, Switch } from 'antd'
+import { SyncOutlined } from '@ant-design/icons'
 
 import { useTranslation } from 'react-i18next'
 
@@ -92,7 +92,8 @@ export function PairSessionModal({ open, indGroupId, onClose }: PairSessionModal
               <span className="rec-toggle-card__label">{t('trainings.individual.weekly')}</span>
               <span className="rec-toggle-card__hint">{t('trainings.pair.weeklyHint')}</span>
             </div>
-            <div className="rec-toggle-card__check">{form.recurring && <CheckOutlined />}</div>
+            {/* Карта кликабельна целиком — switch только индикатор */}
+            <Switch checked={form.recurring} style={{ pointerEvents: 'none' }} />
           </div>
         </Form.Item>
 

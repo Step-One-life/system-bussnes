@@ -1,5 +1,5 @@
-import { Button, Form, Input, InputNumber, Modal, Segmented, Select } from 'antd'
-import { CheckOutlined, SyncOutlined } from '@ant-design/icons'
+import { Button, Form, Input, InputNumber, Modal, Segmented, Select, Switch } from 'antd'
+import { SyncOutlined } from '@ant-design/icons'
 
 import { useTranslation } from 'react-i18next'
 
@@ -55,18 +55,6 @@ export function IndividualSessionModal({
       destroyOnHidden
     >
       <Form layout="vertical">
-        <Form.Item label={t('trainings.individual.durationLabel')}>
-          <Segmented
-            block
-            value={form.duration}
-            onChange={(v) => form.setDuration(v as number)}
-            options={[
-              { label: t('trainings.individual.duration60'), value: 60 },
-              { label: t('trainings.individual.duration90'), value: 90 },
-            ]}
-          />
-        </Form.Item>
-
         <Form.Item label={t('trainings.individual.clientLabel')} required>
           <Select
             value={form.clientId || undefined}
@@ -103,6 +91,36 @@ export function IndividualSessionModal({
           )}
         </Form.Item>
 
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--sp-4)' }}>
+          <Form.Item label={t('trainings.individual.dateLabel')} required>
+            <Input type="date" value={form.date} onChange={handleDateChange} />
+          </Form.Item>
+          <Form.Item label={t('trainings.individual.timeLabel')}>
+            <Input type="time" value={form.time} onChange={handleTimeChange} />
+            <PrimeHint
+              date={form.date}
+              time={form.time}
+              locationId={form.locationId}
+              duration={form.duration}
+              lessonKind="individual"
+            />
+          </Form.Item>
+        </div>
+
+        <ConflictHint conflicts={form.conflicts} />
+
+        <Form.Item label={t('trainings.individual.durationLabel')}>
+          <Segmented
+            block
+            value={form.duration}
+            onChange={(v) => form.setDuration(v as number)}
+            options={[
+              { label: t('trainings.individual.duration60'), value: 60 },
+              { label: t('trainings.individual.duration90'), value: 90 },
+            ]}
+          />
+        </Form.Item>
+
         <Form.Item label={t('trainings.individual.paymentLabel')}>
           <Segmented
             block
@@ -114,24 +132,6 @@ export function IndividualSessionModal({
             ]}
           />
         </Form.Item>
-
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--sp-4)' }}>
-          <Form.Item label={t('trainings.individual.dateLabel')} required>
-            <Input type="date" value={form.date} onChange={handleDateChange} />
-          </Form.Item>
-          <Form.Item label={t('trainings.individual.timeLabel')}>
-            <Input type="time" value={form.time} onChange={handleTimeChange} />
-          </Form.Item>
-        </div>
-
-        <ConflictHint conflicts={form.conflicts} />
-        <PrimeHint date={form.date} time={form.time} locationId={form.locationId} />
-
-        {!isOnline && (
-          <Form.Item label={t('locations.selectLabel')}>
-            <LocationSelect value={form.locationId} onChange={form.setLocationId} />
-          </Form.Item>
-        )}
 
         {form.client && !form.activeSub && form.paymentMode === 'subscription' && (
           <>
@@ -159,6 +159,12 @@ export function IndividualSessionModal({
           </>
         )}
 
+        {!isOnline && (
+          <Form.Item label={t('locations.selectLabel')}>
+            <LocationSelect value={form.locationId} onChange={form.setLocationId} />
+          </Form.Item>
+        )}
+
         <Form.Item>
           <div
             className={`rec-toggle-card${form.recurring ? ' rec-toggle-card--checked' : ''}`}
@@ -173,7 +179,8 @@ export function IndividualSessionModal({
                 {t('trainings.individual.weeklyHint')}
               </span>
             </div>
-            <div className="rec-toggle-card__check">{form.recurring && <CheckOutlined />}</div>
+            {/* Карта кликабельна целиком — switch только индикатор */}
+            <Switch checked={form.recurring} style={{ pointerEvents: 'none' }} />
           </div>
         </Form.Item>
 

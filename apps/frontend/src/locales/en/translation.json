@@ -46,6 +46,7 @@
     "create": "Create",
     "delete": "Delete",
     "add": "Add",
+    "more": "More",
     "edit": "Edit",
     "extend": "Extend",
     "error": "Error",
@@ -185,7 +186,11 @@
       "newSub": "New subscription",
       "markPaid": "Record payment",
       "askNextTraining": "Ask about next training",
-      "extendTerm": "Extend term"
+      "extendTerm": "Extend term",
+      "deleteSub": "Delete subscription",
+      "noSubYet": "No subscription",
+      "zeroSessions": "0 sessions",
+      "expiredAgo": "expired {{count}} d. ago"
     },
     "visits": {
       "empty": "No visits yet",
@@ -218,6 +223,11 @@
       "typeLabel": "Subscription type",
       "dateLabel": "Start date"
     },
+    "issue": {
+      "title": "Issue subscription",
+      "createBtn": "Issue",
+      "created": "Subscription issued"
+    },
     "add": {
       "title": "New subscription",
       "openBtn": "Subscription",
@@ -247,7 +257,7 @@
     "empty": "No trainings yet",
     "emptyText": "Record your first training",
     "viewList": "List",
-    "viewWeek": "Week",
+    "viewCalendar": "Calendar",
     "removedFromTraining": "Removed from training",
     "seriesDeleted": "Series deleted",
     "trainingDeleted": "Training deleted",
@@ -278,6 +288,10 @@
       "attendeesCount": "{{count}} ppl.",
       "prevWeek": "Previous week",
       "nextWeek": "Next week",
+      "prevDay": "Previous day",
+      "nextDay": "Next day",
+      "modeDay": "Day",
+      "modeWeek": "Week",
       "legendNormal": "Session",
       "legendScheduled": "Planned",
       "legendPast": "Past"
@@ -386,11 +400,14 @@
       "studentRemoved": "Student removed",
       "attendanceSaved": "Attendance saved",
       "recordDeleted": "Record deleted",
-      "edit": "Edit"
+      "edit": "Edit",
+      "addStudentShort": "Student",
+      "deleteTraining": "Delete training",
+      "issueSub": "Issue"
     },
     "hint": {
-      "prime": "⭐ Prime",
-      "regular": "Regular",
+      "prime": "Prime time",
+      "primePrice": "session {{prime}} instead of {{regular}}",
       "conflict": "Conflict: {{detail}}"
     }
   },
