@@ -42,3 +42,18 @@ export function seriesForbiddenFields(dto: SeriesUpdateInput): string[] {
   if (dto.date !== undefined) out.push('date')
   return out
 }
+
+/**
+ * Занятия серии, которым нужна проверка наложений при смене времени: только
+ * те, у кого время реально меняется. Клиент шлёт time всегда (в том числе
+ * без изменений) — занятие, остающееся на месте, наложений не добавляет,
+ * а проверка «как есть» блокировала бы любой сейв серии с давним
+ * (до-барьерным) наложением в данных.
+ */
+export function occurrencesNeedingOverlapCheck<T extends { time: string }>(
+  occurrences: T[],
+  newTime: string | undefined,
+): T[] {
+  if (newTime === undefined) return []
+  return occurrences.filter((t) => t.time !== newTime)
+}

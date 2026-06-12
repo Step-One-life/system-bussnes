@@ -201,8 +201,10 @@ export function HomePage() {
       {/* Мобайл: «+» остаётся иконкой в шапке, главные действия — пилюлями
           отдельной строкой (на десктопе блок скрыт, кнопки живут в шапке). */}
       <div className="home-actions">
+        {/* Тот же нейтральный стиль, что у десктопной кнопки в шапке, —
+            «Отметить день» выглядит одинаково на телефоне и десктопе. */}
         <Button
-          className="btn-mark-tint"
+          className="tk-btn-secondary home-actions__mark"
           icon={<CheckSquareOutlined />}
           onClick={handleOpenMarkToday}
         >
