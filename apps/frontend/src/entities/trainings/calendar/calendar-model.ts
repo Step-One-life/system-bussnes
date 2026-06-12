@@ -192,7 +192,8 @@ function hourRange(
     start = Math.min(start, Math.floor(startMin / 60))
     itemsEnd = Math.max(itemsEnd, Math.ceil((startMin + dur) / 60))
   }
-  const end = itemsEnd > baseEnd ? itemsEnd + padEndHours : baseEnd
+  // сетка не уходит за полночь — занятие, кончающееся позже, упрётся в низ дня
+  const end = Math.min(itemsEnd > baseEnd ? itemsEnd + padEndHours : baseEnd, 24)
   return [start, end]
 }
 
