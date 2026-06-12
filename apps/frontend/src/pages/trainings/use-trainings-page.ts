@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 
 import { useTranslation } from 'react-i18next'
 
@@ -6,6 +6,7 @@ import { useToast } from 'common/ui'
 import { useGroups } from 'entities/groups'
 import { useStudents } from 'entities/students'
 import {
+  currentWeekStart,
   ensureIndividualGroup,
   useDeleteTrainingWithRestore,
   useRemoveFromTraining,
@@ -27,6 +28,19 @@ export function useTrainingsPage() {
   const deleteTraining = useDeleteTrainingWithRestore()
 
   const [view, setView] = useState<TrainingsView>('calendar')
+  const [weekStart, setWeekStart] = useState(currentWeekStart)
+
+  // Счётчик подзаголовка в виде «календарь»: записанные занятия видимой недели.
+  const weekCount = useMemo(() => {
+    const start = new Date(weekStart)
+    start.setHours(0, 0, 0, 0)
+    const end = new Date(start)
+    end.setDate(start.getDate() + 7)
+    return trainings.filter((tr) => {
+      const d = new Date(tr.date + 'T00:00:00')
+      return d >= start && d < end
+    }).length
+  }, [trainings, weekStart])
 
   const [typeModalOpen, setTypeModalOpen] = useState(false)
   const [groupModalOpen, setGroupModalOpen] = useState(false)
@@ -93,6 +107,9 @@ export function useTrainingsPage() {
     refetch,
     view,
     setView,
+    weekStart,
+    setWeekStart,
+    weekCount,
     typeModalOpen,
     setTypeModalOpen,
     groupModalOpen,

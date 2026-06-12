@@ -26,9 +26,9 @@
     }
 
     &--active {
-      background: var(--tk-accent);
-      color: var(--tk-accent-contrast);
-      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+      background: var(--tk-accent-subtle-bg);
+      color: var(--tk-accent-text);
+      box-shadow: inset 0 0 0 1px var(--tk-accent-subtle-border);
     }
   }
 }

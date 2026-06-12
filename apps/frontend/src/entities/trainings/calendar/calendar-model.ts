@@ -13,6 +13,11 @@ export const CAL_H_START = 10
 export const CAL_H_END = 22
 export const CAL_H_PX = 60
 
+/* Базовое окно недельной сетки: 09:00–21:00; занятия за его пределами
+   расширяют диапазон, а не выпадают из вида. */
+export const CAL_WEEK_H_START = 9
+export const CAL_WEEK_H_END = 21
+
 const DOW_IDX: Record<string, number> = {
   Пн: 0,
   Вт: 1,
@@ -35,6 +40,9 @@ export interface CalendarBlock {
   /** Slot from the group schedule that has not been recorded as a training yet. */
   isScheduled: boolean
   attendeesCount: number
+  /** Начало и длительность в минутах от полуночи — для проверки «прошло ли». */
+  startMin: number
+  durMin: number
   topPx: number
   heightPx: number
 }
@@ -84,7 +92,8 @@ function makeBlock(
   if (!time) return null
 
   const [hh, mm] = time.split(':').map(Number)
-  const topPx = (hh * 60 + (mm || 0) - hStart * 60) * (pxPerHour / 60)
+  const startMin = hh * 60 + (mm || 0)
+  const topPx = (startMin - hStart * 60) * (pxPerHour / 60)
   const totalH = (hEnd - hStart) * pxPerHour
   if (topPx < 0 || topPx >= totalH) return null
 
@@ -101,6 +110,8 @@ function makeBlock(
     isInd,
     isScheduled: !training || !!planned,
     attendeesCount: training?.attendees.length ?? 0,
+    startMin,
+    durMin: dur,
     topPx,
     heightPx,
   }
@@ -160,13 +171,10 @@ function collectDayItems(
   return items
 }
 
-/**
- * Hour range covering all day items, never narrower than the default window.
- * Lets a single-day view show trainings that fall outside 10:00–22:00.
- */
-function dayHourRange(items: DayItem[]): [number, number] {
-  let start = CAL_H_START
-  let end = CAL_H_END
+/** Hour range covering all items, never narrower than the base window. */
+function hourRange(items: DayItem[], baseStart: number, baseEnd: number): [number, number] {
+  let start = baseStart
+  let end = baseEnd
   for (const it of items) {
     if (!it.time) continue
     const [hh, mm] = it.time.split(':').map(Number)
@@ -191,7 +199,7 @@ export function buildCalendarDay(
   pxPerHour: number = CAL_H_PX,
 ): { day: CalendarDay; hStart: number; hEnd: number } {
   const items = collectDayItems(dateStr, trainings, students, groups)
-  const [hStart, hEnd] = range ?? dayHourRange(items)
+  const [hStart, hEnd] = range ?? hourRange(items, CAL_H_START, CAL_H_END)
   const blocks = items
     .map((it) => makeBlock(it, dateStr, hStart, hEnd, pxPerHour))
     .filter((b): b is CalendarBlock => b !== null)
@@ -211,26 +219,37 @@ export function buildCalendarDay(
   }
 }
 
+export interface CalendarWeek {
+  days: CalendarDay[]
+  hStart: number
+  hEnd: number
+}
+
 export function buildCalendarWeek(
   weekStart: Date,
   trainings: Training[],
   students: { id: string; name: string }[],
   groups: Group[],
-): CalendarDay[] {
-  const days = Array.from({ length: 7 }, (_, i) => {
+): CalendarWeek {
+  const dates = Array.from({ length: 7 }, (_, i) => {
     const d = new Date(weekStart)
     d.setDate(weekStart.getDate() + i)
     d.setHours(0, 0, 0, 0)
-    return d
+    return toDateStr(d)
   })
 
-  return days.map(
-    (d) =>
-      buildCalendarDay(toDateStr(d), trainings, students, groups, [
-        CAL_H_START,
-        CAL_H_END,
-      ]).day,
-  )
+  // Единый диапазон часов на всю неделю: базовое окно 09–21, растянутое
+  // до самого раннего/позднего занятия недели.
+  const allItems = dates.flatMap((d) => collectDayItems(d, trainings, students, groups))
+  const [hStart, hEnd] = hourRange(allItems, CAL_WEEK_H_START, CAL_WEEK_H_END)
+
+  return {
+    days: dates.map(
+      (d) => buildCalendarDay(d, trainings, students, groups, [hStart, hEnd]).day,
+    ),
+    hStart,
+    hEnd,
+  }
 }
 
 export function formatWeekRange(weekStart: Date): string {

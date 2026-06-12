@@ -20,6 +20,8 @@ const tkColors = {
     border: '#1c1c21', // --tk-border-default
     segTrack: '#17171b', // --tk-surface-hover
     segItem: '#8a8a92', // --tk-text-secondary
+    accentSubtleBg: 'rgba(139, 126, 240, 0.1)', // --tk-accent-subtle-bg
+    accentText: '#a89ef5', // --tk-accent-text
   },
   light: {
     accent: '#6c5cf0',
@@ -33,6 +35,8 @@ const tkColors = {
     border: '#e7e3d9',
     segTrack: '#f4f2ec',
     segItem: '#6e6a60',
+    accentSubtleBg: 'rgba(108, 92, 240, 0.08)', // --tk-accent-subtle-bg
+    accentText: '#5b4ce0', // --tk-accent-text
   },
 }
 
@@ -73,12 +77,14 @@ export function getAntdTheme(mode: ThemeMode): ThemeConfig {
     components: {
       Button: buttonComponent,
       // Единый вид переключателей: трек на --tk-surface-hover, активный
-      // сегмент — акцент с контрастным текстом.
+      // сегмент — subtle-подложка с accent-текстом (сплошной accent
+      // зарезервирован за мелкими индикаторами); обводка выбранного
+      // сегмента — в design-tokens.scss (antd-токена под неё нет).
       Segmented: {
         trackBg: c.segTrack,
         itemColor: c.segItem,
-        itemSelectedBg: c.accent,
-        itemSelectedColor: '#ffffff', // --tk-accent-contrast
+        itemSelectedBg: c.accentSubtleBg,
+        itemSelectedColor: c.accentText,
         controlHeight: 44,
       },
     },

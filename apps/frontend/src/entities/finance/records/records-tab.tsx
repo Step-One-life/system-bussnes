@@ -39,7 +39,7 @@ export function RecordsTab() {
           value={records.query}
           onChange={handleQueryChange}
         />
-        <Button type="primary" icon={<PlusOutlined />} onClick={handleOpenAdd}>
+        <Button className="tk-btn-primary" icon={<PlusOutlined />} onClick={handleOpenAdd}>
           {t('finance.records.add')}
         </Button>
       </div>

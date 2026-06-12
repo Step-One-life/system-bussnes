@@ -43,7 +43,11 @@ export function TrainingsPage() {
     <div>
       <PageHeader
         title={t('trainings.title')}
-        subtitle={t('trainings.recordsCount', { count: page.trainings.length })}
+        subtitle={
+          page.view === 'calendar'
+            ? t('trainings.weekCount', { count: page.weekCount })
+            : t('trainings.recordsCount', { count: page.trainings.length })
+        }
         actions={
           <>
             <div className="view-toggle">
@@ -64,7 +68,7 @@ export function TrainingsPage() {
                 <UnorderedListOutlined />
               </button>
             </div>
-            <Button type="primary" icon={<PlusOutlined />} onClick={page.openTypeModal}>
+            <Button className="tk-btn-primary" icon={<PlusOutlined />} onClick={page.openTypeModal}>
               {t('trainings.record')}
             </Button>
           </>
@@ -80,6 +84,8 @@ export function TrainingsPage() {
           trainings={page.trainings}
           students={page.students}
           groups={page.groups}
+          weekStart={page.weekStart}
+          onWeekStartChange={page.setWeekStart}
           onBlockClick={page.setCalendarBlock}
         />
       ) : page.trainings.length ? (

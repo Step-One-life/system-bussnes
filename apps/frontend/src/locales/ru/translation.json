@@ -244,6 +244,9 @@
     "recordsCount": "{{count}} занятие",
     "recordsCount_few": "{{count}} занятия",
     "recordsCount_many": "{{count}} занятий",
+    "weekCount": "На этой неделе: {{count}} занятие",
+    "weekCount_few": "На этой неделе: {{count}} занятия",
+    "weekCount_many": "На этой неделе: {{count}} занятий",
     "empty": "Занятий пока нет",
     "emptyText": "Создайте первое занятие",
     "viewList": "Список",
@@ -277,7 +280,10 @@
       "today": "Сегодня",
       "attendeesCount": "{{count}} чел.",
       "prevWeek": "Предыдущая неделя",
-      "nextWeek": "Следующая неделя"
+      "nextWeek": "Следующая неделя",
+      "legendNormal": "Занятие",
+      "legendScheduled": "Запланировано",
+      "legendPast": "Прошедшее"
     },
     "edit": {
       "title": "Редактировать занятие",
