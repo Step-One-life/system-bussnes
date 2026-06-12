@@ -1,4 +1,9 @@
-import { findOverlaps, type ExistingTraining } from './training-overlap'
+import {
+  findOverlaps,
+  scheduleSlotsForDate,
+  type ExistingTraining,
+  type ScheduleGroupInfo,
+} from './training-overlap'
 
 const ex = (id: string, date: string, time: string, dur = 60): ExistingTraining => ({
   id,
@@ -60,5 +65,74 @@ describe('findOverlaps', () => {
       [ex('a', '2026-06-09', '18:45', 60)],
     )
     expect(out.map((t) => t.id)).toEqual(['a'])
+  })
+})
+
+// 2026-06-16 — вторник
+const grp = (
+  id: string,
+  schedule: { day: string; time: string }[],
+  over: Partial<ScheduleGroupInfo> = {},
+): ScheduleGroupInfo => ({
+  id,
+  name: id,
+  duration: 60,
+  isIndividual: false,
+  schedule,
+  ...over,
+})
+
+describe('scheduleSlotsForDate', () => {
+  it('слот группы в день недели даты становится кандидатом с длительностью группы', () => {
+    const out = scheduleSlotsForDate(
+      '2026-06-16',
+      [grp('тхэквондо', [{ day: 'Вт', time: '17:30' }], { duration: 90 })],
+      [],
+    )
+    expect(out).toEqual([
+      { id: 'sched:тхэквондо:17:30', date: '2026-06-16', time: '17:30', sessionDuration: 90 },
+    ])
+  })
+
+  it('слоты других дней недели не попадают', () => {
+    const out = scheduleSlotsForDate(
+      '2026-06-16',
+      [grp('тхэквондо', [{ day: 'Ср', time: '17:30' }])],
+      [],
+    )
+    expect(out).toEqual([])
+  })
+
+  it('группа с записанной тренировкой на эту дату пропускается (реальная запись уже в проверке)', () => {
+    const out = scheduleSlotsForDate(
+      '2026-06-16',
+      [grp('тхэквондо', [{ day: 'Вт', time: '17:30' }])],
+      ['тхэквондо'],
+    )
+    expect(out).toEqual([])
+  })
+
+  it('группа самого кандидата исключается (отметка своего же слота)', () => {
+    const out = scheduleSlotsForDate(
+      '2026-06-16',
+      [grp('тхэквондо', [{ day: 'Вт', time: '17:30' }])],
+      [],
+      'тхэквондо',
+    )
+    expect(out).toEqual([])
+  })
+
+  it('индивидуальные группы пропускаются (их план — реальные записи)', () => {
+    const out = scheduleSlotsForDate(
+      '2026-06-16',
+      [grp('инд', [{ day: 'Вт', time: '17:30' }], { isIndividual: true })],
+      [],
+    )
+    expect(out).toEqual([])
+  })
+
+  it('слот без времени игнорируется', () => {
+    const out = scheduleSlotsForDate('2026-06-16', [grp('г', [{ day: 'Вт', time: '' }])], [])
+    expect(out).toEqual([])
   })
 })

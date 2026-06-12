@@ -1,4 +1,8 @@
-import { seriesForbiddenFields, seriesUpdateFields } from './series-update'
+import {
+  occurrencesNeedingOverlapCheck,
+  seriesForbiddenFields,
+  seriesUpdateFields,
+} from './series-update'
 
 describe('seriesUpdateFields', () => {
   it('берёт только распространяемые поля', () => {
@@ -40,5 +44,25 @@ describe('seriesForbiddenFields', () => {
 
   it('игнорирует isPrime — он пересчитывается по каждому занятию', () => {
     expect(seriesForbiddenFields({ isPrime: true })).toEqual([])
+  })
+})
+
+describe('occurrencesNeedingOverlapCheck', () => {
+  const occ = (id: string, time: string) => ({ id, time })
+
+  it('время не передано — проверять нечего', () => {
+    expect(occurrencesNeedingOverlapCheck([occ('a', '20:00')], undefined)).toEqual([])
+  })
+
+  it('время не меняется — занятия не проверяются (легаси-наложение не блокирует сейв)', () => {
+    expect(occurrencesNeedingOverlapCheck([occ('a', '20:00'), occ('b', '20:00')], '20:00')).toEqual(
+      [],
+    )
+  })
+
+  it('проверяются только занятия, у которых время реально меняется', () => {
+    const a = occ('a', '20:00')
+    const b = occ('b', '19:00')
+    expect(occurrencesNeedingOverlapCheck([a, b], '20:00')).toEqual([b])
   })
 })

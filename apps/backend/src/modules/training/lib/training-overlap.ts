@@ -43,3 +43,49 @@ export function findOverlaps(
     return start < e && s < end
   })
 }
+
+export interface ScheduleGroupInfo {
+  id: string
+  name: string
+  duration: number
+  isIndividual: boolean
+  schedule: { day: string; time: string }[]
+}
+
+/** День недели даты в формате расписаний групп ('Пн'…'Вс'). */
+const DAY_ABBRS = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб']
+function dayAbbrOf(date: string): string {
+  return DAY_ABBRS[new Date(date + 'T00:00:00').getDay()]
+}
+
+/**
+ * Слоты расписаний групп на дату как кандидаты пересечения для `findOverlaps`
+ * («Запланировано» в календаре — тоже занятие). Слот группы участвует, только
+ * если у группы нет записанной тренировки на эту дату (иначе реальная запись
+ * уже в проверке — слот в календаре подавляется ею). Группа самого кандидата
+ * исключается: отметка её же слота создаёт тренировку ровно в это время.
+ * Индивидуальные группы пропускаются — их план хранится реальными записями.
+ */
+export function scheduleSlotsForDate(
+  date: string,
+  groups: ScheduleGroupInfo[],
+  groupIdsWithTraining: string[],
+  excludeGroupId?: string | null,
+): ExistingTraining[] {
+  const day = dayAbbrOf(date)
+  const recorded = new Set(groupIdsWithTraining)
+  const out: ExistingTraining[] = []
+  for (const g of groups) {
+    if (g.isIndividual || g.id === excludeGroupId || recorded.has(g.id)) continue
+    for (const slot of g.schedule ?? []) {
+      if (slot.day !== day || !slot.time) continue
+      out.push({
+        id: `sched:${g.id}:${slot.time}`,
+        date,
+        time: slot.time,
+        sessionDuration: g.duration || 60,
+      })
+    }
+  }
+  return out
+}

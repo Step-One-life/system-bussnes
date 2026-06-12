@@ -68,20 +68,6 @@
   }
 }
 
-/* Мобильная пилюля «Отметить день» — success-subtle заливка */
-.btn-mark-tint.ant-btn:not(:disabled) {
-  background: var(--tk-success-subtle-bg);
-  border-color: var(--tk-success-subtle-border);
-  color: var(--tk-success-text);
-
-  &:hover,
-  &:focus {
-    background: var(--tk-success-subtle-bg) !important;
-    border-color: var(--tk-success-text) !important;
-    color: var(--tk-success-text) !important;
-  }
-}
-
 /* Мобильная пилюля «Оплаты» — warning-subtle заливка */
 .btn-unpaid.ant-btn:not(:disabled) {
   background: var(--tk-warning-subtle-bg);
@@ -170,8 +156,8 @@
       }
     }
 
-    /* Зелёная пилюля главного действия шире янтарной */
-    .btn-mark-tint {
+    /* Пилюля главного действия шире янтарной */
+    .home-actions__mark {
       flex: 1.3;
     }
   }

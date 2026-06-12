@@ -24,11 +24,12 @@ import type { VisitBilling } from '../student/visit.model'
 import { CreateTrainingDto } from './dto/create-training.dto'
 import { attendancePricing } from './lib/attendance-pricing'
 import {
+  occurrencesNeedingOverlapCheck,
   seriesForbiddenFields,
   seriesUpdateFields,
   type SeriesUpdateInput,
 } from './lib/series-update'
-import { findOverlaps } from './lib/training-overlap'
+import { findOverlaps, scheduleSlotsForDate, type ExistingTraining } from './lib/training-overlap'
 import { Training } from './training.model'
 
 /** Результат биллинга одного ученика при отметке. */
@@ -78,20 +79,14 @@ export class TrainingService extends OwnedCrudService<Training> {
     deductSessions = true,
   ): Promise<Training> {
     // Серверный барьер от наслоения: занятие с временем не должно пересекаться
-    // по времени с другим занятием тренера в тот же день. Сидер (deductSessions
-    // = false) создаёт исторические записи и проверку пропускает.
+    // по времени с другим занятием тренера в тот же день (включая ещё не
+    // записанные слоты расписаний групп). Сидер (deductSessions = false)
+    // создаёт исторические записи и проверку пропускает.
     if (deductSessions && dto.time) {
-      const sameDay = await this.trainingModel.findAll({
-        where: { userId, date: dto.date },
-      })
+      const candidates = await this.overlapCandidatesFor(userId, dto.date, dto.groupId)
       const overlaps = findOverlaps(
         { date: dto.date, time: dto.time, durationMinutes: dto.sessionDuration ?? 60 },
-        sameDay.map((t) => ({
-          id: t.id,
-          date: t.date,
-          time: t.time,
-          sessionDuration: t.sessionDuration,
-        })),
+        candidates,
       )
       if (overlaps.length) {
         throw new ConflictException('Время занятия пересекается с другим занятием')
@@ -133,8 +128,63 @@ export class TrainingService extends OwnedCrudService<Training> {
     return this.findOneForUser(userId, training.id)
   }
 
-  /** Обновление + постановка синхронизации события. */
+  /**
+   * Кандидаты наложения на дату: реальные занятия дня + слоты расписаний
+   * групп («Запланировано» в календаре). Слот подавляется записанной
+   * тренировкой своей группы; `excludeGroupId` исключает слот группы самого
+   * кандидата (см. scheduleSlotsForDate).
+   */
+  private async overlapCandidatesFor(
+    userId: string,
+    date: string,
+    excludeGroupId?: string | null,
+  ): Promise<ExistingTraining[]> {
+    const [sameDay, groups] = await Promise.all([
+      this.trainingModel.findAll({ where: { userId, date } }),
+      this.groupModel.findAll({ where: { userId } }),
+    ])
+    const real = sameDay.map((t) => ({
+      id: t.id,
+      date: t.date,
+      time: t.time,
+      sessionDuration: t.sessionDuration,
+    }))
+    const slots = scheduleSlotsForDate(
+      date,
+      groups.map((g) => ({
+        id: g.id,
+        name: g.name,
+        duration: g.duration,
+        isIndividual: g.isIndividual,
+        schedule: g.schedule ?? [],
+      })),
+      sameDay.map((t) => t.groupId),
+      excludeGroupId,
+    )
+    return [...real, ...slots]
+  }
+
+  /**
+   * Обновление + постановка синхронизации события. Смена даты/времени
+   * проходит тот же барьер наложений, что и создание (исключая само занятие);
+   * правки без смены даты/времени не блокируются давними наложениями.
+   */
   async updateForUser(userId: string, id: string, data: object): Promise<Training> {
+    const changes = data as { date?: string; time?: string }
+    const current = await this.findOneForUser(userId, id)
+    const date = changes.date ?? current.date
+    const time = changes.time ?? current.time
+    if (time && (date !== current.date || time !== current.time)) {
+      const candidates = await this.overlapCandidatesFor(userId, date, current.groupId)
+      const overlaps = findOverlaps(
+        { date, time, durationMinutes: current.sessionDuration || 60 },
+        candidates,
+        [id],
+      )
+      if (overlaps.length) {
+        throw new ConflictException('Время занятия пересекается с другим занятием')
+      }
+    }
     const training = await super.updateForUser(userId, id, data)
     await this.calendarSync.enqueueUpsert(userId, training.id, training.time)
     return training
@@ -160,27 +210,20 @@ export class TrainingService extends OwnedCrudService<Training> {
     const fields = seriesUpdateFields(dto)
     const trainings = await this.trainingModel.findAll({ where: { userId, recurringId } })
     // Смена времени применяется ко всей серии — проверяем, что ни одно занятие
-    // серии не наслаивается на занятие вне серии в свою дату. Сначала проверяем
-    // все, и только потом сохраняем (не оставляем серию частично сдвинутой).
-    if (fields.time !== undefined) {
-      const seriesIds = trainings.map((t) => t.id)
-      for (const t of trainings) {
-        const sameDay = await this.trainingModel.findAll({
-          where: { userId, date: t.date },
-        })
-        const overlaps = findOverlaps(
-          { date: t.date, time: fields.time, durationMinutes: t.sessionDuration },
-          sameDay.map((x) => ({
-            id: x.id,
-            date: x.date,
-            time: x.time,
-            sessionDuration: x.sessionDuration,
-          })),
-          seriesIds,
-        )
-        if (overlaps.length) {
-          throw new ConflictException(`Серия пересекается с другим занятием (${t.date})`)
-        }
+    // серии не наслаивается на занятие вне серии в свою дату. Проверяются
+    // только занятия, у которых время реально меняется: сейв без сдвига не
+    // блокируется давним (до-барьерным) наложением. Сначала проверяем все,
+    // и только потом сохраняем (не оставляем серию частично сдвинутой).
+    const seriesIds = trainings.map((t) => t.id)
+    for (const t of occurrencesNeedingOverlapCheck(trainings, fields.time)) {
+      const candidates = await this.overlapCandidatesFor(userId, t.date, t.groupId)
+      const overlaps = findOverlaps(
+        { date: t.date, time: fields.time!, durationMinutes: t.sessionDuration },
+        candidates,
+        seriesIds,
+      )
+      if (overlaps.length) {
+        throw new ConflictException(`Серия пересекается с другим занятием (${t.date})`)
       }
     }
     for (const t of trainings) {

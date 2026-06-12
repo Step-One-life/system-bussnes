@@ -91,19 +91,30 @@ export function useEditTraining({ training, onDone }: UseEditTrainingOptions) {
     onDone()
   }
 
+  // Ошибка сохранения (например, 409 с бэка) не должна «глотаться» молча —
+  // показываем сообщение бэка тостом.
+  const showSaveError = (e: unknown) => {
+    toast({ type: 'error', title: e instanceof Error ? e.message : t('common.error') })
+  }
+
   const submit = async () => {
     if (!training) return
-    const live = await checkTrainingConflict(date, time, training.groupId, training.id)
-    if (live.length) {
-      const detail = live.map((c) => `«${c.groupId}» ${c.start}–${c.end}`).join(', ')
-      toast({ type: 'error', title: t('trainings.group.scheduleConflict'), msg: detail })
-      return
+    // Конфликт проверяется только при реальной смене даты/времени: правка
+    // заметки/локации не блокируется давним (до-барьерным) наложением.
+    const moved = date !== training.date || time !== training.time
+    if (moved) {
+      const live = await checkTrainingConflict(date, time, training.groupId, training.id)
+      if (live.length) {
+        const detail = live.map((c) => `«${c.groupId}» ${c.start}–${c.end}`).join(', ')
+        toast({ type: 'error', title: t('trainings.group.scheduleConflict'), msg: detail })
+        return
+      }
     }
     if (isRecurring) {
       setScopeOpen(true)
       return
     }
-    await saveSingle()
+    await saveSingle().catch(showSaveError)
   }
 
   const confirmScope = async (scope: 'single' | 'series') => {
@@ -111,28 +122,31 @@ export function useEditTraining({ training, onDone }: UseEditTrainingOptions) {
     if (scope === 'series') {
       if (!training?.recurringId) return
       // Смена времени применяется ко ВСЕЙ серии — проверяем конфликт по каждой
-      // её дате с новым временем, исключая сами занятия серии.
-      const series = trainings.filter((t) => t.recurringId === training.recurringId)
-      const seriesIds = series.map((t) => t.id)
-      const conflictDates = (
-        await checkSeriesConflicts(
-          series.map((s) => ({ date: s.date, sessionDuration: s.sessionDuration })),
-          time,
-          training.groupId,
-          seriesIds,
-        )
-      ).map(formatDateShort)
-      if (conflictDates.length) {
-        toast({
-          type: 'error',
-          title: t('trainings.group.scheduleConflict'),
-          msg: conflictDates.join(', '),
-        })
-        return
+      // её дате с новым временем, исключая сами занятия серии. Без смены
+      // времени проверка не нужна (наложений сейв не добавляет).
+      if (time !== training.time) {
+        const series = trainings.filter((t) => t.recurringId === training.recurringId)
+        const seriesIds = series.map((t) => t.id)
+        const conflictDates = (
+          await checkSeriesConflicts(
+            series.map((s) => ({ date: s.date, sessionDuration: s.sessionDuration })),
+            time,
+            training.groupId,
+            seriesIds,
+          )
+        ).map(formatDateShort)
+        if (conflictDates.length) {
+          toast({
+            type: 'error',
+            title: t('trainings.group.scheduleConflict'),
+            msg: conflictDates.join(', '),
+          })
+          return
+        }
       }
-      await saveSeries()
+      await saveSeries().catch(showSaveError)
     } else {
-      await saveSingle()
+      await saveSingle().catch(showSaveError)
     }
   }
 

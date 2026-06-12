@@ -5,7 +5,7 @@ import map from 'lodash/map'
 import i18n from 'i18next'
 
 import { minutesToTime, timeToMinutes } from 'common/utils/date'
-import { weekdayShortLabel } from 'common/utils/weekdays'
+import { WEEKDAY_ABBRS, weekdayShortLabel } from 'common/utils/weekdays'
 import { getGroups } from 'entities/groups/model/groups.repo'
 import { getStudents } from 'entities/students/model/students.repo'
 
@@ -24,9 +24,39 @@ import { isPrimeTime } from '@trikick/shared'
 // и бэка.
 export { isPrimeTime }
 
+/** День недели даты в формате расписаний групп ('Пн'…'Вс'). */
+function dayAbbrOf(date: string): string {
+  return WEEKDAY_ABBRS[(new Date(date + 'T00:00:00').getDay() + 6) % 7]
+}
+
+/**
+ * Слоты расписаний групп на дату — «Запланировано» в календаре тоже занятие.
+ * Слот участвует, только если у группы нет записанной тренировки на эту дату
+ * (иначе реальная запись уже в проверке) и это не группа самого кандидата
+ * (отметка её слота создаёт тренировку ровно в это время). Зеркало серверной
+ * логики `scheduleSlotsForDate` (backend lib/training-overlap).
+ */
+function scheduleSlots(
+  allTrainings: Training[],
+  groups: Group[],
+  date: string,
+  candidateGroupId: string,
+): { groupId: string; time: string; duration: number }[] {
+  const day = dayAbbrOf(date)
+  const recorded = new Set(map(filter(allTrainings, (t) => t.date === date), (t) => t.groupId))
+  return groups
+    .filter((g) => !g.isIndividual && g.name !== candidateGroupId && !recorded.has(g.name))
+    .flatMap((g) =>
+      (g.schedule ?? [])
+        .filter((s) => s.day === day && s.time)
+        .map((s) => ({ groupId: g.name, time: s.time, duration: g.duration ?? 60 })),
+    )
+}
+
 /** Чистая проверка наслоения по уже загруженным данным. */
 function findConflicts(
   allTrainings: Training[],
+  allGroups: Group[],
   groupMap: Record<string, Group>,
   date: string,
   time: string,
@@ -59,10 +89,23 @@ function findConflicts(
     return newStart < end && start < newEnd
   })
 
-  return map(overlapping, (t) => {
+  const conflicts = map(overlapping, (t) => {
     const end = timeToMinutes(t.time) + durationOf(t)
     return { groupId: t.groupId, start: t.time, end: minutesToTime(end) }
   })
+
+  const slotConflicts = scheduleSlots(allTrainings, allGroups, date, groupId)
+    .filter((s) => {
+      const start = timeToMinutes(s.time)
+      return newStart < start + s.duration && start < newEnd
+    })
+    .map((s) => ({
+      groupId: s.groupId,
+      start: s.time,
+      end: minutesToTime(timeToMinutes(s.time) + s.duration),
+    }))
+
+  return [...conflicts, ...slotConflicts]
 }
 
 const toExcludeIds = (excludeId: string | string[] | null): string[] =>
@@ -79,7 +122,16 @@ export async function checkTrainingConflict(
   if (!time) return []
   const [allTrainings, allGroups] = await Promise.all([getTrainings(), getGroups()])
   const groupMap: Record<string, Group> = Object.fromEntries(map(allGroups, (g) => [g.name, g]))
-  return findConflicts(allTrainings, groupMap, date, time, groupId, toExcludeIds(excludeId), sessionDuration)
+  return findConflicts(
+    allTrainings,
+    allGroups,
+    groupMap,
+    date,
+    time,
+    groupId,
+    toExcludeIds(excludeId),
+    sessionDuration,
+  )
 }
 
 export interface SeriesSlot {
@@ -104,8 +156,16 @@ export async function checkSeriesConflicts(
   return slots
     .filter(
       (s) =>
-        findConflicts(allTrainings, groupMap, s.date, time, groupId, excludeIds, s.sessionDuration)
-          .length > 0,
+        findConflicts(
+          allTrainings,
+          allGroups,
+          groupMap,
+          s.date,
+          time,
+          groupId,
+          excludeIds,
+          s.sessionDuration,
+        ).length > 0,
     )
     .map((s) => s.date)
 }
