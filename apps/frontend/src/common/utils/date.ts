@@ -61,3 +61,10 @@ export function toLocalISODate(d: Date): string {
 export function todayISO(): string {
   return toLocalISODate(new Date())
 }
+
+/** Yesterday's local calendar date as YYYY-MM-DD. */
+export function yesterdayISO(): string {
+  const d = new Date()
+  d.setDate(d.getDate() - 1)
+  return toLocalISODate(d)
+}
