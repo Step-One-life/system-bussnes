@@ -97,10 +97,12 @@
   --tk-accent-subtle-border: rgba(139, 126, 240, 0.4);
   --tk-accent-text: #a89ef5;
 
-  --tk-success-text: #7da588;
-  --tk-success-subtle-bg: rgba(125, 165, 136, 0.12);
-  --tk-success-subtle-border: rgba(125, 165, 136, 0.35);
-  --tk-success-dot: #7da588;
+  /* Ярче прочих статусов не делаем, но и не глушим: яркость сопоставима
+     с warning #d9b36a — иначе success-пилюли на тёмном «теряются» */
+  --tk-success-text: #97c7a3;
+  --tk-success-subtle-bg: rgba(151, 199, 163, 0.14);
+  --tk-success-subtle-border: rgba(151, 199, 163, 0.4);
+  --tk-success-dot: #97c7a3;
 
   --tk-warning-text: #d9b36a;
   --tk-warning-subtle-bg: rgba(217, 179, 106, 0.12);

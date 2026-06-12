@@ -41,6 +41,19 @@
     border: 1px solid var(--tk-border-default);
     border-radius: var(--tk-radius-card);
     padding: var(--sp-4) var(--sp-5);
+    /* Узкая карточка: кнопка не отъедает ширину у текста, а переносится
+       под него (текст держит минимум через flex-basis у __main) */
+    flex-wrap: wrap;
+
+    .warning-item__main {
+      flex-basis: 240px;
+    }
+
+    /* После переноса на свою строку кнопка прижата вправо; в одной строке
+       с текстом auto-маргин не действует — место забирает flex-grow __main */
+    .ant-btn {
+      margin-left: auto;
+    }
 
     .warning-item__status-dot {
       width: 5px;
@@ -48,12 +61,15 @@
       border-radius: 50%;
       flex-shrink: 0;
       background: var(--tk-warning-dot);
+      /* Точка по центру ПЕРВОЙ строки имени (1.4 — line-height __name) */
+      margin-top: calc((1.4em - 5px) / 2);
     }
 
     .warning-item__name {
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       gap: var(--sp-2);
+      line-height: 1.4;
       color: var(--tk-text-primary);
     }
 
