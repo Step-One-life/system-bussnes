@@ -222,7 +222,10 @@
       "student": "Student:",
       "group": "Group:",
       "typeLabel": "Subscription type",
-      "dateLabel": "Start date"
+      "dateLabel": "Start date",
+      "paidNow": "Paid now",
+      "paidNowHint": "a payment of {{amount}} ₽ will be created",
+      "priceLine": "{{label}} · {{amount}} ₽"
     },
     "issue": {
       "title": "Issue subscription",

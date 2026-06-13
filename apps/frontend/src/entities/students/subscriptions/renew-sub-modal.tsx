@@ -1,15 +1,18 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 
-import { Button, DatePicker, Form, Modal, Select } from 'antd'
+import { Button, DatePicker, Form, Select, Switch } from 'antd'
 
 import { useTranslation } from 'react-i18next'
 
-import { useToast } from 'common/ui'
+import { AdaptiveSheet, useToast } from 'common/ui'
 import { todayISO } from 'common/utils/date'
+import { autoCreatePayment } from 'entities/finance/lib/auto-payment'
 import { resolvePricingRule, subTypeToTuple } from 'entities/finance/lib/pricing-lookup'
 import { useGroups } from 'entities/groups/api/use-groups'
 
 import { useAddSubscription, useStudents } from '../api/use-students'
+import { linkPaymentToSub } from '../model/students.repo'
 
 import type { SubscriptionType } from '../model/types'
 import type { Dayjs } from 'dayjs'
@@ -42,33 +45,81 @@ export function RenewSubModal({
   const addSubscription = useAddSubscription()
   const { data: groups = [] } = useGroups()
   const { data: students = [] } = useStudents()
-  const [type, setType] = useState<SubscriptionType>('8')
   const [date, setDate] = useState(todayISO())
+  const [paidNow, setPaidNow] = useState(true)
+
+  // Группа и имя группы для поиска prevSub
+  const group = groups.find((g) => g.id === groupId) ?? null
+  const groupName = group?.name ?? groupId
+
+  // Предыдущий абонемент ученика по данной группе (вычисляется на уровне рендера)
+  const prevSub = useMemo(() => {
+    const subs = students.find((s) => s.id === studentId)?.subscriptions ?? []
+    return (
+      [...subs]
+        .filter((s) => s.groupId === groupName)
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0] ??
+      null
+    )
+  }, [students, studentId, groupName])
+
+  // Тип по умолчанию — как у прошлого абонемента (нормализован к '1'/'4'/'8')
+  const baseType = (prevSub?.type ?? '8').replace('_90', '').replace('_pair', '') as SubscriptionType
+  const [type, setType] = useState<SubscriptionType>(baseType)
+  const [seededFor, setSeededFor] = useState(prevSub?.id)
+  // Паттерн «adjust state during render»: если prevSub сменился — пересинхронизируем тип
+  if (seededFor !== prevSub?.id) {
+    setSeededFor(prevSub?.id)
+    setType(baseType)
+  }
+
+  // Живая цена выбранного типа абонемента
+  const { data: priceRule } = useQuery({
+    queryKey: ['renew-price', groupId, type],
+    queryFn: () =>
+      resolvePricingRule(group?.locationId ?? null, subTypeToTuple(type, group?.isIndividual ?? false)),
+    enabled: open,
+  })
+  const slot = prevSub?.timeSlot ?? 'regular'
+  const price = priceRule?.rule
+    ? slot === 'prime'
+      ? priceRule.rule.client_prime_price
+      : priceRule.rule.client_price
+    : null
 
   const submit = async () => {
-    const group = groups.find((g) => g.id === groupId) ?? null
+    // Получаем validity_days через отдельный запрос (не из priceRule кэша — гарантия актуальности)
     const { rule } = await resolvePricingRule(
       group?.locationId ?? null,
       subTypeToTuple(type, group?.isIndividual ?? false),
     )
-    // Продление наследует слот (прайм/обычный) от предыдущего абонемента группы,
-    // чтобы прайм-клиент при продлении не сбрасывался на «обычный».
-    const groupName = group?.name ?? groupId
-    const prevSub =
-      [...(students.find((s) => s.id === studentId)?.subscriptions ?? [])]
-        .filter((s) => s.groupId === groupName)
-        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0] ??
-      null
-    await addSubscription.mutateAsync({
+
+    const createdSub = await addSubscription.mutateAsync({
       studentId,
       data: {
         groupId,
         type,
         createdAt: date,
         validityDays: rule?.validity_days,
+        // Продление наследует слот (прайм/обычный) от предыдущего абонемента группы
         timeSlot: prevSub?.timeSlot ?? 'regular',
       },
     })
+
+    if (paidNow && createdSub) {
+      const fin = await autoCreatePayment(
+        studentId,
+        { id: createdSub.id, type, createdAt: date },
+        group?.isIndividual ?? false,
+        { isPrime: slot === 'prime', locationId: group?.locationId ?? null },
+      )
+      if (fin) {
+        await linkPaymentToSub(studentId, createdSub.id, fin.paymentId)
+      } else {
+        toast({ type: 'warn', title: t('finance.autoRecord.noTariff') })
+      }
+    }
+
     toast({
       type: 'success',
       title: issueMode ? t('subscriptions.issue.created') : t('subscriptions.renew.subRenewed'),
@@ -83,19 +134,20 @@ export function RenewSubModal({
     setDate(d ? d.format('YYYY-MM-DD') : date)
 
   return (
-    <Modal
+    <AdaptiveSheet
       open={open}
       title={issueMode ? t('subscriptions.issue.title') : t('subscriptions.renew.title')}
-      onCancel={onClose}
-      destroyOnHidden
-      footer={[
-        <Button key="cancel" onClick={onClose}>
-          {t('common.cancel')}
-        </Button>,
-        <Button key="save" type="primary" loading={addSubscription.isPending} onClick={submit}>
-          {issueMode ? t('subscriptions.issue.createBtn') : t('common.extend')}
-        </Button>,
-      ]}
+      onClose={onClose}
+      footer={
+        <>
+          <Button key="cancel" onClick={onClose}>
+            {t('common.cancel')}
+          </Button>
+          <Button key="save" type="primary" loading={addSubscription.isPending} onClick={submit}>
+            {issueMode ? t('subscriptions.issue.createBtn') : t('common.extend')}
+          </Button>
+        </>
+      }
     >
       <p style={{ color: 'var(--tk-text-secondary)', fontSize: '0.85rem' }}>
         {t('subscriptions.renew.student')} <strong>{studentName}</strong>
@@ -114,6 +166,11 @@ export function RenewSubModal({
             ]}
           />
         </Form.Item>
+        {price !== null && (
+          <div style={{ color: 'var(--tk-text-secondary)', fontSize: 'var(--tk-fs-small)', marginTop: 'calc(-1 * var(--sp-2))', marginBottom: 'var(--sp-3)' }}>
+            {t('subscriptions.renew.priceLine', { label: t(`students.subTypes.${type}`, { defaultValue: type }), amount: price })}
+          </div>
+        )}
         <Form.Item label={t('subscriptions.renew.dateLabel')}>
           <DatePicker
             format="DD.MM.YYYY"
@@ -122,7 +179,20 @@ export function RenewSubModal({
             onChange={handleDateChange}
           />
         </Form.Item>
+        <Form.Item>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-2)' }}>
+            <Switch checked={paidNow} onChange={setPaidNow} />
+            <span>
+              {t('subscriptions.renew.paidNow')}
+              {paidNow && price !== null && (
+                <span style={{ display: 'block', color: 'var(--tk-text-tertiary)', fontSize: 'var(--tk-fs-caption)' }}>
+                  {t('subscriptions.renew.paidNowHint', { amount: price })}
+                </span>
+              )}
+            </span>
+          </div>
+        </Form.Item>
       </Form>
-    </Modal>
+    </AdaptiveSheet>
   )
 }

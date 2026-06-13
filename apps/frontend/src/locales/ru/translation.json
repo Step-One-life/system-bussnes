@@ -222,7 +222,10 @@
       "student": "Ученик:",
       "group": "Группа:",
       "typeLabel": "Тип абонемента",
-      "dateLabel": "Дата начала"
+      "dateLabel": "Дата начала",
+      "paidNow": "Оплачен сразу",
+      "paidNowHint": "создастся платёж {{amount}} ₽",
+      "priceLine": "{{label}} · {{amount}} ₽"
     },
     "issue": {
       "title": "Оформить абонемент",
