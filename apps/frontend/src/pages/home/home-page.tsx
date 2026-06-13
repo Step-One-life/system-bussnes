@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next'
 
 import { useNow } from 'common/hooks/use-now'
 import { ErrorState, ListSkeleton, PageHeader, WarningItem } from 'common/ui'
-import { todayISO, yesterdayISO } from 'common/utils/date'
+import { formatDateShort, todayISO, yesterdayISO } from 'common/utils/date'
 import { MarkPaidModal } from 'entities/finance'
 import { StudentDrawer } from 'entities/students'
 import { RenewSubModal } from 'entities/students/subscriptions/renew-sub-modal'
@@ -297,7 +297,7 @@ export function HomePage() {
               {page.yesterdayUnmarked > 0 && (
                 <WarningItem
                   name={t('home.attentionYesterday', { count: page.yesterdayUnmarked })}
-                  detail=""
+                  detail={formatDateShort(yesterdayISO())}
                   onClick={handleOpenYesterday}
                   action={
                     <Button
