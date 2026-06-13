@@ -11,10 +11,11 @@ import {
 import { useTranslation } from 'react-i18next'
 
 import { StatusBadge } from 'common/ui'
+import { todayISO } from 'common/utils/date'
 import { getSubStatus, subTypeLabel } from 'entities/students'
 import { RenewSubModal } from 'entities/students/subscriptions/renew-sub-modal'
 
-import { indKey, useMarkToday } from './use-mark-today'
+import { indKey, useDayMarking } from './use-day-marking'
 
 import type { ChangeEvent } from 'react'
 
@@ -50,8 +51,8 @@ export function MarkTodayModal({ open, onClose }: MarkTodayModalProps) {
     onClose()
   }
   const {
-    todayGroups,
-    todayIndividuals,
+    dayGroups: todayGroups,
+    dayIndividuals: todayIndividuals,
     students,
     checks,
     indChecks,
@@ -60,7 +61,7 @@ export function MarkTodayModal({ open, onClose }: MarkTodayModalProps) {
     initChecks,
     save,
     saving,
-  } = useMarkToday(open, handleClose)
+  } = useDayMarking(open, handleClose, todayISO())
 
   const [issueFor, setIssueFor] = useState<IssueTarget | null>(null)
 
@@ -140,7 +141,7 @@ export function MarkTodayModal({ open, onClose }: MarkTodayModalProps) {
                 type="primary"
                 block
                 loading={saving}
-                onClick={save}
+                onClick={() => save()}
               >
                 <CheckOutlined /> {t('home.markTodayModal.saveAttendance')}
               </Button>,

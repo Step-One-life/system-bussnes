@@ -4,12 +4,9 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 
 import { useToast } from 'common/ui'
-import { formatDayOfWeek, todayISO } from 'common/utils/date'
+import { formatDayOfWeek } from 'common/utils/date'
 import { groupKeys, useGroups } from 'entities/groups'
-import {
-  studentKeys,
-  useStudents,
-} from 'entities/students'
+import { getSubStatus, studentKeys, useStudents } from 'entities/students'
 import {
   createTraining,
   markAttendance,
@@ -18,12 +15,13 @@ import {
   useTrainings,
 } from 'entities/trainings'
 
+import { defaultGroupChecks, defaultIndChecks, indKey } from './day-marking-model'
+
 import type { Training } from 'entities/trainings'
 
-/** Ключ галочки индивидуальной строки: у парного занятия один trainingId на двоих. */
-export const indKey = (trainingId: string, studentId: string) => `${trainingId}:${studentId}`
+export { indKey }
 
-interface TodayGroup {
+export interface DayGroup {
   groupId: string
   time: string
   duration: number
@@ -31,7 +29,7 @@ interface TodayGroup {
   originalAttendees: Set<string>
 }
 
-interface TodayIndividual {
+export interface DayIndividual {
   trainingId: string
   studentId: string
   time: string
@@ -39,7 +37,16 @@ interface TodayIndividual {
   originalPresent: boolean
 }
 
-export function useMarkToday(open: boolean, onClose: () => void) {
+/** Явный выбор для save — у «Закрыть день» источник истины свой (галочки занятий). */
+export interface MarkSelection {
+  groups: Record<string, Set<string>>
+  ind: Record<string, boolean>
+}
+
+/** Отметить без активного абонемента нельзя — тап ведёт в оформление. */
+export const needsSub = (type: string) => type === 'none' || type === 'expired'
+
+export function useDayMarking(open: boolean, onClose: () => void, dateStr: string) {
   const { t } = useTranslation()
   const qc = useQueryClient()
   const toast = useToast()
@@ -47,24 +54,21 @@ export function useMarkToday(open: boolean, onClose: () => void) {
   const { data: students = [] } = useStudents()
   const { data: trainings = [] } = useTrainings()
 
-  const todayStr = todayISO()
-  const todayDow = formatDayOfWeek(todayStr)
+  const dow = formatDayOfWeek(dateStr)
 
-  // groupId → set of checked student ids (regular groups)
   const [checks, setChecks] = useState<Record<string, Set<string>>>({})
-  // trainingId → present flag (individual sessions)
   const [indChecks, setIndChecks] = useState<Record<string, boolean>>({})
   const [saving, setSaving] = useState(false)
 
-  const todayGroups: TodayGroup[] = useMemo(() => {
+  const dayGroups: DayGroup[] = useMemo(() => {
     if (!open) return []
-    const result: TodayGroup[] = []
+    const result: DayGroup[] = []
     for (const g of groups) {
       if (g.isIndividual) continue
-      const entry = (g.schedule ?? []).find((s) => s.day === todayDow)
+      const entry = (g.schedule ?? []).find((s) => s.day === dow)
       if (!entry) continue
       const existing =
-        trainings.find((t) => t.groupId === g.name && t.date === todayStr) ?? null
+        trainings.find((t) => t.groupId === g.name && t.date === dateStr) ?? null
       result.push({
         groupId: g.name,
         time: entry.time || '',
@@ -74,15 +78,15 @@ export function useMarkToday(open: boolean, onClose: () => void) {
       })
     }
     return result
-  }, [open, groups, trainings, todayDow, todayStr])
+  }, [open, groups, trainings, dow, dateStr])
 
-  const todayIndividuals: TodayIndividual[] = useMemo(() => {
+  const dayIndividuals: DayIndividual[] = useMemo(() => {
     if (!open) return []
-    const result: TodayIndividual[] = []
+    const result: DayIndividual[] = []
     for (const g of groups) {
       if (!g.isIndividual) continue
-      const todayTrs = trainings.filter((t) => t.groupId === g.name && t.date === todayStr)
-      for (const tr of todayTrs) {
+      const dayTrs = trainings.filter((t) => t.groupId === g.name && t.date === dateStr)
+      for (const tr of dayTrs) {
         // Отмеченные ∪ плановые: наполовину отмеченное парное показывает обоих,
         // плановый виден даже когда на занятии уже есть другие attendees.
         const planned = [tr.plannedStudentId, tr.plannedStudentId2].filter(
@@ -101,20 +105,27 @@ export function useMarkToday(open: boolean, onClose: () => void) {
       }
     }
     return result.sort((a, b) => a.time.localeCompare(b.time))
-  }, [open, groups, trainings, todayStr])
+  }, [open, groups, trainings, dateStr])
 
+  // Дефолт «все пришли»: неотмеченные занятия предотмечены составом/плановыми,
+  // кроме гейтнутых (нет активного абонемента); отмеченные — фактом.
   const initChecks = () => {
     const init: Record<string, Set<string>> = {}
-    for (const tg of todayGroups) {
-      init[tg.groupId] = new Set(tg.originalAttendees)
+    for (const dg of dayGroups) {
+      const members = students.filter((s) => s.groups.includes(dg.groupId))
+      init[dg.groupId] = defaultGroupChecks(
+        { existing: dg.existing },
+        members,
+        (s) => !needsSub(getSubStatus(s, dg.groupId, dg.duration).type),
+      )
     }
     setChecks(init)
-
-    const initInd: Record<string, boolean> = {}
-    for (const ti of todayIndividuals) {
-      initInd[indKey(ti.trainingId, ti.studentId)] = ti.originalPresent
-    }
-    setIndChecks(initInd)
+    setIndChecks(
+      defaultIndChecks(dayIndividuals, (slot) => {
+        const st = students.find((s) => s.id === slot.studentId)
+        return !!st && !needsSub(getSubStatus(st, slot.groupId).type)
+      }),
+    )
   }
 
   const toggle = (groupId: string, studentId: string) => {
@@ -133,23 +144,26 @@ export function useMarkToday(open: boolean, onClose: () => void) {
     setIndChecks((prev) => ({ ...prev, [key]: !prev[key] }))
   }
 
-  const save = async () => {
+  const save = async (selection?: MarkSelection) => {
+    const selGroups = selection?.groups ?? checks
+    const selInd = selection?.ind ?? indChecks
     setSaving(true)
     try {
       const noTariff: string[] = []
-      for (const tg of todayGroups) {
-        const checked = [...(checks[tg.groupId] ?? [])]
-        const toAdd = checked.filter((id) => !tg.originalAttendees.has(id))
-        const toRemove = [...tg.originalAttendees].filter((id) => !checked.includes(id))
+      for (const dg of dayGroups) {
+        if (!(dg.groupId in selGroups)) continue
+        const checked = [...(selGroups[dg.groupId] ?? [])]
+        const toAdd = checked.filter((id) => !dg.originalAttendees.has(id))
+        const toRemove = [...dg.originalAttendees].filter((id) => !checked.includes(id))
 
-        let training = tg.existing
+        let training = dg.existing
         if (!training && checked.length > 0) {
           training = await createTraining({
-            groupId: tg.groupId,
-            date: todayStr,
-            time: tg.time,
+            groupId: dg.groupId,
+            date: dateStr,
+            time: dg.time,
             attendees: [],
-            sessionDuration: tg.duration,
+            sessionDuration: dg.duration,
           })
         }
         if (!training) continue
@@ -164,8 +178,10 @@ export function useMarkToday(open: boolean, onClose: () => void) {
         }
       }
 
-      for (const ti of todayIndividuals) {
-        const isChecked = indChecks[indKey(ti.trainingId, ti.studentId)] ?? ti.originalPresent
+      for (const ti of dayIndividuals) {
+        const key = indKey(ti.trainingId, ti.studentId)
+        if (!(key in selInd)) continue
+        const isChecked = selInd[key]
         if (!isChecked && ti.originalPresent) {
           await removeAttendee(ti.trainingId, ti.studentId)
         } else if (isChecked && !ti.originalPresent) {
@@ -194,5 +210,5 @@ export function useMarkToday(open: boolean, onClose: () => void) {
     }
   }
 
-  return { todayGroups, todayIndividuals, students, checks, indChecks, toggle, toggleInd, initChecks, save, saving }
+  return { dayGroups, dayIndividuals, students, trainings, checks, indChecks, toggle, toggleInd, initChecks, save, saving }
 }

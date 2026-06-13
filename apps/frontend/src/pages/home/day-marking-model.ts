@@ -33,9 +33,9 @@ export interface IndSlotLike {
 }
 
 /** Дефолт индивидуальных строк: отмеченный — как есть, плановый — пришёл (если не гейтнут). */
-export function defaultIndChecks(
-  slots: IndSlotLike[],
-  canMark: (slot: IndSlotLike) => boolean,
+export function defaultIndChecks<S extends IndSlotLike>(
+  slots: S[],
+  canMark: (slot: S) => boolean,
 ): Record<string, boolean> {
   const out: Record<string, boolean> = {}
   for (const s of slots) {
