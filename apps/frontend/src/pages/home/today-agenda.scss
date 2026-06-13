@@ -98,6 +98,10 @@
     background: var(--tk-warning-dot);
   }
 
+  &__mark {
+    flex: none;
+  }
+
   &__check {
     flex-shrink: 0;
     color: var(--tk-success-text);

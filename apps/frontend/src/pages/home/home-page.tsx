@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next'
 
 import { useNow } from 'common/hooks/use-now'
 import { ErrorState, ListSkeleton, PageHeader, WarningItem } from 'common/ui'
+import { todayISO } from 'common/utils/date'
 import { MarkPaidModal } from 'entities/finance'
 import { StudentDrawer } from 'entities/students'
 import { RenewSubModal } from 'entities/students/subscriptions/renew-sub-modal'
@@ -24,11 +25,13 @@ import { buildAgendaItems, minutesOfDay } from './agenda-model'
 import { KpiDetailModal } from './kpi-detail-modal'
 import { KpiStrip } from './kpi-strip'
 import { MarkTodayModal } from './mark-today-modal'
+import { QuickMarkSheet } from './quick-mark-sheet'
 import { TodayAgenda } from './today-agenda'
 import { UnpaidSubsModal } from './unpaid-subs-modal'
 import { useHomePage } from './use-home-page'
 import { useUnpaidSubs } from './use-unpaid-subs'
 
+import type { QuickMarkTarget } from './quick-mark-sheet'
 import type { UnpaidSub } from './use-unpaid-subs'
 import type { CalendarBlock, Training } from 'entities/trainings'
 
@@ -52,6 +55,7 @@ export function HomePage() {
   const [indGroupId, setIndGroupId] = useState<string | null>(null)
   const [addTarget, setAddTarget] = useState<Training | null>(null)
   const [calBlock, setCalBlock] = useState<CalendarBlock | null>(null)
+  const [quickMark, setQuickMark] = useState<QuickMarkTarget | null>(null)
 
   const pickIndividual = async () => {
     const g = await ensureIndividualGroup()
@@ -108,6 +112,16 @@ export function HomePage() {
   const handleClosePair = () => setPairOpen(false)
   const handleCloseAdd = () => setAddTarget(null)
   const handleCloseCalBlock = () => setCalBlock(null)
+  const handleQuickMark = (block: CalendarBlock) =>
+    setQuickMark({
+      groupId: block.groupId,
+      trainingId: block.trainingId,
+      isInd: block.isInd,
+      time: block.time,
+      label: block.label,
+      date: todayISO(),
+    })
+  const handleCloseQuickMark = () => setQuickMark(null)
   const handleCloseDrawer = () => setDrawerId(null)
   const handleEditNoop = () => {}
   const handleCloseRenew = () => setRenew(null)
@@ -250,6 +264,7 @@ export function HomePage() {
               now={now}
               onRowClick={setCalBlock}
               onCreate={handleOpenType}
+              onQuickMark={handleQuickMark}
             />
           )}
         </section>
@@ -307,6 +322,8 @@ export function HomePage() {
         open={page.markTodayOpen}
         onClose={handleCloseMarkToday}
       />
+
+      <QuickMarkSheet target={quickMark} onClose={handleCloseQuickMark} />
 
       <UnpaidSubsModal open={unpaidOpen} onClose={handleCloseUnpaid} />
 
