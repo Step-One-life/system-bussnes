@@ -2,7 +2,7 @@
 
 > Единый справочник: где что лежит, как устроены модули, история реализованных фич,
 > важные ловушки и как запускать. Поддерживать в актуальном состоянии при крупных изменениях.
-> Последнее обновление: 2026-06-09.
+> Последнее обновление: 2026-06-13.
 
 ## 1. Что это
 
@@ -63,9 +63,9 @@ NestJS-модули в `modules/`:
 **`entities/`** — доменные модули (модель + API + UI):
 - `auth`, `calendar` (карточка Google-календаря, repo), `groups`, `locations`, `students` (абонементы, дровер, визиты), `trainings`, `finance` (тарифы, платежи, статистика, авто-оплата).
 
-**`pages/`** — экраны: `home`, `trainings`, `people` (вложенные `students`/`groups`/`individual`), `finance`, `settings`, `login`, `register`.
+**`pages/`** — экраны: `home` (лента дня с быстрой отметкой `quick-mark-sheet`, пакетное «Закрыть день» `close-day-sheet`, чистые модели `agenda-model`/`day-marking-model`/`billing-preview`), `trainings`, `people` (вложенные `students`/`groups`/`individual`), `finance`, `settings`, `login`, `register`.
 
-**`common/`** — `ui` (Badge, EmptyState, **ErrorBoundary**, KpiCard, PageHeader, ProgressBar, toast, WarningItem), `utils` (date, uuid), `services/api` (api-client, group-map), `hooks` (use-theme).
+**`common/`** — `ui` (Badge, EmptyState, **ErrorBoundary**, KpiCard, PageHeader, ProgressBar, toast, WarningItem, **AdaptiveSheet** — нижняя шторка на мобиле / модалка на десктопе), `utils` (date, uuid), `services/api` (api-client, group-map), `hooks` (use-is-mobile, use-now, use-theme, use-count-up).
 
 ## 5. Shared (`packages/shared/src`)
 
@@ -101,6 +101,7 @@ NestJS-модули в `modules/`:
 | **Единая отметка ⇄ деньги на бэке** | `2026-06-10` | Биллинг отметки целиком в `training.service.markAttendance`: абонемент (вкл. общий) → списать, иначе/парное → авто-платёж по тарифу (`lib/attendance-pricing.ts`). Визит помнит результат (`visits.billing`/`subscription_id`/`payment_id`), откат `revertVisit` отменяет ровно его; повторная отметка идемпотентна. `POST :id/attendees` → `{ training, billing[] }`; все 4 точки UI на одних эндпоинтах; фронтовые `markAttendanceWithPayment` и ручные откаты удалены. Предоплата абонемента при покупке — отдельный поток, при снятии отметки НЕ удаляется. |
 | **Видимость плановых при отметке** | `2026-06-10` | Списки отметки строятся как «отмеченные ∪ плановые» (`plannedStudentId`/`plannedStudentId2`): «Отметить сегодня» не теряет второго из пары (галочки независимы, ключ `trainingId:studentId`), календарная модалка индив./парных — чекбоксы как у групповых, отметка/снятие любой датой. «Ожидают оплаты» скрывает неоплаченные абонементы, истёкшие >30 дней. |
 | **Аудит-фиксы целостности** | `docs/audit-full-2026-06-10.md` | Биллинг отметки и откат — в транзакциях с `FOR UPDATE` + `UNIQUE(training_id, student_id)` на visits (параллельные отметки/снятия не задваивают деньги). `deduct` отсеивает истёкшие по сроку абонементы (чистая `student/lib/pick-subscription.ts`, зеркало фронтового `findSubForGroup`). Удаление группы сохраняет общие абонементы (`detachSharedSubscriptions`) и предупреждает цифрами. FK `SET NULL` на `visits.subscription_id/payment_id`, `subscriptions.fin_payment_id`, `payments/hall_costs.student_id`. Владение в `link-payment` и `copy` тарифов (+дедуп). `@Min(0)` на суммы. |
+| **«Мой день»: быстрая отметка и деньги в один экран** | `2026-06-13` | Кнопка «Отметить» в строке ленты дня → шторка `QuickMarkSheet` с предотметкой «все пришли» и превью биллинга; «Закрыть день» на любую дату (`CloseDaySheet`); сигнал «вчера не отмечено» в «Требует внимания»; продление абонемента с префиллом и переключателем «Оплачен сразу»; `AdaptiveSheet` (Drawer/Modal по брейкпоинту); vitest для чистых функций фронта (`npm test -w apps/frontend`); `rule-match` — чистое ядро тарифного матчинга. |
 
 ## 8. Важные ловушки и соглашения
 
@@ -137,7 +138,8 @@ npm run dev
 
 Демо-вход: `demo@trikick.ru` / `demo1234`. Сборки-проверки:
 `npm run build -w apps/frontend` (tsc+vite), `npm run build -w apps/backend` (nest),
-`npm test -w apps/backend` (jest — чистые функции).
+`npm test -w apps/backend` (jest — чистые функции),
+`npm test -w apps/frontend` (vitest — чистые функции фронта).
 
 ## 10. Google Calendar — статус публикации
 

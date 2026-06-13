@@ -94,7 +94,7 @@
 | Компонент | Где | Суть |
 |---|---|---|
 | `AdaptiveSheet` | `common/ui/adaptive-sheet` | Drawer (bottom, мобайл) / Modal (десктоп), один API: title, footer, open/onClose. |
-| `QuickMarkSheet` | `entities/trainings/quick-mark-sheet` | Участники одного занятия: предотметка, биллинг-превью, «Готово · N из M». Открывается из ленты и из «Закрыть день». |
+| `QuickMarkSheet` | `pages/home/quick-mark-sheet` | Участники одного занятия: предотметка, биллинг-превью, «Готово · N из M». Открывается из ленты и из «Закрыть день». |
 | `agenda-model` | `pages/home` | Флаг `needsMark` (прошедшее/идущее без отметки) → кнопка «Отметить» в строке. |
 | `CloseDaySheet` | `pages/home` (бывш. `mark-today-modal`) | На `useDayMarking(date)`: галочка на занятие, «Отметить всё», раскрытие в `QuickMarkSheet`. |
 | `RenewSubModal` / `MarkPaidModal` | `entities/students` / `entities/finance` | Компактный предзаполненный режим; prefill-хелперы — чистые функции (`renew-prefill.ts` и т.п.). |
