@@ -67,4 +67,34 @@ describe('previewBilling', () => {
     })
     expect(res).toEqual({ kind: 'gated' })
   })
+  it('абонемент истёк по сроку (isActive ещё true) — гейт, как на сервере', () => {
+    const expired = {
+      groupId: 'Старт',
+      remaining: 3,
+      isActive: true,
+      groupIds: [],
+      expiresAt: '2000-01-01',
+    } as unknown
+    const res = previewBilling({
+      student: student([expired]),
+      groupId: 'Старт',
+      isPair: false,
+      isPrime: false,
+      sessionDuration: 60,
+      rules: [],
+    })
+    expect(res).toEqual({ kind: 'gated' })
+  })
+  it('неактивный абонемент в списке — гейт', () => {
+    const inactive = { groupId: 'Старт', remaining: 0, isActive: false, groupIds: [] } as unknown
+    const res = previewBilling({
+      student: student([inactive]),
+      groupId: 'Старт',
+      isPair: false,
+      isPrime: false,
+      sessionDuration: 60,
+      rules: [],
+    })
+    expect(res).toEqual({ kind: 'gated' })
+  })
 })
