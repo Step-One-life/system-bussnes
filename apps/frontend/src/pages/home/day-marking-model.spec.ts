@@ -46,6 +46,17 @@ describe('defaultIndChecks', () => {
       [indKey('t3', 's3')]: true,
     })
   })
+  it('парное: два studentId на один trainingId — разные ключи, независимые значения', () => {
+    const slots = [
+      { trainingId: 't1', studentId: 's1', originalPresent: false },
+      { trainingId: 't1', studentId: 's2', originalPresent: false },
+    ]
+    const res = defaultIndChecks(slots, (slot) => slot.studentId === 's1')
+    expect(res).toEqual({
+      [indKey('t1', 's1')]: true,
+      [indKey('t1', 's2')]: false,
+    })
+  })
 })
 
 describe('closeDaySummary', () => {
