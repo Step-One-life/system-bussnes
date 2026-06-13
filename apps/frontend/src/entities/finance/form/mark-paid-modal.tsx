@@ -1,11 +1,11 @@
 import { useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 
-import { Button, DatePicker, Form, InputNumber, Modal, Segmented } from 'antd'
+import { Button, DatePicker, Form, InputNumber, Segmented } from 'antd'
 
 import { useTranslation } from 'react-i18next'
 
-import { useToast } from 'common/ui'
+import { AdaptiveSheet, useToast } from 'common/ui'
 import { todayISO } from 'common/utils/date'
 import { finLabel } from 'entities/finance/model/finance-constants'
 import { useGroups } from 'entities/groups/api/use-groups'
@@ -128,24 +128,25 @@ export function MarkPaidModal({
   }
 
   return (
-    <Modal
+    <AdaptiveSheet
       open={open}
       title={t('finance.markPaid.title')}
-      onCancel={onClose}
-      destroyOnHidden
-      footer={[
-        <Button key="cancel" onClick={onClose}>
-          {t('common.cancel')}
-        </Button>,
-        <Button
-          key="save"
-          type="primary"
-          loading={saving}
-          onClick={submit}
-        >
-          {t('finance.markPaid.markPaidBtn')}
-        </Button>,
-      ]}
+      onClose={onClose}
+      footer={
+        <>
+          <Button key="cancel" onClick={onClose}>
+            {t('common.cancel')}
+          </Button>
+          <Button
+            key="save"
+            type="primary"
+            loading={saving}
+            onClick={submit}
+          >
+            {t('finance.markPaid.markPaidBtn')}
+          </Button>
+        </>
+      }
     >
       <div style={{ marginBottom: 'var(--sp-4)' }}>
         <div style={{ color: 'var(--tk-text-secondary)', fontSize: '0.8rem' }}>
@@ -201,6 +202,6 @@ export function MarkPaidModal({
           />
         </Form.Item>
       </Form>
-    </Modal>
+    </AdaptiveSheet>
   )
 }
