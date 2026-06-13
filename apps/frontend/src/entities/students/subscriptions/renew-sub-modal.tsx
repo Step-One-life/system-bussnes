@@ -50,7 +50,8 @@ export function RenewSubModal({
   const [saving, setSaving] = useState(false)
 
   // Группа и имя группы для поиска prevSub
-  const group = groups.find((g) => g.id === groupId) ?? null
+  // groupId приходит и как имя (из warnings/гейтов), и как UUID — резолвим оба.
+  const group = groups.find((g) => g.name === groupId || g.id === groupId) ?? null
   const groupName = group?.name ?? groupId
 
   // Предыдущий абонемент ученика по данной группе (вычисляется на уровне рендера)
