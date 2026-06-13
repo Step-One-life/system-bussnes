@@ -139,7 +139,10 @@ export function TodayAgenda({ items, students, now, onRowClick, onCreate, onQuic
         className={cls}
         onClick={handleClick}
         onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') handleClick()
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            handleClick()
+          }
         }}
       >
         <span className="agenda__time">{it.block.time}</span>
