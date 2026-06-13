@@ -47,6 +47,7 @@ export function RenewSubModal({
   const { data: students = [] } = useStudents()
   const [date, setDate] = useState(todayISO())
   const [paidNow, setPaidNow] = useState(true)
+  const [saving, setSaving] = useState(false)
 
   // Группа и имя группы для поиска prevSub
   const group = groups.find((g) => g.id === groupId) ?? null
@@ -88,45 +89,53 @@ export function RenewSubModal({
     : null
 
   const submit = async () => {
-    // Получаем validity_days через отдельный запрос (не из priceRule кэша — гарантия актуальности)
-    const { rule } = await resolvePricingRule(
-      group?.locationId ?? null,
-      subTypeToTuple(type, group?.isIndividual ?? false),
-    )
-
-    const createdSub = await addSubscription.mutateAsync({
-      studentId,
-      data: {
-        groupId,
-        type,
-        createdAt: date,
-        validityDays: rule?.validity_days,
-        // Продление наследует слот (прайм/обычный) от предыдущего абонемента группы
-        timeSlot: prevSub?.timeSlot ?? 'regular',
-      },
-    })
-
-    if (paidNow && createdSub) {
-      const fin = await autoCreatePayment(
-        studentId,
-        { id: createdSub.id, type, createdAt: date },
-        group?.isIndividual ?? false,
-        { isPrime: slot === 'prime', locationId: group?.locationId ?? null },
+    if (saving) return
+    setSaving(true)
+    try {
+      // Получаем validity_days через отдельный запрос (не из priceRule кэша — гарантия актуальности)
+      const { rule } = await resolvePricingRule(
+        group?.locationId ?? null,
+        subTypeToTuple(type, group?.isIndividual ?? false),
       )
-      if (fin) {
-        await linkPaymentToSub(studentId, createdSub.id, fin.paymentId)
-      } else {
-        toast({ type: 'warn', title: t('finance.autoRecord.noTariff') })
-      }
-    }
 
-    toast({
-      type: 'success',
-      title: issueMode ? t('subscriptions.issue.created') : t('subscriptions.renew.subRenewed'),
-      msg: `${studentName} · ${groupId}`,
-    })
-    onCreated?.()
-    onClose()
+      const createdSub = await addSubscription.mutateAsync({
+        studentId,
+        data: {
+          groupId,
+          type,
+          createdAt: date,
+          validityDays: rule?.validity_days,
+          // Продление наследует слот (прайм/обычный) от предыдущего абонемента группы
+          timeSlot: prevSub?.timeSlot ?? 'regular',
+        },
+      })
+
+      if (paidNow && createdSub) {
+        const fin = await autoCreatePayment(
+          studentId,
+          { id: createdSub.id, type, createdAt: date },
+          group?.isIndividual ?? false,
+          { isPrime: slot === 'prime', locationId: group?.locationId ?? null },
+        )
+        if (fin) {
+          await linkPaymentToSub(studentId, createdSub.id, fin.paymentId)
+        } else {
+          toast({ type: 'warn', title: t('finance.autoRecord.noTariff') })
+        }
+      }
+
+      toast({
+        type: 'success',
+        title: issueMode ? t('subscriptions.issue.created') : t('subscriptions.renew.subRenewed'),
+        msg: `${studentName} · ${groupId}`,
+      })
+      onCreated?.()
+      onClose()
+    } catch (e) {
+      toast({ type: 'error', title: e instanceof Error ? e.message : t('common.error') })
+    } finally {
+      setSaving(false)
+    }
   }
 
   const handleTypeChange = (v: string) => setType(v as SubscriptionType)
@@ -143,7 +152,7 @@ export function RenewSubModal({
           <Button key="cancel" onClick={onClose}>
             {t('common.cancel')}
           </Button>
-          <Button key="save" type="primary" loading={addSubscription.isPending} onClick={submit}>
+          <Button key="save" type="primary" loading={saving} onClick={submit}>
             {issueMode ? t('subscriptions.issue.createBtn') : t('common.extend')}
           </Button>
         </>
