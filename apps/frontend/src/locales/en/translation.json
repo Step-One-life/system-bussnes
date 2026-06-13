@@ -683,7 +683,12 @@
     "kpiExpiredShort": "Renew",
     "kpiEndingShort": "Ending",
     "kpiMonthShort": "This month",
-    "kpiTotalShort": "Active"
+    "kpiTotalShort": "Active",
+    "quickMark": "Mark",
+    "quickMarkDone": "Done · {{checked}} of {{total}}",
+    "billingSub": "session will be deducted · {{count}} left",
+    "billingPayment": "one-time payment · {{amount}} ₽",
+    "billingNoTariff": "one-time payment · no tariff"
   },
   "locations": {
     "title": "Locations",

@@ -688,7 +688,12 @@
     "kpiExpiredShort": "Продлить",
     "kpiEndingShort": "Заканчиваются",
     "kpiMonthShort": "За месяц",
-    "kpiTotalShort": "Активных"
+    "kpiTotalShort": "Активных",
+    "quickMark": "Отметить",
+    "quickMarkDone": "Готово · {{checked}} из {{total}}",
+    "billingSub": "спишется занятие · осталось {{count}}",
+    "billingPayment": "разовый платёж · {{amount}} ₽",
+    "billingNoTariff": "разовый платёж · нет тарифа"
   },
   "locations": {
     "title": "Локации",
