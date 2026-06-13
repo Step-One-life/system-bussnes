@@ -659,12 +659,20 @@
       "noCategory": "No students in this category"
     },
     "markTodayModal": {
-      "title": "Mark today",
-      "saveAttendance": "Save attendance",
-      "nothingScheduled": "Nothing scheduled for today by group timetable",
-      "noGroupStudents": "No students in the group",
-      "individualSessions": "Individual"
+      "nothingScheduled": "Nothing scheduled for today by group timetable"
     },
+    "trainingsCount": "{{count}} session",
+    "trainingsCount_other": "{{count}} sessions",
+    "peopleCount": "{{count}} person",
+    "peopleCount_other": "{{count}} people",
+    "closeDayTitle": "Close the day · {{date}}",
+    "closeDayAlreadyMarked": "already marked",
+    "closeDayWillMark": "expected: {{count}}",
+    "closeDayNobody": "no one to mark",
+    "closeDayMarkAll": "Mark all",
+    "closeDayExpandHint": "tap a session to fine-tune",
+    "attentionYesterday": "Yesterday unmarked: {{count}}",
+    "closeYesterdayBtn": "Close the day",
     "agendaNow": "Now",
     "agendaInProgress": "ongoing now",
     "agendaUnpaid": "unpaid",

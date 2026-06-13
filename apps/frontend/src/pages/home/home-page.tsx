@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next'
 
 import { useNow } from 'common/hooks/use-now'
 import { ErrorState, ListSkeleton, PageHeader, WarningItem } from 'common/ui'
-import { todayISO } from 'common/utils/date'
+import { todayISO, yesterdayISO } from 'common/utils/date'
 import { MarkPaidModal } from 'entities/finance'
 import { StudentDrawer } from 'entities/students'
 import { RenewSubModal } from 'entities/students/subscriptions/renew-sub-modal'
@@ -22,9 +22,9 @@ import {
 } from 'entities/trainings'
 
 import { buildAgendaItems, minutesOfDay } from './agenda-model'
+import { CloseDaySheet } from './close-day-sheet'
 import { KpiDetailModal } from './kpi-detail-modal'
 import { KpiStrip } from './kpi-strip'
-import { MarkTodayModal } from './mark-today-modal'
 import { QuickMarkSheet } from './quick-mark-sheet'
 import { TodayAgenda } from './today-agenda'
 import { UnpaidSubsModal } from './unpaid-subs-modal'
@@ -56,6 +56,8 @@ export function HomePage() {
   const [addTarget, setAddTarget] = useState<Training | null>(null)
   const [calBlock, setCalBlock] = useState<CalendarBlock | null>(null)
   const [quickMark, setQuickMark] = useState<QuickMarkTarget | null>(null)
+  // Дата шторки «Закрыть день»: сегодня по кнопке, вчера — по сигналу внимания.
+  const [closeDate, setCloseDate] = useState(todayISO())
 
   const pickIndividual = async () => {
     const g = await ensureIndividualGroup()
@@ -80,7 +82,18 @@ export function HomePage() {
 
   const renewStudent = page.students.find((s) => s.id === renew?.studentId)
 
-  const handleOpenMarkToday = () => page.setMarkTodayOpen(true)
+  const handleOpenMarkToday = () => {
+    setCloseDate(todayISO())
+    page.setMarkTodayOpen(true)
+  }
+  const handleOpenYesterday = () => {
+    setCloseDate(yesterdayISO())
+    page.setMarkTodayOpen(true)
+  }
+  const handleOpenYesterdayBtn = (e: { stopPropagation: () => void }) => {
+    e.stopPropagation()
+    handleOpenYesterday()
+  }
   const handleOpenType = () => setTypeOpen(true)
   const handleOpenUnpaid = () => setUnpaidOpen(true)
   const handleCloseUnpaid = () => setUnpaidOpen(false)
@@ -271,14 +284,32 @@ export function HomePage() {
 
         <section className="home-cols__col">
           <div className="section-title">
-            {page.warnings.length || unpaid.length ? t('home.attention') : t('home.subStatus')}
+            {page.warnings.length || unpaid.length || page.yesterdayUnmarked > 0
+              ? t('home.attention')
+              : t('home.subStatus')}
           </div>
-          {page.warnings.length || unpaid.length ? (
+          {page.warnings.length || unpaid.length || page.yesterdayUnmarked > 0 ? (
             <div className="warning-list">
-              {/* Серьёзность по убыванию: истёкшие → неоплаченные → заканчивающиеся. */}
+              {/* Серьёзность по убыванию: истёкшие → вчера → неоплаченные → заканчивающиеся. */}
               {page.warnings
                 .filter((w) => w.status.type === 'expired')
                 .map(renderWarning)}
+              {page.yesterdayUnmarked > 0 && (
+                <WarningItem
+                  name={t('home.attentionYesterday', { count: page.yesterdayUnmarked })}
+                  detail=""
+                  onClick={handleOpenYesterday}
+                  action={
+                    <Button
+                      className="tk-btn-secondary"
+                      size="small"
+                      onClick={handleOpenYesterdayBtn}
+                    >
+                      {t('home.closeYesterdayBtn')}
+                    </Button>
+                  }
+                />
+              )}
               {unpaid.map((u) => (
                 <WarningItem
                   key={`unpaid-${u.sub.id}`}
@@ -318,8 +349,9 @@ export function HomePage() {
         onRenew={handleRenew}
       />
 
-      <MarkTodayModal
+      <CloseDaySheet
         open={page.markTodayOpen}
+        date={closeDate}
         onClose={handleCloseMarkToday}
       />
 

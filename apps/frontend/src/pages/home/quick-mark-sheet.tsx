@@ -17,7 +17,6 @@ import { MarkStudentRow } from './mark-student-row'
 import { needsSub, useDayMarking } from './use-day-marking'
 
 import './quick-mark-sheet.scss'
-import './mark-today-modal.scss'
 
 /** Что отмечаем: групповое — по имени группы, инд./парное — по trainingId. */
 export interface QuickMarkTarget {

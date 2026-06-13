@@ -664,12 +664,22 @@
       "noCategory": "Нет учеников в этой категории"
     },
     "markTodayModal": {
-      "title": "Отметить за сегодня",
-      "saveAttendance": "Сохранить посещаемость",
-      "nothingScheduled": "По расписанию групп на сегодня ничего не запланировано",
-      "noGroupStudents": "В группе нет учеников",
-      "individualSessions": "Индивидуальные"
+      "nothingScheduled": "По расписанию групп на сегодня ничего не запланировано"
     },
+    "trainingsCount": "{{count}} занятие",
+    "trainingsCount_few": "{{count}} занятия",
+    "trainingsCount_many": "{{count}} занятий",
+    "peopleCount": "{{count}} человек",
+    "peopleCount_few": "{{count}} человека",
+    "peopleCount_many": "{{count}} человек",
+    "closeDayTitle": "Закрыть день · {{date}}",
+    "closeDayAlreadyMarked": "уже отмечено",
+    "closeDayWillMark": "придут: {{count}}",
+    "closeDayNobody": "некого отмечать",
+    "closeDayMarkAll": "Отметить всё",
+    "closeDayExpandHint": "точечно поправить — тап по занятию",
+    "attentionYesterday": "Вчера не отмечено: {{count}}",
+    "closeYesterdayBtn": "Закрыть день",
     "agendaNow": "Сейчас",
     "agendaInProgress": "идёт сейчас",
     "agendaUnpaid": "не оплачено",

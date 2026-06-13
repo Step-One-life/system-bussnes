@@ -8,6 +8,8 @@ import { StatusBadge } from 'common/ui'
 import type { SubStatus } from 'entities/students'
 import type { ReactNode } from 'react'
 
+import './mark-student-row.scss'
+
 interface MarkStudentRowProps {
   name: string
   status: SubStatus
