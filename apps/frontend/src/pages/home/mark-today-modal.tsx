@@ -15,7 +15,7 @@ import { todayISO } from 'common/utils/date'
 import { getSubStatus, subTypeLabel } from 'entities/students'
 import { RenewSubModal } from 'entities/students/subscriptions/renew-sub-modal'
 
-import { indKey, useDayMarking } from './use-day-marking'
+import { indKey, needsSub, useDayMarking } from './use-day-marking'
 
 import type { ChangeEvent } from 'react'
 
@@ -32,9 +32,6 @@ interface IssueTarget {
   /** Есть только у индивидуальной строки — определяет, какой toggle звать. */
   trainingId?: string
 }
-
-/** Отметить без активного абонемента нельзя — тап ведёт в оформление. */
-const needsSub = (type: string) => type === 'none' || type === 'expired'
 
 interface MarkTodayModalProps {
   open: boolean
@@ -74,7 +71,7 @@ export function MarkTodayModal({ open, onClose }: MarkTodayModalProps) {
     // Seed checkboxes once per open, after today's data is available — avoids
     // wiping the trainer's in-progress toggles when data refetches in the
     // background while the modal is open.
-    if (!inited.current && (todayGroups.length > 0 || todayIndividuals.length > 0)) {
+    if (!inited.current && students.length > 0 && (todayGroups.length > 0 || todayIndividuals.length > 0)) {
       initChecks()
       inited.current = true
     }

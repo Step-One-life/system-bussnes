@@ -145,6 +145,7 @@ export function useDayMarking(open: boolean, onClose: () => void, dateStr: strin
   }
 
   const save = async (selection?: MarkSelection) => {
+    if (saving) return
     const selGroups = selection?.groups ?? checks
     const selInd = selection?.ind ?? indChecks
     setSaving(true)
