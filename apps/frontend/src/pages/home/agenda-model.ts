@@ -43,3 +43,8 @@ export function buildAgendaItems(
     return { block, startMin, endMin: startMin + duration, typeKey }
   })
 }
+
+/** Занятие требует отметки: уже началось, а посещения не проставлены. */
+export function needsMark(item: AgendaItem, nowMin: number): boolean {
+  return item.startMin <= nowMin && item.block.attendeesCount === 0
+}

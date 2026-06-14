@@ -218,14 +218,25 @@
     },
     "renew": {
       "title": "Продлить абонемент",
+      "titleWith": "Продлить: {{name}} · «{{group}}»",
       "subRenewed": "Абонемент продлён",
       "student": "Ученик:",
       "group": "Группа:",
       "typeLabel": "Тип абонемента",
-      "dateLabel": "Дата начала"
+      "dateLabel": "Дата начала",
+      "paidNow": "Оплачен сразу",
+      "paidNowHint": "создастся платёж {{amount}} ₽",
+      "priceLine": "{{label}} · {{amount}} ₽",
+      "asPrevLabel": "Как прошлый",
+      "tariffLabel": "Абонемент",
+      "startLabel": "Начало",
+      "startToday": "Сегодня",
+      "startTomorrow": "Завтра",
+      "startCustom": "Выбрать дату…"
     },
     "issue": {
       "title": "Оформить абонемент",
+      "titleWith": "Оформить: {{name}} · «{{group}}»",
       "createBtn": "Оформить",
       "created": "Абонемент оформлен"
     },
@@ -664,12 +675,22 @@
       "noCategory": "Нет учеников в этой категории"
     },
     "markTodayModal": {
-      "title": "Отметить за сегодня",
-      "saveAttendance": "Сохранить посещаемость",
-      "nothingScheduled": "По расписанию групп на сегодня ничего не запланировано",
-      "noGroupStudents": "В группе нет учеников",
-      "individualSessions": "Индивидуальные"
+      "nothingScheduled": "По расписанию групп на сегодня ничего не запланировано"
     },
+    "trainingsCount": "{{count}} занятие",
+    "trainingsCount_few": "{{count}} занятия",
+    "trainingsCount_many": "{{count}} занятий",
+    "peopleCount": "{{count}} человек",
+    "peopleCount_few": "{{count}} человека",
+    "peopleCount_many": "{{count}} человек",
+    "closeDayTitle": "Закрыть день · {{date}}",
+    "closeDayAlreadyMarked": "уже отмечено",
+    "closeDayWillMark": "придут: {{count}}",
+    "closeDayNobody": "некого отмечать",
+    "closeDayMarkAll": "Отметить всё",
+    "closeDayExpandHint": "точечно поправить — тап по занятию",
+    "attentionYesterday": "Вчера не отмечено: {{count}}",
+    "closeYesterdayBtn": "Закрыть день",
     "agendaNow": "Сейчас",
     "agendaInProgress": "идёт сейчас",
     "agendaUnpaid": "не оплачено",
@@ -688,7 +709,12 @@
     "kpiExpiredShort": "Продлить",
     "kpiEndingShort": "Заканчиваются",
     "kpiMonthShort": "За месяц",
-    "kpiTotalShort": "Активных"
+    "kpiTotalShort": "Активных",
+    "quickMark": "Отметить",
+    "quickMarkDone": "Готово · {{checked}} из {{total}}",
+    "billingSub": "спишется занятие · осталось {{count}}",
+    "billingPayment": "разовый платёж · {{amount}} ₽",
+    "billingNoTariff": "разовый платёж · нет тарифа"
   },
   "locations": {
     "title": "Локации",

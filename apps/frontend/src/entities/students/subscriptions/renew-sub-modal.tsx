@@ -1,19 +1,25 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 
-import { Button, DatePicker, Form, Modal, Select } from 'antd'
+import { Button, Checkbox, DatePicker, Select } from 'antd'
 
 import { useTranslation } from 'react-i18next'
 
-import { useToast } from 'common/ui'
-import { todayISO } from 'common/utils/date'
+import { AdaptiveSheet, useToast } from 'common/ui'
+import { todayISO, tomorrowISO } from 'common/utils/date'
+import { autoCreatePayment } from 'entities/finance/lib/auto-payment'
 import { resolvePricingRule, subTypeToTuple } from 'entities/finance/lib/pricing-lookup'
 import { useGroups } from 'entities/groups/api/use-groups'
 
 import { useAddSubscription, useStudents } from '../api/use-students'
+import { linkPaymentToSub } from '../model/students.repo'
+import { resolveStartDate } from './renew-date'
 
 import type { SubscriptionType } from '../model/types'
+import type { StartMode } from './renew-date'
 import type { Dayjs } from 'dayjs'
 
+import './renew-sub-modal.scss'
 import dayjs from 'dayjs'
 
 interface RenewSubModalProps {
@@ -42,87 +48,160 @@ export function RenewSubModal({
   const addSubscription = useAddSubscription()
   const { data: groups = [] } = useGroups()
   const { data: students = [] } = useStudents()
-  const [type, setType] = useState<SubscriptionType>('8')
-  const [date, setDate] = useState(todayISO())
+  const [dateMode, setDateMode] = useState<StartMode>('today')
+  const [customDate, setCustomDate] = useState(todayISO())
+  const [paidNow, setPaidNow] = useState(true)
+  const [saving, setSaving] = useState(false)
 
-  const submit = async () => {
-    const group = groups.find((g) => g.id === groupId) ?? null
-    const { rule } = await resolvePricingRule(
-      group?.locationId ?? null,
-      subTypeToTuple(type, group?.isIndividual ?? false),
-    )
-    // Продление наследует слот (прайм/обычный) от предыдущего абонемента группы,
-    // чтобы прайм-клиент при продлении не сбрасывался на «обычный».
-    const groupName = group?.name ?? groupId
-    const prevSub =
-      [...(students.find((s) => s.id === studentId)?.subscriptions ?? [])]
-        .filter((s) => s.groupId === groupName)
+  // groupId приходит и как имя (из warnings/гейтов), и как UUID — резолвим оба.
+  const group = groups.find((g) => g.name === groupId || g.id === groupId) ?? null
+  const groupName = group?.name ?? groupId
+
+  // Предыдущий абонемент ученика по данной группе (на уровне рендера).
+  const prevSub = useMemo(() => {
+    const resolvedName = groups.find((g) => g.name === groupId || g.id === groupId)?.name ?? groupId
+    const subs = students.find((s) => s.id === studentId)?.subscriptions ?? []
+    return (
+      [...subs]
+        .filter((s) => s.groupId === resolvedName)
         .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0] ??
       null
-    await addSubscription.mutateAsync({
-      studentId,
-      data: {
-        groupId,
-        type,
-        createdAt: date,
-        validityDays: rule?.validity_days,
-        timeSlot: prevSub?.timeSlot ?? 'regular',
-      },
-    })
-    toast({
-      type: 'success',
-      title: issueMode ? t('subscriptions.issue.created') : t('subscriptions.renew.subRenewed'),
-      msg: `${studentName} · ${groupId}`,
-    })
-    onCreated?.()
-    onClose()
+    )
+  }, [students, studentId, groups, groupId])
+
+  // Тип фиксирован: прошлый абонемент (нормализован) или разовое при оформлении.
+  const type = (prevSub?.type ?? '1').replace('_90', '').replace('_pair', '') as SubscriptionType
+
+  // Итоговая дата начала из выбранного режима.
+  const date = resolveStartDate(dateMode, todayISO(), tomorrowISO(), customDate)
+
+  // Живая цена выбранного типа абонемента.
+  const { data: priceRule } = useQuery({
+    queryKey: ['renew-price', groupId, type],
+    queryFn: () =>
+      resolvePricingRule(group?.locationId ?? null, subTypeToTuple(type, group?.isIndividual ?? false)),
+    enabled: open,
+  })
+  const slot = prevSub?.timeSlot ?? 'regular'
+  const price = priceRule?.rule
+    ? slot === 'prime'
+      ? priceRule.rule.client_prime_price
+      : priceRule.rule.client_price
+    : null
+
+  const submit = async () => {
+    if (saving) return
+    setSaving(true)
+    try {
+      // validity_days — отдельным запросом (гарантия актуальности, не из кэша).
+      const { rule } = await resolvePricingRule(
+        group?.locationId ?? null,
+        subTypeToTuple(type, group?.isIndividual ?? false),
+      )
+
+      const createdSub = await addSubscription.mutateAsync({
+        studentId,
+        data: {
+          groupId,
+          type,
+          createdAt: date,
+          validityDays: rule?.validity_days,
+          // Наследуем слот (прайм/обычный) от предыдущего абонемента группы.
+          timeSlot: prevSub?.timeSlot ?? 'regular',
+        },
+      })
+
+      if (paidNow && createdSub) {
+        const fin = await autoCreatePayment(
+          studentId,
+          { id: createdSub.id, type, createdAt: date },
+          group?.isIndividual ?? false,
+          { isPrime: slot === 'prime', locationId: group?.locationId ?? null },
+        )
+        if (fin) {
+          await linkPaymentToSub(studentId, createdSub.id, fin.paymentId)
+        } else {
+          toast({ type: 'warn', title: t('finance.autoRecord.noTariff') })
+        }
+      }
+
+      toast({
+        type: 'success',
+        title: issueMode ? t('subscriptions.issue.created') : t('subscriptions.renew.subRenewed'),
+        msg: `${studentName} · ${groupName}`,
+      })
+      onCreated?.()
+      onClose()
+    } catch (e) {
+      toast({ type: 'error', title: e instanceof Error ? e.message : t('common.error') })
+    } finally {
+      setSaving(false)
+    }
   }
 
-  const handleTypeChange = (v: string) => setType(v as SubscriptionType)
-  const handleDateChange = (d: Dayjs | null) =>
-    setDate(d ? d.format('YYYY-MM-DD') : date)
+  const handleDateMode = (v: StartMode) => setDateMode(v)
+  const handleCustom = (d: Dayjs | null) => setCustomDate(d ? d.format('YYYY-MM-DD') : todayISO())
+
+  const typeLabel = t(`students.subTypes.${type}`, { defaultValue: type })
+  const priceText = price !== null ? `${typeLabel} · ${price} ₽` : typeLabel
 
   return (
-    <Modal
+    <AdaptiveSheet
       open={open}
-      title={issueMode ? t('subscriptions.issue.title') : t('subscriptions.renew.title')}
-      onCancel={onClose}
-      destroyOnHidden
-      footer={[
-        <Button key="cancel" onClick={onClose}>
-          {t('common.cancel')}
-        </Button>,
-        <Button key="save" type="primary" loading={addSubscription.isPending} onClick={submit}>
+      title={t(issueMode ? 'subscriptions.issue.titleWith' : 'subscriptions.renew.titleWith', {
+        name: studentName,
+        group: groupName,
+      })}
+      onClose={onClose}
+      footer={
+        <Button className="tk-btn-primary" type="primary" block loading={saving} onClick={submit}>
           {issueMode ? t('subscriptions.issue.createBtn') : t('common.extend')}
-        </Button>,
-      ]}
+        </Button>
+      }
     >
-      <p style={{ color: 'var(--tk-text-secondary)', fontSize: '0.85rem' }}>
-        {t('subscriptions.renew.student')} <strong>{studentName}</strong>
-        <br />
-        {t('subscriptions.renew.group')} <strong>{groupId}</strong>
-      </p>
-      <Form layout="vertical">
-        <Form.Item label={t('subscriptions.renew.typeLabel')}>
+      <div className="renew-sheet">
+        <div className="renew-row">
+          <span className="renew-row__label">
+            {issueMode
+              ? t('subscriptions.renew.tariffLabel')
+              : t('subscriptions.renew.asPrevLabel')}
+          </span>
+          <span className="renew-row__value">{priceText}</span>
+        </div>
+        <div className="renew-row">
+          <span className="renew-row__label">{t('subscriptions.renew.startLabel')}</span>
           <Select
-            value={type}
-            onChange={handleTypeChange}
+            value={dateMode}
+            onChange={handleDateMode}
+            variant="borderless"
+            popupMatchSelectWidth={false}
             options={[
-              { value: '1', label: t('students.sub.single') },
-              { value: '4', label: t('students.sub.sub4') },
-              { value: '8', label: t('students.sub.sub8') },
+              { value: 'today', label: t('subscriptions.renew.startToday') },
+              { value: 'tomorrow', label: t('subscriptions.renew.startTomorrow') },
+              { value: 'custom', label: t('subscriptions.renew.startCustom') },
             ]}
           />
-        </Form.Item>
-        <Form.Item label={t('subscriptions.renew.dateLabel')}>
+        </div>
+        {dateMode === 'custom' && (
           <DatePicker
             format="DD.MM.YYYY"
             style={{ width: '100%' }}
-            value={dayjs(date)}
-            onChange={handleDateChange}
+            value={dayjs(customDate)}
+            onChange={handleCustom}
           />
-        </Form.Item>
-      </Form>
-    </Modal>
+        )}
+        <label className="renew-paid">
+          <Checkbox checked={paidNow} onChange={(e) => setPaidNow(e.target.checked)} />
+          <span className="renew-paid__text">
+            {t('subscriptions.renew.paidNow')}
+            {paidNow && price !== null && (
+              <span className="renew-paid__hint">
+                {t('subscriptions.renew.paidNowHint', { amount: price })}
+              </span>
+            )}
+          </span>
+        </label>
+      </div>
+    </AdaptiveSheet>
   )
 }

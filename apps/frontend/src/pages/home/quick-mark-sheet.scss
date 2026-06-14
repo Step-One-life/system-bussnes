@@ -1,0 +1,9 @@
+.quick-mark {
+  display: flex;
+  flex-direction: column;
+
+  /* Крупные зоны тапа на мобиле: строка не ниже 44px. */
+  .mark-row {
+    min-height: 44px;
+  }
+}

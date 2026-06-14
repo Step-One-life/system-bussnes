@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 
 import { getKPIs, getWarningStudents } from 'common/lib/kpi'
-import { todayISO } from 'common/utils/date'
+import { todayISO, yesterdayISO } from 'common/utils/date'
 import { useGroups } from 'entities/groups'
 import { useStudents } from 'entities/students'
 import { buildCalendarDay, useTrainings } from 'entities/trainings'
@@ -44,6 +44,16 @@ export function useHomePage() {
     [todayStr, trainings, students, groups],
   )
 
+  // Сигнал «вчера не отмечено»: занятия вчерашнего дня с нулём отметок.
+  const yest = yesterdayISO()
+  const yesterdayUnmarked = useMemo(
+    () =>
+      buildCalendarDay(yest, trainings, students, groups).day.blocks.filter(
+        (b) => b.attendeesCount === 0,
+      ).length,
+    [yest, trainings, students, groups],
+  )
+
   return {
     kpis,
     warnings,
@@ -57,6 +67,7 @@ export function useHomePage() {
     regularNames,
     todayTrainings,
     agendaBlocks,
+    yesterdayUnmarked,
     kpiType,
     setKpiType,
     markTodayOpen,

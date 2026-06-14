@@ -218,14 +218,25 @@
     },
     "renew": {
       "title": "Renew subscription",
+      "titleWith": "Renew: {{name}} · «{{group}}»",
       "subRenewed": "Subscription renewed",
       "student": "Student:",
       "group": "Group:",
       "typeLabel": "Subscription type",
-      "dateLabel": "Start date"
+      "dateLabel": "Start date",
+      "paidNow": "Paid now",
+      "paidNowHint": "a payment of {{amount}} ₽ will be created",
+      "priceLine": "{{label}} · {{amount}} ₽",
+      "asPrevLabel": "Same as last",
+      "tariffLabel": "Subscription",
+      "startLabel": "Start",
+      "startToday": "Today",
+      "startTomorrow": "Tomorrow",
+      "startCustom": "Pick a date…"
     },
     "issue": {
       "title": "Issue subscription",
+      "titleWith": "Issue: {{name}} · «{{group}}»",
       "createBtn": "Issue",
       "created": "Subscription issued"
     },
@@ -659,12 +670,20 @@
       "noCategory": "No students in this category"
     },
     "markTodayModal": {
-      "title": "Mark today",
-      "saveAttendance": "Save attendance",
-      "nothingScheduled": "Nothing scheduled for today by group timetable",
-      "noGroupStudents": "No students in the group",
-      "individualSessions": "Individual"
+      "nothingScheduled": "Nothing scheduled for today by group timetable"
     },
+    "trainingsCount": "{{count}} session",
+    "trainingsCount_other": "{{count}} sessions",
+    "peopleCount": "{{count}} person",
+    "peopleCount_other": "{{count}} people",
+    "closeDayTitle": "Close the day · {{date}}",
+    "closeDayAlreadyMarked": "already marked",
+    "closeDayWillMark": "expected: {{count}}",
+    "closeDayNobody": "no one to mark",
+    "closeDayMarkAll": "Mark all",
+    "closeDayExpandHint": "tap a session to fine-tune",
+    "attentionYesterday": "Yesterday unmarked: {{count}}",
+    "closeYesterdayBtn": "Close the day",
     "agendaNow": "Now",
     "agendaInProgress": "ongoing now",
     "agendaUnpaid": "unpaid",
@@ -683,7 +702,12 @@
     "kpiExpiredShort": "Renew",
     "kpiEndingShort": "Ending",
     "kpiMonthShort": "This month",
-    "kpiTotalShort": "Active"
+    "kpiTotalShort": "Active",
+    "quickMark": "Mark",
+    "quickMarkDone": "Done · {{checked}} of {{total}}",
+    "billingSub": "session will be deducted · {{count}} left",
+    "billingPayment": "one-time payment · {{amount}} ₽",
+    "billingNoTariff": "one-time payment · no tariff"
   },
   "locations": {
     "title": "Locations",

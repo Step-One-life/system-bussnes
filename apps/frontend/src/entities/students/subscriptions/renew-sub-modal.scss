@@ -1,0 +1,50 @@
+.renew-sheet {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.renew-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: var(--sp-2) var(--sp-3);
+  min-height: 44px;
+  border: 1px solid var(--tk-border-default);
+  border-radius: var(--r-md);
+
+  &__label {
+    color: var(--tk-text-secondary);
+    font-size: 0.88rem;
+  }
+
+  &__value {
+    font-weight: 600;
+    font-size: 0.92rem;
+    text-align: right;
+  }
+
+  .ant-select {
+    font-weight: 600;
+  }
+}
+
+.renew-paid {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-3);
+  cursor: pointer;
+
+  &__text {
+    display: flex;
+    flex-direction: column;
+    font-size: 0.92rem;
+  }
+
+  &__hint {
+    color: var(--tk-text-tertiary);
+    font-size: 0.75rem;
+  }
+}

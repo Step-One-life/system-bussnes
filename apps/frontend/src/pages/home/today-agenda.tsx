@@ -12,7 +12,7 @@ import { useTranslation } from 'react-i18next'
 
 import { EmptyState } from 'common/ui'
 
-import { minutesOfDay } from './agenda-model'
+import { minutesOfDay, needsMark } from './agenda-model'
 
 import type { AgendaItem } from './agenda-model'
 import type { Student, VisitBilling } from 'entities/students'
@@ -27,9 +27,10 @@ interface TodayAgendaProps {
   now: Date
   onRowClick: (block: CalendarBlock) => void
   onCreate: () => void
+  onQuickMark: (block: CalendarBlock) => void
 }
 
-export function TodayAgenda({ items, students, now, onRowClick, onCreate }: TodayAgendaProps) {
+export function TodayAgenda({ items, students, now, onRowClick, onCreate, onQuickMark }: TodayAgendaProps) {
   const { t } = useTranslation()
 
   const billingByTraining = useMemo(() => {
@@ -125,9 +126,25 @@ export function TodayAgenda({ items, students, now, onRowClick, onCreate }: Toda
       .filter(Boolean)
       .join(' ')
     const handleClick = () => onRowClick(it.block)
+    const handleMarkClick = (e: React.MouseEvent) => {
+      e.stopPropagation()
+      onQuickMark(it.block)
+    }
 
     return (
-      <button type="button" key={it.block.key} className={cls} onClick={handleClick}>
+      <div
+        role="button"
+        tabIndex={0}
+        key={it.block.key}
+        className={cls}
+        onClick={handleClick}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            handleClick()
+          }
+        }}
+      >
         <span className="agenda__time">{it.block.time}</span>
         <span className="agenda__main">
           <span className="agenda__name">{it.block.label}</span>
@@ -138,10 +155,18 @@ export function TodayAgenda({ items, students, now, onRowClick, onCreate }: Toda
         </span>
         {done ? (
           <CheckOutlined className="agenda__check" />
+        ) : needsMark(it, nowMin) ? (
+          <Button
+            size="small"
+            className="tk-btn-primary agenda__mark"
+            onClick={handleMarkClick}
+          >
+            {t('home.quickMark')}
+          </Button>
         ) : (
           <RightOutlined className="agenda__chevron" />
         )}
-      </button>
+      </div>
     )
   }
 

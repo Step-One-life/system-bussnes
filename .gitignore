@@ -47,3 +47,6 @@ coverage/
 
 # Артефакты Playwright MCP (снапшоты/скриншоты UI-проверок)
 .playwright-mcp/
+
+# Визуальный компаньон брейнштормов (superpowers)
+.superpowers/
