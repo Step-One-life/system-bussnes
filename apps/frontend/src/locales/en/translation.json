@@ -218,6 +218,7 @@
     },
     "renew": {
       "title": "Renew subscription",
+      "titleWith": "Renew: {{name}} · «{{group}}»",
       "subRenewed": "Subscription renewed",
       "student": "Student:",
       "group": "Group:",
@@ -225,10 +226,17 @@
       "dateLabel": "Start date",
       "paidNow": "Paid now",
       "paidNowHint": "a payment of {{amount}} ₽ will be created",
-      "priceLine": "{{label}} · {{amount}} ₽"
+      "priceLine": "{{label}} · {{amount}} ₽",
+      "asPrevLabel": "Same as last",
+      "tariffLabel": "Subscription",
+      "startLabel": "Start",
+      "startToday": "Today",
+      "startTomorrow": "Tomorrow",
+      "startCustom": "Pick a date…"
     },
     "issue": {
       "title": "Issue subscription",
+      "titleWith": "Issue: {{name}} · «{{group}}»",
       "createBtn": "Issue",
       "created": "Subscription issued"
     },

@@ -218,6 +218,7 @@
     },
     "renew": {
       "title": "Продлить абонемент",
+      "titleWith": "Продлить: {{name}} · «{{group}}»",
       "subRenewed": "Абонемент продлён",
       "student": "Ученик:",
       "group": "Группа:",
@@ -225,10 +226,17 @@
       "dateLabel": "Дата начала",
       "paidNow": "Оплачен сразу",
       "paidNowHint": "создастся платёж {{amount}} ₽",
-      "priceLine": "{{label}} · {{amount}} ₽"
+      "priceLine": "{{label}} · {{amount}} ₽",
+      "asPrevLabel": "Как прошлый",
+      "tariffLabel": "Абонемент",
+      "startLabel": "Начало",
+      "startToday": "Сегодня",
+      "startTomorrow": "Завтра",
+      "startCustom": "Выбрать дату…"
     },
     "issue": {
       "title": "Оформить абонемент",
+      "titleWith": "Оформить: {{name}} · «{{group}}»",
       "createBtn": "Оформить",
       "created": "Абонемент оформлен"
     },
