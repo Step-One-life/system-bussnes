@@ -66,12 +66,15 @@ export function useDayMarking(open: boolean, onClose: () => void, dateStr: strin
     for (const g of groups) {
       if (g.isIndividual) continue
       const entry = (g.schedule ?? []).find((s) => s.day === dow)
-      if (!entry) continue
       const existing =
         trainings.find((t) => t.groupId === g.name && t.date === dateStr) ?? null
+      // Группа участвует, если есть слот расписания на этот день недели ИЛИ уже
+      // есть фактическая запись занятия на дату (разовое/перенесённое занятие
+      // группы без расписания на этот день — иначе оно выпало бы из «Закрыть день»).
+      if (!entry && !existing) continue
       result.push({
         groupId: g.name,
-        time: entry.time || '',
+        time: existing?.time || entry?.time || '',
         duration: g.duration ?? 60,
         existing,
         originalAttendees: new Set(existing?.attendees ?? []),
