@@ -21,6 +21,7 @@
     "start:backend": "npm run start:prod --workspace apps/backend",
     "migrate": "npm run migrate --workspace apps/backend",
     "migrate:undo": "npm run migrate:undo --workspace apps/backend",
-    "seed": "npm run seed --workspace apps/backend"
+    "seed": "npm run seed --workspace apps/backend",
+    "deploy:app": "bash scripts/deploy-app.sh"
   }
 }

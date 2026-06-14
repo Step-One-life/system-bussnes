@@ -29,8 +29,9 @@ help:
 	@echo "    make update         — git pull + install + build + migrate"
 	@echo ""
 	@echo "  Деплой (.env.host):"
-	@echo "    make deploy-test           — выкатить на тестовый стенд (Docker + БД + nginx + SSL)"
+	@echo "    make deploy-app            — БЕЗОПАСНЫЙ деплой кода: backup БД + образ + фронт + рестарт"
 	@echo "    make deploy-test-frontend  — обновить только frontend на тесте"
+	@echo "    make deploy-test           — ПЕРВИЧНАЯ установка стенда (затирает БД, nginx, SSL!)"
 
 # ── Локальная разработка ──────────────────────────────────────────
 .PHONY: install
@@ -79,7 +80,14 @@ check-host:
 # frontend — статика, раздаётся nginx хоста. Полная логика —
 # в scripts/deploy-test.sh (сборка образа, перенос, БД, nginx, SSL).
 
-# Тестовый стенд (94.19.63.62, trick.ozma-split.com)
+# БЕЗОПАСНЫЙ деплой кода: бэкап БД + сборка образа + фронт + рестарт.
+# НЕ затирает БД, NE трогает nginx/SSL. Используй для обычных деплоев.
+.PHONY: deploy-app
+deploy-app: check-host
+	@bash scripts/deploy-app.sh
+
+# Первичная установка стенда (94.19.63.62, trick.ozma-split.com).
+# ВНИМАНИЕ: затирает серверную БД дампом локальной БД! Только для setup.
 .PHONY: deploy-test
 deploy-test: check-host
 	@bash scripts/deploy-test.sh
