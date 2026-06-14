@@ -263,7 +263,8 @@
   "trainings": {
     "title": "Trainings",
     "record": "Record training",
-    "recordsCount": "{{count}} records",
+    "recordsCount": "{{count}} record",
+    "recordsCount_other": "{{count}} records",
     "weekCount": "This week: {{count}} session",
     "weekCount_other": "This week: {{count}} sessions",
     "empty": "No trainings yet",
