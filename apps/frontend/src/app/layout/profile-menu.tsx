@@ -1,5 +1,5 @@
 import { Dropdown } from 'antd'
-import { BulbOutlined, LogoutOutlined, SettingOutlined } from '@ant-design/icons'
+import { BulbOutlined, HistoryOutlined, LogoutOutlined, SettingOutlined } from '@ant-design/icons'
 
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
@@ -54,6 +54,12 @@ export function ProfileMenu({ children, placement = 'topLeft' }: ProfileMenuProp
         themeOption('dark', t('common.themeOptionDark')),
         themeOption('system', t('common.themeOptionSystem')),
       ],
+    },
+    {
+      key: 'journal',
+      icon: <HistoryOutlined />,
+      label: t('nav.journal'),
+      onClick: () => navigate('/journal'),
     },
     { type: 'divider' },
     {

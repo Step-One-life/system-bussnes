@@ -36,6 +36,9 @@ const FinancePage = lazy(() =>
 const SettingsPage = lazy(() =>
   import('pages/settings').then((m) => ({ default: m.SettingsPage })),
 )
+const JournalPage = lazy(() =>
+  import('pages/journal').then((m) => ({ default: m.JournalPage })),
+)
 
 function fallback(): ReactNode {
   return (
@@ -81,6 +84,7 @@ export const router = createBrowserRouter([
           },
           { path: 'finance', element: lazyEl(<FinancePage />) },
           { path: 'settings', element: lazyEl(<SettingsPage />) },
+          { path: 'journal', element: lazyEl(<JournalPage />) },
         ],
       },
     ],
