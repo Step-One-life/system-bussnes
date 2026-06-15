@@ -6,6 +6,7 @@ import { SUB_TYPE_TOTALS } from '@trikick/shared'
 import type { DeductStatus, SubscriptionType, TimeSlot } from '@trikick/shared'
 
 import { DateUtil } from '../../common/utils/date.util'
+import { ActivityLogService } from '../activity-log/activity-log.service'
 import { Payment } from '../finance/payment.model'
 import { covers, pickSubForDeduct } from './lib/pick-subscription'
 import { Subscription } from './subscription.model'
@@ -15,6 +16,7 @@ export class SubscriptionsService {
   constructor(
     @InjectModel(Subscription) private readonly subModel: typeof Subscription,
     @InjectModel(Payment) private readonly paymentModel: typeof Payment,
+    private readonly activityLog: ActivityLogService,
   ) {}
 
   async add(
@@ -127,6 +129,7 @@ export class SubscriptionsService {
     const sub = await this.subModel.findOne({ where: { id: subId, studentId } })
     if (!sub) throw new NotFoundException('Абонемент не найден')
     await sub.destroy()
+    await this.activityLog.markSubscriptionUndone(subId)
   }
 
   async linkPayment(

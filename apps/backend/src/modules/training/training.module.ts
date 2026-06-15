@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common'
 import { SequelizeModule } from '@nestjs/sequelize'
 
+import { ActivityLogModule } from '../activity-log/activity-log.module'
 import { CalendarModule } from '../calendar/calendar.module'
 import { FinanceModule } from '../finance/finance.module'
 import { GroupModule } from '../group/group.module'
@@ -19,6 +20,7 @@ import { TrainingService } from './training.service'
     LocationModule,
     FinanceModule,
     CalendarModule,
+    ActivityLogModule,
   ],
   controllers: [TrainingController],
   providers: [TrainingService],

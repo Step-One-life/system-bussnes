@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common'
 import { SequelizeModule } from '@nestjs/sequelize'
 
+import { ActivityLogModule } from '../activity-log/activity-log.module'
 import { Payment } from '../finance/payment.model'
 import { StudentController } from './student.controller'
 import { Student } from './student.model'
@@ -11,7 +12,10 @@ import { SubscriptionsService } from './subscriptions.service'
 import { Visit } from './visit.model'
 
 @Module({
-  imports: [SequelizeModule.forFeature([Student, StudentGroup, Subscription, Visit, Payment])],
+  imports: [
+    SequelizeModule.forFeature([Student, StudentGroup, Subscription, Visit, Payment]),
+    ActivityLogModule,
+  ],
   controllers: [StudentController],
   providers: [StudentService, SubscriptionsService],
   exports: [StudentService, SubscriptionsService, SequelizeModule],

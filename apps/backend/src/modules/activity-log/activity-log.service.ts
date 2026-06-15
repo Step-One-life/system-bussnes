@@ -73,7 +73,7 @@ export class ActivityLogService {
     return { data: page, nextCursor }
   }
 
-  /** Пометить активное событие отменённым (идемпотентно). Возвращает true, если что-то пометили. */
+  /** Помечает активное событие отменённым (идемпотентно). */
   private async markUndone(where: Record<string, unknown>): Promise<void> {
     await this.model.update(
       { undoneAt: new Date() },

@@ -9,6 +9,7 @@ import type { DeductStatus } from '@trikick/shared'
 
 import { OwnedCrudService } from '../../common/services/owned-crud.service'
 import { DateUtil } from '../../common/utils/date.util'
+import { ActivityLogService } from '../activity-log/activity-log.service'
 import { CalendarSyncService } from '../calendar/services/calendar-sync.service'
 import { HallCostsService } from '../finance/hall-costs.service'
 import { Payment } from '../finance/payment.model'
@@ -59,6 +60,7 @@ export class TrainingService extends OwnedCrudService<Training> {
     private readonly pricingRulesService: PricingRulesService,
     private readonly paymentsService: PaymentsService,
     private readonly hallCostsService: HallCostsService,
+    private readonly activityLog: ActivityLogService,
     @InjectConnection() private readonly sequelize: Sequelize,
   ) {
     super(trainingModel)
@@ -457,6 +459,7 @@ export class TrainingService extends OwnedCrudService<Training> {
   async removeAttendee(training: Training, studentId: string): Promise<void> {
     await training.$remove('attendees', studentId)
     await this.revertVisit(training, studentId)
+    await this.activityLog.markAttendanceUndone(training.id, studentId)
     await this.calendarSync.enqueueUpsert(training.userId, training.id, training.time)
   }
 
@@ -468,6 +471,7 @@ export class TrainingService extends OwnedCrudService<Training> {
       await this.revertVisit(training, studentId)
     }
     await this.calendarSync.enqueueDelete(userId, training.id)
+    await this.activityLog.markTrainingCreatedUndone(training.id)
     await training.destroy()
   }
 

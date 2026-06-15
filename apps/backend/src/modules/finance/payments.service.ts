@@ -4,6 +4,7 @@ import type { Transaction } from 'sequelize'
 
 import { OwnedCrudService } from '../../common/services/owned-crud.service'
 import { DateUtil } from '../../common/utils/date.util'
+import { ActivityLogService } from '../activity-log/activity-log.service'
 import { CreatePaymentDto } from './dto/create-payment.dto'
 import { FIN_SESSIONS } from './finance.constants'
 import { HallCostsService } from './hall-costs.service'
@@ -16,6 +17,7 @@ export class PaymentsService extends OwnedCrudService<Payment> {
   constructor(
     @InjectModel(Payment) private readonly paymentModel: typeof Payment,
     private readonly hallCostsService: HallCostsService,
+    private readonly activityLog: ActivityLogService,
   ) {
     super(paymentModel)
   }
@@ -51,5 +53,6 @@ export class PaymentsService extends OwnedCrudService<Payment> {
       await this.hallCostsService.removeForUser(userId, payment.hallCostId).catch(() => undefined)
     }
     await payment.destroy()
+    await this.activityLog.markPaymentUndone(id)
   }
 }
