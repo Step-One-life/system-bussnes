@@ -43,6 +43,7 @@ NestJS-модули в `modules/`:
 | `training` | Тренировки: создание, серии, отметка посещений, удаление, **серверный барьер наслоения** (`lib/training-overlap.ts`). |
 | `finance` | Тарифы (`pricing-rules`), платежи (`payments`), расходы зала (`hall-costs`), копирование цен. |
 | `calendar` | Синхронизация с Google Календарём: OAuth, аутбокс-воркер, шифрование токенов. |
+| `activity-log` | Журнал действий + откат. Два модуля: `ActivityLogModule` (модель `activity_logs` + запись/чтение/`markUndone`, зависит ТОЛЬКО от моделей) и `ActivityUndoModule` (контроллер `/api/activity-log` + `ActivityUndoService`, импортирует домены для отката). Направление зависимостей одностороннее — циклов нет. |
 
 **Ключевые детали backend:**
 - Глобальный префикс **`/api`** (`main.ts: setGlobalPrefix('api')`), Swagger на `/api/docs`.
@@ -61,9 +62,9 @@ NestJS-модули в `modules/`:
 - `i18n.ts`, `theme/`.
 
 **`entities/`** — доменные модули (модель + API + UI):
-- `auth`, `calendar` (карточка Google-календаря, repo), `groups`, `locations`, `students` (абонементы, дровер, визиты), `trainings`, `finance` (тарифы, платежи, статистика, авто-оплата).
+- `auth`, `calendar` (карточка Google-календаря, repo), `groups`, `locations`, `students` (абонементы, дровер, визиты), `trainings`, `finance` (тарифы, платежи, статистика, авто-оплата), `activity-log` (журнал: repo, `useActivityLog` infinite, чистые `describeEvent`/`group-log`).
 
-**`pages/`** — экраны: `home` (лента дня с быстрой отметкой `quick-mark-sheet`, пакетное «Закрыть день» `close-day-sheet`, чистые модели `agenda-model`/`day-marking-model`/`billing-preview`), `trainings`, `people` (вложенные `students`/`groups`/`individual`), `finance`, `settings`, `login`, `register`.
+**`pages/`** — экраны: `home` (лента дня с быстрой отметкой `quick-mark-sheet`, пакетное «Закрыть день» `close-day-sheet`, чистые модели `agenda-model`/`day-marking-model`/`billing-preview`), `trainings`, `people` (вложенные `students`/`groups`/`individual`), `finance`, `journal` (журнал действий + откат), `settings`, `login`, `register`.
 
 **`common/`** — `ui` (Badge, EmptyState, **ErrorBoundary**, KpiCard, PageHeader, ProgressBar, toast, WarningItem, **AdaptiveSheet** — нижняя шторка на мобиле / модалка на десктопе), `utils` (date, uuid), `services/api` (api-client, group-map), `hooks` (use-is-mobile, use-now, use-theme, use-count-up).
 
@@ -78,7 +79,7 @@ NestJS-модули в `modules/`:
 
 `users`, `groups`, `students`, `student_groups`, `subscriptions`, `trainings`,
 `training_attendees`, `visits`, `locations`, `pricing_rules`, `payments`, `hall_costs`,
-`calendar_connections`, `calendar_sync_tasks`, `SequelizeMeta`.
+`calendar_connections`, `calendar_sync_tasks`, `activity_logs`, `SequelizeMeta`.
 
 Локально: MySQL, db/user/pass = `trikick`. Sequelize пишет timestamps в **UTC**.
 
@@ -103,6 +104,7 @@ NestJS-модули в `modules/`:
 | **Аудит-фиксы целостности** | `docs/audit-full-2026-06-10.md` | Биллинг отметки и откат — в транзакциях с `FOR UPDATE` + `UNIQUE(training_id, student_id)` на visits (параллельные отметки/снятия не задваивают деньги). `deduct` отсеивает истёкшие по сроку абонементы (чистая `student/lib/pick-subscription.ts`, зеркало фронтового `findSubForGroup`). Удаление группы сохраняет общие абонементы (`detachSharedSubscriptions`) и предупреждает цифрами. FK `SET NULL` на `visits.subscription_id/payment_id`, `subscriptions.fin_payment_id`, `payments/hall_costs.student_id`. Владение в `link-payment` и `copy` тарифов (+дедуп). `@Min(0)` на суммы. |
 | **«Мой день»: быстрая отметка и деньги в один экран** | `2026-06-13` | Кнопка «Отметить» в строке ленты дня → шторка `QuickMarkSheet` с предотметкой «все пришли» и превью биллинга; «Закрыть день» на любую дату (`CloseDaySheet`); сигнал «вчера не отмечено» в «Требует внимания»; продление абонемента с префиллом и переключателем «Оплачен сразу»; `AdaptiveSheet` (Drawer/Modal по брейкпоинту); vitest для чистых функций фронта (`npm test -w apps/frontend`); `rule-match` — чистое ядро тарифного матчинга. «Закрыть день» учитывает группу, если есть слот расписания **ИЛИ** фактическое занятие на дату (разовое/перенесённое не выпадает). |
 | **Продление/оформление абонемента «в один экран»** | `2026-06-14` | `RenewSubModal` переписан в компактный одноэкранный вид (макет «3а»): заголовок `Продлить/Оформить: <Имя> · «<Группа>»`, плашка «Как прошлый → N занятий · цена», быстрый выбор начала `Сегодня · Завтра · Выбрать дату…`, чекбокс «Оплачен сразу» с подписью «создастся платёж N ₽». Выбор типа тренировки и типа абонемента **убран** — оба заданы контекстом (продление «как прошлый», `lessonKind` из группы); дефолт оформления без прошлого абонемента — **разовое занятие** (`type '1'`). Чистые функции `tomorrowISO()` (`common/utils/date.ts`) и `resolveStartDate()` (`subscriptions/renew-date.ts`) под vitest. Тост продления использует имя группы (был UUID — фикс). |
+| **Журнал действий + отмена (undo)** | `2026-06-15` | Лента «что произошло» (отметки/абонементы/оплаты/создание занятий) с откатом одной кнопкой. Таблица `activity_logs` (append-only, денормализованный `summary`, мягкие ссылки без FK на объекты). Запись событий — в контроллерах (training/student) при действиях; авто-платёж отметки и «оплачен сразу» НЕ дублируются отдельным событием оплаты (ручной mark-paid шлёт `logAsPayment`). Откат (`ActivityUndoService`) переиспользует `removeAttendee`/`removeTraining`/`removePayment`/`subscriptions.remove`; «отменено» проставляется хуками `markUndone` внутри этих операций (журнал честен при откате из любой точки UI). Массовые действия связаны `batchId` (генерит фронт) → в ленте группа с раскрытием («Отменить всё»/по одной). Фронт: модуль `entities/activity-log` (чистые `describeEvent`/`group-log`+`batchLabelKey` под vitest, `useInfiniteQuery`), экран `/journal` (пункт в меню профиля). Удаление занятия — view-only (`isUndoable`). **v1 без redo** (тост проекта без кнопки-действия) и без фильтров. Спека/план: `docs/superpowers/specs|plans/2026-06-15-action-journal-undo*`. |
 
 ## 8. Важные ловушки и соглашения
 
