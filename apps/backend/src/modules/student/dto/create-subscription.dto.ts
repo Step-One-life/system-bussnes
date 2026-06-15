@@ -1,5 +1,14 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
-import { IsArray, IsIn, IsInt, IsOptional, IsString, IsUUID } from 'class-validator'
+import {
+  IsArray,
+  IsBoolean,
+  IsIn,
+  IsInt,
+  IsNumber,
+  IsOptional,
+  IsString,
+  IsUUID,
+} from 'class-validator'
 
 import type { CreateSubscriptionShape, SubscriptionType, TimeSlot } from '@trikick/shared'
 
@@ -40,6 +49,11 @@ export class CreateSubscriptionDto implements CreateSubscriptionShape {
   @IsArray()
   @IsUUID('4', { each: true })
   groupIds?: string[]
+
+  @ApiPropertyOptional({ format: 'uuid', description: 'id пакета массового действия' })
+  @IsOptional()
+  @IsUUID()
+  batchId?: string
 }
 
 export class ExtendSubscriptionDto {
@@ -52,4 +66,14 @@ export class LinkPaymentDto {
   @ApiProperty({ description: 'id платежа, который оплачивает абонемент', format: 'uuid' })
   @IsUUID()
   paymentId!: string
+
+  @ApiPropertyOptional({ description: 'Логировать как событие записи оплаты (mark-paid)' })
+  @IsOptional()
+  @IsBoolean()
+  logAsPayment?: boolean
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsNumber()
+  amount?: number
 }

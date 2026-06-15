@@ -15,6 +15,7 @@ import { CurrentUser } from '../../common/decorators/current-user.decorator'
 import { IdParamDto } from '../../common/dto/id-param.dto'
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard'
 import type { CurrentUserPayload } from '../../common/interfaces/current-user.interface'
+import { ActivityLogService } from '../activity-log/activity-log.service'
 import { CreateStudentDto } from './dto/create-student.dto'
 import {
   CreateSubscriptionDto,
@@ -34,6 +35,7 @@ export class StudentController {
   constructor(
     private readonly studentService: StudentService,
     private readonly subscriptionsService: SubscriptionsService,
+    private readonly activityLog: ActivityLogService,
   ) {}
 
   @Get()
@@ -81,7 +83,17 @@ export class StudentController {
     @Body() dto: CreateSubscriptionDto,
   ): Promise<Student> {
     await this.studentService.findOneForUser(user.id, id)
-    await this.subscriptionsService.add(id, dto)
+    const sub = await this.subscriptionsService.add(id, dto)
+    const studentName = await this.activityLog.studentName(id)
+    const groupName = await this.activityLog.groupName(dto.groupId)
+    await this.activityLog.log({
+      userId: user.id,
+      type: 'subscription_created',
+      batchId: dto.batchId ?? null,
+      studentId: id,
+      subscriptionId: sub.id,
+      summary: { studentName, groupName, sessionsCount: sub.total },
+    })
     return this.studentService.findOneForUser(user.id, id)
   }
 
@@ -122,6 +134,17 @@ export class StudentController {
   ): Promise<Student> {
     await this.studentService.findOneForUser(user.id, id)
     await this.subscriptionsService.linkPayment(user.id, id, subId, dto.paymentId)
+    if (dto.logAsPayment) {
+      const studentName = await this.activityLog.studentName(id)
+      await this.activityLog.log({
+        userId: user.id,
+        type: 'payment_recorded',
+        studentId: id,
+        subscriptionId: subId,
+        paymentId: dto.paymentId,
+        summary: { studentName, amount: dto.amount },
+      })
+    }
     return this.studentService.findOneForUser(user.id, id)
   }
 
