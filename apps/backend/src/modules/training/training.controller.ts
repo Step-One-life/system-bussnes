@@ -16,6 +16,7 @@ import { CurrentUser } from '../../common/decorators/current-user.decorator'
 import { IdParamDto } from '../../common/dto/id-param.dto'
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard'
 import type { CurrentUserPayload } from '../../common/interfaces/current-user.interface'
+import { ActivityLogService } from '../activity-log/activity-log.service'
 import { AttendeesDto } from './dto/attendees.dto'
 import { CreateTrainingDto } from './dto/create-training.dto'
 import { UpdateTrainingDto } from './dto/update-training.dto'
@@ -27,7 +28,10 @@ import { TrainingService, type BillingResult } from './training.service'
 @UseGuards(JwtAuthGuard)
 @Controller('trainings')
 export class TrainingController {
-  constructor(private readonly trainingService: TrainingService) {}
+  constructor(
+    private readonly trainingService: TrainingService,
+    private readonly activityLog: ActivityLogService,
+  ) {}
 
   @Get()
   @ApiOperation({ summary: 'Список тренировок' })
@@ -49,11 +53,20 @@ export class TrainingController {
 
   @Post()
   @ApiOperation({ summary: 'Создать тренировку (со списанием занятий)' })
-  create(
+  async create(
     @CurrentUser() user: CurrentUserPayload,
     @Body() dto: CreateTrainingDto,
   ): Promise<Training> {
-    return this.trainingService.createTraining(user.id, dto)
+    const created = await this.trainingService.createTraining(user.id, dto)
+    const groupName = await this.activityLog.groupName(created.groupId)
+    await this.activityLog.log({
+      userId: user.id,
+      type: 'training_created',
+      batchId: dto.batchId ?? null,
+      trainingId: created.id,
+      summary: { groupName, trainingTime: created.time, trainingDate: created.date },
+    })
+    return created
   }
 
   @Patch('recurring/:recurringId')
@@ -92,8 +105,19 @@ export class TrainingController {
   @Delete(':id')
   @HttpCode(204)
   @ApiOperation({ summary: 'Удалить тренировку (восстанавливает занятия учеников)' })
-  remove(@CurrentUser() user: CurrentUserPayload, @Param() { id }: IdParamDto): Promise<void> {
-    return this.trainingService.removeTraining(user.id, id)
+  async remove(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param() { id }: IdParamDto,
+  ): Promise<void> {
+    const training = await this.trainingService.findOneForUser(user.id, id)
+    const groupName = await this.activityLog.groupName(training.groupId)
+    await this.trainingService.removeTraining(user.id, id)
+    await this.activityLog.log({
+      userId: user.id,
+      type: 'training_deleted',
+      trainingId: id,
+      summary: { groupName, trainingTime: training.time, trainingDate: training.date },
+    })
   }
 
   @Post(':id/attendees')
@@ -105,6 +129,27 @@ export class TrainingController {
   ): Promise<{ training: Training; billing: BillingResult[] }> {
     const training = await this.trainingService.findOneForUser(user.id, id)
     const billing = await this.trainingService.markAttendance(training, dto.studentIds)
+    const groupName = await this.activityLog.groupName(training.groupId)
+    for (const b of billing) {
+      const studentName = await this.activityLog.studentName(b.studentId)
+      await this.activityLog.log({
+        userId: user.id,
+        type: 'attendance_marked',
+        batchId: dto.batchId ?? null,
+        trainingId: training.id,
+        studentId: b.studentId,
+        paymentId: b.paymentId,
+        summary: {
+          studentName,
+          groupName,
+          trainingTime: training.time,
+          trainingDate: training.date,
+          billing: b.billing,
+          remaining: b.remaining ?? undefined,
+          amount: b.amount ?? undefined,
+        },
+      })
+    }
     return { training: await this.trainingService.findOneForUser(user.id, id), billing }
   }
 

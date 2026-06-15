@@ -79,4 +79,9 @@ export class CreateTrainingDto implements CreateTrainingShape {
   @IsOptional()
   @IsUUID()
   plannedStudentId2?: string | null
+
+  @ApiPropertyOptional({ format: 'uuid', description: 'id пакета массового действия' })
+  @IsOptional()
+  @IsUUID()
+  batchId?: string
 }
