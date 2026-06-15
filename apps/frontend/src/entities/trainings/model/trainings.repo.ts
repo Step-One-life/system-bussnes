@@ -96,6 +96,7 @@ export async function createTraining(data: TrainingInput): Promise<Training> {
     plannedStudentId: data.plannedStudentId ?? null,
     isPair: data.isPair ?? false,
     plannedStudentId2: data.plannedStudentId2 ?? null,
+    batchId: data.batchId,
   })
   return toTraining(raw, byId)
 }
@@ -173,6 +174,7 @@ export interface BillingResult {
 export async function addAttendees(
   trainingId: string,
   studentIds: string[],
+  batchId?: string,
 ): Promise<{ training: Training | null; billing: BillingResult[] }> {
   if (!studentIds.length) {
     return { training: await getTrainingById(trainingId), billing: [] }
@@ -180,7 +182,7 @@ export async function addAttendees(
   const { byId } = await getGroupMaps()
   const raw = await apiClient.post<{ training: RawTraining; billing: BillingResult[] }>(
     `/trainings/${trainingId}/attendees`,
-    { studentIds },
+    { studentIds, batchId },
   )
   return { training: toTraining(raw.training, byId), billing: raw.billing ?? [] }
 }

@@ -186,9 +186,10 @@ export interface MarkResult {
 export async function markAttendance(
   training: Training,
   studentIds: string[],
+  batchId?: string,
 ): Promise<MarkResult[]> {
   if (!studentIds.length) return []
-  const { billing } = await addAttendees(training.id, studentIds)
+  const { billing } = await addAttendees(training.id, studentIds, batchId)
   const students = await getStudents()
   const nameOf = (id: string) => students.find((s) => s.id === id)?.name ?? ''
   return billing.map((b) => ({

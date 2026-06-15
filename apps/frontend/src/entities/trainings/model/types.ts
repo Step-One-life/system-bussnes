@@ -35,6 +35,8 @@ export interface TrainingInput {
   plannedStudentId?: string | null
   isPair?: boolean
   plannedStudentId2?: string | null
+  /** id пакета массового действия (серия занятий) для журнала действий. */
+  batchId?: string
 }
 
 export interface TrainingConflict {
