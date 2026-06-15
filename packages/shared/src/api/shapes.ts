@@ -135,3 +135,46 @@ export interface CopyPricingShape {
   fromLocationId: string
   toLocationId: string
 }
+
+/* ── Activity log (журнал действий) ── */
+
+export type ActivityType =
+  | 'attendance_marked'
+  | 'subscription_created'
+  | 'payment_recorded'
+  | 'training_created'
+  | 'training_deleted'
+
+/** Денормализованные поля для отображения строки журнала (имена/суммы на момент события). */
+export interface ActivitySummary {
+  studentName?: string
+  groupName?: string
+  trainingTime?: string
+  trainingDate?: string
+  /** Чем оплачена отметка. */
+  billing?: 'subscription' | 'payment' | 'none'
+  /** Остаток занятий на абонементе после списания. */
+  remaining?: number
+  /** Число занятий в созданном абонементе. */
+  sessionsCount?: number
+  /** Денежная сумма (платёж/оплата). */
+  amount?: number
+}
+
+export interface ActivityLogEntryShape {
+  id: string
+  type: ActivityType
+  batchId: string | null
+  createdAt: string
+  undoneAt: string | null
+  trainingId: string | null
+  studentId: string | null
+  subscriptionId: string | null
+  paymentId: string | null
+  summary: ActivitySummary
+}
+
+export interface ActivityLogPageShape {
+  data: ActivityLogEntryShape[]
+  nextCursor: string | null
+}
