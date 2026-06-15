@@ -1,8 +1,8 @@
-import { describe, expect, it } from 'vitest'
-
 import { groupByDayAndBatch } from './group-log'
 
 import type { ActivityEntry } from './types'
+
+import { describe, expect, it } from 'vitest'
 
 const ev = (over: Partial<ActivityEntry>): ActivityEntry => ({
   id: Math.random().toString(),

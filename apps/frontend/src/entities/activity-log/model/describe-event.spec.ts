@@ -1,8 +1,8 @@
-import { describe, expect, it } from 'vitest'
-
 import { describeEvent } from './describe-event'
 
 import type { ActivityEntry } from './types'
+
+import { describe, expect, it } from 'vitest'
 
 const base: ActivityEntry = {
   id: '1',
