@@ -4,6 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 
 import { useToast } from 'common/ui'
+import { newBatchId } from 'common/utils/batch-id'
 import { formatDateShort, todayISO } from 'common/utils/date'
 import { uuid } from 'common/utils/uuid'
 import { autoCreatePayment } from 'entities/finance/lib/auto-payment'
@@ -159,6 +160,8 @@ export function useIndividualSession({ indGroupId, onDone, isOnline = false }: U
 
       const effectiveLocation = locations.find((l) => l.id === effectiveLocationId) ?? null
       const recurringId = seriesLen > 1 ? uuid() : null
+      // Один пакет на всю серию (включая одиночное занятие) для журнала действий.
+      const batchId = newBatchId()
 
       // --- Режим «Разово»: без абонемента и платежа; все занятия плановые. ---
       if (paymentMode === 'oneoff') {
@@ -176,6 +179,7 @@ export function useIndividualSession({ indGroupId, onDone, isOnline = false }: U
             recurring: seriesLen > 1,
             recurringId,
             isOnline,
+            batchId,
           })
         }
         qc.invalidateQueries({ queryKey: studentKeys.all })
@@ -227,6 +231,7 @@ export function useIndividualSession({ indGroupId, onDone, isOnline = false }: U
         recurring: seriesLen > 1,
         recurringId,
         isOnline,
+        batchId,
       })
 
       if (createdSub) {
@@ -287,6 +292,7 @@ export function useIndividualSession({ indGroupId, onDone, isOnline = false }: U
           recurring: true,
           recurringId,
           isOnline,
+          batchId,
         })
       }
 

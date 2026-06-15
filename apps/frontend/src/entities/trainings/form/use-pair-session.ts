@@ -4,6 +4,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 
 import { useToast } from 'common/ui'
+import { newBatchId } from 'common/utils/batch-id'
 import { formatDateShort, todayISO } from 'common/utils/date'
 import { uuid } from 'common/utils/uuid'
 import { useGroups } from 'entities/groups/api/use-groups'
@@ -81,6 +82,8 @@ export function usePairSession({ indGroupId, onDone }: UsePairSessionOptions) {
     try {
       const effectiveLocation = locations.find((l) => l.id === effectiveLocationId) ?? null
       const recurringId = seriesLen > 1 ? uuid() : null
+      // Один пакет на всю серию (включая одиночное занятие) для журнала действий.
+      const batchId = newBatchId()
       for (const d of dates) {
         await createTraining.mutateAsync({
           date: d,
@@ -96,6 +99,7 @@ export function usePairSession({ indGroupId, onDone }: UsePairSessionOptions) {
           sessionDuration: duration,
           recurring: seriesLen > 1,
           recurringId,
+          batchId,
         })
       }
       qc.invalidateQueries({ queryKey: studentKeys.all })

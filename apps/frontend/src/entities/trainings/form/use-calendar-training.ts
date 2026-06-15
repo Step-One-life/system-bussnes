@@ -5,6 +5,7 @@ import i18n from 'i18next'
 import { useTranslation } from 'react-i18next'
 
 import { useToast } from 'common/ui'
+import { newBatchId } from 'common/utils/batch-id'
 import { useGroups } from 'entities/groups/api/use-groups'
 import { studentKeys, useStudents } from 'entities/students/api/use-students'
 import {
@@ -144,7 +145,8 @@ export function useCalendarTraining({ block, onDone }: UseCalendarTrainingOption
 
       const toAdd = [...checked].filter((id) => !attendeeSet.has(id))
       if (toAdd.length) {
-        const results = await markAttendance(current, toAdd)
+        const batchId = newBatchId()
+        const results = await markAttendance(current, toAdd, batchId)
         const noTariff = results.filter((r) => r.billing === 'none').map((r) => r.name)
         if (noTariff.length) {
           toast({
