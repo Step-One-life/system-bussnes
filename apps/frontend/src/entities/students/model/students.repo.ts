@@ -221,11 +221,17 @@ export async function linkPaymentToSub(
   studentId: string,
   subId: string,
   paymentId: string,
+  opts?: { logAsPayment?: boolean; amount?: number },
 ): Promise<void> {
   // Marks the subscription as paid (sets finPaymentId) so the "Оплатить"
   // action disappears and the payment can't be recorded twice.
+  // logAsPayment просит бэк записать событие журнала о ручной оплате (mark-paid);
+  // авто-линковка при покупке абонемента флаг не ставит (платёж уже отражён в
+  // событии subscription_created).
   await apiClient.post(`/students/${studentId}/subscriptions/${subId}/link-payment`, {
     paymentId,
+    logAsPayment: opts?.logAsPayment,
+    amount: opts?.amount,
   })
 }
 

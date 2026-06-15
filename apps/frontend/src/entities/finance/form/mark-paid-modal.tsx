@@ -117,7 +117,7 @@ export function MarkPaidModal({
         hall_cost_id: hallCost.id,
         paid_at: date,
       })
-      await linkPaymentToSub(student.id, sub.id, payment.id)
+      await linkPaymentToSub(student.id, sub.id, payment.id, { logAsPayment: true, amount })
       qc.invalidateQueries({ queryKey: studentKeys.all })
       qc.invalidateQueries({ queryKey: ['students', student.id] })
       onClose()
