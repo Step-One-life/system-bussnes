@@ -4,6 +4,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 
 import { useToast } from 'common/ui'
+import { newBatchId } from 'common/utils/batch-id'
 import { formatDayOfWeek } from 'common/utils/date'
 import { groupKeys, useGroups } from 'entities/groups'
 import { getSubStatus, studentKeys, useStudents } from 'entities/students'
@@ -152,6 +153,7 @@ export function useDayMarking(open: boolean, onClose: () => void, dateStr: strin
     const selGroups = selection?.groups ?? checks
     const selInd = selection?.ind ?? indChecks
     setSaving(true)
+    const batchId = newBatchId()
     try {
       const noTariff: string[] = []
       for (const dg of dayGroups) {
@@ -173,7 +175,7 @@ export function useDayMarking(open: boolean, onClose: () => void, dateStr: strin
         if (!training) continue
 
         if (toAdd.length) {
-          const results = await markAttendance(training, toAdd)
+          const results = await markAttendance(training, toAdd, batchId)
           noTariff.push(...results.filter((r) => r.billing === 'none').map((r) => r.name))
         }
 
@@ -191,7 +193,7 @@ export function useDayMarking(open: boolean, onClose: () => void, dateStr: strin
         } else if (isChecked && !ti.originalPresent) {
           const tr = trainings.find((t) => t.id === ti.trainingId)
           if (tr) {
-            const results = await markAttendance(tr, [ti.studentId])
+            const results = await markAttendance(tr, [ti.studentId], batchId)
             noTariff.push(...results.filter((r) => r.billing === 'none').map((r) => r.name))
           }
         }
