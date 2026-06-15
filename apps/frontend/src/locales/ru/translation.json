@@ -34,7 +34,31 @@
     "groups": "Группы",
     "people": "Люди",
     "finance": "Финансы",
-    "settings": "Настройки"
+    "settings": "Настройки",
+    "journal": "Журнал"
+  },
+  "journal": {
+    "title": "Журнал",
+    "empty": "Пока нет событий",
+    "emptyText": "Здесь появятся ваши действия — отметки, оплаты, абонементы",
+    "today": "Сегодня",
+    "yesterday": "Вчера",
+    "undo": "Отменить",
+    "undoAll": "Отменить всё",
+    "undone": "Отменено",
+    "undoneToast": "Отменено",
+    "redo": "Вернуть",
+    "loadMore": "Показать ещё",
+    "batchMarks": "Закрыт день · {{count}} отметок",
+    "batchSeries": "Создана серия · {{count}} занятий",
+    "icon": {
+      "attendanceSub": "списано занятие, осталось {{count}}",
+      "attendancePay": "платёж {{amount}} ₽",
+      "subscription": "абонемент {{count}} занятий",
+      "payment": "оплата {{amount}} ₽",
+      "created": "Создано занятие «{{group}}»",
+      "deleted": "Удалено занятие «{{group}}»"
+    }
   },
   "common": {
     "themeToggle": "Сменить тему",

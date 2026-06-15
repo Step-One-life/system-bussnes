@@ -34,7 +34,33 @@
     "groups": "Groups",
     "people": "People",
     "finance": "Finance",
-    "settings": "Settings"
+    "settings": "Settings",
+    "journal": "Journal"
+  },
+  "journal": {
+    "title": "Journal",
+    "empty": "No events yet",
+    "emptyText": "Your actions will appear here — check-ins, payments, subscriptions",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "undo": "Undo",
+    "undoAll": "Undo all",
+    "undone": "Undone",
+    "undoneToast": "Undone",
+    "redo": "Redo",
+    "loadMore": "Show more",
+    "batchMarks": "Day closed · {{count}} check-in",
+    "batchMarks_other": "Day closed · {{count}} check-ins",
+    "batchSeries": "Series created · {{count}} session",
+    "batchSeries_other": "Series created · {{count}} sessions",
+    "icon": {
+      "attendanceSub": "session deducted, {{count}} left",
+      "attendancePay": "payment {{amount}} ₽",
+      "subscription": "subscription, {{count}} sessions",
+      "payment": "payment {{amount}} ₽",
+      "created": "Training created «{{group}}»",
+      "deleted": "Training deleted «{{group}}»"
+    }
   },
   "common": {
     "themeToggle": "Toggle theme",
