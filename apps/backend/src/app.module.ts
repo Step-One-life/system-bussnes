@@ -15,6 +15,8 @@ import { StudentModule } from './modules/student/student.module'
 import { TrainingModule } from './modules/training/training.module'
 import { FinanceModule } from './modules/finance/finance.module'
 import { CalendarModule } from './modules/calendar/calendar.module'
+import { ActivityLogModule } from './modules/activity-log/activity-log.module'
+import { ActivityUndoModule } from './modules/activity-log/activity-undo.module'
 
 @Module({
   imports: [
@@ -32,6 +34,8 @@ import { CalendarModule } from './modules/calendar/calendar.module'
     TrainingModule,
     FinanceModule,
     CalendarModule,
+    ActivityLogModule,
+    ActivityUndoModule,
   ],
   providers: [
     { provide: APP_FILTER, useClass: AllExceptionsFilter },
