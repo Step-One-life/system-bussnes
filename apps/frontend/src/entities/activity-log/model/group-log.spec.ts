@@ -1,4 +1,4 @@
-import { groupByDayAndBatch } from './group-log'
+import { batchLabelKey, groupByDayAndBatch } from './group-log'
 
 import type { ActivityEntry } from './types'
 
@@ -44,5 +44,17 @@ describe('groupByDayAndBatch', () => {
   it('пакет из одного события показывается плоско (single)', () => {
     const [day] = groupByDayAndBatch([ev({ batchId: 'solo', id: '1' })])
     expect(day.items[0].kind).toBe('single')
+  })
+})
+
+describe('batchLabelKey', () => {
+  it('серия (все training_created) → journal.batchSeries', () => {
+    const children = [ev({ type: 'training_created' }), ev({ type: 'training_created' })]
+    expect(batchLabelKey(children)).toBe('journal.batchSeries')
+  })
+
+  it('иначе → journal.batchMarks', () => {
+    const children = [ev({ type: 'training_created' }), ev({ type: 'attendance_marked' })]
+    expect(batchLabelKey(children)).toBe('journal.batchMarks')
   })
 })

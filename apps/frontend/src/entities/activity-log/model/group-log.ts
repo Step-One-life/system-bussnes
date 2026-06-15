@@ -61,3 +61,10 @@ export function groupByDayAndBatch(events: ActivityEntry[]): LogDay[] {
   }
   return days
 }
+
+/** Ключ подписи пакета: серия занятий vs закрытие дня. */
+export function batchLabelKey(children: ActivityEntry[]): string {
+  return children.every((c) => c.type === 'training_created')
+    ? 'journal.batchSeries'
+    : 'journal.batchMarks'
+}

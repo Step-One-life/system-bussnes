@@ -47,7 +47,6 @@
     "undoAll": "Отменить всё",
     "undone": "Отменено",
     "undoneToast": "Отменено",
-    "redo": "Вернуть",
     "loadMore": "Показать ещё",
     "batchMarks": "Закрыт день · {{count}} отметок",
     "batchSeries": "Создана серия · {{count}} занятий",

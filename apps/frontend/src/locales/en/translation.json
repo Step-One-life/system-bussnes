@@ -47,7 +47,6 @@
     "undoAll": "Undo all",
     "undone": "Undone",
     "undoneToast": "Undone",
-    "redo": "Redo",
     "loadMore": "Show more",
     "batchMarks": "Day closed · {{count}} check-in",
     "batchMarks_other": "Day closed · {{count}} check-ins",

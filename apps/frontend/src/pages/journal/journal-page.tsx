@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next'
 
 import { EmptyState, ErrorState, ListSkeleton, PageHeader, useToast } from 'common/ui'
 import {
+  batchLabelKey,
   describeEvent,
   groupByDayAndBatch,
   useActivityLog,
@@ -47,6 +48,17 @@ export function JournalPage() {
       return next
     })
 
+  const dayLabel = (date: string) => {
+    const now = new Date()
+    const ymd = (d: Date) =>
+      `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+    if (date === ymd(now)) return t('journal.today')
+    const yesterday = new Date(now)
+    yesterday.setDate(now.getDate() - 1)
+    if (date === ymd(yesterday)) return t('journal.yesterday')
+    return date
+  }
+
   const renderEvent = (e: ActivityEntry, inBatch: boolean) => {
     const v = describeEvent(e)
     return (
@@ -56,8 +68,10 @@ export function JournalPage() {
       >
         <span className="jr-row__icon">{v.icon}</span>
         <div className="jr-row__body">
-          <div className="jr-row__title">{v.title}</div>
-          {v.detail && <div className="jr-row__detail">{v.detail}</div>}
+          <div className="jr-row__title">
+            {v.titleKey ? t(v.titleKey, v.titleParams) : v.titleText}
+          </div>
+          {v.detailKey && <div className="jr-row__detail">{t(v.detailKey, v.detailParams)}</div>}
         </div>
         {v.undone ? (
           <span className="jr-row__undone">{t('journal.undone')}</span>
@@ -93,7 +107,7 @@ export function JournalPage() {
       ) : (
         days.map((day) => (
           <section key={day.date} className="jr-day">
-            <div className="jr-day__label">{day.date}</div>
+            <div className="jr-day__label">{dayLabel(day.date)}</div>
             {day.items.map((item) =>
               item.kind === 'single' ? (
                 renderEvent(item.event, false)
@@ -104,7 +118,7 @@ export function JournalPage() {
                       {expanded.has(item.batchId) ? '▾' : '▸'}
                     </span>
                     <span className="jr-batch__title">
-                      {t('journal.batchMarks', { count: item.children.length })}
+                      {t(batchLabelKey(item.children), { count: item.children.length })}
                     </span>
                     <Button
                       size="small"
