@@ -39,6 +39,10 @@ export interface BillingResult {
   /** Статус абонемента после списания (только при billing='subscription'). */
   subStatus: DeductStatus | null
   remaining: number | null
+  /** Сумма авто-платежа при billing='payment' (иначе null). */
+  amount: number | null
+  /** id созданного авто-платежа (для журнала/отката). */
+  paymentId: string | null
 }
 
 @Injectable()
@@ -268,6 +272,7 @@ export class TrainingService extends OwnedCrudService<Training> {
           let paymentId: string | null = null
           let subStatus: DeductStatus | null = null
           let remaining: number | null = null
+          let amount: number | null = null
 
           if (!training.isPair) {
             const { sub, status } = await this.subscriptionsService.deduct(
@@ -293,6 +298,7 @@ export class TrainingService extends OwnedCrudService<Training> {
             if (payment) {
               billing = 'payment'
               paymentId = payment.id
+              amount = Number(payment.clientAmount)
             }
           }
 
@@ -308,7 +314,7 @@ export class TrainingService extends OwnedCrudService<Training> {
             },
             { transaction: tx },
           )
-          return { studentId, billing, subStatus, remaining }
+          return { studentId, billing, subStatus, remaining, amount, paymentId }
         })
         results.push(result)
       } catch (e) {
