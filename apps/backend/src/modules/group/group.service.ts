@@ -1,5 +1,6 @@
 import { ConflictException, Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/sequelize'
+import { UniqueConstraintError } from 'sequelize'
 
 import { OwnedCrudService } from '../../common/services/owned-crud.service'
 import { Student } from '../student/student.model'
@@ -22,13 +23,25 @@ export class GroupService extends OwnedCrudService<Group> {
     if (exists) {
       throw new ConflictException(`Группа «${dto.name}» уже существует`)
     }
-    return this.createForUser(userId, {
-      name: dto.name,
-      schedule: dto.schedule ?? [],
-      duration: dto.duration ?? 60,
-      isIndividual: dto.isIndividual ?? false,
-      locationId: dto.locationId ?? null,
-    })
+    try {
+      return await this.createForUser(userId, {
+        name: dto.name,
+        schedule: dto.schedule ?? [],
+        duration: dto.duration ?? 60,
+        isIndividual: dto.isIndividual ?? false,
+        locationId: dto.locationId ?? null,
+      })
+    } catch (err) {
+      // Гонка: параллельный запрос (напр. React StrictMode → двойной POST)
+      // успел вставить группу между нашей проверкой и create. Уникальный
+      // индекс (user_id, name) отбил дубль SequelizeUniqueConstraintError —
+      // возвращаем уже созданную группу идемпотентно вместо непрозрачной 500.
+      if (err instanceof UniqueConstraintError) {
+        const created = await this.groupModel.findOne({ where: { userId, name: dto.name } })
+        if (created) return created
+      }
+      throw err
+    }
   }
 
   /**
