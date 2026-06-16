@@ -67,6 +67,15 @@ function update(next: OnboardingState): void {
   emit()
 }
 
+// Сбросить общий стор при смене сессии (логин/логаут/регистрация) — наравне с
+// кэшами react-query/locations/group-map в auth-provider. Без этого данные
+// ушедшего тренера остаются в памяти синглтона до следующего ensureUser.
+export function resetOnboardingStore(): void {
+  currentUserId = null
+  state = EMPTY_ONBOARDING_STATE
+  emit()
+}
+
 export interface UseOnboardingState {
   skipped: OnboardingStepId[]
   hidden: boolean

@@ -9,6 +9,7 @@ import {
 } from 'entities/auth/model/auth.repo'
 import { AuthContext } from 'entities/auth/model/auth-context'
 import { invalidateLocations } from 'entities/locations'
+import { resetOnboardingStore } from 'entities/onboarding'
 
 import { queryClient } from './query-client'
 
@@ -19,14 +20,15 @@ import type { ReactNode } from 'react'
 /**
  * Wipe all per-account data caches when the session changes. The app switches
  * accounts via client-side navigation (no full reload), so without this the
- * React Query cache and the module-level promise caches (locations, group map)
- * leak the previous user's data into a freshly logged-in account — e.g. a new
- * empty account showing the previous trainer's locations.
+ * React Query cache and the module-level promise/state caches (locations, group
+ * map, onboarding store) leak the previous user's data into a freshly logged-in
+ * account — e.g. a new empty account showing the previous trainer's locations.
  */
 function resetAppData() {
   queryClient.clear()
   invalidateLocations()
   invalidateGroupMap()
+  resetOnboardingStore()
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
