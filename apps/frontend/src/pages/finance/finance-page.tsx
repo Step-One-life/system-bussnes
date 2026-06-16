@@ -41,7 +41,7 @@ export function FinancePage() {
 
       {page.tab === 'records' && <RecordsTab />}
       {page.tab === 'stats' && <StatsTab />}
-      {page.tab === 'pricing' && <PricingTab />}
+      {page.tab === 'pricing' && <PricingTab onAddLocation={() => page.setTab('locations')} />}
       {page.tab === 'locations' && <LocationsPanel />}
     </div>
   )

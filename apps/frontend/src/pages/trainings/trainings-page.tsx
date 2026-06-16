@@ -118,7 +118,15 @@ export function TrainingsPage() {
           onEdit={page.openEditTraining}
         />
       ) : (
-        <EmptyState title={t('trainings.empty')} text={t('trainings.emptyText')} />
+        <EmptyState
+          title={t('trainings.empty')}
+          text={t('trainings.emptyText')}
+          action={
+            <Button className="tk-btn-primary" icon={<PlusOutlined />} onClick={page.openTypeModal}>
+              {t('home.recordTraining')}
+            </Button>
+          }
+        />
       )}
 
       <TrainingTypeModal

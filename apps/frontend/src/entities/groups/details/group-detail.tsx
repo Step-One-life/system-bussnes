@@ -6,6 +6,7 @@ import {
   ArrowLeftOutlined,
   CheckCircleOutlined,
   EditOutlined,
+  PlusOutlined,
   TeamOutlined,
   WarningOutlined,
 } from '@ant-design/icons'
@@ -28,9 +29,10 @@ interface GroupDetailProps {
   onBack: () => void
   onEdit: (group: Group) => void
   onOpenStudent: (studentId: string) => void
+  onAddStudent: () => void
 }
 
-export function GroupDetail({ group, onBack, onEdit, onOpenStudent }: GroupDetailProps) {
+export function GroupDetail({ group, onBack, onEdit, onOpenStudent, onAddStudent }: GroupDetailProps) {
   const { t } = useTranslation()
   const {
     data: stats,
@@ -158,7 +160,15 @@ export function GroupDetail({ group, onBack, onEdit, onOpenStudent }: GroupDetai
           })}
         </div>
       ) : (
-        <EmptyState title={t('groups.detail.noStudents')} icon={<TeamOutlined />} />
+        <EmptyState
+          title={t('groups.detail.noStudents')}
+          icon={<TeamOutlined />}
+          action={
+            <Button className="tk-btn-primary" icon={<PlusOutlined />} onClick={onAddStudent}>
+              {t('students.add')}
+            </Button>
+          }
+        />
       )}
     </div>
   )
