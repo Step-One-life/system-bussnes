@@ -5,6 +5,7 @@ import type { Transaction } from 'sequelize'
 import { OwnedCrudService } from '../../common/services/owned-crud.service'
 import { DateUtil } from '../../common/utils/date.util'
 import { ActivityLogService } from '../activity-log/activity-log.service'
+import { Group } from '../group/group.model'
 import { Location } from '../location/location.model'
 import { Student } from '../student/student.model'
 import { CreatePaymentDto } from './dto/create-payment.dto'
@@ -20,6 +21,7 @@ export class PaymentsService extends OwnedCrudService<Payment> {
     @InjectModel(Payment) private readonly paymentModel: typeof Payment,
     @InjectModel(Student) private readonly studentModel: typeof Student,
     @InjectModel(Location) private readonly locationModel: typeof Location,
+    @InjectModel(Group) private readonly groupModel: typeof Group,
     private readonly hallCostsService: HallCostsService,
     private readonly activityLog: ActivityLogService,
   ) {
@@ -34,7 +36,12 @@ export class PaymentsService extends OwnedCrudService<Payment> {
    */
   async assertRefsOwned(
     userId: string,
-    refs: { studentId?: string | null; locationId?: string | null; hallCostId?: string | null },
+    refs: {
+      studentId?: string | null
+      locationId?: string | null
+      groupId?: string | null
+      hallCostId?: string | null
+    },
   ): Promise<void> {
     if (refs.studentId) {
       const student = await this.studentModel.findOne({ where: { id: refs.studentId, userId } })
@@ -43,6 +50,10 @@ export class PaymentsService extends OwnedCrudService<Payment> {
     if (refs.locationId) {
       const location = await this.locationModel.findOne({ where: { id: refs.locationId, userId } })
       if (!location) throw new NotFoundException('Локация не найдена')
+    }
+    if (refs.groupId) {
+      const group = await this.groupModel.findOne({ where: { id: refs.groupId, userId } })
+      if (!group) throw new NotFoundException('Группа не найдена')
     }
     if (refs.hallCostId) {
       // findOneForUser бросит 404 на чужой/несуществующий расход зала.
@@ -61,6 +72,7 @@ export class PaymentsService extends OwnedCrudService<Payment> {
         userId,
         studentId: dto.studentId ?? null,
         locationId: dto.locationId ?? null,
+        groupId: dto.groupId ?? null,
         clientPaymentType: dto.clientPaymentType,
         clientAmount: dto.clientAmount,
         sessionsTotal: sessions,

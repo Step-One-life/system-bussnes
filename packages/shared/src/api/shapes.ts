@@ -72,6 +72,8 @@ export type UpdateTrainingShape = Partial<CreateTrainingShape>
 export interface CreatePaymentShape {
   studentId?: string | null
   locationId?: string | null
+  /** Привязка дохода к группе (UUID). Альтернатива studentId. */
+  groupId?: string | null
   clientPaymentType: ClientPaymentType
   clientAmount: number
   paidAt?: string
