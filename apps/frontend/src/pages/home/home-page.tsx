@@ -9,6 +9,7 @@ import { useNow } from 'common/hooks/use-now'
 import { ErrorState, ListSkeleton, PageHeader, WarningItem } from 'common/ui'
 import { formatDateShort, todayISO, yesterdayISO } from 'common/utils/date'
 import { MarkPaidModal } from 'entities/finance'
+import { OnboardingChecklist } from 'entities/onboarding'
 import { StudentDrawer, StudentFormModal } from 'entities/students'
 import { RenewSubModal } from 'entities/students/subscriptions/renew-sub-modal'
 import {
@@ -265,6 +266,8 @@ export function HomePage() {
           <KpiStrip kpis={page.kpis} onSelect={page.setKpiType} />
         </div>
       )}
+
+      <OnboardingChecklist />
 
       <div className="home-cols">
         <section className="home-cols__col">
