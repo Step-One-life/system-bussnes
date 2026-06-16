@@ -1,3 +1,5 @@
+import { useState } from 'react'
+
 import { Button } from 'antd'
 import { PlusOutlined } from '@ant-design/icons'
 
@@ -5,15 +7,30 @@ import { useTranslation } from 'react-i18next'
 
 import { EmptyState, ListSkeleton, PageHeader } from 'common/ui'
 import { GroupDetail, GroupFormModal, GroupList } from 'entities/groups'
+import { StudentDrawer, StudentFormModal, useStudents } from 'entities/students'
 
 import { useGroupsPage } from './use-groups-page'
 
 export function GroupsPage() {
   const { t } = useTranslation()
   const page = useGroupsPage()
+  const { data: students = [] } = useStudents()
+
+  // Дровер ученика, открываемый из карточки в деталях группы (раньше клик был
+  // мёртвым — onOpenStudent={() => {}}); правка карандашом — через ту же форму.
+  const [drawerId, setDrawerId] = useState<string | null>(null)
+  const [editId, setEditId] = useState<string | null>(null)
+  const [studentFormKey, setStudentFormKey] = useState(0)
+  const editStudent = students.find((s) => s.id === editId) ?? null
 
   const handleBack = () => page.setOpenedGroup(null)
-  const handleOpenStudentNoop = () => {}
+  const handleCloseDrawer = () => setDrawerId(null)
+  const handleEditStudent = (id: string) => {
+    setDrawerId(null)
+    setEditId(id)
+    setStudentFormKey((k) => k + 1)
+  }
+  const handleCloseStudentForm = () => setEditId(null)
 
   if (page.openedGroup) {
     return (
@@ -22,7 +39,7 @@ export function GroupsPage() {
           group={page.openedGroup}
           onBack={handleBack}
           onEdit={page.openEdit}
-          onOpenStudent={handleOpenStudentNoop}
+          onOpenStudent={setDrawerId}
         />
         <GroupFormModal
           key={page.formKey}
@@ -30,6 +47,17 @@ export function GroupsPage() {
           group={page.formGroup}
           onClose={page.closeForm}
           onDelete={page.handleDelete}
+        />
+        <StudentDrawer
+          studentId={drawerId}
+          onClose={handleCloseDrawer}
+          onEdit={handleEditStudent}
+        />
+        <StudentFormModal
+          key={studentFormKey}
+          open={!!editId}
+          student={editStudent}
+          onClose={handleCloseStudentForm}
         />
       </>
     )

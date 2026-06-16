@@ -27,7 +27,7 @@ export interface FinanceRecordItem {
 export function useFinanceRecords() {
   const { t, i18n } = useTranslation()
   const toast = useToast()
-  const { data: payments = [], isLoading } = usePayments()
+  const { data: payments = [], isLoading, isError, refetch } = usePayments()
   const { data: hallCosts = [] } = useHallCosts()
   const { data: students = [] } = useStudents()
   const deletePayment = useDeletePayment()
@@ -69,8 +69,13 @@ export function useFinanceRecords() {
   }, [items, query])
 
   const handleDelete = async (payment: Payment) => {
-    await deletePayment.mutateAsync(payment.id)
-    toast({ type: 'success', title: t('finance.records.deleted') })
+    // Сбой удаления (напр. 409) раньше уходил в unhandled rejection без тоста.
+    try {
+      await deletePayment.mutateAsync(payment.id)
+      toast({ type: 'success', title: t('finance.records.deleted') })
+    } catch (e) {
+      toast({ type: 'error', title: e instanceof Error ? e.message : t('common.error') })
+    }
   }
 
   return {
@@ -81,5 +86,7 @@ export function useFinanceRecords() {
     handleDelete,
     isEmpty: isEmpty(payments),
     isLoading,
+    isError,
+    refetch,
   }
 }

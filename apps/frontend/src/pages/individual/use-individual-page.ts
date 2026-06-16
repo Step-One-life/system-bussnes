@@ -8,9 +8,9 @@ import { getLastVisitDate } from 'entities/students/model/students.repo'
 import { ensureIndividualGroup, useTrainings } from 'entities/trainings'
 
 export function useIndividualPage() {
-  const { data: groups = [] } = useGroups()
-  const { data: students = [] } = useStudents()
-  const { data: trainings = [] } = useTrainings()
+  const { data: groups = [], isError: groupsError, refetch: refetchGroups } = useGroups()
+  const { data: students = [], isError: studentsError, refetch: refetchStudents } = useStudents()
+  const { data: trainings = [], isError: trainingsError, refetch: refetchTrainings } = useTrainings()
 
   const [indGroupId, setIndGroupId] = useState('')
   const [sessionOpen, setSessionOpen] = useState(false)
@@ -53,6 +53,13 @@ export function useIndividualPage() {
     [trainings, indGroupNames],
   )
 
+  const isError = groupsError || studentsError || trainingsError
+  const refetch = () => {
+    refetchGroups()
+    refetchStudents()
+    refetchTrainings()
+  }
+
   return {
     indGroupId,
     indGroupNames,
@@ -62,6 +69,8 @@ export function useIndividualPage() {
     recentSessions,
     students,
     groups,
+    isError,
+    refetch,
     sessionOpen,
     setSessionOpen,
     onlineSessionOpen,

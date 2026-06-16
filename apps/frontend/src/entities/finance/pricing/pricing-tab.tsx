@@ -9,7 +9,7 @@ import size from 'lodash/size'
 
 import { useTranslation } from 'react-i18next'
 
-import { EmptyState } from 'common/ui'
+import { EmptyState, ErrorState } from 'common/ui'
 import { useLocations } from 'entities/locations'
 
 import { usePricingRules } from '../api/use-finance'
@@ -26,7 +26,7 @@ export function PricingTab() {
   const screens = Grid.useBreakpoint()
   const isMobile = !screens.md
 
-  const { data: locations = [] } = useLocations()
+  const { data: locations = [], isError: locationsError, refetch: refetchLocations } = useLocations()
   const [picked, setPicked] = useState('')
 
   // По умолчанию выбираем дефолтную локацию тренера, пока он не выбрал другую —
@@ -36,13 +36,25 @@ export function PricingTab() {
     : ''
   const locationId = picked || defaultId
 
-  const { data: rules = [] } = usePricingRules(locationId)
+  const { data: rules = [], isError: rulesError, refetch: refetchRules } = usePricingRules(locationId)
   const actions = useRuleActions(locationId)
   const [copyOpen, setCopyOpen] = useState(false)
 
   const handleCopyOpen = () => setCopyOpen(true)
   const handleCopyClose = () => setCopyOpen(false)
   const handleAdd = () => actions.openCreate()
+
+  // Сбой загрузки не должен выглядеть как «нет локаций»/«нет тарифов» — проверяем до них.
+  if (locationsError || rulesError) {
+    return (
+      <ErrorState
+        onRetry={() => {
+          refetchLocations()
+          refetchRules()
+        }}
+      />
+    )
+  }
 
   if (!size(locations)) {
     return <EmptyState title={t('finance.pricing.noLocations')} />

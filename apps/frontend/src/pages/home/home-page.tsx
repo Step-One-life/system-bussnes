@@ -9,7 +9,7 @@ import { useNow } from 'common/hooks/use-now'
 import { ErrorState, ListSkeleton, PageHeader, WarningItem } from 'common/ui'
 import { formatDateShort, todayISO, yesterdayISO } from 'common/utils/date'
 import { MarkPaidModal } from 'entities/finance'
-import { StudentDrawer } from 'entities/students'
+import { StudentDrawer, StudentFormModal } from 'entities/students'
 import { RenewSubModal } from 'entities/students/subscriptions/renew-sub-modal'
 import {
   AddToTrainingModal,
@@ -58,6 +58,11 @@ export function HomePage() {
   const [quickMark, setQuickMark] = useState<QuickMarkTarget | null>(null)
   // Дата шторки «Закрыть день»: сегодня по кнопке, вчера — по сигналу внимания.
   const [closeDate, setCloseDate] = useState(todayISO())
+  // Редактирование ученика из дровера (раньше карандаш в дровере с главной был
+  // мёртвым — onEdit={() => {}}); formKey пересоздаёт форму со свежими данными.
+  const [editStudentId, setEditStudentId] = useState<string | null>(null)
+  const [studentFormKey, setStudentFormKey] = useState(0)
+  const editStudent = page.students.find((s) => s.id === editStudentId) ?? null
 
   const pickIndividual = async () => {
     const g = await ensureIndividualGroup()
@@ -136,7 +141,12 @@ export function HomePage() {
     })
   const handleCloseQuickMark = () => setQuickMark(null)
   const handleCloseDrawer = () => setDrawerId(null)
-  const handleEditNoop = () => {}
+  const handleEditStudent = (id: string) => {
+    setDrawerId(null)
+    setEditStudentId(id)
+    setStudentFormKey((k) => k + 1)
+  }
+  const handleCloseStudentForm = () => setEditStudentId(null)
   const handleCloseRenew = () => setRenew(null)
 
   const now = useNow()
@@ -407,7 +417,14 @@ export function HomePage() {
       <StudentDrawer
         studentId={drawerId}
         onClose={handleCloseDrawer}
-        onEdit={handleEditNoop}
+        onEdit={handleEditStudent}
+      />
+
+      <StudentFormModal
+        key={studentFormKey}
+        open={!!editStudentId}
+        student={editStudent}
+        onClose={handleCloseStudentForm}
       />
 
       {renew && renewStudent && (

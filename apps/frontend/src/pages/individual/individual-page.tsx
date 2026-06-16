@@ -11,7 +11,7 @@ import {
 
 import { useTranslation } from 'react-i18next'
 
-import { EmptyState, KpiCard, PageHeader, StatusBadge, SubProgressBar, useToast } from 'common/ui'
+import { EmptyState, ErrorState, KpiCard, PageHeader, StatusBadge, SubProgressBar, useToast } from 'common/ui'
 import { formatDateShort } from 'common/utils/date'
 import { getInitials, getSubStatus } from 'entities/students'
 import {
@@ -56,6 +56,15 @@ export function IndividualPage() {
   const handleOpenOnlineSession = () => page.setOnlineSessionOpen(true)
   const handleCloseOnlineSession = () => page.setOnlineSessionOpen(false)
   const handleCloseAdd = () => setAddTarget(null)
+
+  if (page.isError) {
+    return (
+      <div>
+        <PageHeader title={t('individual.title')} />
+        <ErrorState onRetry={page.refetch} />
+      </div>
+    )
+  }
 
   return (
     <div>

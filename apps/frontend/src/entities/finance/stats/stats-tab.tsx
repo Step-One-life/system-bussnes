@@ -7,6 +7,8 @@ import {
 
 import { useTranslation } from 'react-i18next'
 
+import { ErrorState } from 'common/ui'
+
 import { BreakdownChart, MonthlyChart, TopClientsChart } from './finance-charts'
 import { useFinanceStats } from './use-finance-stats'
 
@@ -30,6 +32,8 @@ export function StatsTab() {
   const { totals } = stats
 
   const handleSelectPeriod = (p: FinancePeriod) => () => stats.setPeriod(p)
+
+  if (stats.isError) return <ErrorState onRetry={stats.refetch} />
 
   const netColor = totals.netIncome >= 0 ? 'var(--tk-success-text)' : 'var(--tk-danger-text)'
   const marginColor =

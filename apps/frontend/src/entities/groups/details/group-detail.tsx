@@ -13,7 +13,7 @@ import {
 import { useTranslation } from 'react-i18next'
 
 import { getGroupStats, getStudentsByGroup } from 'common/lib/kpi'
-import { EmptyState, KpiCard, PageHeader, StatusBadge, SubProgressBar } from 'common/ui'
+import { EmptyState, ErrorState, KpiCard, PageHeader, StatusBadge, SubProgressBar } from 'common/ui'
 import { formatDateShort } from 'common/utils/date'
 import { getLastVisitDate } from 'entities/students/model/students.repo'
 import { getSubStatus } from 'entities/students/model/subscription-status'
@@ -32,11 +32,19 @@ interface GroupDetailProps {
 
 export function GroupDetail({ group, onBack, onEdit, onOpenStudent }: GroupDetailProps) {
   const { t } = useTranslation()
-  const { data: stats } = useQuery({
+  const {
+    data: stats,
+    isError: statsError,
+    refetch: refetchStats,
+  } = useQuery({
     queryKey: ['groups', group.name, 'stats'],
     queryFn: () => getGroupStats(group.name),
   })
-  const { data: students = [] } = useQuery({
+  const {
+    data: students = [],
+    isError: studentsError,
+    refetch: refetchStudents,
+  } = useQuery({
     queryKey: ['groups', group.name, 'students'],
     queryFn: () => getStudentsByGroup(group.name),
   })
@@ -46,6 +54,33 @@ export function GroupDetail({ group, onBack, onEdit, onOpenStudent }: GroupDetai
   const handleEdit = () => onEdit(group)
   const handleOpenStudent = (studentId: string) => () => onOpenStudent(studentId)
 
+  const backBtn = (
+    <Button
+      type="text"
+      size="small"
+      icon={<ArrowLeftOutlined />}
+      onClick={onBack}
+      style={{ marginBottom: 'var(--sp-2)' }}
+    >
+      {t('groups.detail.allGroups')}
+    </Button>
+  )
+
+  // Сбой загрузки статистики/учеников группы не должен молча рисовать «0 / пусто».
+  if (statsError || studentsError) {
+    return (
+      <div>
+        <PageHeader title={group.name} back={backBtn} />
+        <ErrorState
+          onRetry={() => {
+            refetchStats()
+            refetchStudents()
+          }}
+        />
+      </div>
+    )
+  }
+
   return (
     <div>
       <PageHeader
@@ -54,17 +89,7 @@ export function GroupDetail({ group, onBack, onEdit, onOpenStudent }: GroupDetai
           count: stats?.total ?? 0,
           schedule: schedule ? ' · ' + schedule : '',
         })}
-        back={
-          <Button
-            type="text"
-            size="small"
-            icon={<ArrowLeftOutlined />}
-            onClick={onBack}
-            style={{ marginBottom: 'var(--sp-2)' }}
-          >
-            {t('groups.detail.allGroups')}
-          </Button>
-        }
+        back={backBtn}
         actions={
           <Button icon={<EditOutlined />} onClick={handleEdit}>
             {t('common.edit')}

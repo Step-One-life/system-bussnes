@@ -32,13 +32,23 @@ export function JournalPage() {
     return groupByDayAndBatch(all)
   }, [data])
 
+  // Сбой отката (напр. 409 — объект уже изменён) раньше уходил в unhandled
+  // rejection без тоста: показываем ошибку, тост успеха — только при успехе.
   const onUndo = async (id: string) => {
-    await undoEvent.mutateAsync(id)
-    toast({ type: 'success', title: t('journal.undoneToast') })
+    try {
+      await undoEvent.mutateAsync(id)
+      toast({ type: 'success', title: t('journal.undoneToast') })
+    } catch (e) {
+      toast({ type: 'error', title: e instanceof Error ? e.message : t('common.error') })
+    }
   }
   const onUndoBatch = async (batchId: string) => {
-    await undoBatch.mutateAsync(batchId)
-    toast({ type: 'success', title: t('journal.undoneToast') })
+    try {
+      await undoBatch.mutateAsync(batchId)
+      toast({ type: 'success', title: t('journal.undoneToast') })
+    } catch (e) {
+      toast({ type: 'error', title: e instanceof Error ? e.message : t('common.error') })
+    }
   }
   const toggle = (key: string) =>
     setExpanded((prev) => {
