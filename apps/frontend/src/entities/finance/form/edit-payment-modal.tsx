@@ -5,6 +5,7 @@ import { Button, Modal } from 'antd'
 import { useTranslation } from 'react-i18next'
 
 import { useToast } from 'common/ui'
+import { useGroups } from 'entities/groups'
 import { useStudents } from 'entities/students'
 
 import {
@@ -14,10 +15,13 @@ import {
   useUpdateHallCost,
   useUpdatePayment,
 } from '../api/use-finance'
+import { resolveInitialClient } from '../lib/client-field'
 import { PaymentFormFields } from './payment-form-fields'
 import { usePaymentForm } from './use-payment-form'
 
+import type { InitialClient } from '../lib/client-field'
 import type { HallCost, Payment } from '../model/types'
+import type { Group } from 'entities/groups'
 import type { Student } from 'entities/students'
 
 interface EditPaymentModalProps {
@@ -28,6 +32,7 @@ interface EditPaymentModalProps {
 
 export function EditPaymentModal({ open, payment, onClose }: EditPaymentModalProps) {
   const { data: students = [] } = useStudents()
+  const { data: groups = [] } = useGroups()
   const { data: hallCosts = [] } = useHallCosts()
 
   const hallCost = payment?.hall_cost_id
@@ -36,13 +41,17 @@ export function EditPaymentModal({ open, payment, onClose }: EditPaymentModalPro
 
   if (!payment) return null
 
+  const initialClient = resolveInitialClient(payment.student_id, payment.group_id, groups)
+
   return (
     <EditPaymentModalInner
-      key={`${payment.id}-${hallCost?.id ?? 'none'}`}
+      key={`${payment.id}-${hallCost?.id ?? 'none'}-${payment.group_id ?? 'g0'}`}
       open={open}
       payment={payment}
       hallCost={hallCost}
       students={students}
+      groups={groups}
+      initialClient={initialClient}
       onClose={onClose}
     />
   )
@@ -53,6 +62,8 @@ interface InnerProps {
   payment: Payment
   hallCost: HallCost | null
   students: Student[]
+  groups: Group[]
+  initialClient: InitialClient
   onClose: () => void
 }
 
@@ -61,6 +72,8 @@ function EditPaymentModalInner({
   payment,
   hallCost,
   students,
+  groups,
+  initialClient,
   onClose,
 }: InnerProps) {
   const { t } = useTranslation()
@@ -69,7 +82,7 @@ function EditPaymentModalInner({
   const createHallCost = useCreateHallCost()
   const updateHallCost = useUpdateHallCost()
   const deleteHallCost = useDeleteHallCost()
-  const form = usePaymentForm({ payment, hallCost })
+  const form = usePaymentForm({ payment, hallCost, initialClient })
   const [saving, setSaving] = useState(false)
 
   const submit = async () => {
@@ -117,6 +130,7 @@ function EditPaymentModalInner({
         id: payment.id,
         changes: {
           student_id: form.studentId,
+          group_id: form.groupId,
           location_id: form.locationId,
           client_payment_type: form.clientType,
           client_amount: form.clientAmount,
@@ -150,7 +164,7 @@ function EditPaymentModalInner({
         </Button>,
       ]}
     >
-      <PaymentFormFields form={form} students={students} />
+      <PaymentFormFields form={form} students={students} groups={groups} />
     </Modal>
   )
 }
