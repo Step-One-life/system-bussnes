@@ -1,10 +1,10 @@
-import { describe, expect, it } from 'vitest'
-
 import {
   EMPTY_ONBOARDING_STATE,
   onboardingStorageKey,
   parseOnboardingState,
 } from './onboarding-storage'
+
+import { describe, expect, it } from 'vitest'
 
 describe('onboardingStorageKey', () => {
   it('строит per-user ключ с префиксом tk_', () => {

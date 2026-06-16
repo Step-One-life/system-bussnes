@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 
 import { useAuth } from 'entities/auth/api/use-auth'
 
@@ -8,8 +8,8 @@ import {
   parseOnboardingState,
 } from './onboarding-storage'
 
-import type { OnboardingState } from './onboarding-storage'
 import type { OnboardingStepId } from './onboarding-steps'
+import type { OnboardingState } from './onboarding-storage'
 
 function readState(userId: string): OnboardingState {
   try {
@@ -38,13 +38,24 @@ export interface UseOnboardingState {
 export function useOnboardingState(): UseOnboardingState {
   const { user } = useAuth()
   const userId = user?.id ?? null
-  const [state, setState] = useState<OnboardingState>(EMPTY_ONBOARDING_STATE)
 
   // Ключ per-user: localStorage переживает смену аккаунта (react-query кэши —
   // нет), иначе состояние «протекло» бы между тренерами на одном браузере.
-  useEffect(() => {
-    setState(userId ? readState(userId) : EMPTY_ONBOARDING_STATE)
-  }, [userId])
+  // Читаем из localStorage синхронно при изменении userId, чтобы не вызывать
+  // setState внутри эффекта (нарушает react-hooks/set-state-in-effect).
+  const prevUserIdRef = useRef<string | null>(userId)
+  const [state, setState] = useState<OnboardingState>(() =>
+    userId ? readState(userId) : EMPTY_ONBOARDING_STATE,
+  )
+
+  // Если userId изменился (смена аккаунта) — читаем новое состояние синхронно.
+  // Это корректно: setState внутри тела рендера только при изменении пропсов/refs
+  // (паттерн «derived state from props» из документации React).
+  if (prevUserIdRef.current !== userId) {
+    prevUserIdRef.current = userId
+    const next = userId ? readState(userId) : EMPTY_ONBOARDING_STATE
+    setState(next)
+  }
 
   const persist = useCallback(
     (next: OnboardingState) => {

@@ -1,13 +1,14 @@
 import {
-  ONBOARDING_STEP_IDS,
   buildOnboardingSteps,
   countDone,
   isChecklistVisible,
+  ONBOARDING_STEP_IDS,
 } from './onboarding-steps'
 
 import type { OnboardingFlags } from './onboarding-steps'
 
 import { describe, expect, it } from 'vitest'
+
 
 const allFalse: OnboardingFlags = {
   hasLocation: false,
