@@ -10,7 +10,7 @@ import type { OnboardingStepId } from '../model/onboarding-steps'
 
 // Тап по шагу ведёт в существующий раздел, где пустой экран с CTA (часть C)
 // доводит до формы — отдельных «онбординг-экранов» не плодим (спека §6).
-const STEP_NAV: Record<OnboardingStepId, { path: string; state?: { financeTab: string } }> = {
+const STEP_NAV: Record<OnboardingStepId, { path: string; state?: { financeTab: 'locations' | 'pricing' } }> = {
   location: { path: '/finance', state: { financeTab: 'locations' } },
   group: { path: '/people/groups' },
   student: { path: '/people/students' },

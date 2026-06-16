@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react'
+import { useSyncExternalStore } from 'react'
 
 import { useAuth } from 'entities/auth/api/use-auth'
 
@@ -11,7 +11,31 @@ import {
 import type { OnboardingStepId } from './onboarding-steps'
 import type { OnboardingState } from './onboarding-storage'
 
-function readState(userId: string): OnboardingState {
+// Общий на вкладку внешний стор. И карточка на главной, и пункт меню профиля
+// вызывают useOnboardingState; локальный useState давал бы каждому свой экземпляр
+// состояния — тогда reopen() из меню не возвращал бы карточку, пока тренер уже на
+// главной (HomePage не перемонтируется, его инстанс не перечитал бы localStorage).
+// useSyncExternalStore синхронизирует все инстансы: один источник истины на вкладку.
+let currentUserId: string | null = null
+let state: OnboardingState = EMPTY_ONBOARDING_STATE
+const listeners = new Set<() => void>()
+
+function emit(): void {
+  listeners.forEach((listener) => listener())
+}
+
+function subscribe(listener: () => void): () => void {
+  listeners.add(listener)
+  return () => {
+    listeners.delete(listener)
+  }
+}
+
+function getSnapshot(): OnboardingState {
+  return state
+}
+
+function readFromStorage(userId: string): OnboardingState {
   try {
     return parseOnboardingState(localStorage.getItem(onboardingStorageKey(userId)))
   } catch {
@@ -19,12 +43,28 @@ function readState(userId: string): OnboardingState {
   }
 }
 
-function writeState(userId: string, state: OnboardingState): void {
+function writeToStorage(userId: string, next: OnboardingState): void {
   try {
-    localStorage.setItem(onboardingStorageKey(userId), JSON.stringify(state))
+    localStorage.setItem(onboardingStorageKey(userId), JSON.stringify(next))
   } catch {
     // localStorage недоступен (приватный режим и т.п.) — молча игнорируем.
   }
+}
+
+// Привести стор к текущему пользователю. Вызывается синхронно при рендере хука
+// (до первого снимка — без мигания «0/5»). Эмитить здесь нельзя (обновление
+// других компонентов во время рендера), но это и не нужно: смена userId = смена
+// аккаунта = полный ремаунт приложения, инстансы перечитают стор при ре-рендере.
+function ensureUser(userId: string | null): void {
+  if (userId === currentUserId) return
+  currentUserId = userId
+  state = userId ? readFromStorage(userId) : EMPTY_ONBOARDING_STATE
+}
+
+function update(next: OnboardingState): void {
+  state = next
+  if (currentUserId) writeToStorage(currentUserId, next)
+  emit()
 }
 
 export interface UseOnboardingState {
@@ -39,48 +79,18 @@ export function useOnboardingState(): UseOnboardingState {
   const { user } = useAuth()
   const userId = user?.id ?? null
 
-  // Ключ per-user: localStorage переживает смену аккаунта (react-query кэши —
-  // нет), иначе состояние «протекло» бы между тренерами на одном браузере.
-  // Читаем из localStorage синхронно при изменении userId, чтобы не вызывать
-  // setState внутри эффекта (нарушает react-hooks/set-state-in-effect).
-  const prevUserIdRef = useRef<string | null>(userId)
-  const [state, setState] = useState<OnboardingState>(() =>
-    userId ? readState(userId) : EMPTY_ONBOARDING_STATE,
-  )
+  ensureUser(userId)
+  const snapshot = useSyncExternalStore(subscribe, getSnapshot, getSnapshot)
 
-  // Если userId изменился (смена аккаунта) — читаем новое состояние синхронно.
-  // Это корректно: setState внутри тела рендера только при изменении пропсов/refs
-  // (паттерн «derived state from props» из документации React).
-  if (prevUserIdRef.current !== userId) {
-    prevUserIdRef.current = userId
-    const next = userId ? readState(userId) : EMPTY_ONBOARDING_STATE
-    setState(next)
+  const skipStep = (id: OnboardingStepId) => {
+    if (snapshot.skipped.includes(id)) return
+    update({ ...snapshot, skipped: [...snapshot.skipped, id] })
   }
 
-  const persist = useCallback(
-    (next: OnboardingState) => {
-      setState(next)
-      if (userId) writeState(userId, next)
-    },
-    [userId],
-  )
+  const hide = () => update({ ...snapshot, hidden: true })
 
-  const skipStep = useCallback(
-    (id: OnboardingStepId) => {
-      setState((prev) => {
-        if (prev.skipped.includes(id)) return prev
-        const next = { ...prev, skipped: [...prev.skipped, id] }
-        if (userId) writeState(userId, next)
-        return next
-      })
-    },
-    [userId],
-  )
+  // «Первые шаги» из меню профиля: вернуть карточку и снова показать несделанное.
+  const reopen = () => update({ skipped: [], hidden: false })
 
-  const hide = useCallback(() => persist({ ...state, hidden: true }), [persist, state])
-
-  // «Первые шаги» из меню профиля: вернуть карточку и снова показать всё несделанное.
-  const reopen = useCallback(() => persist({ skipped: [], hidden: false }), [persist])
-
-  return { skipped: state.skipped, hidden: state.hidden, skipStep, hide, reopen }
+  return { skipped: snapshot.skipped, hidden: snapshot.hidden, skipStep, hide, reopen }
 }
