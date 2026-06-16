@@ -35,7 +35,8 @@
     "people": "People",
     "finance": "Finance",
     "settings": "Settings",
-    "journal": "Journal"
+    "journal": "Journal",
+    "onboarding": "First steps"
   },
   "journal": {
     "title": "Journal",
@@ -661,6 +662,20 @@
       "individual_sub_8_90": "Individual 1.5h ×8",
       "single_pair": "Single pair",
       "single_pair_90": "Pair 1.5h"
+    }
+  },
+  "onboarding": {
+    "title": "First steps",
+    "hide": "Hide",
+    "skip": "Skip",
+    "stepsLeft": "{{count}} step left",
+    "stepsLeft_other": "{{count}} steps left",
+    "steps": {
+      "location": { "title": "Add a location", "desc": "Where sessions take place" },
+      "group": { "title": "Create a group", "desc": "Or skip if you train one-on-one" },
+      "student": { "title": "Add a student", "desc": "Your first client" },
+      "training": { "title": "Record your first session", "desc": "Group, individual, online or pair" },
+      "pricing": { "title": "Set up pricing", "desc": "Money is calculated automatically" }
     }
   },
   "home": {

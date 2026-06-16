@@ -174,6 +174,16 @@ export function IndividualPage() {
           <EmptyState
             title={t('individual.noClients')}
             text={t('individual.noClientsText')}
+            action={
+              <Button
+                className="tk-btn-primary"
+                icon={<PlusOutlined />}
+                disabled={!page.indGroupId}
+                onClick={handleOpenSession}
+              >
+                {t('individual.record')}
+              </Button>
+            }
           />
         )}
       </div>

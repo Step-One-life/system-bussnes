@@ -1,11 +1,12 @@
 import { Dropdown } from 'antd'
-import { BulbOutlined, HistoryOutlined, LogoutOutlined, SettingOutlined } from '@ant-design/icons'
+import { BulbOutlined, HistoryOutlined, LogoutOutlined, RocketOutlined, SettingOutlined } from '@ant-design/icons'
 
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 
 import { useTheme } from 'common/hooks/use-theme'
 import { useAuth } from 'entities/auth/api/use-auth'
+import { useOnboarding } from 'entities/onboarding'
 
 import type { MenuProps } from 'antd'
 import type { ReactNode } from 'react'
@@ -27,6 +28,13 @@ export function ProfileMenu({ children, placement = 'topLeft' }: ProfileMenuProp
   const { logout } = useAuth()
   const navigate = useNavigate()
 
+  const onboarding = useOnboarding()
+
+  const handleReopenOnboarding = () => {
+    onboarding.reopen()
+    navigate('/')
+  }
+
   const handleLogout = () => {
     logout()
     navigate('/login', { replace: true })
@@ -37,6 +45,17 @@ export function ProfileMenu({ children, placement = 'topLeft' }: ProfileMenuProp
     label: preference === pref ? `✓ ${label}` : label,
     onClick: () => setPreference(pref),
   })
+
+  const onboardingItem: MenuProps['items'] = onboarding.hasIncomplete
+    ? [
+        {
+          key: 'onboarding',
+          icon: <RocketOutlined />,
+          label: t('nav.onboarding'),
+          onClick: handleReopenOnboarding,
+        },
+      ]
+    : []
 
   const items: MenuProps['items'] = [
     {
@@ -55,6 +74,7 @@ export function ProfileMenu({ children, placement = 'topLeft' }: ProfileMenuProp
         themeOption('system', t('common.themeOptionSystem')),
       ],
     },
+    ...onboardingItem,
     {
       key: 'journal',
       icon: <HistoryOutlined />,

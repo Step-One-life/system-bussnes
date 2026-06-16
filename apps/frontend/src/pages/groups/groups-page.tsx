@@ -23,6 +23,8 @@ export function GroupsPage() {
   const [studentFormKey, setStudentFormKey] = useState(0)
   const editStudent = students.find((s) => s.id === editId) ?? null
 
+  const [createStudentOpen, setCreateStudentOpen] = useState(false)
+
   const handleBack = () => page.setOpenedGroup(null)
   const handleCloseDrawer = () => setDrawerId(null)
   const handleEditStudent = (id: string) => {
@@ -30,7 +32,15 @@ export function GroupsPage() {
     setEditId(id)
     setStudentFormKey((k) => k + 1)
   }
-  const handleCloseStudentForm = () => setEditId(null)
+  const handleAddStudent = () => {
+    setEditId(null)
+    setStudentFormKey((k) => k + 1)
+    setCreateStudentOpen(true)
+  }
+  const handleCloseStudentForm = () => {
+    setEditId(null)
+    setCreateStudentOpen(false)
+  }
 
   if (page.openedGroup) {
     return (
@@ -40,6 +50,7 @@ export function GroupsPage() {
           onBack={handleBack}
           onEdit={page.openEdit}
           onOpenStudent={setDrawerId}
+          onAddStudent={handleAddStudent}
         />
         <GroupFormModal
           key={page.formKey}
@@ -55,7 +66,7 @@ export function GroupsPage() {
         />
         <StudentFormModal
           key={studentFormKey}
-          open={!!editId}
+          open={createStudentOpen || !!editId}
           student={editStudent}
           onClose={handleCloseStudentForm}
         />
@@ -83,7 +94,15 @@ export function GroupsPage() {
           onEdit={page.openEdit}
         />
       ) : (
-        <EmptyState title={t('groups.empty')} text={t('groups.emptyText')} />
+        <EmptyState
+          title={t('groups.empty')}
+          text={t('groups.emptyText')}
+          action={
+            <Button className="tk-btn-primary" icon={<PlusOutlined />} onClick={page.openCreate}>
+              {t('groups.create')}
+            </Button>
+          }
+        />
       )}
 
       <GroupFormModal

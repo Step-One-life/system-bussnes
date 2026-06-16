@@ -21,7 +21,11 @@ import { useRuleActions } from './use-rule-actions'
 
 import './pricing-tab.scss'
 
-export function PricingTab() {
+interface PricingTabProps {
+  onAddLocation?: () => void
+}
+
+export function PricingTab({ onAddLocation }: PricingTabProps) {
   const { t } = useTranslation()
   const screens = Grid.useBreakpoint()
   const isMobile = !screens.md
@@ -57,7 +61,18 @@ export function PricingTab() {
   }
 
   if (!size(locations)) {
-    return <EmptyState title={t('finance.pricing.noLocations')} />
+    return (
+      <EmptyState
+        title={t('finance.pricing.noLocations')}
+        action={
+          onAddLocation ? (
+            <Button className="tk-btn-primary" icon={<PlusOutlined />} onClick={onAddLocation}>
+              {t('locations.addButton')}
+            </Button>
+          ) : undefined
+        }
+      />
+    )
   }
 
   return (
