@@ -34,9 +34,9 @@ make install
 ```dotenv
 DB_HOST=localhost
 DB_PORT=3306
-DB_USER=root
-DB_PASSWORD=ваш_пароль
-DB_NAME=trick_step
+DB_USER=trikick
+DB_PASSWORD=trikick
+DB_NAME=trikick
 JWT_SECRET=любая-строка
 CORS_ORIGIN=http://localhost:3020
 ```
@@ -44,7 +44,7 @@ CORS_ORIGIN=http://localhost:3020
 Создать базу, если её нет:
 
 ```bash
-mysql -u root -p -e "CREATE DATABASE trick_step CHARACTER SET utf8mb4;"
+mysql -u root -p -e "CREATE DATABASE trikick CHARACTER SET utf8mb4;"
 ```
 
 Фронтенд читает адрес API из `apps/frontend/.env`
@@ -86,10 +86,11 @@ make dev           # фронтенд на http://localhost:3020
 | `make dev` | Запустить frontend (dev-режим) |
 | `make dev-backend` | Запустить backend (watch-режим) |
 | `make update` | `git pull` + install + build + migrate |
-| `make bootstrap-host` | Подготовить свежий хост (Node, MySQL, nginx, pm2) |
-| `make deploy` | Собрать и выкатить backend + frontend на хост |
-| `make deploy-backend` | Выкатить только backend (с миграциями) |
-| `make deploy-frontend` | Выкатить только frontend |
+| `make deploy-app` | Безопасный деплой кода на стенд (бэкап БД + Docker-образ + фронт + рестарт) |
+| `make deploy-test-frontend` | Обновить только frontend на стенде |
+| `make deploy-test` | Первичная установка стенда (⚠ затирает БД, nginx, SSL) |
+
+`make` без аргумента печатает справку по командам.
 
 ## Синхронизация с Google Календарём
 
@@ -152,47 +153,37 @@ Calendar / Outlook — одна ссылка-лента для тех, кому 
 
 ## Деплой
 
-Деплой переносит собранные артефакты на удалённый хост по SSH (rsync).
-Хост — обычный сервер с Node 22 и MySQL (без Docker).
+Деплой — на основе **Docker**: backend и MySQL крутятся в контейнерах на
+хосте, frontend — собранная статика, которую раздаёт nginx хоста. Миграции
+накатываются автоматически при рестарте backend-контейнера (из `CMD`
+`apps/backend/Dockerfile`). Требуется локально: Docker и `sshpass`.
 
 ### Настройка
 
-Скопируй `.env.host.example` → `.env.host` и заполни:
+Скопируй `.env.host.example` → `.env.host` и заполни (файл в `.gitignore`):
 
 ```dotenv
-HOST_SSH_USER=deploy
-HOST_SSH_HOST=123.45.67.89
-HOST_SSH_PORT=22
-HOST_PROJECT_DIR=/var/www/trikick
-HOST_RESTART_CMD=pm2 restart trikick-api
+HOST_SSH_USER=root
+HOST_SSH_HOST=94.19.63.62
+HOST_SSH_PORT=5678
+HOST_SSH_PASS=          # пароль для sshpass (доступ по паролю)
+HOST_DOMAIN=trick.ozma-split.com
+HOST_PROJECT_DIR=/home/ozma_split/sites/trick.ozma-split.com
 ```
-
-`.env.host` в `.gitignore` — не коммитится.
-
-### Подготовка свежего сервера
-
-На чистом Ubuntu/Debian-хосте один раз:
-
-```bash
-make bootstrap-host
-```
-
-Скрипт (`scripts/bootstrap-host.sh`) ставит Node.js 22, MySQL 8, nginx
-и pm2. После него на хосте останется вручную: создать базу, положить
-`apps/backend/.env`, настроить nginx и зарегистрировать API в pm2 —
-скрипт выведет точные команды.
 
 ### Выкатка
 
 ```bash
-make deploy            # backend + frontend
-make deploy-backend    # только backend: сборка → rsync → npm install → миграции → рестарт
-make deploy-frontend   # только frontend: сборка → rsync статики
+make deploy-app            # безопасный деплой кода (для обычных релизов)
+make deploy-test-frontend  # обновить только frontend-статику
+make deploy-test           # ⚠ первичная установка стенда — затирает БД, nginx, SSL!
 ```
 
-`deploy-backend` накатывает миграции на хосте автоматически. На хосте
-должны лежать `apps/backend/.env` с боевыми кредами БД и настроен
-способ запуска API (`HOST_RESTART_CMD` — pm2/systemd/др.).
+`make deploy-app` (`scripts/deploy-app.sh`) — основной сценарий: снимает дамп
+серверной БД (страховка), собирает backend-образ под `linux/amd64` и переносит
+на хост, собирает и заливает frontend, пересоздаёт backend-контейнер (миграции
+накатятся сами) и прогоняет smoke-test. БД, nginx и SSL он **не трогает**.
 
-Раздачу `apps/frontend/dist` и проксирование `/api` на бэкенд
-настраивает веб-сервер хоста (nginx и т.п.).
+`make deploy-test` (`scripts/deploy-test.sh`) — только для **первичной**
+инициализации стенда: переливает локальную БД в серверную, настраивает nginx
+и SSL. Для обычных релизов не использовать.
