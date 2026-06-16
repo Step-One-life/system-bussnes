@@ -8,6 +8,7 @@ import { clientTypeOptions, hallTypeOptions } from './payment-form-config'
 
 import type { usePaymentForm } from './use-payment-form'
 import type { Dayjs } from 'dayjs'
+import type { Group } from 'entities/groups'
 import type { Student } from 'entities/students'
 import type { ChangeEvent } from 'react'
 
@@ -19,9 +20,10 @@ type PaymentForm = ReturnType<typeof usePaymentForm>
 interface PaymentFormFieldsProps {
   form: PaymentForm
   students: Student[]
+  groups: Group[]
 }
 
-export function PaymentFormFields({ form, students }: PaymentFormFieldsProps) {
+export function PaymentFormFields({ form, students, groups }: PaymentFormFieldsProps) {
   const { t } = useTranslation()
   const studentOptions = [
     { value: '', label: t('finance.form.studentNone') },
@@ -29,8 +31,19 @@ export function PaymentFormFields({ form, students }: PaymentFormFieldsProps) {
       .sort((a, b) => a.name.localeCompare(b.name, 'ru'))
       .map((s) => ({ value: s.id, label: s.name })),
   ]
+  // Только обычные группы — индивидуальный контейнер тренеру не показываем.
+  const groupOptions = [
+    { value: '', label: t('finance.form.groupNone') },
+    ...groups
+      .filter((g) => !g.isIndividual)
+      .sort((a, b) => a.name.localeCompare(b.name, 'ru'))
+      .map((g) => ({ value: g.name, label: g.name })),
+  ]
 
   const handleStudentChange = (v: string) => form.setStudentId(v || null)
+  const handleGroupChange = (v: string) => form.setGroupId(v || null)
+  const handleModeStudent = () => form.setClientMode('student')
+  const handleModeGroup = () => form.setClientMode('group')
   const handleClientAmountChange = (v: number | null) =>
     form.setClientAmount(typeof v === 'number' ? v : 0)
   const handleHallAmountChange = (v: number | null) =>
@@ -47,11 +60,35 @@ export function PaymentFormFields({ form, students }: PaymentFormFieldsProps) {
   return (
     <Form layout="vertical">
       <Form.Item label={t('finance.form.clientLabel')}>
-        <Select
-          value={form.studentId ?? ''}
-          options={studentOptions}
-          onChange={handleStudentChange}
-        />
+        <div className="timeslot-toggle" style={{ marginBottom: 'var(--sp-3)' }}>
+          <button
+            type="button"
+            className={`timeslot-btn${form.clientMode === 'student' ? ' timeslot-btn--active' : ''}`}
+            onClick={handleModeStudent}
+          >
+            {t('finance.form.modeClient')}
+          </button>
+          <button
+            type="button"
+            className={`timeslot-btn${form.clientMode === 'group' ? ' timeslot-btn--active' : ''}`}
+            onClick={handleModeGroup}
+          >
+            {t('finance.form.modeGroup')}
+          </button>
+        </div>
+        {form.clientMode === 'student' ? (
+          <Select
+            value={form.studentId ?? ''}
+            options={studentOptions}
+            onChange={handleStudentChange}
+          />
+        ) : (
+          <Select
+            value={form.groupId ?? ''}
+            options={groupOptions}
+            onChange={handleGroupChange}
+          />
+        )}
       </Form.Item>
 
       <Form.Item label={t('locations.selectLabel')}>

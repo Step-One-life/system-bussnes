@@ -28,6 +28,11 @@ export class CreatePaymentDto implements CreatePaymentShape {
   @IsUUID()
   locationId?: string | null
 
+  @ApiPropertyOptional({ format: 'uuid', nullable: true })
+  @IsOptional()
+  @IsUUID()
+  groupId?: string | null
+
   @ApiProperty({ enum: CLIENT_TYPES })
   @IsIn(CLIENT_TYPES)
   clientPaymentType!: ClientPaymentType

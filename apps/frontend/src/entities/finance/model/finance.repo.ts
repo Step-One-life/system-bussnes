@@ -1,6 +1,7 @@
 import map from 'lodash/map'
 
 import { apiClient } from 'common/services/api/api-client'
+import { nameToId } from 'common/services/api/group-map'
 
 import type {
   HallCost,
@@ -21,6 +22,7 @@ interface RawPayment {
   id: string
   studentId: string | null
   locationId: string | null
+  groupId: string | null
   clientPaymentType: Payment['client_payment_type']
   clientAmount: number | string
   sessionsTotal: number
@@ -51,6 +53,7 @@ function toPayment(raw: RawPayment): Payment {
     id: raw.id,
     student_id: raw.studentId,
     location_id: raw.locationId ?? null,
+    group_id: raw.groupId ?? null,
     client_payment_type: raw.clientPaymentType,
     client_amount: Number(raw.clientAmount) || 0,
     sessions_total: raw.sessionsTotal,
@@ -189,9 +192,12 @@ export async function getPayments(): Promise<Payment[]> {
 }
 
 export async function createPayment(data: PaymentInput): Promise<Payment> {
+  // group_id приходит ИМЕНЕМ группы (конвенция фронта) — резолвим в UUID для бэка.
+  const groupId = data.group_id ? await nameToId(data.group_id) : null
   const raw = await apiClient.post<RawPayment>('/finance/payments', {
     studentId: data.student_id ?? null,
     locationId: data.location_id ?? null,
+    groupId,
     clientPaymentType: data.client_payment_type,
     clientAmount: parseFloat(String(data.client_amount)) || 0,
     paidAt: data.paid_at,
@@ -208,6 +214,10 @@ export async function updatePayment(
   const body: Record<string, unknown> = {}
   if (changes.student_id !== undefined) body.studentId = changes.student_id
   if (changes.location_id !== undefined) body.locationId = changes.location_id
+  // changes.group_id приходит ИМЕНЕМ (из формы) — резолвим в UUID.
+  if (changes.group_id !== undefined) {
+    body.groupId = changes.group_id ? await nameToId(changes.group_id) : null
+  }
   if (changes.client_payment_type !== undefined) {
     body.clientPaymentType = changes.client_payment_type
   }

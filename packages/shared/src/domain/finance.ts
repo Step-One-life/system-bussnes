@@ -10,6 +10,7 @@ import type {
 export interface Payment {
   id: string
   studentId: string | null
+  groupId: string | null
   clientPaymentType: ClientPaymentType
   clientAmount: number
   sessionsTotal: number

@@ -6,6 +6,7 @@ import { isPrimeTime } from 'entities/trainings/model/training-logic'
 import { usePricingRules } from '../api/use-finance'
 import { clientTypeToTuple, matchRule } from '../lib/pricing-lookup'
 
+import type { ClientMode, InitialClient } from '../lib/client-field'
 import type {
   ClientPaymentType,
   HallCost,
@@ -19,7 +20,10 @@ function today(): string {
 }
 
 export interface PaymentFormState {
+  clientMode: ClientMode
   studentId: string | null
+  /** ИМЯ выбранной группы (режим «Группа»). */
+  groupId: string | null
   locationId: string | null
   clientType: ClientPaymentType
   clientAmount: number
@@ -34,10 +38,19 @@ export interface PaymentFormState {
 interface UsePaymentFormOptions {
   payment?: Payment | null
   hallCost?: HallCost | null
+  /** Начальная привязка при редактировании (резолв UUID группы → ИМЯ). */
+  initialClient?: InitialClient
 }
 
-export function usePaymentForm({ payment, hallCost }: UsePaymentFormOptions = {}) {
-  const [studentId, setStudentId] = useState<string | null>(payment?.student_id ?? null)
+export function usePaymentForm({ payment, hallCost, initialClient }: UsePaymentFormOptions = {}) {
+  const init: InitialClient = initialClient ?? {
+    mode: 'student',
+    studentId: payment?.student_id ?? null,
+    groupName: null,
+  }
+  const [clientMode, setClientModeState] = useState<ClientMode>(init.mode)
+  const [studentId, setStudentIdState] = useState<string | null>(init.studentId)
+  const [groupId, setGroupIdState] = useState<string | null>(init.groupName)
   const [locationId, setLocationIdState] = useState<string | null>(
     payment?.location_id ?? hallCost?.location_id ?? null,
   )
@@ -72,6 +85,23 @@ export function usePaymentForm({ payment, hallCost }: UsePaymentFormOptions = {}
 
   const setLocationId = (next: string | null) => {
     setLocationIdState(next)
+  }
+
+  // Привязка к ученику и к группе взаимоисключающие: выбор одного обнуляет другое.
+  const setStudentId = (next: string | null) => {
+    setStudentIdState(next)
+    if (next) setGroupIdState(null)
+  }
+
+  const setGroupId = (next: string | null) => {
+    setGroupIdState(next)
+    if (next) setStudentIdState(null)
+  }
+
+  const setClientMode = (mode: ClientMode) => {
+    setClientModeState(mode)
+    if (mode === 'group') setStudentIdState(null)
+    else setGroupIdState(null)
   }
 
   const setClientType = (type: ClientPaymentType) => {
@@ -112,7 +142,9 @@ export function usePaymentForm({ payment, hallCost }: UsePaymentFormOptions = {}
   )
 
   const state: PaymentFormState = {
+    clientMode,
     studentId,
+    groupId,
     locationId,
     clientType,
     clientAmount,
@@ -129,6 +161,8 @@ export function usePaymentForm({ payment, hallCost }: UsePaymentFormOptions = {}
     state,
     net,
     setStudentId,
+    setGroupId,
+    setClientMode,
     setLocationId,
     setClientType,
     setClientAmount,

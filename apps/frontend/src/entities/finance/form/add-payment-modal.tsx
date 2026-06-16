@@ -3,6 +3,7 @@ import { Button, Modal } from 'antd'
 import { useTranslation } from 'react-i18next'
 
 import { useToast } from 'common/ui'
+import { useGroups } from 'entities/groups'
 import { useStudents } from 'entities/students'
 
 import { useCreateHallCost, useCreatePayment } from '../api/use-finance'
@@ -18,6 +19,7 @@ export function AddPaymentModal({ open, onClose }: AddPaymentModalProps) {
   const { t } = useTranslation()
   const toast = useToast()
   const { data: students = [] } = useStudents()
+  const { data: groups = [] } = useGroups()
   const createPayment = useCreatePayment()
   const createHallCost = useCreateHallCost()
   const form = usePaymentForm()
@@ -41,6 +43,7 @@ export function AddPaymentModal({ open, onClose }: AddPaymentModalProps) {
     }
     await createPayment.mutateAsync({
       student_id: form.studentId,
+      group_id: form.groupId,
       location_id: form.locationId,
       client_payment_type: form.clientType,
       client_amount: form.clientAmount,
@@ -94,7 +97,7 @@ export function AddPaymentModal({ open, onClose }: AddPaymentModalProps) {
         </Button>,
       ]}
     >
-      <PaymentFormFields form={form} students={students} />
+      <PaymentFormFields form={form} students={students} groups={groups} />
     </Modal>
   )
 }

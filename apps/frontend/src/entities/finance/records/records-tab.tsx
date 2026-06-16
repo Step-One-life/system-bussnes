@@ -65,7 +65,7 @@ export function RecordsTab() {
               key={item.payment.id}
               payment={item.payment}
               hallCost={item.hallCost}
-              studentName={item.studentName}
+              studentName={item.studentName ?? item.groupName}
               onEdit={setEditPayment}
               onDelete={records.handleDelete}
             />
