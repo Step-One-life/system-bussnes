@@ -3,6 +3,7 @@ import { SequelizeModule } from '@nestjs/sequelize'
 
 import { ActivityLogModule } from '../activity-log/activity-log.module'
 import { Location } from '../location/location.model'
+import { Student } from '../student/student.model'
 import { FinanceController } from './finance.controller'
 import { FinanceStatsService } from './finance-stats.service'
 import { HallCost } from './hall-cost.model'
@@ -14,7 +15,7 @@ import { PricingRulesService } from './pricing-rules.service'
 
 @Module({
   imports: [
-    SequelizeModule.forFeature([Payment, HallCost, PricingRule, Location]),
+    SequelizeModule.forFeature([Payment, HallCost, PricingRule, Location, Student]),
     ActivityLogModule,
   ],
   controllers: [FinanceController],

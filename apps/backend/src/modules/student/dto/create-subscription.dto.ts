@@ -8,6 +8,7 @@ import {
   IsOptional,
   IsString,
   IsUUID,
+  Min,
 } from 'class-validator'
 
 import type { CreateSubscriptionShape, SubscriptionType, TimeSlot } from '@trikick/shared'
@@ -59,6 +60,7 @@ export class CreateSubscriptionDto implements CreateSubscriptionShape {
 export class ExtendSubscriptionDto {
   @ApiProperty({ description: 'На сколько дней продлить' })
   @IsInt()
+  @Min(1)
   days!: number
 }
 
@@ -75,5 +77,6 @@ export class LinkPaymentDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsNumber()
+  @Min(0)
   amount?: number
 }

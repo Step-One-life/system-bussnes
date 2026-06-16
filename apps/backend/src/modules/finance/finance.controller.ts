@@ -52,20 +52,22 @@ export class FinanceController {
 
   @Post('payments')
   @ApiOperation({ summary: 'Создать платёж' })
-  createPayment(
+  async createPayment(
     @CurrentUser() user: CurrentUserPayload,
     @Body() dto: CreatePaymentDto,
   ): Promise<Payment> {
+    await this.paymentsService.assertRefsOwned(user.id, dto)
     return this.paymentsService.createPayment(user.id, dto)
   }
 
   @Patch('payments/:id')
   @ApiOperation({ summary: 'Обновить платёж' })
-  updatePayment(
+  async updatePayment(
     @CurrentUser() user: CurrentUserPayload,
     @Param() { id }: IdParamDto,
     @Body() dto: UpdatePaymentDto,
   ): Promise<Payment> {
+    await this.paymentsService.assertRefsOwned(user.id, dto)
     return this.paymentsService.updateForUser(user.id, id, dto)
   }
 
@@ -89,20 +91,22 @@ export class FinanceController {
 
   @Post('hall-costs')
   @ApiOperation({ summary: 'Создать расход зала' })
-  createHallCost(
+  async createHallCost(
     @CurrentUser() user: CurrentUserPayload,
     @Body() dto: CreateHallCostDto,
   ): Promise<HallCost> {
+    await this.hallCostsService.assertRefsOwned(user.id, dto)
     return this.hallCostsService.createHallCost(user.id, dto)
   }
 
   @Patch('hall-costs/:id')
   @ApiOperation({ summary: 'Обновить расход зала' })
-  updateHallCost(
+  async updateHallCost(
     @CurrentUser() user: CurrentUserPayload,
     @Param() { id }: IdParamDto,
     @Body() dto: UpdateHallCostDto,
   ): Promise<HallCost> {
+    await this.hallCostsService.assertRefsOwned(user.id, dto)
     return this.hallCostsService.updateForUser(user.id, id, dto)
   }
 

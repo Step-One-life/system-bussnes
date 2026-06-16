@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, Injectable } from '@nestjs/common'
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common'
 import { InjectConnection, InjectModel } from '@nestjs/sequelize'
 import { UniqueConstraintError } from 'sequelize'
 import type { FindOptions, Transaction } from 'sequelize'
@@ -54,6 +54,7 @@ export class TrainingService extends OwnedCrudService<Training> {
     @InjectModel(Training) private readonly trainingModel: typeof Training,
     @InjectModel(Visit) private readonly visitModel: typeof Visit,
     @InjectModel(Group) private readonly groupModel: typeof Group,
+    @InjectModel(Student) private readonly studentModel: typeof Student,
     private readonly subscriptionsService: SubscriptionsService,
     private readonly locationService: LocationService,
     private readonly calendarSync: CalendarSyncService,
@@ -71,6 +72,26 @@ export class TrainingService extends OwnedCrudService<Training> {
   }
 
   /**
+   * Проверяет, что все переданные ученики принадлежат тренеру. null/undefined
+   * отсеиваются (плановый второй ученик может отсутствовать). Бросает 404 на
+   * первый чужой/несуществующий id (не раскрываем существование чужих строк).
+   */
+  private async assertStudentsOwned(
+    userId: string,
+    ids: Array<string | null | undefined>,
+  ): Promise<void> {
+    const unique = [...new Set(ids.filter((x): x is string => !!x))]
+    if (!unique.length) return
+    const found = await this.studentModel.findAll({
+      where: { id: unique, userId },
+      attributes: ['id'],
+    })
+    if (found.length !== unique.length) {
+      throw new NotFoundException('Ученик не найден')
+    }
+  }
+
+  /**
    * Create a training. When `deductSessions` is true (default) attendees'
    * sessions are deducted and visits recorded; the seeder passes false to
    * create historical records without re-deducting.
@@ -84,6 +105,17 @@ export class TrainingService extends OwnedCrudService<Training> {
     dto: CreateTrainingDto,
     deductSessions = true,
   ): Promise<Training> {
+    // Владение обязательно: группа, локация и все ученики (плановые + отмечаемые)
+    // должны принадлежать тренеру, иначе чужой абонемент/локация попали бы в
+    // занятие (IDOR с финансовыми последствиями при отметке).
+    const group = await this.groupModel.findOne({ where: { id: dto.groupId, userId } })
+    if (!group) throw new NotFoundException('Группа не найдена')
+    await this.assertStudentsOwned(userId, [
+      dto.plannedStudentId,
+      dto.plannedStudentId2,
+      ...(dto.attendees ?? []),
+    ])
+
     // Серверный барьер от наслоения: занятие с временем не должно пересекаться
     // по времени с другим занятием тренера в тот же день (включая ещё не
     // записанные слоты расписаний групп). Сидер (deductSessions = false)
@@ -99,11 +131,13 @@ export class TrainingService extends OwnedCrudService<Training> {
       }
     }
 
+    // Локация (если указана) обязана принадлежать тренеру — findOneForUser
+    // бросит 404 на чужую/несуществующую (раньше .catch глотал и сбрасывал прайм).
+    const location = dto.locationId
+      ? await this.locationService.findOneForUser(userId, dto.locationId)
+      : null
     let isPrime = dto.isPrime
     if (isPrime === undefined) {
-      const location = dto.locationId
-        ? await this.locationService.findOneForUser(userId, dto.locationId).catch(() => null)
-        : null
       isPrime = isPrimeTime(dto.date, dto.time ?? '', location)
     }
 
@@ -255,6 +289,9 @@ export class TrainingService extends OwnedCrudService<Training> {
    * (`revertVisit`) отменяет ровно его.
    */
   async markAttendance(training: Training, studentIds: string[]): Promise<BillingResult[]> {
+    // Отмечать можно только своих учеников: иначе deduct/$add списали бы занятие
+    // с чужого абонемента или повесили чужому ученику авто-платёж (IDOR).
+    await this.assertStudentsOwned(training.userId, studentIds)
     await training.$add('attendees', studentIds)
     const results: BillingResult[] = []
     for (const studentId of studentIds) {
