@@ -12,10 +12,11 @@ import { useGroups } from 'entities/groups/api/use-groups'
 import { useLocations } from 'entities/locations'
 import { studentKeys } from 'entities/students/api/use-students'
 import { linkPaymentToSub } from 'entities/students/model/students.repo'
+import { subTuple } from 'entities/students/subscriptions/sub-tuple'
 
 import { useCreateHallCost, useCreatePayment, usePricingRules } from '../api/use-finance'
-import { subPaymentType } from '../lib/auto-payment'
-import { matchRule, subTypeToTuple } from '../lib/pricing-lookup'
+import { subPaymentType, tuplePaymentType } from '../lib/auto-payment'
+import { matchRule } from '../lib/pricing-lookup'
 
 import type { HallPaymentType, TimeSlot } from '../model/types'
 import type { Dayjs } from 'dayjs'
@@ -56,9 +57,15 @@ export function MarkPaidModal({
   const locationId = subGroup?.locationId ?? defaultLocation?.id ?? ''
   const { data: rules = [] } = usePricingRules(locationId)
 
-  const paymentType = sub ? subPaymentType(sub.type, isIndividual) : null
+  // Кортеж абонемента — из его реальных полей (поддержка кастомных, число в total).
+  const subTpl = sub ? subTuple(sub, isIndividual) : null
+  const paymentType = sub
+    ? sub.type === 'sub'
+      ? tuplePaymentType(subTpl as NonNullable<typeof subTpl>)
+      : subPaymentType(sub.type, isIndividual)
+    : null
   const typeLabel = paymentType ? finLabel(paymentType) : t('common.dash')
-  const matchedRule = sub ? matchRule(rules, subTypeToTuple(sub.type, isIndividual)) : null
+  const matchedRule = subTpl ? matchRule(rules, subTpl) : null
 
   // Слот предзаполняется тем, по которому абонемент покупался (sub.timeSlot),
   // чтобы прайм-абонемент не отметили оплаченным по обычной цене; тренер может
@@ -107,6 +114,7 @@ export function MarkPaidModal({
         time_slot: slot,
         training_time: '',
         hall_amount: hallAmount,
+        sessions_total: sub.total,
         paid_at: date,
       })
       const payment = await createPayment.mutateAsync({
@@ -114,6 +122,7 @@ export function MarkPaidModal({
         location_id: locationId || null,
         client_payment_type: paymentType ?? 'single_individual',
         client_amount: amount,
+        sessions_total: sub.total,
         hall_cost_id: hallCost.id,
         paid_at: date,
       })

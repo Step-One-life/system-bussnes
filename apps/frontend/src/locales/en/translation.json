@@ -185,7 +185,9 @@
       "8": "8 sessions",
       "1_90": "Single 1.5h",
       "4_90": "4 sessions 1.5h",
-      "8_90": "8 sessions 1.5h"
+      "8_90": "8 sessions 1.5h",
+      "sessions": "{{count}} session",
+      "sessions_other": "{{count}} sessions"
     },
     "status": {
       "active": "Active",
@@ -275,6 +277,9 @@
       "singleHint": "One group — a regular subscription.",
       "sharedHint": "Multiple groups — a shared subscription: one balance across all selected groups.",
       "typeLabel": "Subscription type",
+      "typePlaceholder": "Choose a subscription",
+      "noTariff": "No tariff for the subscription",
+      "noTariffHint": "No subscription tariffs for this kind. Create one under «Pricing».",
       "type_1": "Single visit",
       "type_4": "4 sessions",
       "type_8": "8 sessions",
@@ -664,7 +669,9 @@
       "individual_sub_4_90": "Individual 1.5h ×4",
       "individual_sub_8_90": "Individual 1.5h ×8",
       "single_pair": "Single pair",
-      "single_pair_90": "Pair 1.5h"
+      "single_pair_90": "Pair 1.5h",
+      "group_subscription": "Subscription (group)",
+      "individual_subscription": "Subscription (indiv.)"
     }
   },
   "onboarding": {

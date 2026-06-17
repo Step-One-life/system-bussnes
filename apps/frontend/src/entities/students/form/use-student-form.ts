@@ -72,7 +72,7 @@ export function useStudentForm({ student, onDone }: UseStudentFormOptions) {
             const isIndividual = group?.isIndividual ?? false
             const { rule } = await resolvePricingRule(
               group?.locationId ?? null,
-              subTypeToTuple(type, isIndividual),
+              subTypeToTuple(type as Exclude<SubscriptionType, 'sub'>, isIndividual),
             )
             await addSubscription.mutateAsync({
               studentId: created.id,

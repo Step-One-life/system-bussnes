@@ -10,6 +10,19 @@ export function subTypeLabel(type: string): string {
   return i18n.t(`students.subTypes.${type}`, { defaultValue: type })
 }
 
+/**
+ * Метка абонемента по числу занятий (а не по жёсткому типу) — поддерживает
+ * произвольные кастомные абонементы. Разовое (1) — отдельная подпись;
+ * 90-минутные помечаются «· 1.5ч».
+ */
+export function subLabel(sub: Pick<Subscription, 'total' | 'sessionDuration'>): string {
+  const base =
+    sub.total <= 1
+      ? i18n.t('students.subTypes.1')
+      : i18n.t('students.subTypes.sessions', { count: sub.total })
+  return sub.sessionDuration === 90 ? `${base} · 1.5ч` : base
+}
+
 /** Days until subscription expires (null if no expiresAt). */
 export function getDaysRemaining(sub: Subscription | null): number | null {
   if (!sub || !sub.expiresAt) return null
@@ -67,11 +80,8 @@ export function getSubStatus(
     return { label: i18n.t('students.status.expired'), type: 'expired' }
   if (sub.remaining === 0)
     return { label: i18n.t('students.status.renew'), type: 'expired' }
-  if (
-    sub.type !== '1' &&
-    sub.type !== '1_90' &&
-    (sub.remaining <= 1 || (days !== null && days <= 7))
-  ) {
+  // Только многоразовые абонементы «заканчиваются»; разовое (total=1) — нет.
+  if (sub.total > 1 && (sub.remaining <= 1 || (days !== null && days <= 7))) {
     return { label: i18n.t('students.status.ending'), type: 'ending' }
   }
   return { label: i18n.t('students.status.active'), type: 'active' }

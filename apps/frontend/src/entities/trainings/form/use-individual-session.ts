@@ -203,8 +203,8 @@ export function useIndividualSession({ indGroupId, onDone, isOnline = false }: U
       let createdSub: Awaited<ReturnType<typeof addSubscription>> = null
       if (!activeSub) {
         const { rule } = isOnline
-          ? await resolvePricingRuleForOnline(pricingLocationId, subTypeToTuple(subType, true))
-          : await resolvePricingRule(effectiveLocationId, subTypeToTuple(subType, true))
+          ? await resolvePricingRuleForOnline(pricingLocationId, subTypeToTuple(subType as Exclude<SubscriptionType, 'sub'>, true))
+          : await resolvePricingRule(effectiveLocationId, subTypeToTuple(subType as Exclude<SubscriptionType, 'sub'>, true))
         createdSub = await addSubscription(clientId, {
           groupId: indGroupId,
           type: subType,

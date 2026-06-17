@@ -7,17 +7,23 @@ import { useTranslation } from 'react-i18next'
 
 import { AdaptiveSheet, useToast } from 'common/ui'
 import { todayISO, tomorrowISO } from 'common/utils/date'
+import { usePricingRules } from 'entities/finance/api/use-finance'
 import { autoCreatePayment } from 'entities/finance/lib/auto-payment'
-import { resolvePricingRule, subTypeToTuple } from 'entities/finance/lib/pricing-lookup'
+import { resolvePricingRule } from 'entities/finance/lib/pricing-lookup'
 import { useGroups } from 'entities/groups/api/use-groups'
+import { useLocations } from 'entities/locations'
 
 import { useAddSubscription, useStudents } from '../api/use-students'
 import { linkPaymentToSub } from '../model/students.repo'
+import { subLabel } from '../model/subscription-status'
 import { resolveStartDate } from './renew-date'
+import { subTuple } from './sub-tuple'
 
 import type { SubscriptionType } from '../model/types'
 import type { StartMode } from './renew-date'
 import type { Dayjs } from 'dayjs'
+import type { RuleTuple } from 'entities/finance/lib/pricing-lookup'
+import type { LessonKind } from 'entities/finance/model/types'
 
 import './renew-sub-modal.scss'
 import dayjs from 'dayjs'
@@ -48,14 +54,18 @@ export function RenewSubModal({
   const addSubscription = useAddSubscription()
   const { data: groups = [] } = useGroups()
   const { data: students = [] } = useStudents()
+  const { data: locations = [] } = useLocations()
   const [dateMode, setDateMode] = useState<StartMode>('today')
   const [customDate, setCustomDate] = useState(todayISO())
   const [paidNow, setPaidNow] = useState(true)
+  const [ruleId, setRuleId] = useState<string>('')
   const [saving, setSaving] = useState(false)
 
   // groupId приходит и как имя (из warnings/гейтов), и как UUID — резолвим оба.
   const group = groups.find((g) => g.name === groupId || g.id === groupId) ?? null
   const groupName = group?.name ?? groupId
+  const isIndividual = group?.isIndividual ?? false
+  const lessonKind: LessonKind = isIndividual ? 'individual' : 'group'
 
   // Предыдущий абонемент ученика по данной группе (на уровне рендера).
   const prevSub = useMemo(() => {
@@ -69,53 +79,100 @@ export function RenewSubModal({
     )
   }, [students, studentId, groups, groupId])
 
-  // Тип фиксирован: прошлый абонемент (нормализован) или разовое при оформлении.
-  const type = (prevSub?.type ?? '1').replace('_90', '').replace('_pair', '') as SubscriptionType
+  // Локация группы (или дефолтная) — для списка тарифов при оформлении.
+  const defaultLocId = locations.length
+    ? (locations.find((l) => l.isDefault) ?? locations[0]).id
+    : ''
+  const locationId = group?.locationId ?? defaultLocId
+  const { data: rules = [] } = usePricingRules(issueMode ? locationId : '')
+
+  // Оформление: список тарифов нужного вида (разовое сверху, затем абонементы).
+  const options = useMemo(() => {
+    if (!issueMode) return []
+    const matched = rules.filter((r) => r.active && r.lesson_kind === lessonKind)
+    return [...matched].sort((a, b) =>
+      a.format !== b.format
+        ? a.format === 'single'
+          ? -1
+          : 1
+        : a.sessions_count - b.sessions_count,
+    )
+  }, [issueMode, rules, lessonKind])
+
+  const selectedRule = issueMode ? (options.find((r) => r.id === ruleId) ?? options[0] ?? null) : null
+
+  // Контекст абонемента: оформление — из выбранного тарифа, продление — из прошлого.
+  const tuple: RuleTuple | null = issueMode
+    ? selectedRule
+      ? {
+          lessonKind,
+          format: selectedRule.format,
+          durationMinutes: selectedRule.duration_minutes,
+          sessionsCount: selectedRule.sessions_count,
+        }
+      : null
+    : prevSub
+      ? subTuple(prevSub, isIndividual)
+      : null
+  const total = issueMode ? (selectedRule?.sessions_count ?? 1) : (prevSub?.total ?? 1)
+  const sessionDuration = issueMode
+    ? (selectedRule?.duration_minutes ?? 60)
+    : (prevSub?.sessionDuration ?? 60)
+  const subType: SubscriptionType = issueMode
+    ? selectedRule?.format === 'single'
+      ? '1'
+      : 'sub'
+    : (prevSub?.type ?? '1')
+  const slot = prevSub?.timeSlot ?? 'regular'
 
   // Итоговая дата начала из выбранного режима.
   const date = resolveStartDate(dateMode, todayISO(), tomorrowISO(), customDate)
 
-  // Живая цена выбранного типа абонемента.
-  const { data: priceRule } = useQuery({
-    queryKey: ['renew-price', groupId, type],
-    queryFn: () =>
-      resolvePricingRule(group?.locationId ?? null, subTypeToTuple(type, group?.isIndividual ?? false)),
-    enabled: open,
+  // Цена/срок продления: резолв тарифа по кортежу (оформление берёт из selectedRule).
+  const { data: renewRule } = useQuery({
+    queryKey: ['renew-price', groupId, total, sessionDuration, lessonKind],
+    queryFn: () => resolvePricingRule(group?.locationId ?? null, tuple as RuleTuple),
+    enabled: open && !issueMode && !!tuple,
   })
-  const slot = prevSub?.timeSlot ?? 'regular'
-  const price = priceRule?.rule
+  const priceRule = issueMode ? selectedRule : (renewRule?.rule ?? null)
+  const price = priceRule
     ? slot === 'prime'
-      ? priceRule.rule.client_prime_price
-      : priceRule.rule.client_price
+      ? priceRule.client_prime_price
+      : priceRule.client_price
     : null
 
   const submit = async () => {
     if (saving) return
+    if (!tuple) {
+      toast({ type: 'warn', title: t('subscriptions.add.noTariff') })
+      return
+    }
     setSaving(true)
     try {
-      // validity_days — отдельным запросом (гарантия актуальности, не из кэша).
-      const { rule } = await resolvePricingRule(
-        group?.locationId ?? null,
-        subTypeToTuple(type, group?.isIndividual ?? false),
-      )
+      // validity_days — из выбранного тарифа (оформление) или свежим запросом (продление).
+      const validityDays = issueMode
+        ? selectedRule?.validity_days
+        : (await resolvePricingRule(group?.locationId ?? null, tuple)).rule?.validity_days
 
       const createdSub = await addSubscription.mutateAsync({
         studentId,
         data: {
           groupId,
-          type,
+          type: subType,
+          sessionsTotal: total,
           createdAt: date,
-          validityDays: rule?.validity_days,
+          sessionDuration,
+          validityDays,
           // Наследуем слот (прайм/обычный) от предыдущего абонемента группы.
-          timeSlot: prevSub?.timeSlot ?? 'regular',
+          timeSlot: slot,
         },
       })
 
       if (paidNow && createdSub) {
         const fin = await autoCreatePayment(
           studentId,
-          { id: createdSub.id, type, createdAt: date },
-          group?.isIndividual ?? false,
+          { id: createdSub.id, type: subType, createdAt: date, tuple, sessionsTotal: total },
+          isIndividual,
           { isPrime: slot === 'prime', locationId: group?.locationId ?? null },
         )
         if (fin) {
@@ -142,8 +199,8 @@ export function RenewSubModal({
   const handleDateMode = (v: StartMode) => setDateMode(v)
   const handleCustom = (d: Dayjs | null) => setCustomDate(d ? d.format('YYYY-MM-DD') : todayISO())
 
-  const typeLabel = t(`students.subTypes.${type}`, { defaultValue: type })
-  const priceText = price !== null ? `${typeLabel} · ${price} ₽` : typeLabel
+  const countLabel = subLabel({ total, sessionDuration })
+  const priceText = price !== null ? `${countLabel} · ${price} ₽` : countLabel
 
   return (
     <AdaptiveSheet
@@ -160,14 +217,28 @@ export function RenewSubModal({
       }
     >
       <div className="renew-sheet">
-        <div className="renew-row">
-          <span className="renew-row__label">
-            {issueMode
-              ? t('subscriptions.renew.tariffLabel')
-              : t('subscriptions.renew.asPrevLabel')}
-          </span>
-          <span className="renew-row__value">{priceText}</span>
-        </div>
+        {issueMode ? (
+          <div className="renew-row">
+            <span className="renew-row__label">{t('subscriptions.renew.tariffLabel')}</span>
+            <Select
+              value={selectedRule?.id}
+              onChange={setRuleId}
+              variant="borderless"
+              popupMatchSelectWidth={false}
+              placeholder={t('subscriptions.add.typePlaceholder')}
+              notFoundContent={t('subscriptions.add.noTariffHint')}
+              options={options.map((r) => ({
+                value: r.id,
+                label: `${subLabel({ total: r.sessions_count, sessionDuration: r.duration_minutes })} · ${slot === 'prime' ? r.client_prime_price : r.client_price} ₽`,
+              }))}
+            />
+          </div>
+        ) : (
+          <div className="renew-row">
+            <span className="renew-row__label">{t('subscriptions.renew.asPrevLabel')}</span>
+            <span className="renew-row__value">{priceText}</span>
+          </div>
+        )}
         <div className="renew-row">
           <span className="renew-row__label">{t('subscriptions.renew.startLabel')}</span>
           <Select

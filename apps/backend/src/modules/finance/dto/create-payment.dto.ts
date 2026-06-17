@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger'
-import { IsIn, IsNumber, IsOptional, IsString, IsUUID, Min } from 'class-validator'
+import { IsIn, IsInt, IsNumber, IsOptional, IsString, IsUUID, Min } from 'class-validator'
 
 import type { ClientPaymentType, CreatePaymentShape } from '@trikick/shared'
 
@@ -15,6 +15,8 @@ const CLIENT_TYPES: ClientPaymentType[] = [
   'individual_sub_8_90',
   'single_pair',
   'single_pair_90',
+  'group_subscription',
+  'individual_subscription',
 ]
 
 export class CreatePaymentDto implements CreatePaymentShape {
@@ -41,6 +43,12 @@ export class CreatePaymentDto implements CreatePaymentShape {
   @IsNumber()
   @Min(0)
   clientAmount!: number
+
+  @ApiPropertyOptional({ description: 'Число занятий (обобщённый абонемент). Иначе — по типу.' })
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  sessionsTotal?: number
 
   @ApiPropertyOptional()
   @IsOptional()

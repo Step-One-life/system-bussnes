@@ -1,4 +1,4 @@
-export type SubscriptionType = '1' | '4' | '8' | '1_90' | '4_90' | '8_90'
+export type SubscriptionType = '1' | '4' | '8' | '1_90' | '4_90' | '8_90' | 'sub'
 
 export type TimeSlot = 'regular' | 'prime'
 
@@ -48,6 +48,8 @@ export interface StudentInput {
 export interface SubscriptionInput {
   groupId: string
   type: SubscriptionType
+  /** Число занятий (из выбранного тарифа). Авторитетно; иначе — по типу (легаси). */
+  sessionsTotal?: number
   createdAt?: string
   sessionDuration?: number
   validityDays?: number

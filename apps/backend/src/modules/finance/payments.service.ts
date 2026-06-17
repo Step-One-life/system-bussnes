@@ -66,7 +66,7 @@ export class PaymentsService extends OwnedCrudService<Payment> {
     dto: CreatePaymentDto,
     tx: Transaction | null = null,
   ): Promise<Payment> {
-    const sessions = FIN_SESSIONS[dto.clientPaymentType] ?? 1
+    const sessions = dto.sessionsTotal ?? FIN_SESSIONS[dto.clientPaymentType] ?? 1
     return this.paymentModel.create(
       {
         userId,

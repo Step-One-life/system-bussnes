@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger'
-import { IsIn, IsNumber, IsOptional, IsString, IsUUID, Min } from 'class-validator'
+import { IsIn, IsInt, IsNumber, IsOptional, IsString, IsUUID, Min } from 'class-validator'
 
 import type { CreateHallCostShape, HallPaymentType, TimeSlot } from '@trikick/shared'
 
@@ -15,6 +15,8 @@ const HALL_TYPES: HallPaymentType[] = [
   'individual_sub_8_90',
   'single_pair',
   'single_pair_90',
+  'group_subscription',
+  'individual_subscription',
 ]
 
 const TIME_SLOTS: TimeSlot[] = ['regular', 'prime']
@@ -48,6 +50,12 @@ export class CreateHallCostDto implements CreateHallCostShape {
   @IsNumber()
   @Min(0)
   hallAmount!: number
+
+  @ApiPropertyOptional({ description: 'Число занятий (обобщённый абонемент). Иначе — по типу.' })
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  sessionsTotal?: number
 
   @ApiPropertyOptional()
   @IsOptional()
