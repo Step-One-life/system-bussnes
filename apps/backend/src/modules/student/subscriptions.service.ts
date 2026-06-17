@@ -24,6 +24,7 @@ export class SubscriptionsService {
     data: {
       groupId: string
       type: SubscriptionType
+      sessionsTotal?: number
       createdAt?: string
       sessionDuration?: number
       validityDays?: number
@@ -31,7 +32,8 @@ export class SubscriptionsService {
       groupIds?: string[]
     },
   ): Promise<Subscription> {
-    const total = SUB_TYPE_TOTALS[data.type] ?? 1
+    // Число занятий: явное из тарифа (кастомный абонемент) → по типу (легаси) → 1.
+    const total = data.sessionsTotal ?? SUB_TYPE_TOTALS[data.type] ?? 1
     const createdAt = data.createdAt ?? DateUtil.todayIso()
     const validityDays = data.validityDays ?? 35
     // Покрываемые группы: для общего — переданный список, иначе только своя.

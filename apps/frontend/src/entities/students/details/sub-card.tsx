@@ -16,7 +16,7 @@ import { useTranslation } from 'react-i18next'
 
 import { Badge, StatusBadge, SubProgressBar } from 'common/ui'
 
-import { getDaysRemaining, getSubStatus, subTypeLabel } from '../model/subscription-status'
+import { getDaysRemaining, getSubStatus, subLabel } from '../model/subscription-status'
 
 import type { Student } from '../model/types'
 import type { MenuProps } from 'antd'
@@ -168,7 +168,7 @@ export function SubCard({
       {anySub && (
         <Modal
           open={confirmDelete}
-          title={t('students.subCard.deleteSubTitle', { type: subTypeLabel(anySub.type) })}
+          title={t('students.subCard.deleteSubTitle', { type: subLabel(anySub) })}
           okText={t('common.delete')}
           cancelText={t('common.cancel')}
           okButtonProps={{ danger: true }}

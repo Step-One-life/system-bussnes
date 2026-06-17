@@ -10,13 +10,18 @@ import {
 } from './pricing-lookup'
 
 import type { ClientPaymentType, HallPaymentType } from '../model/types'
+import type { RuleTuple } from './pricing-lookup'
 
 type SubType = '1' | '4' | '8' | '1_90' | '4_90' | '8_90' | '1_pair' | '1_pair_90'
 
 interface AutoSub {
   id: string
-  type: SubType
+  type: SubType | 'sub'
   createdAt?: string
+  /** Tariff-driven (кастомный абонемент): точный кортеж тарифа. Перекрывает вывод из type. */
+  tuple?: RuleTuple
+  /** Число занятий платежа для обобщённого абонемента (иначе бэк берёт по типу). */
+  sessionsTotal?: number
 }
 
 interface AutoPaymentOptions {
@@ -46,6 +51,19 @@ export function subPaymentType(
   return null
 }
 
+/**
+ * Тип дохода для tariff-driven абонемента (произвольное число занятий). Абонемент
+ * → обобщённый group/individual_subscription; разовое — существующие single-типы.
+ */
+export function tuplePaymentType(tuple: RuleTuple): ClientPaymentType {
+  if (tuple.format === 'subscription') {
+    return tuple.lessonKind === 'individual' ? 'individual_subscription' : 'group_subscription'
+  }
+  if (tuple.lessonKind === 'individual') return 'single_individual'
+  if (tuple.lessonKind === 'pair') return 'single_pair'
+  return 'single_group'
+}
+
 interface AutoPaymentResult {
   paymentId: string
 }
@@ -62,14 +80,17 @@ export async function autoCreatePayment(
   isIndividual: boolean,
   opts: AutoPaymentOptions = {},
 ): Promise<AutoPaymentResult | null> {
-  const paymentType = subPaymentType(sub.type, isIndividual)
-  if (!paymentType) return null
-
   const paidAt = sub.createdAt || todayISO()
   const isPrime = opts.isPrime ?? (opts.time ? isPrimeTime(paidAt, opts.time) : false)
   const timeSlot = isPrime ? 'prime' : 'regular'
 
-  const tuple = subTypeToTuple(sub.type, isIndividual)
+  // Tariff-driven (кастомный абонемент): точный кортеж + обобщённый тип платежа.
+  // Иначе — вывод из легаси-типа абонемента (тогда type — всегда пресет, не 'sub').
+  const legacyType = sub.type as SubType
+  const tuple = sub.tuple ?? subTypeToTuple(legacyType, isIndividual)
+  const paymentType = sub.tuple ? tuplePaymentType(tuple) : subPaymentType(legacyType, isIndividual)
+  if (!paymentType) return null
+
   const { rule, locationId } = opts.isShared
     ? await resolvePricingRuleForShared(opts.locationId ?? null, {
         format: tuple.format,
@@ -96,6 +117,7 @@ export async function autoCreatePayment(
       time_slot: timeSlot,
       training_time: opts.time || '',
       hall_amount: hallAmount,
+      sessions_total: sub.sessionsTotal,
       paid_at: paidAt,
     })
     hallCostId = hallCost.id
@@ -106,6 +128,7 @@ export async function autoCreatePayment(
     location_id: locationId,
     client_payment_type: paymentType,
     client_amount: clientAmount,
+    sessions_total: sub.sessionsTotal,
     hall_cost_id: hallCostId,
     paid_at: paidAt,
   })

@@ -1,4 +1,9 @@
-export type SubscriptionType = '1' | '4' | '8' | '1_90' | '4_90' | '8_90'
+/**
+ * Тип абонемента. Пресеты 1/4/8 (+90-мин варианты) — легаси с фикс-числом занятий
+ * (`SUB_TYPE_TOTALS`). `'sub'` — обобщённый абонемент из тарифа: число занятий
+ * произвольное и хранится в `Subscription.total`, а не выводится из типа.
+ */
+export type SubscriptionType = '1' | '4' | '8' | '1_90' | '4_90' | '8_90' | 'sub'
 
 export type SubStatusType = 'active' | 'ending' | 'danger' | 'expired' | 'none'
 
@@ -16,6 +21,10 @@ export type ClientPaymentType =
   | 'individual_sub_8_90'
   | 'single_pair'
   | 'single_pair_90'
+  // Обобщённый доход за абонемент с произвольным числом занятий (число — в
+  // payment.sessionsTotal). Используется при выдаче кастомного абонемента.
+  | 'group_subscription'
+  | 'individual_subscription'
 
 export type HallPaymentType = ClientPaymentType
 

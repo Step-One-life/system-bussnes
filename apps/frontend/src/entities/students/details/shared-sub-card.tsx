@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next'
 
 import { Badge, StatusBadge, SubProgressBar } from 'common/ui'
 
-import { getSubStatus, subTypeLabel } from '../model/subscription-status'
+import { getSubStatus, subLabel } from '../model/subscription-status'
 
 import type { Student, Subscription } from '../model/types'
 
@@ -36,7 +36,7 @@ export function SharedSubCard({ student, sub, onDeleteSub, onMarkPaid }: SharedS
           <StatusBadge status={status} />
         </span>
         <Popconfirm
-          title={t('students.subCard.deleteSubTitle', { type: subTypeLabel(sub.type) })}
+          title={t('students.subCard.deleteSubTitle', { type: subLabel(sub) })}
           okText={t('common.delete')}
           cancelText={t('common.cancel')}
           okButtonProps={{ danger: true }}

@@ -118,6 +118,12 @@ export function clientTypeToTuple(type: ClientPaymentType): RuleTuple {
       return { lessonKind: 'pair', format: 'single', durationMinutes: 60, sessionsCount: 1 }
     case 'single_pair_90':
       return { lessonKind: 'pair', format: 'single', durationMinutes: 90, sessionsCount: 1 }
+    // Обобщённые абонементы: число занятий — в самом платеже, не в типе. Здесь
+    // нейтральный кортеж (sessionsCount 0 не матчит тариф); в ручном вводе не используются.
+    case 'group_subscription':
+      return { lessonKind: 'group', format: 'subscription', durationMinutes: 60, sessionsCount: 0 }
+    case 'individual_subscription':
+      return { lessonKind: 'individual', format: 'subscription', durationMinutes: 60, sessionsCount: 0 }
   }
 }
 

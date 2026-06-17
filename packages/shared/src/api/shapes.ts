@@ -42,6 +42,8 @@ export type UpdateStudentShape = Partial<CreateStudentShape>
 export interface CreateSubscriptionShape {
   groupId: string
   type: SubscriptionType
+  /** Число занятий (из выбранного тарифа). Авторитетно; иначе — по типу (легаси). */
+  sessionsTotal?: number
   createdAt?: string
   sessionDuration?: number
   validityDays?: number
@@ -76,6 +78,9 @@ export interface CreatePaymentShape {
   groupId?: string | null
   clientPaymentType: ClientPaymentType
   clientAmount: number
+  /** Число занятий, покрываемых платежом. Нужно для обобщённого абонемента
+   * (тип без фикс-числа в FIN_SESSIONS). Иначе — по типу платежа. */
+  sessionsTotal?: number
   paidAt?: string
   notes?: string
   hallCostId?: string | null
@@ -90,6 +95,8 @@ export interface CreateHallCostShape {
   timeSlot?: TimeSlot
   trainingTime?: string
   hallAmount: number
+  /** Число занятий, покрываемых расходом. Для обобщённого абонемента — явно. */
+  sessionsTotal?: number
   paidAt?: string
   notes?: string
 }

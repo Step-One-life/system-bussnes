@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 
 import { Button, Form, Input, Modal, Segmented, Select } from 'antd'
@@ -7,13 +7,10 @@ import { useTranslation } from 'react-i18next'
 
 import { useToast } from 'common/ui'
 import { todayISO } from 'common/utils/date'
+import { usePricingRules } from 'entities/finance/api/use-finance'
 import { autoCreatePayment } from 'entities/finance/lib/auto-payment'
-import {
-  resolvePricingRule,
-  resolvePricingRuleForShared,
-  subTypeToTuple,
-} from 'entities/finance/lib/pricing-lookup'
 import { useGroups } from 'entities/groups/api/use-groups'
+import { useLocations } from 'entities/locations'
 
 import { studentKeys } from '../api/use-students'
 import {
@@ -21,8 +18,11 @@ import {
   linkPaymentToSub,
   updateStudent,
 } from '../model/students.repo'
+import { subLabel } from '../model/subscription-status'
 
 import type { SubscriptionType } from '../model/types'
+import type { RuleTuple } from 'entities/finance/lib/pricing-lookup'
+import type { LessonKind, PricingRule } from 'entities/finance/model/types'
 
 interface AddSubModalProps {
   open: boolean
@@ -31,8 +31,6 @@ interface AddSubModalProps {
   studentGroups: string[]
   onClose: () => void
 }
-
-const SUB_TYPES: SubscriptionType[] = ['1', '4', '8']
 
 export function AddSubModal({
   open,
@@ -45,21 +43,53 @@ export function AddSubModal({
   const toast = useToast()
   const qc = useQueryClient()
   const { data: groups = [] } = useGroups()
+  const { data: locations = [] } = useLocations()
 
   const regularGroups = groups.filter((g) => !g.isIndividual)
   const [selected, setSelected] = useState<string[]>(
     studentGroups.filter((g) => regularGroups.some((rg) => rg.name === g)),
   )
-  const [type, setType] = useState<SubscriptionType>('8')
+  const [ruleId, setRuleId] = useState<string>('')
   const [slot, setSlot] = useState<'regular' | 'prime'>('regular')
   const [date, setDate] = useState(todayISO())
   const [saving, setSaving] = useState(false)
 
   const isShared = selected.length > 1
+  const primary = selected[0]
+  const primaryGroup = groups.find((g) => g.name === primary) ?? null
+  const isIndividual = primaryGroup?.isIndividual ?? false
+  const lessonKind: LessonKind = isShared ? 'shared' : isIndividual ? 'individual' : 'group'
+
+  // Локация группы (или дефолтная) — её тарифы и формируют список абонементов.
+  const defaultLocId = locations.length
+    ? (locations.find((l) => l.isDefault) ?? locations[0]).id
+    : ''
+  const locationId = primaryGroup?.locationId ?? defaultLocId
+  const { data: rules = [] } = usePricingRules(locationId)
+
+  // Варианты — активные тарифы нужного вида: разовое сверху, затем абонементы по возрастанию.
+  const options = useMemo(() => {
+    const matched = rules.filter((r) => r.active && r.lesson_kind === lessonKind)
+    return [...matched].sort((a, b) =>
+      a.format !== b.format
+        ? a.format === 'single'
+          ? -1
+          : 1
+        : a.sessions_count - b.sessions_count,
+    )
+  }, [rules, lessonKind])
+
+  const selectedRule = options.find((r) => r.id === ruleId) ?? options[0] ?? null
+
+  const priceOf = (r: PricingRule) => (slot === 'prime' ? r.client_prime_price : r.client_price)
 
   const submit = async () => {
     if (!selected.length) {
       toast({ type: 'warn', title: t('subscriptions.add.pickGroup') })
+      return
+    }
+    if (!selectedRule) {
+      toast({ type: 'warn', title: t('subscriptions.add.noTariff') })
       return
     }
     setSaving(true)
@@ -70,30 +100,37 @@ export function AddSubModal({
         await updateStudent(studentId, { groups: [...studentGroups, ...missing] })
       }
 
-      const primary = selected[0]
-      const primaryGroup = groups.find((g) => g.name === primary) ?? null
-      const tuple = subTypeToTuple(type, false)
-      const { rule } = isShared
-        ? await resolvePricingRuleForShared(primaryGroup?.locationId ?? null, {
-            format: tuple.format,
-            sessionsCount: tuple.sessionsCount,
-          })
-        : await resolvePricingRule(primaryGroup?.locationId ?? null, tuple)
+      const rule = selectedRule
+      const tuple: RuleTuple = {
+        lessonKind,
+        format: rule.format,
+        durationMinutes: rule.duration_minutes,
+        sessionsCount: rule.sessions_count,
+      }
+      const subType: SubscriptionType = rule.format === 'single' ? '1' : 'sub'
 
       const createdSub = await addSubscription(studentId, {
         groupId: primary,
         groupIds: isShared ? selected : undefined,
-        type,
+        type: subType,
+        sessionsTotal: rule.sessions_count,
         createdAt: date,
-        validityDays: rule?.validity_days,
+        sessionDuration: rule.duration_minutes,
+        validityDays: rule.validity_days,
         timeSlot: slot,
       })
 
       if (createdSub) {
         const fin = await autoCreatePayment(
           studentId,
-          { id: createdSub.id, type, createdAt: date },
-          false,
+          {
+            id: createdSub.id,
+            type: subType,
+            createdAt: date,
+            tuple,
+            sessionsTotal: rule.sessions_count,
+          },
+          isIndividual,
           { isShared, isPrime: slot === 'prime', locationId: primaryGroup?.locationId ?? null },
         )
         if (fin) {
@@ -148,13 +185,18 @@ export function AddSubModal({
             options={regularGroups.map((g) => ({ value: g.name, label: g.name }))}
           />
         </Form.Item>
-        <Form.Item label={t('subscriptions.add.typeLabel')}>
+        <Form.Item
+          label={t('subscriptions.add.typeLabel')}
+          extra={options.length === 0 ? t('subscriptions.add.noTariffHint') : undefined}
+        >
           <Select
-            value={type}
-            onChange={setType}
-            options={SUB_TYPES.map((v) => ({
-              value: v,
-              label: t(`subscriptions.add.type_${v}`),
+            value={selectedRule?.id}
+            onChange={setRuleId}
+            placeholder={t('subscriptions.add.typePlaceholder')}
+            notFoundContent={t('subscriptions.add.noTariffHint')}
+            options={options.map((r) => ({
+              value: r.id,
+              label: `${subLabel({ total: r.sessions_count, sessionDuration: r.duration_minutes })} · ${priceOf(r)} ₽`,
             }))}
           />
         </Form.Item>

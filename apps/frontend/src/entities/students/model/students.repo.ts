@@ -126,6 +126,7 @@ export async function addSubscription(
   const raw = await apiClient.post<RawStudent>(`/students/${studentId}/subscriptions`, {
     groupId,
     type: subData.type,
+    sessionsTotal: subData.sessionsTotal,
     createdAt: subData.createdAt,
     sessionDuration: subData.sessionDuration,
     validityDays: subData.validityDays,

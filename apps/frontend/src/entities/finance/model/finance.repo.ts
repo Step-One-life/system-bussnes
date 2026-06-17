@@ -200,6 +200,7 @@ export async function createPayment(data: PaymentInput): Promise<Payment> {
     groupId,
     clientPaymentType: data.client_payment_type,
     clientAmount: parseFloat(String(data.client_amount)) || 0,
+    sessionsTotal: data.sessions_total,
     paidAt: data.paid_at,
     notes: data.notes,
     hallCostId: data.hall_cost_id ?? null,
@@ -251,6 +252,7 @@ export async function createHallCost(data: HallCostInput): Promise<HallCost> {
     timeSlot: data.time_slot,
     trainingTime: data.training_time,
     hallAmount: parseFloat(String(data.hall_amount)) || 0,
+    sessionsTotal: data.sessions_total,
     paidAt: data.paid_at,
     notes: data.notes,
   })

@@ -11,7 +11,7 @@ import { studentKeys, useStudents } from 'entities/students/api/use-students'
 import {
   findSubForGroup,
   getSubStatus,
-  subTypeLabel,
+  subLabel,
 } from 'entities/students/model/subscription-status'
 
 import { useDeleteTrainingWithRestore } from '../api/use-training-actions'
@@ -34,10 +34,10 @@ function buildSubLine(student: Student, groupId: string, duration: number | null
   // Тот же абонемент, что спишет бэк (свой по длительности → свой → общий).
   const sub = findSubForGroup(student, groupId, duration)
   if (!sub) return ''
-  const isSingle = sub.type === '1' || sub.type === '1_90'
+  const isSingle = sub.total <= 1
   return isSingle
-    ? subTypeLabel(sub.type)
-    : `${subTypeLabel(sub.type)} · ${i18n.t('students.sub.remainingShort', { count: sub.remaining })}`
+    ? subLabel(sub)
+    : `${subLabel(sub)} · ${i18n.t('students.sub.remainingShort', { count: sub.remaining })}`
 }
 
 interface UseCalendarTrainingOptions {

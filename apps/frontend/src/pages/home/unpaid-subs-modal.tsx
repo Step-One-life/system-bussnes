@@ -6,7 +6,7 @@ import { DollarOutlined } from '@ant-design/icons'
 import { useTranslation } from 'react-i18next'
 
 import { MarkPaidModal } from 'entities/finance'
-import { subTypeLabel } from 'entities/students'
+import { subLabel } from 'entities/students'
 
 import { useUnpaidSubs } from './use-unpaid-subs'
 
@@ -41,7 +41,7 @@ export function UnpaidSubsModal({ open, onClose }: UnpaidSubsModalProps) {
             {unpaid.map((u) => {
               const typeLabel = u.isIndividual
                 ? t('home.indTraining')
-                : `${u.groupId} · ${subTypeLabel(u.sub.type)}`
+                : `${u.groupId} · ${subLabel(u.sub)}`
               const handlePay = () => setPaying(u)
               return (
                 <div key={u.sub.id} className="unpaid-row">

@@ -13,7 +13,7 @@ import {
 
 import type { CreateSubscriptionShape, SubscriptionType, TimeSlot } from '@trikick/shared'
 
-const SUB_TYPES: SubscriptionType[] = ['1', '4', '8', '1_90', '4_90', '8_90']
+const SUB_TYPES: SubscriptionType[] = ['1', '4', '8', '1_90', '4_90', '8_90', 'sub']
 const TIME_SLOTS: TimeSlot[] = ['regular', 'prime']
 
 export class CreateSubscriptionDto implements CreateSubscriptionShape {
@@ -24,6 +24,12 @@ export class CreateSubscriptionDto implements CreateSubscriptionShape {
   @ApiProperty({ enum: SUB_TYPES })
   @IsIn(SUB_TYPES)
   type!: SubscriptionType
+
+  @ApiPropertyOptional({ description: 'Число занятий (из тарифа). Иначе — по типу.' })
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  sessionsTotal?: number
 
   @ApiPropertyOptional({ description: 'Дата начала (ISO)' })
   @IsOptional()

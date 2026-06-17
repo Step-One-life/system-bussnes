@@ -115,7 +115,7 @@ export function useAddToTraining({ training, onDone }: UseAddToTrainingOptions) 
         if (newSubType) {
           const { rule } = await resolvePricingRule(
             training.locationId,
-            subTypeToTuple(newSubType, isIndividual),
+            subTypeToTuple(newSubType as Exclude<SubscriptionType, 'sub'>, isIndividual),
           )
           createdSub = await addSubscription(student.id, {
             groupId: training.groupId,

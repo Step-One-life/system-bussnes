@@ -1,5 +1,5 @@
 import { formatDateShort } from 'common/utils/date'
-import { getDaysRemaining, getSubProgress, subTypeLabel } from 'entities/students/model/subscription-status'
+import { getDaysRemaining, getSubProgress, subLabel } from 'entities/students/model/subscription-status'
 
 import type { Subscription } from 'entities/students/model/types'
 
@@ -22,7 +22,7 @@ export function SubProgressBar({ sub }: { sub: Subscription | null }) {
   return (
     <div className="progress-wrap">
       <div className="progress-label">
-        <span>{subTypeLabel(sub.type)}</span>
+        <span>{subLabel(sub)}</span>
         <span>
           {sub.remaining}/{sub.total} занятий
         </span>

@@ -46,7 +46,7 @@ export class HallCostsService extends OwnedCrudService<HallCost> {
     dto: CreateHallCostDto,
     tx: Transaction | null = null,
   ): Promise<HallCost> {
-    const sessions = FIN_SESSIONS[dto.hallPaymentType] ?? 1
+    const sessions = dto.sessionsTotal ?? FIN_SESSIONS[dto.hallPaymentType] ?? 1
     return this.hallCostModel.create(
       {
         userId,

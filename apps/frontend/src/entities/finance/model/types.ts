@@ -10,6 +10,9 @@ export type ClientPaymentType =
   | 'individual_sub_8_90'
   | 'single_pair'
   | 'single_pair_90'
+  // Обобщённый доход за абонемент с произвольным числом занятий (число — в sessions_total).
+  | 'group_subscription'
+  | 'individual_subscription'
 
 export type HallPaymentType = ClientPaymentType
 
@@ -40,6 +43,8 @@ export interface PaymentInput {
   group_id?: string | null
   client_payment_type: ClientPaymentType
   client_amount: number | string
+  /** Число занятий платежа (обобщённый абонемент). Иначе — по типу на бэке. */
+  sessions_total?: number
   paid_at?: string
   notes?: string
   hall_cost_id?: string | null
@@ -67,6 +72,8 @@ export interface HallCostInput {
   time_slot?: TimeSlot
   training_time?: string
   hall_amount: number | string
+  /** Число занятий расхода (обобщённый абонемент). Иначе — по типу на бэке. */
+  sessions_total?: number
   paid_at?: string
   notes?: string
 }
