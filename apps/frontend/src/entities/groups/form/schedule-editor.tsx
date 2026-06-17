@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next'
 
 import { WEEKDAY_ABBRS, weekdayFullLabel } from 'common/utils/weekdays'
 
+import { addDay, setDayTime } from './schedule-time'
+
 import type { ScheduleEntry } from '../model/types'
 import type { CheckboxChangeEvent } from 'antd/es/checkbox'
 import type { Dayjs } from 'dayjs'
@@ -22,14 +24,14 @@ export function ScheduleEditor({ value, onChange }: ScheduleEditorProps) {
 
   const toggleDay = (abbr: string, checked: boolean) => {
     if (checked) {
-      onChange([...value, { day: abbr, time: '' }])
+      onChange(addDay(value, abbr))
     } else {
       onChange(value.filter((e) => e.day !== abbr))
     }
   }
 
   const setTime = (abbr: string, time: string) => {
-    onChange(value.map((e) => (e.day === abbr ? { ...e, time } : e)))
+    onChange(setDayTime(value, abbr, time))
   }
 
   const handleToggleDay = (abbr: string) => (e: CheckboxChangeEvent) =>
