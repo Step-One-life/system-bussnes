@@ -510,6 +510,7 @@
       "hallExpense": "Расход залу",
       "netIncome": "Чистый доход",
       "sessions": "Занятий",
+      "notes": "Примечание",
       "prime": "Prime",
       "edit": "Изменить",
       "deleteTitle": "Удалить запись «{{name}}»?"

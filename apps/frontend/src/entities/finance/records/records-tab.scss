@@ -111,6 +111,20 @@
     font-variant-numeric: tabular-nums;
   }
 
+  // Примечание: подпись сверху, текст под ней во всю ширину (может быть длинным
+  // и многострочным), а не в одну линию справа.
+  &__row--note {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+
+  &__note {
+    color: var(--tk-text-secondary);
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
   &__actions {
     display: flex;
     align-items: center;
