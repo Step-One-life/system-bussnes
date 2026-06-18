@@ -349,7 +349,7 @@
       "noteLabel": "Note (optional)",
       "onlineLabel": "Online",
       "primeLabel": "Prime time",
-      "recurringNote": "This session is part of a recurring series. On save, choose to apply to one or all; the date changes only for this session.",
+      "recurringNote": "This session is part of a recurring series. On save, choose to apply to one session or the whole series; for the whole series, changing the day moves the entire series to the new weekday.",
       "scopeTitle": "Apply changes",
       "scopeBody": "This is a recurring session. Apply changes to this one only or the whole series?",
       "scopeSingle": "This session only",

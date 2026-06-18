@@ -47,7 +47,13 @@ export function useUpdateTrainingSeries() {
       changes,
     }: {
       recurringId: string
-      changes: { time?: string; locationId?: string | null; note?: string; isOnline?: boolean }
+      changes: {
+        time?: string
+        locationId?: string | null
+        note?: string
+        isOnline?: boolean
+        dateShiftDays?: number
+      }
     }) => updateTrainingSeries(recurringId, changes),
     onSuccess: () => qc.invalidateQueries({ queryKey: trainingKeys.all }),
   })

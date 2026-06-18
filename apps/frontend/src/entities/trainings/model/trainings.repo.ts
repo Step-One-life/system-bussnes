@@ -126,13 +126,21 @@ export async function updateTraining(
 
 export async function updateTrainingSeries(
   recurringId: string,
-  changes: { time?: string; locationId?: string | null; note?: string; isOnline?: boolean },
+  changes: {
+    time?: string
+    locationId?: string | null
+    note?: string
+    isOnline?: boolean
+    /** Перенос всей серии на N дней (другой день недели). 0 — дату не трогаем. */
+    dateShiftDays?: number
+  },
 ): Promise<number> {
   const body: Record<string, unknown> = {}
   if (changes.time !== undefined) body.time = changes.time
   if (changes.locationId !== undefined) body.locationId = changes.locationId
   if (changes.note !== undefined) body.note = changes.note
   if (changes.isOnline !== undefined) body.isOnline = changes.isOnline
+  if (changes.dateShiftDays) body.dateShiftDays = changes.dateShiftDays
   const result = await apiClient.patch<{ updated: number }>(
     `/trainings/recurring/${recurringId}`,
     body,
