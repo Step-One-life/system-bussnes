@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { useToast } from 'common/ui'
-import { formatDateShort } from 'common/utils/date'
+import { daysBetweenISO, formatDateShort, shiftISODate } from 'common/utils/date'
 
 import { useTrainings, useUpdateTraining, useUpdateTrainingSeries } from '../api/use-trainings'
 import { checkSeriesConflicts, checkTrainingConflict } from '../model/training-logic'
@@ -78,15 +78,19 @@ export function useEditTraining({ training, onDone }: UseEditTrainingOptions) {
 
   const saveSeries = async () => {
     if (!training?.recurringId) return
-    // На серию: время/локация/заметка/онлайн. Прайм пересчитает бэкенд по дате
-    // каждого занятия. Дата применяется только к открытому занятию.
+    // На серию: время/локация/заметка/онлайн + относительный сдвиг даты — перенос
+    // всей серии на другой день недели (каждое занятие сдвигается на ту же дельту).
+    // Прайм пересчитает бэкенд по новой дате каждого занятия.
     await updateSeries.mutateAsync({
       recurringId: training.recurringId,
-      changes: { time, locationId, note: note.trim(), isOnline },
+      changes: {
+        time,
+        locationId,
+        note: note.trim(),
+        isOnline,
+        dateShiftDays: daysBetweenISO(training.date, date),
+      },
     })
-    if (date !== training.date) {
-      await update.mutateAsync({ id: training.id, changes: { date } })
-    }
     toast({ type: 'success', title: t('trainings.edit.seriesSaved') })
     onDone()
   }
@@ -121,15 +125,20 @@ export function useEditTraining({ training, onDone }: UseEditTrainingOptions) {
     setScopeOpen(false)
     if (scope === 'series') {
       if (!training?.recurringId) return
-      // Смена времени применяется ко ВСЕЙ серии — проверяем конфликт по каждой
-      // её дате с новым временем, исключая сами занятия серии. Без смены
-      // времени проверка не нужна (наложений сейв не добавляет).
-      if (time !== training.time) {
+      // Перенос/смена времени применяются ко ВСЕЙ серии — проверяем конфликт по
+      // каждой её НОВОЙ дате (со сдвигом) и новым временем, исключая сами занятия
+      // серии. Без сдвига и без смены времени проверка не нужна (сейв наложений
+      // не добавляет).
+      const shift = daysBetweenISO(training.date, date)
+      if (time !== training.time || shift !== 0) {
         const series = trainings.filter((t) => t.recurringId === training.recurringId)
         const seriesIds = series.map((t) => t.id)
         const conflictDates = (
           await checkSeriesConflicts(
-            series.map((s) => ({ date: s.date, sessionDuration: s.sessionDuration })),
+            series.map((s) => ({
+              date: shiftISODate(s.date, shift),
+              sessionDuration: s.sessionDuration,
+            })),
             time,
             training.groupId,
             seriesIds,

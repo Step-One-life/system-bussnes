@@ -75,3 +75,18 @@ export function tomorrowISO(): string {
   d.setDate(d.getDate() + 1)
   return toLocalISODate(d)
 }
+
+/** Сдвиг даты YYYY-MM-DD на N дней (локальный календарь, без UTC-сдвигов). */
+export function shiftISODate(iso: string, days: number): string {
+  const [y, m, d] = iso.split('-').map(Number)
+  const dt = new Date(y, m - 1, d)
+  dt.setDate(dt.getDate() + days)
+  return toLocalISODate(dt)
+}
+
+/** Разница в целых днях `b − a` (обе даты YYYY-MM-DD). */
+export function daysBetweenISO(a: string, b: string): number {
+  const [ay, am, ad] = a.split('-').map(Number)
+  const [by, bm, bd] = b.split('-').map(Number)
+  return Math.round((Date.UTC(by, bm - 1, bd) - Date.UTC(ay, am - 1, ad)) / 86400000)
+}

@@ -25,8 +25,8 @@ import type { VisitBilling } from '../student/visit.model'
 import { CreateTrainingDto } from './dto/create-training.dto'
 import { attendancePricing } from './lib/attendance-pricing'
 import {
-  occurrencesNeedingOverlapCheck,
   seriesForbiddenFields,
+  seriesTargets,
   seriesUpdateFields,
   type SeriesUpdateInput,
 } from './lib/series-update'
@@ -232,9 +232,10 @@ export class TrainingService extends OwnedCrudService<Training> {
 
   /**
    * Обновить все занятия повторяющейся серии. Распространяемые поля (время/локация/
-   * заметка/онлайн) применяются ко всем; `groupId`/`date` отклоняются с 400 (дата
-   * у каждого своя, смена группы меняет биллинг). Прайм пересчитывается по дате
-   * каждого занятия. На каждое занятие ставится upsert.
+   * заметка/онлайн) применяются ко всем; перенос на другой день задаётся
+   * относительным `dateShiftDays` (сдвигает дату КАЖДОГО занятия — серия целиком
+   * едет на другой день недели). Абсолютные `date`/`groupId` отклоняются с 400.
+   * Прайм пересчитывается по новой дате каждого занятия. На каждое занятие ставится upsert.
    */
   async updateSeriesForUser(
     userId: string,
@@ -248,35 +249,39 @@ export class TrainingService extends OwnedCrudService<Training> {
       )
     }
     const fields = seriesUpdateFields(dto)
+    const shiftDays = dto.dateShiftDays ?? 0
     const trainings = await this.trainingModel.findAll({ where: { userId, recurringId } })
-    // Смена времени применяется ко всей серии — проверяем, что ни одно занятие
-    // серии не наслаивается на занятие вне серии в свою дату. Проверяются
-    // только занятия, у которых время реально меняется: сейв без сдвига не
-    // блокируется давним (до-барьерным) наложением. Сначала проверяем все,
-    // и только потом сохраняем (не оставляем серию частично сдвинутой).
     const seriesIds = trainings.map((t) => t.id)
-    for (const t of occurrencesNeedingOverlapCheck(trainings, fields.time)) {
-      const candidates = await this.overlapCandidatesFor(userId, t.date, t.groupId)
+    const targets = seriesTargets(trainings, fields.time, shiftDays)
+    // Перенос/смена времени применяются ко всей серии — проверяем, что ни одно
+    // сдвигаемое занятие не наслаивается на занятие вне серии в свою НОВУЮ дату.
+    // Проверяются только реально сдвигаемые занятия (moved): сейв без сдвига не
+    // блокируется давним (до-барьерным) наложением. Сначала проверяем все,
+    // и только потом сохраняем (не оставляем серию частично перенесённой).
+    for (const { occ, date, time, moved } of targets) {
+      if (!moved || !time) continue
+      const candidates = await this.overlapCandidatesFor(userId, date, occ.groupId)
       const overlaps = findOverlaps(
-        { date: t.date, time: fields.time!, durationMinutes: t.sessionDuration },
+        { date, time, durationMinutes: occ.sessionDuration },
         candidates,
         seriesIds,
       )
       if (overlaps.length) {
-        throw new ConflictException(`Серия пересекается с другим занятием (${t.date})`)
+        throw new ConflictException(`Серия пересекается с другим занятием (${date})`)
       }
     }
-    for (const t of trainings) {
-      if (fields.time !== undefined) t.time = fields.time
-      if (fields.locationId !== undefined) t.locationId = fields.locationId
-      if (fields.note !== undefined) t.note = fields.note
-      if (fields.isOnline !== undefined) t.isOnline = fields.isOnline
-      const location = t.locationId
-        ? await this.locationService.findOneForUser(userId, t.locationId).catch(() => null)
+    for (const { occ, date, time } of targets) {
+      if (shiftDays) occ.date = date
+      if (fields.time !== undefined) occ.time = time
+      if (fields.locationId !== undefined) occ.locationId = fields.locationId
+      if (fields.note !== undefined) occ.note = fields.note
+      if (fields.isOnline !== undefined) occ.isOnline = fields.isOnline
+      const location = occ.locationId
+        ? await this.locationService.findOneForUser(userId, occ.locationId).catch(() => null)
         : null
-      t.isPrime = isPrimeTime(t.date, t.time, location)
-      await t.save()
-      await this.calendarSync.enqueueUpsert(userId, t.id, t.time)
+      occ.isPrime = isPrimeTime(occ.date, occ.time, location)
+      await occ.save()
+      await this.calendarSync.enqueueUpsert(userId, occ.id, occ.time)
     }
     return trainings.length
   }
