@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 
 import { Button, DatePicker, Form, InputNumber, Segmented } from 'antd'
@@ -10,13 +10,15 @@ import { todayISO } from 'common/utils/date'
 import { finLabel } from 'entities/finance/model/finance-constants'
 import { useGroups } from 'entities/groups/api/use-groups'
 import { useLocations } from 'entities/locations'
+import { useStudents } from 'entities/students'
 import { studentKeys } from 'entities/students/api/use-students'
 import { linkPaymentToSub } from 'entities/students/model/students.repo'
 import { subTuple } from 'entities/students/subscriptions/sub-tuple'
 
-import { useCreateHallCost, useCreatePayment, usePricingRules } from '../api/use-finance'
+import { useCreateHallCost, useCreatePayment, usePayments, usePricingRules } from '../api/use-finance'
 import { subPaymentType, tuplePaymentType } from '../lib/auto-payment'
 import { matchRule } from '../lib/pricing-lookup'
+import { findUnlinkedPayments } from '../lib/unlinked-payments'
 
 import type { HallPaymentType, TimeSlot } from '../model/types'
 import type { Dayjs } from 'dayjs'
@@ -50,6 +52,25 @@ export function MarkPaidModal({
   const createHallCost = useCreateHallCost()
   const { data: groups = [] } = useGroups()
   const { data: locations = [] } = useLocations()
+  const { data: payments = [] } = usePayments()
+  const { data: allStudents = [] } = useStudents()
+
+  // id всех платежей, уже привязанных к какому-либо абонементу (по всем ученикам).
+  const linkedPaymentIds = useMemo(() => {
+    const ids = new Set<string>()
+    for (const s of allStudents) {
+      for (const sb of s.subscriptions) {
+        if (sb.finPaymentId) ids.add(sb.finPaymentId)
+      }
+    }
+    return ids
+  }, [allStudents])
+
+  // Непривязанные доходы этого ученика — кандидаты на привязку вместо дубля.
+  const orphans = useMemo(
+    () => (student ? findUnlinkedPayments(payments, student.id, linkedPaymentIds) : []),
+    [payments, student, linkedPaymentIds],
+  )
 
   // Resolve the subscription's location via its group, else the default one.
   const subGroup = sub ? (groups.find((g) => g.name === sub.groupId) ?? null) : null
@@ -136,6 +157,21 @@ export function MarkPaidModal({
     }
   }
 
+  // Привязка уже существующего дохода к абонементу: помечает его оплаченным
+  // (ставит finPaymentId) без создания второй финзаписи — закрывает «дыру»,
+  // когда деньги уже занесены, но абонемент всё равно «Ожидает оплаты».
+  const linkExisting = async (paymentId: string) => {
+    try {
+      await linkPaymentToSub(student.id, sub.id, paymentId)
+      qc.invalidateQueries({ queryKey: studentKeys.all })
+      qc.invalidateQueries({ queryKey: ['students', student.id] })
+      onClose()
+      toast({ type: 'success', title: t('finance.markPaid.linked'), msg: student.name })
+    } catch (e) {
+      toast({ type: 'error', title: e instanceof Error ? e.message : t('common.error') })
+    }
+  }
+
   return (
     <AdaptiveSheet
       open={open}
@@ -157,6 +193,50 @@ export function MarkPaidModal({
         </>
       }
     >
+      {orphans.length > 0 && (
+        <div
+          style={{
+            marginBottom: 'var(--sp-4)',
+            padding: 'var(--sp-3)',
+            border: '1px solid var(--tk-warning-subtle-border)',
+            borderRadius: 'var(--tk-radius-card)',
+            background: 'var(--tk-warning-subtle-bg)',
+          }}
+        >
+          <div style={{ fontWeight: 600, color: 'var(--tk-warning-text)' }}>
+            {t('finance.markPaid.existingTitle')}
+          </div>
+          <div
+            style={{
+              color: 'var(--tk-text-secondary)',
+              fontSize: '0.8rem',
+              marginTop: 'var(--sp-1)',
+            }}
+          >
+            {t('finance.markPaid.existingHint')}
+          </div>
+          {orphans.map((p) => (
+            <div
+              key={p.id}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: 'var(--sp-2)',
+                marginTop: 'var(--sp-3)',
+              }}
+            >
+              <span style={{ fontSize: '0.9rem' }}>
+                {finLabel(p.client_payment_type)} · {p.client_amount.toLocaleString('ru')} ₽ ·{' '}
+                {dayjs(p.paid_at).format('DD.MM.YYYY')}
+              </span>
+              <Button size="small" onClick={() => linkExisting(p.id)}>
+                {t('finance.markPaid.linkBtn')}
+              </Button>
+            </div>
+          ))}
+        </div>
+      )}
       <div style={{ marginBottom: 'var(--sp-4)' }}>
         <div style={{ color: 'var(--tk-text-secondary)', fontSize: '0.8rem' }}>
           {t('finance.markPaid.client')}
