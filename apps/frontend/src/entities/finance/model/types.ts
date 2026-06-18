@@ -14,6 +14,7 @@ export type ClientPaymentType =
   | 'group_subscription'
   | 'individual_subscription'
   | 'pair_subscription'
+  | 'unlimited_subscription'
 
 export type HallPaymentType = ClientPaymentType
 
@@ -81,7 +82,7 @@ export interface HallCostInput {
 
 export type LessonKind = 'individual' | 'group' | 'online' | 'shared' | 'pair'
 
-export type PricingFormat = 'single' | 'subscription'
+export type PricingFormat = 'single' | 'subscription' | 'unlimited'
 
 /** Тариф локации: одна строка прайс-листа. */
 export interface PricingRule {

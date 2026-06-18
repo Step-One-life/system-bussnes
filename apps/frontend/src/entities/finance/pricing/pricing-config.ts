@@ -8,4 +8,4 @@ export const SESSIONS_PRESETS = [1, 4, 8]
 
 export const LESSON_KINDS: LessonKind[] = ['individual', 'group', 'online', 'shared', 'pair']
 
-export const PRICING_FORMATS: PricingFormat[] = ['single', 'subscription']
+export const PRICING_FORMATS: PricingFormat[] = ['single', 'subscription', 'unlimited']

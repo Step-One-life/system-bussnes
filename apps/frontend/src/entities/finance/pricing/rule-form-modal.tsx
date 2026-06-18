@@ -144,16 +144,18 @@ export function RuleFormModal({
             onChange={form.setDuration}
           />
         </Form.Item>
-        <Form.Item label={t('finance.pricing.ruleForm.sessionsLabel')}>
-          <PresetPicker
-            presets={SESSIONS_PRESETS}
-            value={form.sessions}
-            isPreset={form.sessionsIsPreset}
-            customLabel={t('finance.pricing.ruleForm.sessionsCustom')}
-            formatPreset={formatCount}
-            onChange={form.setSessions}
-          />
-        </Form.Item>
+        {form.format !== 'unlimited' && (
+          <Form.Item label={t('finance.pricing.ruleForm.sessionsLabel')}>
+            <PresetPicker
+              presets={SESSIONS_PRESETS}
+              value={form.sessions}
+              isPreset={form.sessionsIsPreset}
+              customLabel={t('finance.pricing.ruleForm.sessionsCustom')}
+              formatPreset={formatCount}
+              onChange={form.setSessions}
+            />
+          </Form.Item>
+        )}
         <Form.Item label={t('finance.pricing.ruleForm.validityDaysLabel')}>
           <InputNumber
             min={1}

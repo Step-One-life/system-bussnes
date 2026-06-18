@@ -48,4 +48,7 @@ export class Subscription extends BaseEntity {
 
   @Column({ field: 'is_pair', type: DataType.BOOLEAN, allowNull: false, defaultValue: false })
   declare isPair: boolean
+
+  @Column({ field: 'is_unlimited', type: DataType.BOOLEAN, allowNull: false, defaultValue: false })
+  declare isUnlimited: boolean
 }

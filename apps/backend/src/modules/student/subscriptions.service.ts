@@ -26,6 +26,7 @@ export class SubscriptionsService {
       type: SubscriptionType
       sessionsTotal?: number
       isPair?: boolean
+      isUnlimited?: boolean
       createdAt?: string
       sessionDuration?: number
       validityDays?: number
@@ -52,6 +53,7 @@ export class SubscriptionsService {
       timeSlot: data.timeSlot ?? 'regular',
       groupIds,
       isPair: data.isPair ?? false,
+      isUnlimited: data.isUnlimited ?? false,
     })
   }
 
@@ -76,16 +78,21 @@ export class SubscriptionsService {
     const sub = pickSubForDeduct(subs, groupId, sessionDuration, DateUtil.todayIso(), wantPair)
     if (!sub) return { sub: null, status: 'none' }
 
-    sub.remaining -= 1
-    if (sub.remaining <= 0) {
-      sub.remaining = 0
-      sub.isActive = false
+    // Безлимит засчитывается (billing=subscription), но число занятий не списывается.
+    if (!sub.isUnlimited) {
+      sub.remaining -= 1
+      if (sub.remaining <= 0) {
+        sub.remaining = 0
+        sub.isActive = false
+      }
+      await sub.save({ transaction: tx ?? undefined })
     }
-    await sub.save({ transaction: tx ?? undefined })
 
     let status: DeductStatus = 'ok'
-    if (!sub.isActive) status = 'expired'
-    else if (sub.remaining <= 2) status = 'ending'
+    if (!sub.isUnlimited) {
+      if (!sub.isActive) status = 'expired'
+      else if (sub.remaining <= 2) status = 'ending'
+    }
     return { sub, status }
   }
 
@@ -112,6 +119,8 @@ export class SubscriptionsService {
       ...(tx ? { transaction: tx, lock: tx.LOCK.UPDATE } : {}),
     })
     if (!sub) return null
+    // Безлимит не списывался при отметке — откатывать нечего.
+    if (sub.isUnlimited) return sub
     sub.remaining = Math.min(sub.remaining + 1, sub.total)
     if (sub.remaining > 0) sub.isActive = true
     await sub.save({ transaction: tx ?? undefined })

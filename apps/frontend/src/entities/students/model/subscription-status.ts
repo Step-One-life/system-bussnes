@@ -16,8 +16,15 @@ export function subTypeLabel(type: string): string {
  * 90-минутные помечаются «· 1.5ч».
  */
 export function subLabel(
-  sub: Pick<Subscription, 'total' | 'sessionDuration'> & { isPair?: boolean },
+  sub: Pick<Subscription, 'total' | 'sessionDuration'> & {
+    isPair?: boolean
+    isUnlimited?: boolean
+  },
 ): string {
+  if (sub.isUnlimited) {
+    const u = i18n.t('students.subTypes.unlimited')
+    return sub.sessionDuration === 90 ? `${u} · 1.5ч` : u
+  }
   const base =
     sub.total <= 1
       ? i18n.t('students.subTypes.1')
@@ -56,7 +63,10 @@ export function findSubForGroup(
   // Парные тренировки списывают только парные абонементы, остальные — не-парные
   // (парный и индивидуальный живут на одной группе-контейнере). `?? false` —
   // устойчивость к старым данным/объектам без поля isPair.
-  const active = student.subscriptions.filter((s) => s.isActive && (s.isPair ?? false) === wantPair)
+  // Безлимит — в конце очереди: сначала считаемые пакеты (зеркало pickSubForDeduct).
+  const active = student.subscriptions
+    .filter((s) => s.isActive && (s.isPair ?? false) === wantPair)
+    .sort((a, b) => Number(a.isUnlimited ?? false) - Number(b.isUnlimited ?? false))
   return (
     (sessionDuration !== null
       ? active.find((s) => s.groupId === groupId && s.sessionDuration === sessionDuration)
@@ -85,6 +95,11 @@ export function getSubStatus(
 
   if (days !== null && days < 0)
     return { label: i18n.t('students.status.expired'), type: 'expired' }
+  // Безлимит — статус только по сроку (число не списывается).
+  if (sub.isUnlimited)
+    return days !== null && days <= 7
+      ? { label: i18n.t('students.status.ending'), type: 'ending' }
+      : { label: i18n.t('students.status.active'), type: 'active' }
   if (sub.remaining === 0)
     return { label: i18n.t('students.status.renew'), type: 'expired' }
   // Только многоразовые абонементы «заканчиваются»; разовое (total=1) — нет.
@@ -111,6 +126,7 @@ export function getSubProgress(sub: Subscription | null): {
   cls: 'ok' | 'warn' | 'danger'
 } {
   if (!sub || sub.total === 0) return { pct: 0, cls: 'danger' }
+  if (sub.isUnlimited) return { pct: 100, cls: 'ok' }
   const pct = Math.round((sub.remaining / sub.total) * 100)
   let cls: 'ok' | 'warn' | 'danger' = 'ok'
   if (sub.remaining === 0) cls = 'danger'

@@ -2,7 +2,7 @@ import { subTuple } from './sub-tuple'
 
 import { describe, expect, it } from 'vitest'
 
-const base = { total: 8, sessionDuration: 60, groupIds: ['A'], isPair: false }
+const base = { total: 8, sessionDuration: 60, groupIds: ['A'], isPair: false, isUnlimited: false }
 
 describe('subTuple', () => {
   it('групповой абонемент: произвольное число занятий', () => {
@@ -29,6 +29,15 @@ describe('subTuple', () => {
       format: 'subscription',
       durationMinutes: 60,
       sessionsCount: 8,
+    })
+  })
+
+  it('безлимит → format unlimited', () => {
+    expect(subTuple({ ...base, total: 1, isUnlimited: true }, false)).toEqual({
+      lessonKind: 'group',
+      format: 'unlimited',
+      durationMinutes: 60,
+      sessionsCount: 1,
     })
   })
 

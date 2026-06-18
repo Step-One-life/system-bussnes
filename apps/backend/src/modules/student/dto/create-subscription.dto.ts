@@ -36,6 +36,11 @@ export class CreateSubscriptionDto implements CreateSubscriptionShape {
   @IsBoolean()
   isPair?: boolean
 
+  @ApiPropertyOptional({ description: 'Безлимит (действует по сроку, число не списывается)' })
+  @IsOptional()
+  @IsBoolean()
+  isUnlimited?: boolean
+
   @ApiPropertyOptional({ description: 'Дата начала (ISO)' })
   @IsOptional()
   @IsString()
