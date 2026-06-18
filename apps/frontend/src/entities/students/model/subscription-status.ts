@@ -15,12 +15,15 @@ export function subTypeLabel(type: string): string {
  * произвольные кастомные абонементы. Разовое (1) — отдельная подпись;
  * 90-минутные помечаются «· 1.5ч».
  */
-export function subLabel(sub: Pick<Subscription, 'total' | 'sessionDuration'>): string {
+export function subLabel(
+  sub: Pick<Subscription, 'total' | 'sessionDuration'> & { isPair?: boolean },
+): string {
   const base =
     sub.total <= 1
       ? i18n.t('students.subTypes.1')
       : i18n.t('students.subTypes.sessions', { count: sub.total })
-  return sub.sessionDuration === 90 ? `${base} · 1.5ч` : base
+  const withDur = sub.sessionDuration === 90 ? `${base} · 1.5ч` : base
+  return sub.isPair ? `${withDur} · ${i18n.t('students.subTypes.pairMark')}` : withDur
 }
 
 /** Days until subscription expires (null if no expiresAt). */
@@ -48,8 +51,12 @@ export function findSubForGroup(
   student: Student,
   groupId: string,
   sessionDuration: number | null = null,
+  wantPair = false,
 ): Subscription | null {
-  const active = student.subscriptions.filter((s) => s.isActive)
+  // Парные тренировки списывают только парные абонементы, остальные — не-парные
+  // (парный и индивидуальный живут на одной группе-контейнере). `?? false` —
+  // устойчивость к старым данным/объектам без поля isPair.
+  const active = student.subscriptions.filter((s) => s.isActive && (s.isPair ?? false) === wantPair)
   return (
     (sessionDuration !== null
       ? active.find((s) => s.groupId === groupId && s.sessionDuration === sessionDuration)

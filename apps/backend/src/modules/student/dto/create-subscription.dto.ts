@@ -31,6 +31,11 @@ export class CreateSubscriptionDto implements CreateSubscriptionShape {
   @Min(1)
   sessionsTotal?: number
 
+  @ApiPropertyOptional({ description: 'Парный абонемент (списывается парными тренировками)' })
+  @IsOptional()
+  @IsBoolean()
+  isPair?: boolean
+
   @ApiPropertyOptional({ description: 'Дата начала (ISO)' })
   @IsOptional()
   @IsString()

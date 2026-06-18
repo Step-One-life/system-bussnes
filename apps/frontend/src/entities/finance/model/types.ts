@@ -13,6 +13,7 @@ export type ClientPaymentType =
   // Обобщённый доход за абонемент с произвольным числом занятий (число — в sessions_total).
   | 'group_subscription'
   | 'individual_subscription'
+  | 'pair_subscription'
 
 export type HallPaymentType = ClientPaymentType
 

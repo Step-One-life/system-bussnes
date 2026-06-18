@@ -17,6 +17,7 @@ const CLIENT_TYPES: ClientPaymentType[] = [
   'single_pair_90',
   'group_subscription',
   'individual_subscription',
+  'pair_subscription',
 ]
 
 export class CreatePaymentDto implements CreatePaymentShape {

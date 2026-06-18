@@ -45,4 +45,7 @@ export class Subscription extends BaseEntity {
 
   @Column({ field: 'group_ids', type: DataType.JSON, allowNull: true })
   declare groupIds: string[] | null
+
+  @Column({ field: 'is_pair', type: DataType.BOOLEAN, allowNull: false, defaultValue: false })
+  declare isPair: boolean
 }

@@ -187,7 +187,8 @@
       "4_90": "4 sessions 1.5h",
       "8_90": "8 sessions 1.5h",
       "sessions": "{{count}} session",
-      "sessions_other": "{{count}} sessions"
+      "sessions_other": "{{count}} sessions",
+      "pairMark": "pair"
     },
     "status": {
       "active": "Active",
@@ -412,7 +413,10 @@
       "scheduleConflict": "Schedule conflict",
       "recorded": "Pair session recorded",
       "weeklyHint": "Create pair sessions every week (paid as confirmed)",
-      "label": "Pair: {{names}}"
+      "label": "Pair: {{names}}",
+      "subToggle": "Issue a pair subscription",
+      "subToggleHint": "To each student without an active pair subscription; deducted on attendance",
+      "subTariffLabel": "Pair subscription"
     },
     "addTo": {
       "saving": "Add to training — {{group}}",
@@ -671,7 +675,8 @@
       "single_pair": "Single pair",
       "single_pair_90": "Pair 1.5h",
       "group_subscription": "Subscription (group)",
-      "individual_subscription": "Subscription (indiv.)"
+      "individual_subscription": "Subscription (indiv.)",
+      "pair_subscription": "Subscription (pair)"
     }
   },
   "onboarding": {

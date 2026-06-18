@@ -9,6 +9,7 @@ const sub = (over: Partial<PickableSub>): PickableSub => ({
   groupIds: null,
   sessionDuration: 60,
   expiresAt: '2026-12-31',
+  isPair: false,
   ...over,
 })
 
@@ -69,5 +70,24 @@ describe('pickSubForDeduct', () => {
 
     const ownExpired = sub({ expiresAt: '2026-01-01' })
     expect(pickSubForDeduct([ownExpired, shared], 'g1', 60, TODAY)).toBe(shared)
+  })
+})
+
+describe('pickSubForDeduct — парные vs индивидуальные на одной группе', () => {
+  it('парная отметка (wantPair) берёт только парный, не трогает индивидуальный', () => {
+    const indiv = sub({ isPair: false })
+    const pair = sub({ isPair: true })
+    expect(pickSubForDeduct([indiv, pair], 'g1', 60, TODAY, true)).toBe(pair)
+  })
+
+  it('обычная отметка (wantPair=false) берёт только индивидуальный, не трогает парный', () => {
+    const indiv = sub({ isPair: false })
+    const pair = sub({ isPair: true })
+    expect(pickSubForDeduct([pair, indiv], 'g1', 60, TODAY, false)).toBe(indiv)
+  })
+
+  it('нет подходящего по виду — null (парная отметка, есть только индивидуальный)', () => {
+    const indiv = sub({ isPair: false })
+    expect(pickSubForDeduct([indiv], 'g1', 60, TODAY, true)).toBeNull()
   })
 })

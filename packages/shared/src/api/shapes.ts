@@ -44,6 +44,8 @@ export interface CreateSubscriptionShape {
   type: SubscriptionType
   /** Число занятий (из выбранного тарифа). Авторитетно; иначе — по типу (легаси). */
   sessionsTotal?: number
+  /** Парный абонемент: списывается только парными тренировками. */
+  isPair?: boolean
   createdAt?: string
   sessionDuration?: number
   validityDays?: number

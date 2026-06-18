@@ -82,6 +82,35 @@ export function PairSessionModal({ open, indGroupId, onClose }: PairSessionModal
           <LocationSelect value={form.locationId} onChange={form.setLocationId} />
         </Form.Item>
 
+        {form.subOptions.length > 0 && (
+          <>
+            <Form.Item>
+              <div
+                className={`rec-toggle-card${form.issueSub ? ' rec-toggle-card--checked' : ''}`}
+                onClick={() => form.setIssueSub(!form.issueSub)}
+              >
+                <div className="rec-toggle-card__text">
+                  <span className="rec-toggle-card__label">{t('trainings.pair.subToggle')}</span>
+                  <span className="rec-toggle-card__hint">{t('trainings.pair.subToggleHint')}</span>
+                </div>
+                <Switch checked={form.issueSub} style={{ pointerEvents: 'none' }} />
+              </div>
+            </Form.Item>
+            {form.issueSub && (
+              <Form.Item label={t('trainings.pair.subTariffLabel')}>
+                <Select
+                  value={form.selectedSubRule?.id}
+                  onChange={form.setSubRuleId}
+                  options={form.subOptions.map((r) => ({
+                    value: r.id,
+                    label: `${form.subLabelFor(r.sessions_count, r.duration_minutes)} · ${r.client_price} ₽`,
+                  }))}
+                />
+              </Form.Item>
+            )}
+          </>
+        )}
+
         <Form.Item>
           <div
             className={`rec-toggle-card${form.recurring ? ' rec-toggle-card--checked' : ''}`}
