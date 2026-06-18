@@ -505,6 +505,7 @@
       "hallExpense": "Hall cost",
       "netIncome": "Net income",
       "sessions": "Sessions",
+      "notes": "Note",
       "prime": "Prime",
       "edit": "Edit",
       "deleteTitle": "Delete record \"{{name}}\"?"

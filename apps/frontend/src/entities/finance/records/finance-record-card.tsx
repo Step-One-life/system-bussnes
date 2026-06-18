@@ -114,6 +114,13 @@ export function FinanceRecordCard({
               <Badge variant={status.variant}>{status.label}</Badge>
             </span>
           </div>
+          {/* Примечание — только если оно вписано; пустое не показываем */}
+          {payment.notes.trim() && (
+            <div className="fin-record__row fin-record__row--note">
+              <span className="fin-record__row-label">{t('finance.card.notes')}</span>
+              <span className="fin-record__note">{payment.notes}</span>
+            </div>
+          )}
           <div className="fin-record__actions">
             <Button
               size="small"
