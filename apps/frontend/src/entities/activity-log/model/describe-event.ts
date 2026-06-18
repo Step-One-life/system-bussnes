@@ -1,3 +1,5 @@
+import { formatDateShort } from 'common/utils/date'
+
 import type { ActivityEntry, ActivityType } from './types'
 
 export interface EventView {
@@ -10,6 +12,8 @@ export interface EventView {
   /** Ключ i18n для детали (может отсутствовать). */
   detailKey?: string
   detailParams?: Record<string, string | number>
+  /** Готовая строка детали из данных (дата/время), если перевод не нужен. */
+  detailText?: string
   undoable: boolean
   undone: boolean
 }
@@ -65,11 +69,28 @@ export function describeEvent(e: ActivityEntry): EventView {
         titleKey: 'journal.icon.created',
         titleParams: { group },
       }
-    case 'training_deleted':
+    case 'training_deleted': {
+      // Кого/что удалили: имя ученика (индивидуальные/парные) или название группы.
+      const who = s.studentName || (group ? `«${group}»` : '')
+      // Серия отмечена sessionsCount (число удалённых занятий) — одиночное его не имеет.
+      if (s.sessionsCount && s.sessionsCount > 0) {
+        return {
+          ...base,
+          titleKey: 'journal.icon.deletedSeries',
+          titleParams: { name: who },
+          detailKey: 'journal.icon.deletedSeriesDetail',
+          detailParams: { count: s.sessionsCount },
+        }
+      }
+      const when = s.trainingDate
+        ? `${formatDateShort(s.trainingDate)}${s.trainingTime ? ` · ${s.trainingTime}` : ''}`
+        : ''
       return {
         ...base,
         titleKey: 'journal.icon.deleted',
-        titleParams: { group },
+        titleParams: { name: who },
+        ...(when ? { detailText: when } : {}),
       }
+    }
   }
 }

@@ -82,6 +82,7 @@ export function JournalPage() {
             {v.titleKey ? t(v.titleKey, v.titleParams) : v.titleText}
           </div>
           {v.detailKey && <div className="jr-row__detail">{t(v.detailKey, v.detailParams)}</div>}
+          {v.detailText && <div className="jr-row__detail">{v.detailText}</div>}
         </div>
         {v.undone ? (
           <span className="jr-row__undone">{t('journal.undone')}</span>

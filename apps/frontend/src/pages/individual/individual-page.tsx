@@ -16,10 +16,11 @@ import { formatDateShort } from 'common/utils/date'
 import { getInitials, getSubStatus } from 'entities/students'
 import {
   AddToTrainingModal,
+  DeleteTrainingModal,
   IndividualSessionModal,
   TrainingList,
-  useDeleteTrainingWithRestore,
   useRemoveFromTraining,
+  useTrainingDelete,
 } from 'entities/trainings'
 
 import { useIndividualPage } from './use-individual-page'
@@ -33,22 +34,13 @@ export function IndividualPage() {
   const page = useIndividualPage()
   const toast = useToast()
   const removeFromTraining = useRemoveFromTraining()
-  const deleteTraining = useDeleteTrainingWithRestore()
+  const del = useTrainingDelete()
 
   const [addTarget, setAddTarget] = useState<Training | null>(null)
 
   const handleRemoveStudent = async (training: Training, studentId: string) => {
     await removeFromTraining.mutateAsync({ trainingId: training.id, studentId })
     toast({ type: 'info', title: t('individual.removedFromTraining') })
-  }
-
-  const handleDelete = async (training: Training) => {
-    const series = training.recurring && !!training.recurringId
-    await deleteTraining.mutateAsync({ training, series })
-    toast({
-      type: 'success',
-      title: series ? t('individual.seriesDeleted') : t('individual.trainingDeleted'),
-    })
   }
 
   const handleOpenSession = () => page.setSessionOpen(true)
@@ -197,7 +189,7 @@ export function IndividualPage() {
             groups={page.groups}
             onAddStudent={setAddTarget}
             onRemoveStudent={handleRemoveStudent}
-            onDelete={handleDelete}
+            onDelete={del.request}
           />
         </>
       )}
@@ -223,6 +215,12 @@ export function IndividualPage() {
         open={!!addTarget}
         training={addTarget}
         onClose={handleCloseAdd}
+      />
+      <DeleteTrainingModal
+        training={del.target}
+        deleting={del.deleting}
+        onConfirm={del.confirm}
+        onCancel={del.cancel}
       />
     </div>
   )

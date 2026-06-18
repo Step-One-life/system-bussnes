@@ -8,8 +8,8 @@ import { useGroups } from 'entities/groups'
 import { useStudents } from 'entities/students'
 import {
   ensureIndividualGroup,
-  useDeleteTrainingWithRestore,
   useRemoveFromTraining,
+  useTrainingDelete,
   useTrainings,
 } from 'entities/trainings'
 
@@ -25,7 +25,7 @@ export function useTrainingsPage() {
   const { data: students = [] } = useStudents()
   const { data: groups = [] } = useGroups()
   const removeFromTraining = useRemoveFromTraining()
-  const deleteTraining = useDeleteTrainingWithRestore()
+  const del = useTrainingDelete()
 
   const [view, setView] = useState<TrainingsView>('calendar')
   // На мобильном по умолчанию режим «День», недельная сетка — опция.
@@ -96,15 +96,6 @@ export function useTrainingsPage() {
     toast({ type: 'info', title: t('trainings.removedFromTraining') })
   }
 
-  const handleDelete = async (training: Training) => {
-    const series = training.recurring && !!training.recurringId
-    await deleteTraining.mutateAsync({ training, series })
-    toast({
-      type: 'success',
-      title: series ? t('trainings.seriesDeleted') : t('trainings.trainingDeleted'),
-    })
-  }
-
   return {
     trainings,
     students,
@@ -144,6 +135,6 @@ export function useTrainingsPage() {
     pickPair,
     openAddStudent,
     handleRemoveStudent,
-    handleDelete,
+    del,
   }
 }

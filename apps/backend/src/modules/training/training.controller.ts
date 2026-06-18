@@ -93,13 +93,31 @@ export class TrainingController {
 
   @Delete('recurring/:recurringId')
   @ApiOperation({ summary: 'Удалить серию повторяющихся тренировок' })
-  removeSeries(
+  async removeSeries(
     @CurrentUser() user: CurrentUserPayload,
     @Param('recurringId') recurringId: string,
   ): Promise<{ removed: number }> {
-    return this.trainingService
-      .removeSeries(user.id, recurringId)
-      .then((removed) => ({ removed }))
+    const info = await this.trainingService.removeSeries(user.id, recurringId)
+    // Удаление серии — одна запись в журнале (а не N): группа/ученик/дата
+    // первого занятия + число удалённых занятий (sessionsCount).
+    if (info.removed > 0) {
+      const groupName = info.groupId ? await this.activityLog.groupName(info.groupId) : undefined
+      const studentName = info.studentId
+        ? await this.activityLog.studentName(info.studentId)
+        : undefined
+      await this.activityLog.log({
+        userId: user.id,
+        type: 'training_deleted',
+        summary: {
+          groupName,
+          studentName: studentName || undefined,
+          trainingDate: info.date ?? undefined,
+          trainingTime: info.time ?? undefined,
+          sessionsCount: info.removed,
+        },
+      })
+    }
+    return { removed: info.removed }
   }
 
   @Delete(':id')
@@ -111,12 +129,20 @@ export class TrainingController {
   ): Promise<void> {
     const training = await this.trainingService.findOneForUser(user.id, id)
     const groupName = await this.activityLog.groupName(training.groupId)
+    const studentName = training.plannedStudentId
+      ? await this.activityLog.studentName(training.plannedStudentId)
+      : undefined
     await this.trainingService.removeTraining(user.id, id)
     await this.activityLog.log({
       userId: user.id,
       type: 'training_deleted',
       trainingId: id,
-      summary: { groupName, trainingTime: training.time, trainingDate: training.date },
+      summary: {
+        groupName,
+        studentName: studentName || undefined,
+        trainingTime: training.time,
+        trainingDate: training.date,
+      },
     })
   }
 

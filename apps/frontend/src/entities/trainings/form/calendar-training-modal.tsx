@@ -14,7 +14,9 @@ import { Badge } from 'common/ui'
 import { formatDateFull } from 'common/utils/date'
 import { RenewSubModal } from 'entities/students/subscriptions/renew-sub-modal'
 
+import { DeleteTrainingModal } from './delete-training-modal'
 import { useCalendarTraining } from './use-calendar-training'
+import { useTrainingDelete } from './use-training-delete'
 
 import type { CalendarBlock } from '../calendar/calendar-model'
 import type { Training } from '../model/types'
@@ -143,10 +145,10 @@ function CalendarTrainingModalInner({
 }) {
   const { t } = useTranslation()
   const m = useCalendarTraining({ block, onDone: onClose })
+  const del = useTrainingDelete(onClose)
 
   // Ученик, которому оформляется абонемент из строки отметки.
   const [issueFor, setIssueFor] = useState<AttendRow | null>(null)
-  const [confirmDelete, setConfirmDelete] = useState(false)
 
   const dateLabel = `${formatDateFull(block.date)}${block.time ? ` · ${block.time}` : ''}`
 
@@ -178,8 +180,9 @@ function CalendarTrainingModalInner({
   const handleIssued = () => {
     if (issueFor) m.toggle(issueFor.studentId)
   }
-  const handleOpenConfirmDelete = () => setConfirmDelete(true)
-  const handleCloseConfirmDelete = () => setConfirmDelete(false)
+  const handleRequestDelete = () => {
+    if (m.training) del.request(m.training)
+  }
 
   const title = (
     <div className="cal-modal-head">
@@ -193,7 +196,7 @@ function CalendarTrainingModalInner({
                 key: 'delete',
                 danger: true,
                 label: t('trainings.cal.deleteTraining'),
-                onClick: handleOpenConfirmDelete,
+                onClick: handleRequestDelete,
               },
             ],
           }}
@@ -312,20 +315,12 @@ function CalendarTrainingModalInner({
         </div>
       </Modal>
 
-      <Modal
-        open={confirmDelete}
-        title={t('trainings.cal.deleteTitle', { name: `${block.label} · ${block.time}` })}
-        okText={t('common.delete')}
-        cancelText={t('common.cancel')}
-        okButtonProps={{ danger: true }}
-        onOk={async () => {
-          setConfirmDelete(false)
-          await m.handleDelete()
-        }}
-        onCancel={handleCloseConfirmDelete}
-      >
-        {t('trainings.cal.deleteDescription')}
-      </Modal>
+      <DeleteTrainingModal
+        training={del.target}
+        deleting={del.deleting}
+        onConfirm={del.confirm}
+        onCancel={del.cancel}
+      />
 
       {issueFor && (
         <RenewSubModal
