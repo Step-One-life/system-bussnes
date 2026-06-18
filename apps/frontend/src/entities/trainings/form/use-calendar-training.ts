@@ -14,7 +14,6 @@ import {
   subLabel,
 } from 'entities/students/model/subscription-status'
 
-import { useDeleteTrainingWithRestore } from '../api/use-training-actions'
 import { trainingKeys, useTrainings } from '../api/use-trainings'
 import { isIndividualTraining } from '../model/training-helpers'
 import { markAttendance } from '../model/training-logic'
@@ -52,7 +51,6 @@ export function useCalendarTraining({ block, onDone }: UseCalendarTrainingOption
   const { data: groups = [] } = useGroups()
   const { data: students = [] } = useStudents()
   const { data: trainings = [] } = useTrainings()
-  const deleteTraining = useDeleteTrainingWithRestore()
 
   const training = block.trainingId
     ? (trainings.find((t) => t.id === block.trainingId) ?? null)
@@ -175,13 +173,6 @@ export function useCalendarTraining({ block, onDone }: UseCalendarTrainingOption
     }
   }
 
-  const handleDelete = async () => {
-    if (!training) return
-    await deleteTraining.mutateAsync({ training, series: false })
-    toast({ type: 'info', title: t('trainings.cal.recordDeleted') })
-    onDone()
-  }
-
   return {
     training,
     isInd,
@@ -191,7 +182,6 @@ export function useCalendarTraining({ block, onDone }: UseCalendarTrainingOption
     checked,
     toggle,
     saveAttendance,
-    handleDelete,
     saving,
   }
 }

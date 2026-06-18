@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { Button, Popconfirm } from 'antd'
+import { Button } from 'antd'
 import {
   CloseOutlined,
   DeleteOutlined,
@@ -157,25 +157,15 @@ export function TrainingItem({
               onClick={handleEdit}
             />
           )}
-          <Popconfirm
-            title={t('trainings.item.deleteTitle', {
-              name: [title, training.time].filter(Boolean).join(' · '),
-            })}
-            description={t('trainings.item.deleteDescription')}
-            okText={t('common.delete')}
-            cancelText={t('common.cancel')}
-            okButtonProps={{ danger: true }}
-            onConfirm={handleDelete}
-          >
-            <Button
-              type="text"
-              size="small"
-              danger
-              icon={<DeleteOutlined />}
-              title={t('trainings.item.deleteTraining')}
-              aria-label={t('trainings.item.deleteTraining')}
-            />
-          </Popconfirm>
+          <Button
+            type="text"
+            size="small"
+            danger
+            icon={<DeleteOutlined />}
+            title={t('trainings.item.deleteTraining')}
+            aria-label={t('trainings.item.deleteTraining')}
+            onClick={handleDelete}
+          />
         </div>
       </div>
     </div>

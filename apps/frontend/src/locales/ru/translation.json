@@ -61,7 +61,11 @@
       "subscription": "абонемент {{count}} занятий",
       "payment": "оплата {{amount}} ₽",
       "created": "Создано занятие «{{group}}»",
-      "deleted": "Удалено занятие «{{group}}»"
+      "deleted": "Удалено: {{name}}",
+      "deletedSeries": "Удалена серия: {{name}}",
+      "deletedSeriesDetail": "{{count}} занятие",
+      "deletedSeriesDetail_few": "{{count}} занятия",
+      "deletedSeriesDetail_many": "{{count}} занятий"
     }
   },
   "common": {
@@ -312,6 +316,13 @@
     "removedFromTraining": "Ученик убран с занятия",
     "seriesDeleted": "Серия удалена",
     "trainingDeleted": "Занятие удалено",
+    "delete": {
+      "title": "Удалить занятие?",
+      "singleBody": "Занятие будет удалено, списанные занятия учеников вернутся.",
+      "seriesBody": "Это занятие из повторяющейся серии. Удалить только его или всю серию?",
+      "scopeSingle": "Только это занятие",
+      "scopeSeries": "Всю серию"
+    },
     "type": {
       "title": "Новое занятие",
       "group": "Групповое",

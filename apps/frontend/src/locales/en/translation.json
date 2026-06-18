@@ -59,7 +59,10 @@
       "subscription": "subscription, {{count}} sessions",
       "payment": "payment {{amount}} ₽",
       "created": "Training created «{{group}}»",
-      "deleted": "Training deleted «{{group}}»"
+      "deleted": "Deleted: {{name}}",
+      "deletedSeries": "Series deleted: {{name}}",
+      "deletedSeriesDetail": "{{count}} session",
+      "deletedSeriesDetail_other": "{{count}} sessions"
     }
   },
   "common": {
@@ -307,6 +310,13 @@
     "removedFromTraining": "Removed from training",
     "seriesDeleted": "Series deleted",
     "trainingDeleted": "Training deleted",
+    "delete": {
+      "title": "Delete session?",
+      "singleBody": "The session will be deleted; students' deducted sessions are restored.",
+      "seriesBody": "This session is part of a recurring series. Delete only this one or the whole series?",
+      "scopeSingle": "This session only",
+      "scopeSeries": "Whole series"
+    },
     "type": {
       "title": "New training",
       "group": "Group",

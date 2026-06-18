@@ -11,6 +11,7 @@ import { EmptyState, ErrorState, ListSkeleton, PageHeader } from 'common/ui'
 import {
   AddToTrainingModal,
   CalendarTrainingModal,
+  DeleteTrainingModal,
   EditTrainingModal,
   GroupTrainingModal,
   IndividualSessionModal,
@@ -114,7 +115,7 @@ export function TrainingsPage() {
           groups={page.groups}
           onAddStudent={page.openAddStudent}
           onRemoveStudent={page.handleRemoveStudent}
-          onDelete={page.handleDelete}
+          onDelete={page.del.request}
           onEdit={page.openEditTraining}
         />
       ) : (
@@ -185,6 +186,12 @@ export function TrainingsPage() {
         open={!!page.editTarget}
         training={page.editTarget}
         onClose={handleCloseEdit}
+      />
+      <DeleteTrainingModal
+        training={page.del.target}
+        deleting={page.del.deleting}
+        onConfirm={page.del.confirm}
+        onCancel={page.del.cancel}
       />
     </div>
   )

@@ -520,21 +520,44 @@ export class TrainingService extends OwnedCrudService<Training> {
     await training.destroy()
   }
 
-  /** Delete a recurring series by recurringId, reverting billing for all attendees. */
-  async removeSeries(userId: string, recurringId: string): Promise<number> {
+  /**
+   * Delete a recurring series by recurringId, reverting billing for all
+   * attendees. Returns a summary of the deleted series (representative
+   * occurrence + count) so the controller can write a single journal entry.
+   */
+  async removeSeries(
+    userId: string,
+    recurringId: string,
+  ): Promise<{
+    removed: number
+    groupId: string | null
+    studentId: string | null
+    date: string | null
+    time: string | null
+  }> {
     const trainings = await this.trainingModel.findAll({
       where: { userId, recurringId },
       include: [Student],
+      order: [['date', 'ASC']],
     })
+    const first = trainings[0] ?? null
     for (const t of trainings) {
       const attendeeIds = (t.attendees ?? []).map((s) => s.id)
       for (const studentId of attendeeIds) {
         await this.revertVisit(t, studentId)
       }
       await this.calendarSync.enqueueDelete(userId, t.id)
+      // Удаление занятия делает его «создание» необратимым — как и одиночное.
+      await this.activityLog.markTrainingCreatedUndone(t.id)
       await t.destroy()
     }
-    return trainings.length
+    return {
+      removed: trainings.length,
+      groupId: first?.groupId ?? null,
+      studentId: first?.plannedStudentId ?? first?.attendees?.[0]?.id ?? null,
+      date: first?.date ?? null,
+      time: first?.time ?? null,
+    }
   }
 
   /** Trainings within a date range. */
