@@ -17,6 +17,8 @@ export interface Subscription {
   sessionDuration: number
   /** Слот тарифа, выбранный при продаже (прайм/обычный). */
   timeSlot: TimeSlot
+  /** Парный абонемент: списывается только парными тренировками. */
+  isPair: boolean
 }
 
 /** Как списано посещение: абонемент, разовый платёж или без оплаты. */
@@ -50,6 +52,8 @@ export interface SubscriptionInput {
   type: SubscriptionType
   /** Число занятий (из выбранного тарифа). Авторитетно; иначе — по типу (легаси). */
   sessionsTotal?: number
+  /** Парный абонемент. */
+  isPair?: boolean
   createdAt?: string
   sessionDuration?: number
   validityDays?: number

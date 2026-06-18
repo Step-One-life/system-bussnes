@@ -127,6 +127,7 @@ export async function addSubscription(
     groupId,
     type: subData.type,
     sessionsTotal: subData.sessionsTotal,
+    isPair: subData.isPair,
     createdAt: subData.createdAt,
     sessionDuration: subData.sessionDuration,
     validityDays: subData.validityDays,

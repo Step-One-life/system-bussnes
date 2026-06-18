@@ -25,6 +25,7 @@ export type ClientPaymentType =
   // payment.sessionsTotal). Используется при выдаче кастомного абонемента.
   | 'group_subscription'
   | 'individual_subscription'
+  | 'pair_subscription'
 
 export type HallPaymentType = ClientPaymentType
 

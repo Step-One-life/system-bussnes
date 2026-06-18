@@ -25,6 +25,7 @@ export class SubscriptionsService {
       groupId: string
       type: SubscriptionType
       sessionsTotal?: number
+      isPair?: boolean
       createdAt?: string
       sessionDuration?: number
       validityDays?: number
@@ -50,6 +51,7 @@ export class SubscriptionsService {
       sessionDuration: data.sessionDuration ?? 60,
       timeSlot: data.timeSlot ?? 'regular',
       groupIds,
+      isPair: data.isPair ?? false,
     })
   }
 
@@ -59,6 +61,7 @@ export class SubscriptionsService {
     groupId: string,
     sessionDuration: number | null = null,
     tx: Transaction | null = null,
+    wantPair = false,
   ): Promise<{ sub: Subscription | null; status: DeductStatus }> {
     // Выбор абонемента — чистая функция pickSubForDeduct («свой» по длительности
     // → любой «свой» → общий). Истёкшие по сроку отсеиваются: isActive снимается
@@ -70,7 +73,7 @@ export class SubscriptionsService {
       where: { studentId, isActive: true },
       ...(tx ? { transaction: tx, lock: tx.LOCK.UPDATE } : {}),
     })
-    const sub = pickSubForDeduct(subs, groupId, sessionDuration, DateUtil.todayIso())
+    const sub = pickSubForDeduct(subs, groupId, sessionDuration, DateUtil.todayIso(), wantPair)
     if (!sub) return { sub: null, status: 'none' }
 
     sub.remaining -= 1

@@ -124,6 +124,8 @@ export function clientTypeToTuple(type: ClientPaymentType): RuleTuple {
       return { lessonKind: 'group', format: 'subscription', durationMinutes: 60, sessionsCount: 0 }
     case 'individual_subscription':
       return { lessonKind: 'individual', format: 'subscription', durationMinutes: 60, sessionsCount: 0 }
+    case 'pair_subscription':
+      return { lessonKind: 'pair', format: 'subscription', durationMinutes: 60, sessionsCount: 0 }
   }
 }
 

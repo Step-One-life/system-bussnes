@@ -12,11 +12,17 @@ import type { LessonKind } from 'entities/finance/model/types'
  * `subTypeToTuple`, поэтому тариф находится тот же (без регрессии).
  */
 export function subTuple(
-  sub: Pick<Subscription, 'total' | 'sessionDuration' | 'groupIds'>,
+  sub: Pick<Subscription, 'total' | 'sessionDuration' | 'groupIds' | 'isPair'>,
   isIndividual: boolean,
 ): RuleTuple {
   const isShared = (sub.groupIds?.length ?? 0) > 1
-  const lessonKind: LessonKind = isShared ? 'shared' : isIndividual ? 'individual' : 'group'
+  const lessonKind: LessonKind = sub.isPair
+    ? 'pair'
+    : isShared
+      ? 'shared'
+      : isIndividual
+        ? 'individual'
+        : 'group'
   return {
     lessonKind,
     format: sub.total > 1 ? 'subscription' : 'single',

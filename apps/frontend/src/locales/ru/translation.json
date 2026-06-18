@@ -190,7 +190,8 @@
       "8_90": "8 занятий 1.5ч",
       "sessions": "{{count}} занятие",
       "sessions_few": "{{count}} занятия",
-      "sessions_many": "{{count}} занятий"
+      "sessions_many": "{{count}} занятий",
+      "pairMark": "пара"
     },
     "status": {
       "active": "Активен",
@@ -417,7 +418,10 @@
       "scheduleConflict": "Конфликт расписания",
       "recorded": "Парное занятие создано",
       "weeklyHint": "Создать парные занятия на каждую неделю (оплата по мере подтверждения)",
-      "label": "Парная: {{names}}"
+      "label": "Парная: {{names}}",
+      "subToggle": "Оформить парный абонемент",
+      "subToggleHint": "Каждому ученику без активного парного абонемента; списывается при отметке",
+      "subTariffLabel": "Парный абонемент"
     },
     "addTo": {
       "saving": "Добавить на занятие — {{group}}",
@@ -678,7 +682,8 @@
       "single_pair": "Парная разовая",
       "single_pair_90": "Парная 1.5ч",
       "group_subscription": "Абонемент (группа)",
-      "individual_subscription": "Абонемент (инд.)"
+      "individual_subscription": "Абонемент (инд.)",
+      "pair_subscription": "Абонемент (пара)"
     }
   },
   "onboarding": {

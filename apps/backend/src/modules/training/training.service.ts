@@ -313,12 +313,15 @@ export class TrainingService extends OwnedCrudService<Training> {
           let remaining: number | null = null
           let amount: number | null = null
 
-          if (!training.isPair) {
+          {
+            // Парная тренировка списывает только ПАРНЫЙ абонемент (wantPair),
+            // обычная — индивидуальный/групповой. Нет подходящего → авто-платёж ниже.
             const { sub, status } = await this.subscriptionsService.deduct(
               studentId,
               training.groupId,
               training.sessionDuration,
               tx,
+              training.isPair,
             )
             if (sub) {
               billing = 'subscription'

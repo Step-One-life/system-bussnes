@@ -57,6 +57,7 @@ export function subPaymentType(
  */
 export function tuplePaymentType(tuple: RuleTuple): ClientPaymentType {
   if (tuple.format === 'subscription') {
+    if (tuple.lessonKind === 'pair') return 'pair_subscription'
     return tuple.lessonKind === 'individual' ? 'individual_subscription' : 'group_subscription'
   }
   if (tuple.lessonKind === 'individual') return 'single_individual'

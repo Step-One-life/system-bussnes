@@ -9,6 +9,7 @@ export interface PickableSub {
   groupIds: string[] | null
   sessionDuration: number
   expiresAt: string
+  isPair: boolean
 }
 
 /** Действует ли абонемент на дату `today` (обе строки — ISO YYYY-MM-DD). */
@@ -25,14 +26,18 @@ export function covers(sub: PickableSub, groupId: string): boolean {
  * Абонемент для списания: «свой» абонемент группы с совпадающей длительностью →
  * любой «свой» → общий, покрывающий группу. Истёкшие по сроку не участвуют —
  * отметка без действующего абонемента уходит в авто-платёж по тарифу.
+ *
+ * `wantPair` различает парный/индивидуальный абонемент на общей группе-контейнере:
+ * парная тренировка списывает только парные (is_pair=true), остальные — только не-парные.
  */
 export function pickSubForDeduct<T extends PickableSub>(
   subs: T[],
   groupId: string,
   sessionDuration: number | null,
   today: string,
+  wantPair = false,
 ): T | null {
-  const pool = subs.filter((s) => isNotExpired(s, today))
+  const pool = subs.filter((s) => isNotExpired(s, today) && s.isPair === wantPair)
   return (
     (sessionDuration !== null
       ? pool.find((s) => s.groupId === groupId && s.sessionDuration === sessionDuration)
