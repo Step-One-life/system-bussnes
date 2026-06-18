@@ -101,6 +101,7 @@ export function AddSubModal({
       }
 
       const rule = selectedRule
+      const isUnlimited = rule.format === 'unlimited'
       const tuple: RuleTuple = {
         lessonKind,
         format: rule.format,
@@ -108,12 +109,15 @@ export function AddSubModal({
         sessionsCount: rule.sessions_count,
       }
       const subType: SubscriptionType = rule.format === 'single' ? '1' : 'sub'
+      // Безлимит: число занятий не задаётся (действует по сроку).
+      const sessionsTotal = isUnlimited ? undefined : rule.sessions_count
 
       const createdSub = await addSubscription(studentId, {
         groupId: primary,
         groupIds: isShared ? selected : undefined,
         type: subType,
-        sessionsTotal: rule.sessions_count,
+        sessionsTotal,
+        isUnlimited,
         createdAt: date,
         sessionDuration: rule.duration_minutes,
         validityDays: rule.validity_days,
@@ -128,7 +132,7 @@ export function AddSubModal({
             type: subType,
             createdAt: date,
             tuple,
-            sessionsTotal: rule.sessions_count,
+            sessionsTotal,
           },
           isIndividual,
           { isShared, isPrime: slot === 'prime', locationId: primaryGroup?.locationId ?? null },
@@ -196,7 +200,7 @@ export function AddSubModal({
             notFoundContent={t('subscriptions.add.noTariffHint')}
             options={options.map((r) => ({
               value: r.id,
-              label: `${subLabel({ total: r.sessions_count, sessionDuration: r.duration_minutes })} · ${priceOf(r)} ₽`,
+              label: `${subLabel({ total: r.sessions_count, sessionDuration: r.duration_minutes, isUnlimited: r.format === 'unlimited' })} · ${priceOf(r)} ₽`,
             }))}
           />
         </Form.Item>

@@ -128,6 +128,7 @@ export async function addSubscription(
     type: subData.type,
     sessionsTotal: subData.sessionsTotal,
     isPair: subData.isPair,
+    isUnlimited: subData.isUnlimited,
     createdAt: subData.createdAt,
     sessionDuration: subData.sessionDuration,
     validityDays: subData.validityDays,

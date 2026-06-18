@@ -26,6 +26,7 @@ export type ClientPaymentType =
   | 'group_subscription'
   | 'individual_subscription'
   | 'pair_subscription'
+  | 'unlimited_subscription'
 
 export type HallPaymentType = ClientPaymentType
 
@@ -39,5 +40,5 @@ export type LocationKind = 'hall' | 'studio' | 'outdoor' | 'online'
 /** Вид занятия в тарифе. */
 export type LessonKind = 'individual' | 'group' | 'online' | 'shared' | 'pair'
 
-/** Формат тарифа: разовое занятие или абонемент. */
-export type PricingFormat = 'single' | 'subscription'
+/** Формат тарифа: разовое занятие, абонемент (по числу) или безлимит (по сроку). */
+export type PricingFormat = 'single' | 'subscription' | 'unlimited'

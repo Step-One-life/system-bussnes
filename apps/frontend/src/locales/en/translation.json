@@ -188,7 +188,8 @@
       "8_90": "8 sessions 1.5h",
       "sessions": "{{count}} session",
       "sessions_other": "{{count}} sessions",
-      "pairMark": "pair"
+      "pairMark": "pair",
+      "unlimited": "Unlimited"
     },
     "status": {
       "active": "Active",
@@ -596,7 +597,8 @@
       },
       "format": {
         "single": "Single",
-        "subscription": "Subscription"
+        "subscription": "Subscription",
+        "unlimited": "Unlimited"
       },
       "ruleForm": {
         "createTitle": "New tariff",
@@ -676,7 +678,8 @@
       "single_pair_90": "Pair 1.5h",
       "group_subscription": "Subscription (group)",
       "individual_subscription": "Subscription (indiv.)",
-      "pair_subscription": "Subscription (pair)"
+      "pair_subscription": "Subscription (pair)",
+      "unlimited_subscription": "Subscription (unlimited)"
     }
   },
   "onboarding": {

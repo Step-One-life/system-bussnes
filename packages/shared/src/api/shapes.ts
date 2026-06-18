@@ -46,6 +46,8 @@ export interface CreateSubscriptionShape {
   sessionsTotal?: number
   /** Парный абонемент: списывается только парными тренировками. */
   isPair?: boolean
+  /** Безлимит: действует по сроку, при отметке не списывает занятия. */
+  isUnlimited?: boolean
   createdAt?: string
   sessionDuration?: number
   validityDays?: number

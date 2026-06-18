@@ -124,6 +124,9 @@ export function RenewSubModal({
       : 'sub'
     : (prevSub?.type ?? '1')
   const slot = prevSub?.timeSlot ?? 'regular'
+  const isUnlimited = issueMode
+    ? selectedRule?.format === 'unlimited'
+    : (prevSub?.isUnlimited ?? false)
 
   // Итоговая дата начала из выбранного режима.
   const date = resolveStartDate(dateMode, todayISO(), tomorrowISO(), customDate)
@@ -159,7 +162,8 @@ export function RenewSubModal({
         data: {
           groupId,
           type: subType,
-          sessionsTotal: total,
+          sessionsTotal: isUnlimited ? undefined : total,
+          isUnlimited,
           createdAt: date,
           sessionDuration,
           validityDays,
@@ -171,7 +175,7 @@ export function RenewSubModal({
       if (paidNow && createdSub) {
         const fin = await autoCreatePayment(
           studentId,
-          { id: createdSub.id, type: subType, createdAt: date, tuple, sessionsTotal: total },
+          { id: createdSub.id, type: subType, createdAt: date, tuple, sessionsTotal: isUnlimited ? undefined : total },
           isIndividual,
           { isPrime: slot === 'prime', locationId: group?.locationId ?? null },
         )
@@ -199,7 +203,7 @@ export function RenewSubModal({
   const handleDateMode = (v: StartMode) => setDateMode(v)
   const handleCustom = (d: Dayjs | null) => setCustomDate(d ? d.format('YYYY-MM-DD') : todayISO())
 
-  const countLabel = subLabel({ total, sessionDuration })
+  const countLabel = subLabel({ total, sessionDuration, isUnlimited })
   const priceText = price !== null ? `${countLabel} · ${price} ₽` : countLabel
 
   return (
@@ -229,7 +233,7 @@ export function RenewSubModal({
               notFoundContent={t('subscriptions.add.noTariffHint')}
               options={options.map((r) => ({
                 value: r.id,
-                label: `${subLabel({ total: r.sessions_count, sessionDuration: r.duration_minutes })} · ${slot === 'prime' ? r.client_prime_price : r.client_price} ₽`,
+                label: `${subLabel({ total: r.sessions_count, sessionDuration: r.duration_minutes, isUnlimited: r.format === 'unlimited' })} · ${slot === 'prime' ? r.client_prime_price : r.client_price} ₽`,
               }))}
             />
           </div>

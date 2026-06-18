@@ -191,7 +191,8 @@
       "sessions": "{{count}} занятие",
       "sessions_few": "{{count}} занятия",
       "sessions_many": "{{count}} занятий",
-      "pairMark": "пара"
+      "pairMark": "пара",
+      "unlimited": "Безлимит"
     },
     "status": {
       "active": "Активен",
@@ -602,7 +603,8 @@
       },
       "format": {
         "single": "Разовое",
-        "subscription": "Абонемент"
+        "subscription": "Абонемент",
+        "unlimited": "Безлимит"
       },
       "ruleForm": {
         "createTitle": "Новый тариф",
@@ -683,7 +685,8 @@
       "single_pair_90": "Парная 1.5ч",
       "group_subscription": "Абонемент (группа)",
       "individual_subscription": "Абонемент (инд.)",
-      "pair_subscription": "Абонемент (пара)"
+      "pair_subscription": "Абонемент (пара)",
+      "unlimited_subscription": "Абонемент (безлимит)"
     }
   },
   "onboarding": {

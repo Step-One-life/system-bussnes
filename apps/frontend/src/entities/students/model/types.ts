@@ -19,6 +19,8 @@ export interface Subscription {
   timeSlot: TimeSlot
   /** Парный абонемент: списывается только парными тренировками. */
   isPair: boolean
+  /** Безлимит: действует по сроку, число занятий не списывается. */
+  isUnlimited: boolean
 }
 
 /** Как списано посещение: абонемент, разовый платёж или без оплаты. */
@@ -54,6 +56,8 @@ export interface SubscriptionInput {
   sessionsTotal?: number
   /** Парный абонемент. */
   isPair?: boolean
+  /** Безлимит (по сроку, без списания числа). */
+  isUnlimited?: boolean
   createdAt?: string
   sessionDuration?: number
   validityDays?: number

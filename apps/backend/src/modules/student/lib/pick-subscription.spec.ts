@@ -10,6 +10,7 @@ const sub = (over: Partial<PickableSub>): PickableSub => ({
   sessionDuration: 60,
   expiresAt: '2026-12-31',
   isPair: false,
+  isUnlimited: false,
   ...over,
 })
 
@@ -89,5 +90,23 @@ describe('pickSubForDeduct — парные vs индивидуальные на
   it('нет подходящего по виду — null (парная отметка, есть только индивидуальный)', () => {
     const indiv = sub({ isPair: false })
     expect(pickSubForDeduct([indiv], 'g1', 60, TODAY, true)).toBeNull()
+  })
+})
+
+describe('pickSubForDeduct — безлимит', () => {
+  it('считаемый абонемент приоритетнее безлимита (оба подходят)', () => {
+    const counted = sub({ isUnlimited: false })
+    const unlim = sub({ isUnlimited: true })
+    expect(pickSubForDeduct([unlim, counted], 'g1', 60, TODAY)).toBe(counted)
+  })
+
+  it('безлимит выбирается, когда считаемого нет', () => {
+    const unlim = sub({ isUnlimited: true })
+    expect(pickSubForDeduct([unlim], 'g1', 60, TODAY)).toBe(unlim)
+  })
+
+  it('истёкший безлимит не выбирается', () => {
+    const unlim = sub({ isUnlimited: true, expiresAt: '2026-06-01' })
+    expect(pickSubForDeduct([unlim], 'g1', 60, TODAY)).toBeNull()
   })
 })

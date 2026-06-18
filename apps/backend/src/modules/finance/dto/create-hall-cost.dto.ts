@@ -18,6 +18,7 @@ const HALL_TYPES: HallPaymentType[] = [
   'group_subscription',
   'individual_subscription',
   'pair_subscription',
+  'unlimited_subscription',
 ]
 
 const TIME_SLOTS: TimeSlot[] = ['regular', 'prime']

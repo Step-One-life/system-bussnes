@@ -25,8 +25,11 @@ export function RuleParams({ rule }: RuleParamsProps) {
   const bottom = join(
     [
       t('finance.pricing.durationPreset', { minutes: rule.duration_minutes }),
-      t('finance.pricing.sessionsCount', { count: rule.sessions_count }),
-    ],
+      // У безлимита число занятий не имеет смысла — не показываем.
+      rule.format === 'unlimited'
+        ? null
+        : t('finance.pricing.sessionsCount', { count: rule.sessions_count }),
+    ].filter(Boolean),
     ' · ',
   )
 

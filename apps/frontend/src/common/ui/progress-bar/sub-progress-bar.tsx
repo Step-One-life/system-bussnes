@@ -23,9 +23,7 @@ export function SubProgressBar({ sub }: { sub: Subscription | null }) {
     <div className="progress-wrap">
       <div className="progress-label">
         <span>{subLabel(sub)}</span>
-        <span>
-          {sub.remaining}/{sub.total} занятий
-        </span>
+        <span>{sub.isUnlimited ? '∞' : `${sub.remaining}/${sub.total} занятий`}</span>
       </div>
       <div className="progress-track">
         <div className={`progress-fill progress-fill--${cls}`} style={{ width: `${pct}%` }} />
