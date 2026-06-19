@@ -2,9 +2,10 @@ import { Button, Checkbox, DatePicker, Form, Input, Modal, Select } from 'antd'
 
 import { useTranslation } from 'react-i18next'
 
+import { subLabel } from '../model/subscription-status'
 import { useStudentForm } from './use-student-form'
 
-import type { Student, SubscriptionType } from '../model/types'
+import type { Student } from '../model/types'
 import type { CheckboxChangeEvent } from 'antd/es/checkbox'
 import type { Dayjs } from 'dayjs'
 import type { ChangeEvent } from 'react'
@@ -21,13 +22,6 @@ export function StudentFormModal({ open, student, onClose }: StudentFormModalPro
   const { t } = useTranslation()
   const form = useStudentForm({ student, onDone: onClose })
 
-  const subOptions = [
-    { value: '', label: t('students.form.subNone') },
-    { value: '1', label: t('students.sub.single') },
-    { value: '4', label: t('students.sub.sub4') },
-    { value: '8', label: t('students.sub.sub8') },
-  ]
-
   const handleNameChange = (e: ChangeEvent<HTMLInputElement>) =>
     form.setName(e.target.value)
   const handleToggleGroup =
@@ -38,7 +32,7 @@ export function StudentFormModal({ open, student, onClose }: StudentFormModalPro
   const handleSubStartChange = (d: Dayjs | null) =>
     form.setSubStartDate(d ? d.format('YYYY-MM-DD') : form.subStartDate)
   const handleSubChoiceChange = (groupName: string) => (v: string) =>
-    form.setSubChoice({ ...form.subChoice, [groupName]: v as SubscriptionType | '' })
+    form.setSubChoice({ ...form.subChoice, [groupName]: v })
 
   return (
     <Modal
@@ -105,15 +99,32 @@ export function StudentFormModal({ open, student, onClose }: StudentFormModalPro
                 onChange={handleSubStartChange}
               />
             </Form.Item>
-            {form.selectedGroups.map((g) => (
-              <Form.Item key={g} label={t('students.form.subForGroup', { group: g })}>
-                <Select
-                  value={form.subChoice[g] ?? ''}
-                  onChange={handleSubChoiceChange(g)}
-                  options={subOptions}
-                />
-              </Form.Item>
-            ))}
+            {form.selectedGroups.map((g) => {
+              const options = [
+                { value: '', label: t('students.form.subNone') },
+                ...form.optionsForGroup(g).map((r) => ({
+                  value: r.id,
+                  label: subLabel({
+                    total: r.sessions_count,
+                    sessionDuration: r.duration_minutes,
+                    isUnlimited: r.format === 'unlimited',
+                  }),
+                })),
+              ]
+              return (
+                <Form.Item
+                  key={g}
+                  label={t('students.form.subForGroup', { group: g })}
+                  extra={options.length <= 1 ? t('subscriptions.add.noTariffHint') : undefined}
+                >
+                  <Select
+                    value={form.subChoice[g] ?? ''}
+                    onChange={handleSubChoiceChange(g)}
+                    options={options}
+                  />
+                </Form.Item>
+              )
+            })}
           </>
         )}
       </Form>
