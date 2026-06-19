@@ -4,7 +4,7 @@ import { IsBoolean, IsIn, IsInt, IsNotEmpty, IsNumber, IsOptional, IsString, IsU
 import type { CreatePricingRuleShape, LessonKind, PricingFormat } from '@trikick/shared'
 
 const LESSON_KINDS: LessonKind[] = ['individual', 'group', 'online', 'shared', 'pair']
-const FORMATS: PricingFormat[] = ['single', 'subscription']
+const FORMATS: PricingFormat[] = ['single', 'subscription', 'unlimited']
 
 export class CreatePricingRuleDto implements CreatePricingRuleShape {
   @ApiProperty()
