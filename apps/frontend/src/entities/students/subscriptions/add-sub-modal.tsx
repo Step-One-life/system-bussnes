@@ -19,6 +19,7 @@ import {
   updateStudent,
 } from '../model/students.repo'
 import { subLabel } from '../model/subscription-status'
+import { subscriptionTariffOptions } from './sub-tariff-options'
 
 import type { SubscriptionType } from '../model/types'
 import type { RuleTuple } from 'entities/finance/lib/pricing-lookup'
@@ -67,17 +68,12 @@ export function AddSubModal({
   const locationId = primaryGroup?.locationId ?? defaultLocId
   const { data: rules = [] } = usePricingRules(locationId)
 
-  // Варианты — активные тарифы нужного вида: разовое сверху, затем абонементы по возрастанию.
-  const options = useMemo(() => {
-    const matched = rules.filter((r) => r.active && r.lesson_kind === lessonKind)
-    return [...matched].sort((a, b) =>
-      a.format !== b.format
-        ? a.format === 'single'
-          ? -1
-          : 1
-        : a.sessions_count - b.sessions_count,
-    )
-  }, [rules, lessonKind])
+  // Варианты: одна группа — тарифы её вида; несколько (общий) — тарифы «Общий»
+  // плюс обычные групповые (можно взять отдельный общий тариф ИЛИ тариф группы).
+  const options = useMemo(
+    () => subscriptionTariffOptions(rules, { isShared, lessonKind }),
+    [rules, isShared, lessonKind],
+  )
 
   const selectedRule = options.find((r) => r.id === ruleId) ?? options[0] ?? null
 
@@ -102,8 +98,10 @@ export function AddSubModal({
 
       const rule = selectedRule
       const isUnlimited = rule.format === 'unlimited'
+      // Доход и кортеж — по виду ВЫБРАННОГО тарифа: общий абонемент можно оплатить
+      // как отдельным тарифом «Общий», так и обычным тарифом группы.
       const tuple: RuleTuple = {
-        lessonKind,
+        lessonKind: rule.lesson_kind,
         format: rule.format,
         durationMinutes: rule.duration_minutes,
         sessionsCount: rule.sessions_count,
@@ -135,7 +133,11 @@ export function AddSubModal({
             sessionsTotal,
           },
           isIndividual,
-          { isShared, isPrime: slot === 'prime', locationId: primaryGroup?.locationId ?? null },
+          {
+            isShared: rule.lesson_kind === 'shared',
+            isPrime: slot === 'prime',
+            locationId: primaryGroup?.locationId ?? null,
+          },
         )
         if (fin) {
           await linkPaymentToSub(studentId, createdSub.id, fin.paymentId)
@@ -200,7 +202,7 @@ export function AddSubModal({
             notFoundContent={t('subscriptions.add.noTariffHint')}
             options={options.map((r) => ({
               value: r.id,
-              label: `${subLabel({ total: r.sessions_count, sessionDuration: r.duration_minutes, isUnlimited: r.format === 'unlimited' })} · ${priceOf(r)} ₽`,
+              label: `${subLabel({ total: r.sessions_count, sessionDuration: r.duration_minutes, isUnlimited: r.format === 'unlimited' })}${r.lesson_kind === 'shared' ? ` · ${t('subscriptions.add.sharedMark')}` : ''} · ${priceOf(r)} ₽`,
             }))}
           />
         </Form.Item>

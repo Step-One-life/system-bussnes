@@ -281,6 +281,7 @@
       "groupsPlaceholder": "Select one or more groups",
       "singleHint": "One group — a regular subscription.",
       "sharedHint": "Multiple groups — a shared subscription: one balance across all selected groups.",
+      "sharedMark": "shared",
       "typeLabel": "Subscription type",
       "typePlaceholder": "Choose a subscription",
       "noTariff": "No tariff for the subscription",
