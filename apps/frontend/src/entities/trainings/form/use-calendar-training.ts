@@ -98,8 +98,11 @@ export function useCalendarTraining({ block, onDone }: UseCalendarTrainingOption
     }
   })
 
+  // Имя для заголовка индив-занятия — по ученику из attendees ∪ плановый
+  // (indIds). Раньше брали только attendees[0]: пока ученик не отмечен, имя
+  // было пустым и заголовок падал на имя группы-контейнера «Индивидуальные».
   const clientName = isInd
-    ? (students.find((s) => s.id === training?.attendees[0])?.name ?? null)
+    ? (students.find((s) => s.id === indIds[0])?.name ?? null)
     : null
   const pairNames = training?.isPair
     ? [training.plannedStudentId, training.plannedStudentId2]
