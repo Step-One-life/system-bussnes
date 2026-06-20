@@ -15,6 +15,7 @@ import { RenewSubModal } from 'entities/students/subscriptions/renew-sub-modal'
 import {
   AddToTrainingModal,
   CalendarTrainingModal,
+  EditTrainingModal,
   ensureIndividualGroup,
   GroupTrainingModal,
   IndividualSessionModal,
@@ -56,6 +57,8 @@ export function HomePage() {
   const [indGroupId, setIndGroupId] = useState<string | null>(null)
   const [addTarget, setAddTarget] = useState<Training | null>(null)
   const [calBlock, setCalBlock] = useState<CalendarBlock | null>(null)
+  // Редактирование занятия из модалки отметки на главной (как с календаря).
+  const [editTraining, setEditTraining] = useState<Training | null>(null)
   const [quickMark, setQuickMark] = useState<QuickMarkTarget | null>(null)
   // Дата шторки «Закрыть день»: сегодня по кнопке, вчера — по сигналу внимания.
   const [closeDate, setCloseDate] = useState(todayISO())
@@ -131,6 +134,8 @@ export function HomePage() {
   const handleClosePair = () => setPairOpen(false)
   const handleCloseAdd = () => setAddTarget(null)
   const handleCloseCalBlock = () => setCalBlock(null)
+  const handleEditTraining = (training: Training) => setEditTraining(training)
+  const handleCloseEditTraining = () => setEditTraining(null)
   const handleQuickMark = (block: CalendarBlock) =>
     setQuickMark({
       groupId: block.groupId,
@@ -409,6 +414,12 @@ export function HomePage() {
         block={calBlock}
         onClose={handleCloseCalBlock}
         onAddStudent={setAddTarget}
+        onEdit={handleEditTraining}
+      />
+      <EditTrainingModal
+        open={!!editTraining}
+        training={editTraining}
+        onClose={handleCloseEditTraining}
       />
 
       <AddToTrainingModal
