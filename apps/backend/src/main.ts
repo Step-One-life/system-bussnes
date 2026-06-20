@@ -31,19 +31,27 @@ async function bootstrap() {
     allowedHeaders: ['Content-Type', 'Authorization'],
   })
 
-  const swaggerConfig = new DocumentBuilder()
-    .setTitle('TriKick API')
-    .setDescription('API менеджера тренировок TriKick')
-    .setVersion('1.0')
-    .addBearerAuth()
-    .build()
-  const document = SwaggerModule.createDocument(app, swaggerConfig)
-  SwaggerModule.setup('api/docs', app, document)
+  // Swagger раскрывает полную карту API (ручки, DTO, имена полей) — в проде это
+  // помогает разведке для перебора UUID, поэтому документацию поднимаем только
+  // вне production.
+  const swaggerEnabled = process.env.NODE_ENV !== 'production'
+  if (swaggerEnabled) {
+    const swaggerConfig = new DocumentBuilder()
+      .setTitle('TriKick API')
+      .setDescription('API менеджера тренировок TriKick')
+      .setVersion('1.0')
+      .addBearerAuth()
+      .build()
+    const document = SwaggerModule.createDocument(app, swaggerConfig)
+    SwaggerModule.setup('api/docs', app, document)
+  }
 
   const port = config.get<number>('port') ?? 3021
   await app.listen(port, '0.0.0.0')
   console.log(`TriKick API запущен на http://localhost:${port}/api`)
-  console.log(`Swagger UI: http://localhost:${port}/api/docs`)
+  if (swaggerEnabled) {
+    console.log(`Swagger UI: http://localhost:${port}/api/docs`)
+  }
 }
 
 void bootstrap()

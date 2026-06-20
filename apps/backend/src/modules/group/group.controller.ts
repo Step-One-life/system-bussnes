@@ -52,7 +52,7 @@ export class GroupController {
     @Param() { id }: IdParamDto,
     @Body() dto: UpdateGroupDto,
   ): Promise<Group> {
-    return this.groupService.updateForUser(user.id, id, dto)
+    return this.groupService.updateGroup(user.id, id, dto)
   }
 
   @Delete(':id')

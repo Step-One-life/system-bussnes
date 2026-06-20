@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/sequelize'
 import type { FindOptions } from 'sequelize'
 
 import { OwnedCrudService } from '../../common/services/owned-crud.service'
+import { assertOwned } from '../../common/services/assert-owned'
 import { Group } from '../group/group.model'
 import { CreateStudentDto } from './dto/create-student.dto'
 import { UpdateStudentDto } from './dto/update-student.dto'
@@ -12,7 +13,10 @@ import { Visit } from './visit.model'
 
 @Injectable()
 export class StudentService extends OwnedCrudService<Student> {
-  constructor(@InjectModel(Student) private readonly studentModel: typeof Student) {
+  constructor(
+    @InjectModel(Student) private readonly studentModel: typeof Student,
+    @InjectModel(Group) private readonly groupModel: typeof Group,
+  ) {
     super(studentModel)
   }
 
@@ -22,6 +26,9 @@ export class StudentService extends OwnedCrudService<Student> {
   }
 
   async createStudent(userId: string, dto: CreateStudentDto): Promise<Student> {
+    // Группы должны принадлежать тренеру — иначе можно привязать ученика к чужой
+    // группе по перебранному UUID (mass-assignment чужого FK).
+    await assertOwned(this.groupModel, userId, dto.groups ?? [], 'Группа не найдена')
     const student = await this.createForUser(userId, { name: dto.name })
     if (dto.groups?.length) {
       await student.$set('groups', dto.groups)
@@ -31,6 +38,9 @@ export class StudentService extends OwnedCrudService<Student> {
 
   async updateStudent(userId: string, id: string, dto: UpdateStudentDto): Promise<Student> {
     const student = await this.findOneForUser(userId, id)
+    if (dto.groups !== undefined) {
+      await assertOwned(this.groupModel, userId, dto.groups, 'Группа не найдена')
+    }
     if (dto.name !== undefined) {
       await student.update({ name: dto.name })
     }

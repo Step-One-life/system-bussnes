@@ -9,13 +9,16 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common'
+import { InjectModel } from '@nestjs/sequelize'
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger'
 
 import { CurrentUser } from '../../common/decorators/current-user.decorator'
 import { IdParamDto } from '../../common/dto/id-param.dto'
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard'
 import type { CurrentUserPayload } from '../../common/interfaces/current-user.interface'
+import { assertOwned } from '../../common/services/assert-owned'
 import { ActivityLogService } from '../activity-log/activity-log.service'
+import { Group } from '../group/group.model'
 import { CreateStudentDto } from './dto/create-student.dto'
 import {
   CreateSubscriptionDto,
@@ -36,6 +39,7 @@ export class StudentController {
     private readonly studentService: StudentService,
     private readonly subscriptionsService: SubscriptionsService,
     private readonly activityLog: ActivityLogService,
+    @InjectModel(Group) private readonly groupModel: typeof Group,
   ) {}
 
   @Get()
@@ -83,6 +87,14 @@ export class StudentController {
     @Body() dto: CreateSubscriptionDto,
   ): Promise<Student> {
     await this.studentService.findOneForUser(user.id, id)
+    // Группы абонемента (своя + покрываемые общим) должны принадлежать тренеру:
+    // иначе по перебранному UUID можно создать абонемент со ссылкой на чужую группу.
+    await assertOwned(
+      this.groupModel,
+      user.id,
+      [dto.groupId, ...(dto.groupIds ?? [])],
+      'Группа не найдена',
+    )
     const sub = await this.subscriptionsService.add(id, dto)
     const studentName = await this.activityLog.studentName(id)
     const groupName = await this.activityLog.groupName(dto.groupId)
