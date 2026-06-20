@@ -136,9 +136,16 @@ export async function addSubscription(
     groupIds,
   })
   const student = toStudent(raw, (await getGroupMaps()).byId)
-  // The newest subscription for this group is the one just created.
+  // Только что созданный абонемент = самый свежий по дате среди абонементов этой
+  // группы. Раньше брали forGroup.at(-1) (последний в массиве) — при нескольких
+  // абонементах одной группы (особенно контейнер «Индивидуальные»: старый + новый)
+  // порядок не гарантирован, и оплата продления привязывалась к СТАРОМУ абонементу.
   const forGroup = filterByGroup(student.subscriptions, subData.groupId)
-  return forGroup.at(-1) ?? null
+  return (
+    [...forGroup].sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+    )[0] ?? null
+  )
 }
 
 function filterByGroup(subs: Subscription[], groupName: string): Subscription[] {
