@@ -36,6 +36,7 @@ export class GroupService extends OwnedCrudService<Group> {
         duration: dto.duration ?? 60,
         isIndividual: dto.isIndividual ?? false,
         locationId: dto.locationId ?? null,
+        expiresAt: dto.expiresAt ?? null,
       })
     } catch (err) {
       // Гонка: параллельный запрос (напр. React StrictMode → двойной POST)

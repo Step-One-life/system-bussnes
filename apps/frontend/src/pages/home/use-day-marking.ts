@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next'
 import { useToast } from 'common/ui'
 import { newBatchId } from 'common/utils/batch-id'
 import { formatDayOfWeek } from 'common/utils/date'
-import { groupKeys, useGroups } from 'entities/groups'
+import { groupKeys, isGroupActiveOn, useGroups } from 'entities/groups'
 import { getSubStatus, studentKeys, useStudents } from 'entities/students'
 import {
   createTraining,
@@ -66,12 +66,16 @@ export function useDayMarking(open: boolean, onClose: () => void, dateStr: strin
     const result: DayGroup[] = []
     for (const g of groups) {
       if (g.isIndividual) continue
-      const entry = (g.schedule ?? []).find((s) => s.day === dow)
+      // Истёкшая группа не предлагается по расписанию (срок прошёл), но реальное
+      // занятие на дату остаётся — данные сохраняются, его можно отметить.
+      const entry = isGroupActiveOn(g.expiresAt, dateStr)
+        ? (g.schedule ?? []).find((s) => s.day === dow)
+        : undefined
       const existing =
         trainings.find((t) => t.groupId === g.name && t.date === dateStr) ?? null
-      // Группа участвует, если есть слот расписания на этот день недели ИЛИ уже
-      // есть фактическая запись занятия на дату (разовое/перенесённое занятие
-      // группы без расписания на этот день — иначе оно выпало бы из «Закрыть день»).
+      // Группа участвует, если есть АКТИВНЫЙ слот расписания на этот день недели
+      // ИЛИ уже есть фактическая запись занятия на дату (разовое/перенесённое
+      // занятие группы без расписания — иначе оно выпало бы из «Закрыть день»).
       if (!entry && !existing) continue
       result.push({
         groupId: g.name,

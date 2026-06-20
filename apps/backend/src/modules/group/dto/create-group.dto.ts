@@ -3,6 +3,7 @@ import { Type } from 'class-transformer'
 import {
   IsArray,
   IsBoolean,
+  IsDateString,
   IsInt,
   IsNotEmpty,
   IsOptional,
@@ -42,4 +43,13 @@ export class CreateGroupDto implements CreateGroupShape {
   @IsOptional()
   @IsUUID()
   locationId?: string | null
+
+  @ApiPropertyOptional({
+    format: 'date',
+    nullable: true,
+    description: 'Срок годности (YYYY-MM-DD, вкл.). Пусто/null — бессрочная.',
+  })
+  @IsOptional()
+  @IsDateString()
+  expiresAt?: string | null
 }

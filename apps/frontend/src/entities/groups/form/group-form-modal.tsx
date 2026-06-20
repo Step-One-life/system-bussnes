@@ -54,6 +54,8 @@ export function GroupFormModal({ open, group, onClose, onDelete }: GroupFormModa
   }
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) =>
     form.setName(e.target.value)
+  const handleExpiresChange = (e: React.ChangeEvent<HTMLInputElement>) =>
+    form.setExpiresAt(e.target.value)
 
   const footer = [
     group && onDelete && (
@@ -129,6 +131,12 @@ export function GroupFormModal({ open, group, onClose, onDelete }: GroupFormModa
         </Form.Item>
         <Form.Item label={t('locations.selectLabel')}>
           <LocationSelect value={form.locationId} onChange={form.setLocationId} />
+        </Form.Item>
+        <Form.Item
+          label={t('groups.form.expiresLabel')}
+          extra={t('groups.form.expiresHint')}
+        >
+          <Input type="date" value={form.expiresAt} onChange={handleExpiresChange} />
         </Form.Item>
       </Form>
     </Modal>

@@ -27,6 +27,8 @@ export function useGroupForm({ group, onDone }: UseGroupFormOptions) {
   const [schedule, setSchedule] = useState<ScheduleEntry[]>(group?.schedule ?? [])
   const [duration, setDuration] = useState(group?.duration ?? 60)
   const [locationId, setLocationId] = useState<string | null>(group?.locationId ?? null)
+  // Срок годности: '' в инпуте ⇄ null в API (бессрочная группа).
+  const [expiresAt, setExpiresAt] = useState<string>(group?.expiresAt ?? '')
 
   const saving = createGroup.isPending || updateGroup.isPending
 
@@ -35,15 +37,22 @@ export function useGroupForm({ group, onDone }: UseGroupFormOptions) {
       toast({ type: 'error', title: t('groups.nameRequired') })
       return
     }
+    const expires = expiresAt || null
     try {
       if (isEdit) {
         await updateGroup.mutateAsync({
           id: group.id,
-          changes: { schedule, duration, locationId },
+          changes: { schedule, duration, locationId, expiresAt: expires },
         })
         toast({ type: 'success', title: t('groups.updated'), msg: group.name })
       } else {
-        await createGroup.mutateAsync({ name: name.trim(), schedule, duration, locationId })
+        await createGroup.mutateAsync({
+          name: name.trim(),
+          schedule,
+          duration,
+          locationId,
+          expiresAt: expires,
+        })
         toast({ type: 'success', title: t('groups.created'), msg: name.trim() })
       }
       onDone()
@@ -62,6 +71,8 @@ export function useGroupForm({ group, onDone }: UseGroupFormOptions) {
     setDuration,
     locationId,
     setLocationId,
+    expiresAt,
+    setExpiresAt,
     saving,
     submit,
   }

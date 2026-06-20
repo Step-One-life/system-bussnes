@@ -28,4 +28,8 @@ export class Group extends OwnedEntity {
 
   @Column({ field: 'location_id', type: DataType.UUID, allowNull: true })
   declare locationId: string | null
+
+  // Срок годности: дата (вкл.), до которой группа активна. NULL = бессрочная.
+  @Column({ field: 'expires_at', type: DataType.DATEONLY, allowNull: true })
+  declare expiresAt: string | null
 }

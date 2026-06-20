@@ -117,7 +117,10 @@
       "totalStudents": "Total students",
       "activeSub": "Active subscription",
       "ending": "Ending",
-      "needRenew": "Needs renewal"
+      "needRenew": "Needs renewal",
+      "expiredBadge": "expired",
+      "expiredOn": "Expired {{date}}",
+      "activeUntil": "Active until {{date}}"
     },
     "form": {
       "deleteTitle": "Delete group \"{{name}}\"?",
@@ -132,7 +135,9 @@
       "scheduleLabel": "Schedule",
       "durationLabel": "Session duration",
       "durationOption": "{{minutes}} min",
-      "timePlaceholder": "Time"
+      "timePlaceholder": "Time",
+      "expiresLabel": "Active until",
+      "expiresHint": "Optional. After this date the group is no longer active — its schedule stops suggesting sessions."
     },
     "schedule": {
       "notSet": "No schedule",
