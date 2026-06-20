@@ -129,8 +129,16 @@ export class TrainingController {
   ): Promise<void> {
     const training = await this.trainingService.findOneForUser(user.id, id)
     const groupName = await this.activityLog.groupName(training.groupId)
-    const studentName = training.plannedStudentId
-      ? await this.activityLog.studentName(training.plannedStudentId)
+    // Для индивидуальных/онлайн/парных в журнал кладём имя ученика (плановый или,
+    // если уже отмечен, первый из attendees), для групповых — только имя группы.
+    // Раньше брали только plannedStudentId → у отмеченного индив-занятия имя
+    // терялось, и журнал писал «Удалено: Индивидуальные».
+    const individual = await this.activityLog.groupIsIndividual(training.groupId)
+    const studentId = individual
+      ? (training.plannedStudentId ?? training.attendees?.[0]?.id ?? null)
+      : null
+    const studentName = studentId
+      ? await this.activityLog.studentName(studentId)
       : undefined
     await this.trainingService.removeTraining(user.id, id)
     await this.activityLog.log({

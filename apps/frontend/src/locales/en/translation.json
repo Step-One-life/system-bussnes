@@ -57,6 +57,7 @@
       "attendanceSub": "session deducted, {{count}} left",
       "attendancePay": "payment {{amount}} ₽",
       "subscription": "subscription, {{count}} sessions",
+      "subscriptionDeleted": "Subscription deleted: {{name}}",
       "payment": "payment {{amount}} ₽",
       "created": "Training created «{{group}}»",
       "deleted": "Deleted: {{name}}",

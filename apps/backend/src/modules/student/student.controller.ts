@@ -167,8 +167,22 @@ export class StudentController {
     @Param('id') id: string,
     @Param('subId') subId: string,
   ): Promise<Student> {
-    await this.studentService.findOneForUser(user.id, id)
+    const student = await this.studentService.findOneForUser(user.id, id)
+    // Имена резолвим ДО удаления; groupId абонемента в БД — UUID, groupName() даёт имя.
+    const sub = student.subscriptions?.find((s) => s.id === subId)
     await this.subscriptionsService.remove(id, subId)
+    // Удаление абонемента — событие журнала (view-only, не откатывается).
+    if (sub) {
+      const studentName = await this.activityLog.studentName(id)
+      const groupName = await this.activityLog.groupName(sub.groupId)
+      await this.activityLog.log({
+        userId: user.id,
+        type: 'subscription_deleted',
+        studentId: id,
+        subscriptionId: subId,
+        summary: { studentName, groupName },
+      })
+    }
     return this.studentService.findOneForUser(user.id, id)
   }
 }

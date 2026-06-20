@@ -21,6 +21,7 @@ export interface EventView {
 const ICONS: Record<ActivityType, string> = {
   attendance_marked: '✅',
   subscription_created: '🔄',
+  subscription_deleted: '🗑',
   payment_recorded: '💳',
   training_created: '➕',
   training_deleted: '🗑',
@@ -35,7 +36,8 @@ export function describeEvent(e: ActivityEntry): EventView {
   const base = {
     icon: ICONS[e.type],
     undone,
-    undoable: e.type !== 'training_deleted' && !undone,
+    // Удаление занятия и абонемента — view-only (не откатываются).
+    undoable: e.type !== 'training_deleted' && e.type !== 'subscription_deleted' && !undone,
   }
 
   switch (e.type) {
@@ -55,6 +57,12 @@ export function describeEvent(e: ActivityEntry): EventView {
         titleText: nameWithGroup,
         detailKey: 'journal.icon.subscription',
         detailParams: { count: s.sessionsCount ?? 0 },
+      }
+    case 'subscription_deleted':
+      return {
+        ...base,
+        titleKey: 'journal.icon.subscriptionDeleted',
+        titleParams: { name: nameWithGroup },
       }
     case 'payment_recorded':
       return {
