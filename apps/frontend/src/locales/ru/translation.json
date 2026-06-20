@@ -120,7 +120,10 @@
       "totalStudents": "Всего учеников",
       "activeSub": "Активный абонемент",
       "ending": "Заканчивается",
-      "needRenew": "Нужно продлить"
+      "needRenew": "Нужно продлить",
+      "expiredBadge": "истекла",
+      "expiredOn": "Истекла {{date}}",
+      "activeUntil": "Действует до {{date}}"
     },
     "form": {
       "deleteTitle": "Удалить группу «{{name}}»?",
@@ -135,7 +138,9 @@
       "scheduleLabel": "Расписание",
       "durationLabel": "Длительность занятия",
       "durationOption": "{{minutes}} мин",
-      "timePlaceholder": "Время"
+      "timePlaceholder": "Время",
+      "expiresLabel": "Действует до",
+      "expiresHint": "Необязательно. После этой даты группа перестаёт быть активной — расписание не предлагает занятий."
     },
     "schedule": {
       "notSet": "Расписание не задано",

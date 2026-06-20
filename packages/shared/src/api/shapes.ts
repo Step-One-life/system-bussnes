@@ -28,6 +28,7 @@ export interface CreateGroupShape {
   duration?: number
   isIndividual?: boolean
   locationId?: string | null
+  expiresAt?: string | null
 }
 
 export type UpdateGroupShape = Partial<Omit<CreateGroupShape, 'name'>>

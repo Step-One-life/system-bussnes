@@ -10,6 +10,8 @@ export interface Group {
   duration: number
   isIndividual: boolean
   locationId: string | null
+  /** Срок годности (YYYY-MM-DD, вкл.). null — бессрочная группа. */
+  expiresAt: string | null
   createdAt: string
 }
 
@@ -19,6 +21,7 @@ export interface GroupInput {
   duration?: number
   isIndividual?: boolean
   locationId?: string | null
+  expiresAt?: string | null
 }
 
 export interface GroupStats {

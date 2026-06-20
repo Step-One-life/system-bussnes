@@ -3,6 +3,7 @@ import find from 'lodash/find'
 
 import { getMondayOfWeek } from 'common/utils/date'
 import { WEEKDAY_ABBRS, weekdayShortLabel } from 'common/utils/weekdays'
+import { isGroupActiveOn } from 'entities/groups/model/group-expiry'
 
 import { isIndividualTraining } from '../model/training-helpers'
 
@@ -154,6 +155,9 @@ function collectDayItems(
 
   for (const g of groups) {
     if (g.isIndividual) continue
+    // Истёкшая группа не предлагает занятий по расписанию после срока годности
+    // (фактические занятия-записи остаются — они идут из цикла trainings выше).
+    if (!isGroupActiveOn(g.expiresAt, dateStr)) continue
     for (const slot of g.schedule ?? []) {
       if (DOW_IDX[slot.day] !== dayIdx) continue
       if (trMap.has(`${g.name}|${dateStr}`)) continue
