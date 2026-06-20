@@ -15,9 +15,11 @@ describe('GroupService.createGroup', () => {
 
   function makeService(model: { findOne: jest.Mock; create: jest.Mock }): GroupService {
     const groupModel = { name: 'Group', ...model }
-    // subModel / studentModel в createGroup не участвуют — заглушки.
+    // subModel / studentModel / locationModel в этих кейсах не участвуют
+    // (dto без locationId → assertOwned не обращается к модели) — заглушки.
     return new GroupService(
       groupModel as never,
+      {} as never,
       {} as never,
       {} as never,
     )

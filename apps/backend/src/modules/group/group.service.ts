@@ -3,10 +3,13 @@ import { InjectModel } from '@nestjs/sequelize'
 import { UniqueConstraintError } from 'sequelize'
 
 import { OwnedCrudService } from '../../common/services/owned-crud.service'
+import { assertOwned } from '../../common/services/assert-owned'
+import { Location } from '../location/location.model'
 import { Student } from '../student/student.model'
 import { Subscription } from '../student/subscription.model'
 import { Group } from './group.model'
 import type { CreateGroupDto } from './dto/create-group.dto'
+import type { UpdateGroupDto } from './dto/update-group.dto'
 
 @Injectable()
 export class GroupService extends OwnedCrudService<Group> {
@@ -14,11 +17,14 @@ export class GroupService extends OwnedCrudService<Group> {
     @InjectModel(Group) private readonly groupModel: typeof Group,
     @InjectModel(Subscription) private readonly subModel: typeof Subscription,
     @InjectModel(Student) private readonly studentModel: typeof Student,
+    @InjectModel(Location) private readonly locationModel: typeof Location,
   ) {
     super(groupModel)
   }
 
   async createGroup(userId: string, dto: CreateGroupDto): Promise<Group> {
+    // Локация группы должна принадлежать тренеру (mass-assignment чужого FK).
+    await assertOwned(this.locationModel, userId, [dto.locationId], 'Локация не найдена')
     const exists = await this.groupModel.findOne({ where: { userId, name: dto.name } })
     if (exists) {
       throw new ConflictException(`Группа «${dto.name}» уже существует`)
@@ -42,6 +48,12 @@ export class GroupService extends OwnedCrudService<Group> {
       }
       throw err
     }
+  }
+
+  async updateGroup(userId: string, id: string, dto: UpdateGroupDto): Promise<Group> {
+    // Та же защита, что и при создании: нельзя перепривязать группу к чужой локации.
+    await assertOwned(this.locationModel, userId, [dto.locationId], 'Локация не найдена')
+    return this.updateForUser(userId, id, dto)
   }
 
   /**

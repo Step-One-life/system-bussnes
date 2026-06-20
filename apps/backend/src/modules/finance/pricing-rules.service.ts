@@ -4,6 +4,7 @@ import { InjectModel } from '@nestjs/sequelize'
 import type { LessonKind, PricingFormat } from '@trikick/shared'
 
 import { OwnedCrudService } from '../../common/services/owned-crud.service'
+import { assertOwned } from '../../common/services/assert-owned'
 import { Location } from '../location/location.model'
 import type { CopyPricingDto } from './dto/copy-pricing.dto'
 import type { CreatePricingRuleDto } from './dto/create-pricing-rule.dto'
@@ -39,7 +40,9 @@ export class PricingRulesService extends OwnedCrudService<PricingRule> {
     })
   }
 
-  createRule(userId: string, dto: CreatePricingRuleDto): Promise<PricingRule> {
+  async createRule(userId: string, dto: CreatePricingRuleDto): Promise<PricingRule> {
+    // Тариф не должен ссылаться на чужую локацию (mass-assignment чужого FK).
+    await assertOwned(this.locationModel, userId, [dto.locationId], 'Локация не найдена')
     return this.createForUser(userId, {
       locationId: dto.locationId,
       title: dto.title,
