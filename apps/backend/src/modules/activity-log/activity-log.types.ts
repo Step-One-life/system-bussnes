@@ -1,6 +1,6 @@
 import type { ActivityType } from '@trikick/shared'
 
-/** Удаление занятия — единственный необратимый (view-only) тип. */
+/** Удаление занятия и абонемента — необратимые (view-only) типы. */
 export function isUndoable(type: ActivityType): boolean {
-  return type !== 'training_deleted'
+  return type !== 'training_deleted' && type !== 'subscription_deleted'
 }

@@ -59,6 +59,7 @@
       "attendanceSub": "списано занятие, осталось {{count}}",
       "attendancePay": "платёж {{amount}} ₽",
       "subscription": "абонемент {{count}} занятий",
+      "subscriptionDeleted": "Удалён абонемент: {{name}}",
       "payment": "оплата {{amount}} ₽",
       "created": "Создано занятие «{{group}}»",
       "deleted": "Удалено: {{name}}",

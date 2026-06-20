@@ -41,6 +41,12 @@ export class ActivityLogService {
     return g?.name ?? ''
   }
 
+  /** Индивидуальная ли группа (контейнер индив./онлайн/парных занятий). */
+  async groupIsIndividual(groupId: string): Promise<boolean> {
+    const g = await this.groupModel.findByPk(groupId)
+    return g?.isIndividual ?? false
+  }
+
   async log(input: LogInput, tx: Transaction | null = null): Promise<ActivityLog> {
     return this.model.create(
       {
