@@ -96,6 +96,37 @@ export class SubscriptionsService {
     return { sub, status }
   }
 
+  /**
+   * Списать занятие строго с указанного абонемента (ручное списание по subId из
+   * UI). В отличие от deduct(), НЕ переселектит абонемент эвристикой: операция
+   * адресная, чтобы при нескольких активных абонементах группы списание ушло
+   * именно с того, по которому нажали (контракт :subId/deduct).
+   */
+  async deductById(
+    studentId: string,
+    subId: string,
+  ): Promise<{ sub: Subscription | null; status: DeductStatus }> {
+    const sub = await this.subModel.findOne({ where: { id: subId, studentId } })
+    if (!sub) return { sub: null, status: 'none' }
+
+    // Безлимит засчитывается, но число занятий не списывается.
+    if (!sub.isUnlimited) {
+      sub.remaining -= 1
+      if (sub.remaining <= 0) {
+        sub.remaining = 0
+        sub.isActive = false
+      }
+      await sub.save()
+    }
+
+    let status: DeductStatus = 'ok'
+    if (!sub.isUnlimited) {
+      if (!sub.isActive) status = 'expired'
+      else if (sub.remaining <= 2) status = 'ending'
+    }
+    return { sub, status }
+  }
+
   /** Restore one session (used when removing a student from a training). */
   async restore(
     studentId: string,
@@ -127,8 +158,13 @@ export class SubscriptionsService {
     return sub
   }
 
-  async extend(studentId: string, groupId: string, days: number): Promise<Subscription> {
-    const sub = await this.findActiveOrLatest(studentId, groupId)
+  /**
+   * Продлить срок строго указанного абонемента (по subId из UI). Раньше extend()
+   * выбирал абонемент эвристикой findActiveOrLatest по группе, игнорируя subId —
+   * при нескольких абонементах группы продлевался не тот, который открыли.
+   */
+  async extendById(studentId: string, subId: string, days: number): Promise<Subscription> {
+    const sub = await this.subModel.findOne({ where: { id: subId, studentId } })
     if (!sub) throw new NotFoundException('Абонемент не найден')
 
     const today = DateUtil.todayIso()

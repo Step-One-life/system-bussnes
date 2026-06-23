@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { Button, Checkbox, DatePicker, Select } from 'antd'
 
@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next'
 
 import { AdaptiveSheet, useToast } from 'common/ui'
 import { todayISO, tomorrowISO } from 'common/utils/date'
-import { usePricingRules } from 'entities/finance/api/use-finance'
+import { financeKeys, usePricingRules } from 'entities/finance/api/use-finance'
 import { autoCreatePayment } from 'entities/finance/lib/auto-payment'
 import { resolvePricingRule } from 'entities/finance/lib/pricing-lookup'
 import { useGroups } from 'entities/groups/api/use-groups'
@@ -51,6 +51,7 @@ export function RenewSubModal({
 }: RenewSubModalProps) {
   const { t } = useTranslation()
   const toast = useToast()
+  const qc = useQueryClient()
   const addSubscription = useAddSubscription()
   const { data: groups = [] } = useGroups()
   const { data: students = [] } = useStudents()
@@ -122,6 +123,13 @@ export function RenewSubModal({
     ? effectiveRule.format === 'unlimited'
     : (prevSub?.isUnlimited ?? false)
   const slot = prevSub?.timeSlot ?? 'regular'
+  // Парность и покрытие групп наследуем от прошлого абонемента (продление «как
+  // прошлый»). Иначе парный абонемент превращался в индивидуальный, а общий терял
+  // покрытие — и следующая парная отметка списывалась бы деньгами повторно. При
+  // явном выборе другого тарифа парность — по его виду (в списке видов pair нет),
+  // покрытие сводится к одной группе.
+  const isPair = effectiveRule ? effectiveRule.lesson_kind === 'pair' : (prevSub?.isPair ?? false)
+  const renewGroupIds = !effectiveRule ? prevSub?.groupIds : undefined
   const tuple: RuleTuple | null = effectiveRule
     ? {
         lessonKind,
@@ -181,6 +189,9 @@ export function RenewSubModal({
           validityDays,
           // Наследуем слот (прайм/обычный) от предыдущего абонемента группы.
           timeSlot: slot,
+          // Парность и покрытие групп — чтобы продление парного/общего не теряло их.
+          isPair,
+          groupIds: renewGroupIds,
         },
       })
 
@@ -196,6 +207,10 @@ export function RenewSubModal({
         } else {
           toast({ type: 'warn', title: t('finance.autoRecord.noTariff') })
         }
+        // Оплата (autoCreatePayment) пишет доход + расход зала напрямую через repo,
+        // минуя финансовые мутации — обновляем финансы вручную.
+        qc.invalidateQueries({ queryKey: financeKeys.payments })
+        qc.invalidateQueries({ queryKey: financeKeys.hallCosts })
       }
 
       toast({

@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next'
 import { useToast } from 'common/ui'
 import { newBatchId } from 'common/utils/batch-id'
 import { formatDayOfWeek } from 'common/utils/date'
+import { financeKeys } from 'entities/finance/api/use-finance'
 import { groupKeys, isGroupActiveOn, useGroups } from 'entities/groups'
 import { getSubStatus, studentKeys, useStudents } from 'entities/students'
 import {
@@ -216,6 +217,9 @@ export function useDayMarking(open: boolean, onClose: () => void, dateStr: strin
       qc.invalidateQueries({ queryKey: trainingKeys.all })
       qc.invalidateQueries({ queryKey: studentKeys.all })
       qc.invalidateQueries({ queryKey: groupKeys.all })
+      // За закрытый день записаны авто-платежи drop-in учеников — обновляем финансы.
+      qc.invalidateQueries({ queryKey: financeKeys.payments })
+      qc.invalidateQueries({ queryKey: financeKeys.hallCosts })
       setSaving(false)
     }
   }

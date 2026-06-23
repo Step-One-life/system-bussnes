@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
+import { financeKeys } from 'entities/finance/api/use-finance'
 import { studentKeys } from 'entities/students/api/use-students'
 import { markAttendance } from 'entities/trainings/model/training-logic'
 import {
@@ -86,6 +87,9 @@ export function useMarkAttendance() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: trainingKeys.all })
       qc.invalidateQueries({ queryKey: studentKeys.all })
+      // Отметка без абонемента пишет авто-платёж + расход зала — обновляем финансы.
+      qc.invalidateQueries({ queryKey: financeKeys.payments })
+      qc.invalidateQueries({ queryKey: financeKeys.hallCosts })
     },
   })
 }
@@ -98,6 +102,9 @@ export function useRemoveVisitAt() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: trainingKeys.all })
       qc.invalidateQueries({ queryKey: studentKeys.all })
+      // Снятие отметки откатывает авто-платёж на бэке — обновляем финансы.
+      qc.invalidateQueries({ queryKey: financeKeys.payments })
+      qc.invalidateQueries({ queryKey: financeKeys.hallCosts })
     },
   })
 }
