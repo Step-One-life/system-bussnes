@@ -16,6 +16,7 @@ import { CurrentUser } from '../../common/decorators/current-user.decorator'
 import { IdParamDto } from '../../common/dto/id-param.dto'
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard'
 import type { CurrentUserPayload } from '../../common/interfaces/current-user.interface'
+import { ActivityLogService } from '../activity-log/activity-log.service'
 import { CopyPricingDto } from './dto/copy-pricing.dto'
 import { CreateHallCostDto, UpdateHallCostDto } from './dto/create-hall-cost.dto'
 import { CreatePaymentDto, UpdatePaymentDto } from './dto/create-payment.dto'
@@ -40,6 +41,7 @@ export class FinanceController {
     private readonly hallCostsService: HallCostsService,
     private readonly pricingRulesService: PricingRulesService,
     private readonly statsService: FinanceStatsService,
+    private readonly activityLog: ActivityLogService,
   ) {}
 
   /* ── Payments ── */
@@ -57,7 +59,23 @@ export class FinanceController {
     @Body() dto: CreatePaymentDto,
   ): Promise<Payment> {
     await this.paymentsService.assertRefsOwned(user.id, dto)
-    return this.paymentsService.createPayment(user.id, dto)
+    const payment = await this.paymentsService.createPayment(user.id, dto)
+    // Ручная «Добавить оплату» пишется в журнал как payment_recorded (зеркало
+    // link-payment с logAsPayment). Авто-платежи флаг не ставят — без дубля.
+    if (dto.logAsPayment) {
+      // Доход может быть привязан к ученику ИЛИ к группе — резолвим то, что есть,
+      // чтобы строка журнала имела читаемый заголовок в обоих режимах.
+      const studentName = dto.studentId ? await this.activityLog.studentName(dto.studentId) : ''
+      const groupName = dto.groupId ? await this.activityLog.groupName(dto.groupId) : ''
+      await this.activityLog.log({
+        userId: user.id,
+        type: 'payment_recorded',
+        studentId: dto.studentId ?? null,
+        paymentId: payment.id,
+        summary: { studentName, groupName, amount: dto.clientAmount },
+      })
+    }
+    return payment
   }
 
   @Patch('payments/:id')

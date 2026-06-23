@@ -270,18 +270,27 @@ export class TrainingService extends OwnedCrudService<Training> {
         throw new ConflictException(`Серия пересекается с другим занятием (${date})`)
       }
     }
-    for (const { occ, date, time } of targets) {
-      if (shiftDays) occ.date = date
-      if (fields.time !== undefined) occ.time = time
-      if (fields.locationId !== undefined) occ.locationId = fields.locationId
-      if (fields.note !== undefined) occ.note = fields.note
-      if (fields.isOnline !== undefined) occ.isOnline = fields.isOnline
-      const location = occ.locationId
-        ? await this.locationService.findOneForUser(userId, occ.locationId).catch(() => null)
-        : null
-      occ.isPrime = isPrimeTime(occ.date, occ.time, location)
-      await occ.save()
-      await this.calendarSync.enqueueUpsert(userId, occ.id, occ.time)
+    // Сейв всей серии — одна транзакция: сбой посередине не оставит серию
+    // наполовину перенесённой. Upsert в календарный аутбокс ставим ПОСЛЕ
+    // коммита, чтобы синхронизация не получила откатанные данные.
+    const enqueueAfter: { id: string; time: string }[] = []
+    await this.sequelize.transaction(async (tx) => {
+      for (const { occ, date, time } of targets) {
+        if (shiftDays) occ.date = date
+        if (fields.time !== undefined) occ.time = time
+        if (fields.locationId !== undefined) occ.locationId = fields.locationId
+        if (fields.note !== undefined) occ.note = fields.note
+        if (fields.isOnline !== undefined) occ.isOnline = fields.isOnline
+        const location = occ.locationId
+          ? await this.locationService.findOneForUser(userId, occ.locationId).catch(() => null)
+          : null
+        occ.isPrime = isPrimeTime(occ.date, occ.time, location)
+        await occ.save({ transaction: tx })
+        enqueueAfter.push({ id: occ.id, time: occ.time })
+      }
+    })
+    for (const { id, time } of enqueueAfter) {
+      await this.calendarSync.enqueueUpsert(userId, id, time)
     }
     return trainings.length
   }
@@ -297,7 +306,6 @@ export class TrainingService extends OwnedCrudService<Training> {
     // Отмечать можно только своих учеников: иначе deduct/$add списали бы занятие
     // с чужого абонемента или повесили чужому ученику авто-платёж (IDOR).
     await this.assertStudentsOwned(training.userId, studentIds)
-    await training.$add('attendees', studentIds)
     const results: BillingResult[] = []
     for (const studentId of studentIds) {
       const existing = await this.visitModel.findOne({
@@ -361,6 +369,9 @@ export class TrainingService extends OwnedCrudService<Training> {
             },
             { transaction: tx },
           )
+          // Добавление в состав — в той же транзакции, что списание и визит:
+          // сбой посередине не оставит ученика «в составе» без визита/биллинга.
+          await training.$add('attendees', [studentId], { transaction: tx })
           return { studentId, billing, subStatus, remaining, amount, paymentId }
         })
         results.push(result)

@@ -77,6 +77,9 @@ export function AddPaymentModal({ open, onClose }: AddPaymentModalProps) {
       paid_at: form.date,
       notes: form.notes,
       hall_cost_id: hallCostId,
+      // Ручная оплата — в журнал (payment_recorded). Привязка к абонементу ниже
+      // НЕ логируется (link-payment без logAsPayment), поэтому записи не дублируются.
+      log_as_payment: true,
     })
     // Засчитать за неоплаченный абонемент: ставит finPaymentId, чтобы карточка
     // ушла из «Требует внимания» и доход не остался «осиротевшим».

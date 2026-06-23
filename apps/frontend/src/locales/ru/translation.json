@@ -186,7 +186,10 @@
       "sub8": "8 занятий",
       "remainingShort": "осталось {{count}}",
       "sessionsShort": "{{remaining}}/{{total}} зан.",
+      "sessionsOf": "{{remaining}}/{{total}} занятий",
       "daysShort": "{{count}} дн.",
+      "lastDay": "последний день",
+      "validUntil": "до {{date}}",
       "expiredShort": "срок истёк",
       "noSub": "нет абонемента",
       "noneActive": "Нет активных"

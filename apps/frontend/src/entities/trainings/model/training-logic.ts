@@ -54,7 +54,7 @@ function scheduleSlots(
 }
 
 /** Чистая проверка наслоения по уже загруженным данным. */
-function findConflicts(
+export function findConflicts(
   allTrainings: Training[],
   allGroups: Group[],
   groupMap: Record<string, Group>,
@@ -70,17 +70,13 @@ function findConflicts(
   const newStart = timeToMinutes(time)
   const newEnd = newStart + newDur
 
-  // Для групповых тренировок канонический источник — настройка группы (duration),
-  // потому что sessionDuration в записи может быть дефолтным 60 даже если группа
-  // имеет другую длительность. Для индивидуальных — per-session sessionDuration,
-  // потому что у одного тренера могут чередоваться 60- и 90-минутные сессии.
-  const durationOf = (t: Training): number => {
-    const group = groupMap[t.groupId]
-    if (group?.isIndividual) {
-      return t.sessionDuration ?? group.duration ?? 60
-    }
-    return group?.duration ?? t.sessionDuration ?? 60
-  }
+  // Длительность УЖЕ записанного занятия — строго t.sessionDuration (как у бэка:
+  // training-overlap.ts → `t.sessionDuration || 60`, без group.duration). Раньше
+  // для групповых брался group.duration, и при легаси/изменённой длительности
+  // (sessionDuration ≠ group.duration) фронтовый барьер расходился с серверным 409.
+  // group.duration — лишь дефолт при создании НОВОГО занятия (см. newDur выше),
+  // но не канон для уже сохранённого.
+  const durationOf = (t: Training): number => t.sessionDuration || 60
 
   const overlapping = filter(allTrainings, (t) => {
     if (t.date !== date || excludeIds.includes(t.id) || !t.time) return false

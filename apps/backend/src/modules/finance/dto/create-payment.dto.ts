@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger'
-import { IsIn, IsInt, IsNumber, IsOptional, IsString, IsUUID, Min } from 'class-validator'
+import { IsBoolean, IsIn, IsInt, IsNumber, IsOptional, IsString, IsUUID, Min } from 'class-validator'
 
 import type { ClientPaymentType, CreatePaymentShape } from '@trikick/shared'
 
@@ -66,6 +66,16 @@ export class CreatePaymentDto implements CreatePaymentShape {
   @IsOptional()
   @IsUUID()
   hallCostId?: string | null
+
+  /**
+   * Записать событие журнала payment_recorded (ручная «Добавить оплату»).
+   * Авто-платежи (покупка/продление абонемента, drop-in) флаг не ставят —
+   * они уже представлены в журнале своими событиями, дубль не нужен.
+   */
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBoolean()
+  logAsPayment?: boolean
 }
 
 export class UpdatePaymentDto extends PartialType(CreatePaymentDto) {}
