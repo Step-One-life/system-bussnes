@@ -4,6 +4,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 
 import { useToast } from 'common/ui'
+import { financeKeys } from 'entities/finance/api/use-finance'
 import { autoCreatePayment } from 'entities/finance/lib/auto-payment'
 import { resolvePricingRule, subTypeToTuple } from 'entities/finance/lib/pricing-lookup'
 import { useGroups } from 'entities/groups/api/use-groups'
@@ -178,6 +179,10 @@ export function useAddToTraining({ training, onDone }: UseAddToTrainingOptions) 
       }
 
       qc.invalidateQueries({ queryKey: studentKeys.all })
+      // Добавление ученика пишет доход (отметка без абонемента / разовый drop-in) —
+      // обновляем финансы.
+      qc.invalidateQueries({ queryKey: financeKeys.payments })
+      qc.invalidateQueries({ queryKey: financeKeys.hallCosts })
       onDone()
     } catch (e) {
       toast({ type: 'error', title: e instanceof Error ? e.message : t('common.error') })

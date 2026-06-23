@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
+import { financeKeys } from 'entities/finance/api/use-finance'
 import { studentKeys } from 'entities/students/api/use-students'
 import {
   deleteRecurringSeries,
@@ -21,6 +22,9 @@ export function useRemoveFromTraining() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: trainingKeys.all })
       qc.invalidateQueries({ queryKey: studentKeys.all })
+      // Бэк откатывает биллинг (удаляет авто-платёж/расход) — обновляем финансы.
+      qc.invalidateQueries({ queryKey: financeKeys.payments })
+      qc.invalidateQueries({ queryKey: financeKeys.hallCosts })
     },
   })
 }
@@ -39,6 +43,9 @@ export function useDeleteTrainingWithRestore() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: trainingKeys.all })
       qc.invalidateQueries({ queryKey: studentKeys.all })
+      // Бэк откатывает биллинг удалённых занятий — обновляем финансы.
+      qc.invalidateQueries({ queryKey: financeKeys.payments })
+      qc.invalidateQueries({ queryKey: financeKeys.hallCosts })
     },
   })
 }

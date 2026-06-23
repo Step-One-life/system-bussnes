@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next'
 
 import { useToast } from 'common/ui'
 import { todayISO } from 'common/utils/date'
-import { usePricingRules } from 'entities/finance/api/use-finance'
+import { financeKeys, usePricingRules } from 'entities/finance/api/use-finance'
 import { autoCreatePayment } from 'entities/finance/lib/auto-payment'
 import { useGroups } from 'entities/groups/api/use-groups'
 import { useLocations } from 'entities/locations'
@@ -148,6 +148,10 @@ export function AddSubModal({
 
       qc.invalidateQueries({ queryKey: studentKeys.all })
       qc.invalidateQueries({ queryKey: ['students', studentId] })
+      // Оплата абонемента (autoCreatePayment) пишет доход + расход зала напрямую
+      // через repo, минуя финансовые мутации — обновляем финансы вручную.
+      qc.invalidateQueries({ queryKey: financeKeys.payments })
+      qc.invalidateQueries({ queryKey: financeKeys.hallCosts })
       toast({
         type: 'success',
         title: t('subscriptions.add.created'),

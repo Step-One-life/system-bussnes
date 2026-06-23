@@ -146,6 +146,7 @@ export async function createPricingRule(data: PricingRuleInput): Promise<Pricing
     clientPrimePrice: data.client_prime_price ?? 0,
     hallCost: data.hall_cost ?? 0,
     hallPrimeCost: data.hall_prime_cost ?? 0,
+    validityDays: data.validity_days ?? 35,
     active: data.active ?? true,
   })
   return toPricingRule(raw)
@@ -167,6 +168,7 @@ export async function updatePricingRule(
   }
   if (changes.hall_cost !== undefined) body.hallCost = changes.hall_cost
   if (changes.hall_prime_cost !== undefined) body.hallPrimeCost = changes.hall_prime_cost
+  if (changes.validity_days !== undefined) body.validityDays = changes.validity_days
   if (changes.active !== undefined) body.active = changes.active
   const raw = await apiClient.patch<RawPricingRule>(`/finance/pricing-rules/${id}`, body)
   return toPricingRule(raw)

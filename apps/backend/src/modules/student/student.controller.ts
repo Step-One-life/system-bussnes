@@ -118,7 +118,10 @@ export class StudentController {
   ): Promise<Student> {
     const student = await this.studentService.findOneForUser(user.id, id)
     const sub = student.subscriptions?.find((s) => s.id === subId)
-    if (sub) await this.subscriptionsService.deduct(id, sub.groupId, sub.sessionDuration)
+    // Списываем строго с указанного абонемента (адресно по subId), а не эвристикой
+    // по группе — иначе при нескольких активных абонементах группы списание
+    // уходило не с того, по которому нажали.
+    if (sub) await this.subscriptionsService.deductById(id, subId)
     return this.studentService.findOneForUser(user.id, id)
   }
 
@@ -132,7 +135,8 @@ export class StudentController {
   ): Promise<Student> {
     const student = await this.studentService.findOneForUser(user.id, id)
     const sub = student.subscriptions?.find((s) => s.id === subId)
-    if (sub) await this.subscriptionsService.extend(id, sub.groupId, dto.days)
+    // Продлеваем строго указанный абонемент (адресно по subId), не эвристикой.
+    if (sub) await this.subscriptionsService.extendById(id, subId, dto.days)
     return this.studentService.findOneForUser(user.id, id)
   }
 
