@@ -183,7 +183,10 @@
       "sub8": "8 sessions",
       "remainingShort": "{{count}} left",
       "sessionsShort": "{{remaining}}/{{total}} sess.",
+      "sessionsOf": "{{remaining}}/{{total}} sessions",
       "daysShort": "{{count}} d",
+      "lastDay": "last day",
+      "validUntil": "until {{date}}",
       "expiredShort": "expired",
       "noSub": "no subscription",
       "noneActive": "None active"

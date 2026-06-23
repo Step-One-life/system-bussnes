@@ -67,7 +67,8 @@ export function describeEvent(e: ActivityEntry): EventView {
     case 'payment_recorded':
       return {
         ...base,
-        titleText: name,
+        // Имя ученика, иначе — группа (доход в режиме «Группа»), иначе пусто.
+        titleText: name || (group ? `«${group}»` : ''),
         detailKey: 'journal.icon.payment',
         detailParams: { amount: s.amount ?? 0 },
       }

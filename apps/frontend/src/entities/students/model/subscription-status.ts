@@ -65,7 +65,15 @@ export function findSubForGroup(
   // устойчивость к старым данным/объектам без поля isPair.
   // Безлимит — в конце очереди: сначала считаемые пакеты (зеркало pickSubForDeduct).
   const active = student.subscriptions
-    .filter((s) => s.isActive && (s.isPair ?? false) === wantPair)
+    .filter((s) => {
+      if (!s.isActive || (s.isPair ?? false) !== wantPair) return false
+      // Истёкшие по сроку не участвуют — зеркало бэкового isNotExpired: такой
+      // абонемент сервер не спишет (отметка уйдёт в авто-платёж), значит и
+      // превью остатка должно его пропускать. getDaysRemaining считает по
+      // локальной полуночи (без UTC-сдвига на границе суток).
+      const days = getDaysRemaining(s)
+      return days === null || days >= 0
+    })
     .sort((a, b) => Number(a.isUnlimited ?? false) - Number(b.isUnlimited ?? false))
   return (
     (sessionDuration !== null

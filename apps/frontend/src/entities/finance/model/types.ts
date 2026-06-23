@@ -50,6 +50,8 @@ export interface PaymentInput {
   paid_at?: string
   notes?: string
   hall_cost_id?: string | null
+  /** Записать событие журнала о ручной оплате (только «Добавить оплату»). */
+  log_as_payment?: boolean
 }
 
 export interface HallCost {

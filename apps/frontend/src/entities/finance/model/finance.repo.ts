@@ -206,6 +206,7 @@ export async function createPayment(data: PaymentInput): Promise<Payment> {
     paidAt: data.paid_at,
     notes: data.notes,
     hallCostId: data.hall_cost_id ?? null,
+    logAsPayment: data.log_as_payment,
   })
   return toPayment(raw)
 }
