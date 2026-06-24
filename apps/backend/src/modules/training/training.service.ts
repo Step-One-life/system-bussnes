@@ -270,6 +270,12 @@ export class TrainingService extends OwnedCrudService<Training> {
         throw new ConflictException(`Серия пересекается с другим занятием (${date})`)
       }
     }
+    // Локация из тела запроса должна принадлежать тренеру: иначе чужой/висячий
+    // locationId молча уходил в БД (.catch ниже глотал 404 от findOneForUser).
+    // Проверяем один раз ДО транзакции, как в create — на чужую локацию 404.
+    if (fields.locationId !== undefined && fields.locationId !== null) {
+      await this.locationService.findOneForUser(userId, fields.locationId)
+    }
     // Сейв всей серии — одна транзакция: сбой посередине не оставит серию
     // наполовину перенесённой. Upsert в календарный аутбокс ставим ПОСЛЕ
     // коммита, чтобы синхронизация не получила откатанные данные.
@@ -481,12 +487,18 @@ export class TrainingService extends OwnedCrudService<Training> {
    * 'none' → ничего; NULL (легаси) → старая эвристика restore. Визит
    * удаляется в конце.
    */
-  private async revertVisit(training: Training, studentId: string): Promise<void> {
+  private async revertVisit(
+    training: Training,
+    studentId: string,
+    outerTx?: Transaction,
+  ): Promise<void> {
     // Весь откат — одна транзакция, визит читается с блокировкой (FOR UPDATE):
     // параллельное снятие ждёт коммита первого, затем видит визит удалённым и
     // выходит — возврат занятия/платежа не задваивается. Атомарность возврата
-    // и удаления визита также закрывает сбой между ними.
-    await this.sequelize.transaction(async (tx) => {
+    // и удаления визита также закрывает сбой между ними. Если передан outerTx
+    // (удаление занятия/серии целиком) — работаем в нём, чтобы откаты всех
+    // учеников и destroy занятия коммитились вместе.
+    const run = async (tx: Transaction) => {
       const visit = await this.visitModel.findOne({
         where: { trainingId: training.id, studentId },
         transaction: tx,
@@ -501,14 +513,19 @@ export class TrainingService extends OwnedCrudService<Training> {
           .removePayment(training.userId, visit.paymentId)
           .catch(() => undefined)
       } else if (visit.billing == null) {
+        // Легаси-визит: возврат эвристикой по группе, но в ТОЙ ЖЕ транзакции
+        // (передаём tx) — иначе автокоммит до visit.destroy задваивал занятие.
         await this.subscriptionsService.restore(
           studentId,
           training.groupId,
           training.sessionDuration,
+          tx,
         )
       }
       await visit.destroy({ transaction: tx })
-    })
+    }
+    if (outerTx) await run(outerTx)
+    else await this.sequelize.transaction(run)
   }
 
   /** Remove a student from a training: revert billing + delete visit. */
@@ -523,12 +540,17 @@ export class TrainingService extends OwnedCrudService<Training> {
   async removeTraining(userId: string, id: string): Promise<void> {
     const training = await this.findOneForUser(userId, id)
     const attendeeIds = (training.attendees ?? []).map((s) => s.id)
-    for (const studentId of attendeeIds) {
-      await this.revertVisit(training, studentId)
-    }
+    // Откаты всех визитов и удаление занятия — одна транзакция: сбой посередине
+    // не оставит часть учеников с возвращённым занятием, а часть — нет.
+    await this.sequelize.transaction(async (tx) => {
+      for (const studentId of attendeeIds) {
+        await this.revertVisit(training, studentId, tx)
+      }
+      await training.destroy({ transaction: tx })
+    })
+    // Аутбокс/лог — после коммита, чтобы синхронизация не получила откатанные данные.
     await this.calendarSync.enqueueDelete(userId, training.id)
     await this.activityLog.markTrainingCreatedUndone(training.id)
-    await training.destroy()
   }
 
   /**
@@ -552,15 +574,23 @@ export class TrainingService extends OwnedCrudService<Training> {
       order: [['date', 'ASC']],
     })
     const first = trainings[0] ?? null
-    for (const t of trainings) {
-      const attendeeIds = (t.attendees ?? []).map((s) => s.id)
-      for (const studentId of attendeeIds) {
-        await this.revertVisit(t, studentId)
+    // Откаты визитов и удаление всех занятий серии — одна транзакция: сбой
+    // посередине не оставит серию частично удалённой с разбалансированными
+    // абонементами.
+    await this.sequelize.transaction(async (tx) => {
+      for (const t of trainings) {
+        const attendeeIds = (t.attendees ?? []).map((s) => s.id)
+        for (const studentId of attendeeIds) {
+          await this.revertVisit(t, studentId, tx)
+        }
+        await t.destroy({ transaction: tx })
       }
+    })
+    // Аутбокс/лог — после коммита (синхронизация не получит откатанные данные).
+    for (const t of trainings) {
       await this.calendarSync.enqueueDelete(userId, t.id)
       // Удаление занятия делает его «создание» необратимым — как и одиночное.
       await this.activityLog.markTrainingCreatedUndone(t.id)
-      await t.destroy()
     }
     return {
       removed: trainings.length,

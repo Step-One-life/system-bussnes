@@ -127,17 +127,25 @@ export class SubscriptionsService {
     return { sub, status }
   }
 
-  /** Restore one session (used when removing a student from a training). */
+  /**
+   * Легаси-откат занятия (визит с billing==null, созданный до unified-billing):
+   * subscriptionId не записан, поэтому абонемент выбираем эвристикой по группе
+   * (адресный возврат как в restoreById невозможен — для новых данных эта ветка
+   * не выполняется). Принимает tx, чтобы возврат шёл в той же транзакции, что и
+   * удаление визита: иначе sub.save() автокоммитился до visit.destroy и при
+   * откате транзакции занятие возвращалось без удаления визита (двойной возврат).
+   */
   async restore(
     studentId: string,
     groupId: string,
     sessionDuration: number | null = null,
+    tx: Transaction | null = null,
   ): Promise<Subscription | null> {
     const sub = await this.findActiveOrLatest(studentId, groupId, sessionDuration)
     if (!sub) return null
     sub.remaining = Math.min(sub.remaining + 1, sub.total)
     if (sub.remaining > 0) sub.isActive = true
-    await sub.save()
+    await sub.save({ transaction: tx ?? undefined })
     return sub
   }
 
