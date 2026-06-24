@@ -157,6 +157,7 @@ export type ActivityType =
   | 'subscription_created'
   | 'subscription_deleted'
   | 'subscription_extended'
+  | 'subscription_edited'
   | 'session_deducted'
   | 'payment_recorded'
   | 'training_created'

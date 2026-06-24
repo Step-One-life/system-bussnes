@@ -15,6 +15,7 @@ describe('isUndoable', () => {
   it('удаление абонемента и ручные корректировки — view-only', () => {
     expect(isUndoable('subscription_deleted')).toBe(false)
     expect(isUndoable('subscription_extended')).toBe(false)
+    expect(isUndoable('subscription_edited')).toBe(false)
     expect(isUndoable('session_deducted')).toBe(false)
   })
 })

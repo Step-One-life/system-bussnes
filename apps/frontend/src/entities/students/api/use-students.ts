@@ -6,6 +6,7 @@ import {
   deductSession,
   deleteStudent,
   deleteSubscription,
+  editSubscription,
   extendSubscription,
   getStudents,
   updateStudent,
@@ -87,6 +88,22 @@ export function useExtendSubscription() {
       groupId: string
       days: number
     }) => extendSubscription(studentId, groupId, days),
+    onSuccess: () => qc.invalidateQueries({ queryKey: studentKeys.all }),
+  })
+}
+
+export function useEditSubscription() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({
+      studentId,
+      subId,
+      changes,
+    }: {
+      studentId: string
+      subId: string
+      changes: { total?: number; expiresAt?: string; groupIds?: string[] }
+    }) => editSubscription(studentId, subId, changes),
     onSuccess: () => qc.invalidateQueries({ queryKey: studentKeys.all }),
   })
 }

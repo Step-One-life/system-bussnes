@@ -5,6 +5,7 @@ import {
   ClockCircleOutlined,
   DeleteOutlined,
   DollarOutlined,
+  EditOutlined,
   MinusCircleOutlined,
   MoreOutlined,
   PhoneOutlined,
@@ -18,7 +19,7 @@ import { Badge, StatusBadge, SubProgressBar } from 'common/ui'
 
 import { getDaysRemaining, getSubStatus, subLabel } from '../model/subscription-status'
 
-import type { Student } from '../model/types'
+import type { Student, Subscription } from '../model/types'
 import type { MenuProps } from 'antd'
 
 interface SubCardProps {
@@ -28,6 +29,7 @@ interface SubCardProps {
   onDeduct: () => void
   onRenew: () => void
   onExtend: () => void
+  onEdit: (sub: Subscription) => void
   onDeleteSub: (subId: string) => void
   onMarkPaid?: (subId: string) => void
 }
@@ -39,6 +41,7 @@ export function SubCard({
   onDeduct,
   onRenew,
   onExtend,
+  onEdit,
   onDeleteSub,
   onMarkPaid,
 }: SubCardProps) {
@@ -75,6 +78,14 @@ export function SubCard({
       icon: <DollarOutlined />,
       label: t('students.subCard.markPaid'),
       onClick: handleMarkPaid,
+    })
+  }
+  if (anySub) {
+    menuItems.push({
+      key: 'edit',
+      icon: <EditOutlined />,
+      label: t('students.subCard.editSub'),
+      onClick: () => onEdit(anySub),
     })
   }
   if (!(isIndividual && isRazovoe)) {

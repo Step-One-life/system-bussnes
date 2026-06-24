@@ -9,6 +9,7 @@ const VIEW_ONLY: ActivityType[] = [
   'training_deleted',
   'subscription_deleted',
   'subscription_extended',
+  'subscription_edited',
   'session_deducted',
 ]
 

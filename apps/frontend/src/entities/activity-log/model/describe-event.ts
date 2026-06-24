@@ -23,6 +23,7 @@ const ICONS: Record<ActivityType, string> = {
   subscription_created: '🔄',
   subscription_deleted: '🗑',
   subscription_extended: '📅',
+  subscription_edited: '✏️',
   session_deducted: '➖',
   payment_recorded: '💳',
   training_created: '➕',
@@ -34,6 +35,7 @@ const VIEW_ONLY: ActivityType[] = [
   'training_deleted',
   'subscription_deleted',
   'subscription_extended',
+  'subscription_edited',
   'session_deducted',
 ]
 
@@ -80,6 +82,12 @@ export function describeEvent(e: ActivityEntry): EventView {
       return {
         ...base,
         titleKey: 'journal.icon.subscriptionExtended',
+        titleParams: { name: nameWithGroup },
+      }
+    case 'subscription_edited':
+      return {
+        ...base,
+        titleKey: 'journal.icon.subscriptionEdited',
         titleParams: { name: nameWithGroup },
       }
     case 'session_deducted':
