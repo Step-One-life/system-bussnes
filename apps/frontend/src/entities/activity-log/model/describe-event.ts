@@ -22,10 +22,20 @@ const ICONS: Record<ActivityType, string> = {
   attendance_marked: '✅',
   subscription_created: '🔄',
   subscription_deleted: '🗑',
+  subscription_extended: '📅',
+  session_deducted: '➖',
   payment_recorded: '💳',
   training_created: '➕',
   training_deleted: '🗑',
 }
+
+/** Типы без обратной операции (зеркало backend isUndoable). */
+const VIEW_ONLY: ActivityType[] = [
+  'training_deleted',
+  'subscription_deleted',
+  'subscription_extended',
+  'session_deducted',
+]
 
 export function describeEvent(e: ActivityEntry): EventView {
   const s = e.summary
@@ -36,8 +46,8 @@ export function describeEvent(e: ActivityEntry): EventView {
   const base = {
     icon: ICONS[e.type],
     undone,
-    // Удаление занятия и абонемента — view-only (не откатываются).
-    undoable: e.type !== 'training_deleted' && e.type !== 'subscription_deleted' && !undone,
+    // View-only типы не откатываются (зеркало backend isUndoable).
+    undoable: !VIEW_ONLY.includes(e.type) && !undone,
   }
 
   switch (e.type) {
@@ -55,14 +65,31 @@ export function describeEvent(e: ActivityEntry): EventView {
       return {
         ...base,
         titleText: nameWithGroup,
-        detailKey: 'journal.icon.subscription',
-        detailParams: { count: s.sessionsCount ?? 0 },
+        // С ценой — детализированный ключ (сумма видна в журнале), иначе обычный.
+        detailKey:
+          s.amount && s.amount > 0 ? 'journal.icon.subscriptionPriced' : 'journal.icon.subscription',
+        detailParams: { count: s.sessionsCount ?? 0, amount: s.amount ?? 0 },
       }
     case 'subscription_deleted':
       return {
         ...base,
         titleKey: 'journal.icon.subscriptionDeleted',
         titleParams: { name: nameWithGroup },
+      }
+    case 'subscription_extended':
+      return {
+        ...base,
+        titleKey: 'journal.icon.subscriptionExtended',
+        titleParams: { name: nameWithGroup },
+      }
+    case 'session_deducted':
+      return {
+        ...base,
+        titleKey: 'journal.icon.sessionDeducted',
+        titleParams: { name: nameWithGroup },
+        ...(typeof s.remaining === 'number'
+          ? { detailKey: 'journal.icon.sessionDeductedDetail', detailParams: { count: s.remaining } }
+          : {}),
       }
     case 'payment_recorded':
       return {

@@ -104,7 +104,7 @@ export class StudentController {
       batchId: dto.batchId ?? null,
       studentId: id,
       subscriptionId: sub.id,
-      summary: { studentName, groupName, sessionsCount: sub.total },
+      summary: { studentName, groupName, sessionsCount: sub.total, amount: dto.amount ?? undefined },
     })
     return this.studentService.findOneForUser(user.id, id)
   }
@@ -121,7 +121,21 @@ export class StudentController {
     // Списываем строго с указанного абонемента (адресно по subId), а не эвристикой
     // по группе — иначе при нескольких активных абонементах группы списание
     // уходило не с того, по которому нажали.
-    if (sub) await this.subscriptionsService.deductById(id, subId)
+    if (sub) {
+      const { sub: updated } = await this.subscriptionsService.deductById(id, subId)
+      // Ручное списание (кнопка «Списать занятие») — событие журнала, view-only.
+      // Авто-списание при отметке логируется отдельно как attendance_marked,
+      // здесь дубля нет: это другой, ручной эндпоинт без тренировки.
+      const studentName = await this.activityLog.studentName(id)
+      const groupName = await this.activityLog.groupName(sub.groupId)
+      await this.activityLog.log({
+        userId: user.id,
+        type: 'session_deducted',
+        studentId: id,
+        subscriptionId: subId,
+        summary: { studentName, groupName, remaining: updated?.remaining ?? undefined },
+      })
+    }
     return this.studentService.findOneForUser(user.id, id)
   }
 
@@ -136,7 +150,19 @@ export class StudentController {
     const student = await this.studentService.findOneForUser(user.id, id)
     const sub = student.subscriptions?.find((s) => s.id === subId)
     // Продлеваем строго указанный абонемент (адресно по subId), не эвристикой.
-    if (sub) await this.subscriptionsService.extendById(id, subId, dto.days)
+    if (sub) {
+      await this.subscriptionsService.extendById(id, subId, dto.days)
+      // Продление срока — событие журнала, view-only (нет обратной операции).
+      const studentName = await this.activityLog.studentName(id)
+      const groupName = await this.activityLog.groupName(sub.groupId)
+      await this.activityLog.log({
+        userId: user.id,
+        type: 'subscription_extended',
+        studentId: id,
+        subscriptionId: subId,
+        summary: { studentName, groupName },
+      })
+    }
     return this.studentService.findOneForUser(user.id, id)
   }
 

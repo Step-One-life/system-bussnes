@@ -101,6 +101,10 @@ export class ActivityLogService {
 
   async markPaymentUndone(paymentId: string): Promise<void> {
     await this.markUndone({ type: 'payment_recorded', paymentId })
+    // Отметка, оплаченная этим платежом (billing='payment'), тоже становится
+    // необратимой — платёж удалён, откатывать нечего; иначе у события
+    // attendance_marked висела бы активная кнопка «Отменить» (идемпотентно).
+    await this.markUndone({ type: 'attendance_marked', paymentId })
   }
 
   /** Установить undone_at напрямую (для отката, когда обратная операция недостижима). */

@@ -1,4 +1,11 @@
 {
+  "errors": {
+    "boundary": {
+      "title": "Something went wrong",
+      "description": "An error occurred in the interface. Try reloading the page — your data is safe.",
+      "reload": "Reload"
+    }
+  },
   "settings": {
     "title": "Settings",
     "google": {
@@ -57,7 +64,11 @@
       "attendanceSub": "session deducted, {{count}} left",
       "attendancePay": "payment {{amount}} ₽",
       "subscription": "subscription, {{count}} sessions",
+      "subscriptionPriced": "subscription, {{count}} sessions · {{amount}} ₽",
       "subscriptionDeleted": "Subscription deleted: {{name}}",
+      "subscriptionExtended": "Extended: {{name}}",
+      "sessionDeducted": "Session deducted: {{name}}",
+      "sessionDeductedDetail": "{{count}} left",
       "payment": "payment {{amount}} ₽",
       "created": "Training created «{{group}}»",
       "deleted": "Deleted: {{name}}",

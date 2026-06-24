@@ -3,6 +3,7 @@ import { Column, DataType, ForeignKey, Table } from 'sequelize-typescript'
 import type { ClientPaymentType, FinStatus } from '@trikick/shared'
 
 import { OwnedEntity } from '../../common/entities/owned.entity'
+import { Group } from '../group/group.model'
 import { Student } from '../student/student.model'
 import { User } from '../user/user.model'
 
@@ -19,6 +20,9 @@ export class Payment extends OwnedEntity {
   @Column({ field: 'location_id', type: DataType.UUID, allowNull: true })
   declare locationId: string | null
 
+  // FK на группу объявлен и в БД (миграция add-payments-group-id, ON DELETE
+  // SET NULL) — аннотируем модель, чтобы Sequelize знал об ассоциации.
+  @ForeignKey(() => Group)
   @Column({ field: 'group_id', type: DataType.UUID, allowNull: true })
   declare groupId: string | null
 

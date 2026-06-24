@@ -11,4 +11,10 @@ describe('isUndoable', () => {
   it('удаление занятия — view-only', () => {
     expect(isUndoable('training_deleted')).toBe(false)
   })
+
+  it('удаление абонемента и ручные корректировки — view-only', () => {
+    expect(isUndoable('subscription_deleted')).toBe(false)
+    expect(isUndoable('subscription_extended')).toBe(false)
+    expect(isUndoable('session_deducted')).toBe(false)
+  })
 })

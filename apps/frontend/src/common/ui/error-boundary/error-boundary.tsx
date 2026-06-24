@@ -1,5 +1,7 @@
 import { Component } from 'react'
 
+import i18n from 'i18next'
+
 import type { ErrorInfo, ReactNode } from 'react'
 
 interface Props {
@@ -12,8 +14,9 @@ interface State {
 
 /**
  * Ловит ошибки рендера в дереве и показывает понятный экран вместо «белой
- * страницы». Текст и стили заданы напрямую (не через i18next/тему) — на случай,
- * если сломан сам провайдер локализации или темы.
+ * страницы». Стили заданы напрямую (с фолбэками токенов) — на случай, если
+ * сломана тема. Текст через i18n.t с defaultValue: при неинициализированном
+ * i18n (краш до старта) показывается русский фолбэк, иначе — язык пользователя.
  */
 export class ErrorBoundary extends Component<Props, State> {
   state: State = { hasError: false }
@@ -52,10 +55,14 @@ export class ErrorBoundary extends Component<Props, State> {
         }}
       >
         <div style={{ fontSize: '40px' }}>⚠️</div>
-        <h1 style={{ fontSize: '1.2rem', margin: 0 }}>Что-то пошло не так</h1>
+        <h1 style={{ fontSize: '1.2rem', margin: 0 }}>
+          {i18n.t('errors.boundary.title', { defaultValue: 'Что-то пошло не так' })}
+        </h1>
         <p style={{ color: 'var(--tk-text-secondary, #9aa0a6)', maxWidth: 360, margin: 0 }}>
-          Произошла ошибка в интерфейсе. Попробуйте перезагрузить страницу — данные не
-          потеряны.
+          {i18n.t('errors.boundary.description', {
+            defaultValue:
+              'Произошла ошибка в интерфейсе. Попробуйте перезагрузить страницу — данные не потеряны.',
+          })}
         </p>
         <button
           onClick={this.handleReload}
@@ -70,7 +77,7 @@ export class ErrorBoundary extends Component<Props, State> {
             cursor: 'pointer',
           }}
         >
-          Перезагрузить
+          {i18n.t('errors.boundary.reload', { defaultValue: 'Перезагрузить' })}
         </button>
       </div>
     )

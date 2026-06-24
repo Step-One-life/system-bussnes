@@ -156,6 +156,8 @@ export type ActivityType =
   | 'attendance_marked'
   | 'subscription_created'
   | 'subscription_deleted'
+  | 'subscription_extended'
+  | 'session_deducted'
   | 'payment_recorded'
   | 'training_created'
   | 'training_deleted'

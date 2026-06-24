@@ -71,6 +71,12 @@ export class CreateSubscriptionDto implements CreateSubscriptionShape {
   @IsOptional()
   @IsUUID()
   batchId?: string
+
+  @ApiPropertyOptional({ description: 'Цена абонемента — для записи суммы в журнал (создание/продление)' })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  amount?: number
 }
 
 export class ExtendSubscriptionDto {

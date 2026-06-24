@@ -45,6 +45,29 @@ describe('groupByDayAndBatch', () => {
     const [day] = groupByDayAndBatch([ev({ batchId: 'solo', id: '1' })])
     expect(day.items[0].kind).toBe('single')
   })
+
+  it('непоследовательные события одного batchId — в ОДИН пакет (без дубля key)', () => {
+    const [day] = groupByDayAndBatch([
+      ev({ batchId: 'b1', id: '1' }),
+      ev({ batchId: null, id: '2' }),
+      ev({ batchId: 'b1', id: '3' }),
+    ])
+    const batchItems = day.items.filter((i) => i.kind === 'batch')
+    // Ровно один пакет b1 (раньше создавалось два с одинаковым batchId).
+    expect(batchItems).toHaveLength(1)
+    expect(batchItems[0].kind === 'batch' && batchItems[0].batchId).toBe('b1')
+    expect(batchItems[0].kind === 'batch' && batchItems[0].children).toHaveLength(2)
+  })
+
+  it('один batchId в разных днях — разные пакеты (per-day сброс)', () => {
+    const days = groupByDayAndBatch([
+      ev({ batchId: 'b1', id: '1', createdAt: '2026-06-15T08:00:00.000Z' }),
+      ev({ batchId: 'b1', id: '2', createdAt: '2026-06-14T08:00:00.000Z' }),
+    ])
+    expect(days).toHaveLength(2)
+    expect(days[0].items[0].kind).toBe('batch')
+    expect(days[1].items[0].kind).toBe('batch')
+  })
 })
 
 describe('batchLabelKey', () => {
