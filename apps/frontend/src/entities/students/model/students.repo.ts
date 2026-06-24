@@ -228,6 +228,26 @@ export async function deleteSubscription(studentId: string, subId: string): Prom
   return true
 }
 
+/**
+ * Редактировать абонемент адресно по subId: дата / количество / состав групп.
+ * groupIds приходят ИМЕНАМИ групп (фронт работает с именами) и мапятся в UUID
+ * через group-map — ровно как addSubscription. Шлём только реально изменённые поля.
+ */
+export async function editSubscription(
+  studentId: string,
+  subId: string,
+  changes: { total?: number; expiresAt?: string; groupIds?: string[] },
+): Promise<void> {
+  const body: Record<string, unknown> = {}
+  if (changes.total !== undefined) body.total = changes.total
+  if (changes.expiresAt !== undefined) body.expiresAt = changes.expiresAt
+  if (changes.groupIds !== undefined) {
+    const { byName } = await getGroupMaps()
+    body.groupIds = changes.groupIds.map((name) => byName.get(name) ?? name)
+  }
+  await apiClient.patch(`/students/${studentId}/subscriptions/${subId}`, body)
+}
+
 export async function linkPaymentToSub(
   studentId: string,
   subId: string,

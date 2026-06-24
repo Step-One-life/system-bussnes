@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common'
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
 import { InjectModel } from '@nestjs/sequelize'
 import type { Transaction } from 'sequelize'
 
@@ -8,6 +8,7 @@ import type { DeductStatus, SubscriptionType, TimeSlot } from '@trikick/shared'
 import { DateUtil } from '../../common/utils/date.util'
 import { ActivityLogService } from '../activity-log/activity-log.service'
 import { Payment } from '../finance/payment.model'
+import { applySubEdit } from './lib/apply-sub-edit'
 import { covers, pickSubForDeduct } from './lib/pick-subscription'
 import { Subscription } from './subscription.model'
 
@@ -179,6 +180,47 @@ export class SubscriptionsService {
     const base = sub.expiresAt > today ? sub.expiresAt : today
     sub.expiresAt = DateUtil.addDays(base, days)
     if (sub.remaining > 0) sub.isActive = true
+    await sub.save()
+    return sub
+  }
+
+  /**
+   * Редактировать абонемент адресно по subId: дата / количество / состав групп.
+   * Пересчёт состояния — чистая функция applySubEdit (все валидации до мутаций,
+   * один save). Меняет ТОЛЬКО total/expiresAt/groupIds (+производные remaining/
+   * isActive/groupId); isPair/isUnlimited/timeSlot/sessionDuration/type/finPaymentId
+   * не трогаются.
+   */
+  async updateById(
+    studentId: string,
+    subId: string,
+    fields: { total?: number; expiresAt?: string; groupIds?: string[] },
+  ): Promise<Subscription> {
+    const sub = await this.subModel.findOne({ where: { id: subId, studentId } })
+    if (!sub) throw new NotFoundException('Абонемент не найден')
+
+    const result = applySubEdit(
+      {
+        total: sub.total,
+        remaining: sub.remaining,
+        isActive: sub.isActive,
+        expiresAt: sub.expiresAt,
+        groupId: sub.groupId,
+        groupIds: sub.groupIds ?? [sub.groupId],
+        isUnlimited: sub.isUnlimited,
+      },
+      fields,
+    )
+    if (!result.ok) {
+      throw new BadRequestException(`Использовано ${result.used} занятий — меньше нельзя`)
+    }
+
+    sub.total = result.state.total
+    sub.remaining = result.state.remaining
+    sub.isActive = result.state.isActive
+    sub.expiresAt = result.state.expiresAt
+    sub.groupId = result.state.groupId
+    sub.groupIds = result.state.groupIds
     await sub.save()
     return sub
   }

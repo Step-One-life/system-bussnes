@@ -69,6 +69,7 @@
       "subscriptionPriced": "абонемент {{count}} занятий · {{amount}} ₽",
       "subscriptionDeleted": "Удалён абонемент: {{name}}",
       "subscriptionExtended": "Продлён срок: {{name}}",
+      "subscriptionEdited": "Изменён абонемент: {{name}}",
       "sessionDeducted": "Списано занятие: {{name}}",
       "sessionDeductedDetail": "осталось {{count}}",
       "payment": "оплата {{amount}} ₽",
@@ -241,6 +242,7 @@
       "deleteSubTitle": "Удалить абонемент «{{type}}»?",
       "deductSession": "Списать занятие",
       "newSub": "Новый абонемент",
+      "editSub": "Редактировать",
       "markPaid": "Записать оплату",
       "askNextTraining": "Узнать о следующей тренировке",
       "extendTerm": "Продлить срок",
@@ -296,6 +298,18 @@
       "titleWith": "Оформить: {{name}} · «{{group}}»",
       "createBtn": "Оформить",
       "created": "Абонемент оформлен"
+    },
+    "edit": {
+      "titleWith": "Редактировать: {{name}}",
+      "dateLabel": "Действует до",
+      "countLabel": "Количество занятий",
+      "countUsedHint": "использовано {{count}}",
+      "countError": "использовано {{count}} — меньше нельзя",
+      "groupsLabel": "Группы абонемента",
+      "recordIncome": "Записать доход за +{{count}} занятий",
+      "incomeAmountLabel": "Сумма дохода, ₽",
+      "saved": "Абонемент изменён",
+      "incomeFailed": "Не удалось записать доход"
     },
     "add": {
       "title": "Новый абонемент",

@@ -14,12 +14,15 @@ import { useRemoveVisitAt } from 'entities/trainings/api/use-trainings'
 import { studentKeys } from '../api/use-students'
 import { getLastVisitDate,getStudentById } from '../model/students.repo'
 import { AddSubModal } from '../subscriptions/add-sub-modal'
+import { EditSubModal } from '../subscriptions/edit-sub-modal'
 import { ExtendSubModal } from '../subscriptions/extend-sub-modal'
 import { RenewSubModal } from '../subscriptions/renew-sub-modal'
 import { SharedSubCard } from './shared-sub-card'
 import { SubCard } from './sub-card'
 import { useStudentActions } from './use-student-actions'
 import { VisitHistory } from './visit-history'
+
+import type { Subscription } from '../model/types'
 
 import './student-drawer.scss'
 
@@ -40,6 +43,7 @@ export function StudentDrawer({ studentId, onClose, onEdit }: StudentDrawerProps
   const [subModal, setSubModal] = useState<SubModalState>(null)
   const [markPaid, setMarkPaid] = useState<MarkPaidState>(null)
   const [addSubOpen, setAddSubOpen] = useState(false)
+  const [editSub, setEditSub] = useState<{ sub: Subscription; isIndividual: boolean } | null>(null)
 
   const { data: student } = useQuery({
     queryKey: ['students', studentId],
@@ -82,6 +86,8 @@ export function StudentDrawer({ studentId, onClose, onEdit }: StudentDrawerProps
     student && actions.removeSubscription(student.id, subId)
   const handleMarkPaid = (groupId: string) => (subId: string) =>
     setMarkPaid({ subId, groupId })
+  const handleEditSub = (isIndividual: boolean) => (sub: Subscription) =>
+    setEditSub({ sub, isIndividual })
 
   const handleConfirmDelete = async () => {
     if (!student) return
@@ -100,6 +106,10 @@ export function StudentDrawer({ studentId, onClose, onEdit }: StudentDrawerProps
   const handleOpenAddSub = () => setAddSubOpen(true)
   const handleCloseAddSub = () => {
     setAddSubOpen(false)
+    refresh()
+  }
+  const handleCloseEditSub = () => {
+    setEditSub(null)
     refresh()
   }
 
@@ -143,6 +153,7 @@ export function StudentDrawer({ studentId, onClose, onEdit }: StudentDrawerProps
                   onDeduct={handleDeduct(g)}
                   onRenew={handleRenewSub(g)}
                   onExtend={handleExtendSub(g)}
+                  onEdit={handleEditSub(false)}
                   onDeleteSub={handleDeleteSub}
                   onMarkPaid={handleMarkPaid(g)}
                 />
@@ -161,6 +172,8 @@ export function StudentDrawer({ studentId, onClose, onEdit }: StudentDrawerProps
                     key={s.id}
                     student={student}
                     sub={s}
+                    onEdit={handleEditSub(false)}
+                    onExtend={handleExtendSub(s.groupId)}
                     onDeleteSub={handleDeleteSub}
                     onMarkPaid={handleMarkPaid(s.groupId)}
                   />
@@ -188,6 +201,7 @@ export function StudentDrawer({ studentId, onClose, onEdit }: StudentDrawerProps
                     onDeduct={handleDeduct(g)}
                     onRenew={handleRenewSub(g)}
                     onExtend={handleExtendSub(g)}
+                    onEdit={handleEditSub(true)}
                     onDeleteSub={handleDeleteSub}
                     onMarkPaid={handleMarkPaid(g)}
                   />
@@ -273,6 +287,16 @@ export function StudentDrawer({ studentId, onClose, onEdit }: StudentDrawerProps
           studentName={student.name}
           studentGroups={student.groups}
           onClose={handleCloseAddSub}
+        />
+      )}
+      {student && editSub && (
+        <EditSubModal
+          open
+          studentId={student.id}
+          studentName={student.name}
+          sub={editSub.sub}
+          isIndividual={editSub.isIndividual}
+          onClose={handleCloseEditSub}
         />
       )}
     </>

@@ -1,5 +1,13 @@
-import { Button, Popconfirm } from 'antd'
-import { DeleteOutlined, DollarOutlined } from '@ant-design/icons'
+import { useState } from 'react'
+
+import { Button, Dropdown, Modal } from 'antd'
+import {
+  ClockCircleOutlined,
+  DeleteOutlined,
+  DollarOutlined,
+  EditOutlined,
+  MoreOutlined,
+} from '@ant-design/icons'
 
 import { useTranslation } from 'react-i18next'
 
@@ -8,21 +16,56 @@ import { Badge, StatusBadge, SubProgressBar } from 'common/ui'
 import { getSubStatus, subLabel } from '../model/subscription-status'
 
 import type { Student, Subscription } from '../model/types'
+import type { MenuProps } from 'antd'
 
 interface SharedSubCardProps {
   student: Student
   sub: Subscription
+  onEdit: (sub: Subscription) => void
+  onExtend: () => void
   onDeleteSub: (subId: string) => void
   onMarkPaid: (subId: string) => void
 }
 
 /** Плашка общего абонемента: один баланс на несколько групп. */
-export function SharedSubCard({ student, sub, onDeleteSub, onMarkPaid }: SharedSubCardProps) {
+export function SharedSubCard({
+  student,
+  sub,
+  onEdit,
+  onExtend,
+  onDeleteSub,
+  onMarkPaid,
+}: SharedSubCardProps) {
   const { t } = useTranslation()
+  const [confirmDelete, setConfirmDelete] = useState(false)
   const status = getSubStatus(student, sub.groupId)
 
-  const handleDelete = () => onDeleteSub(sub.id)
   const handleMarkPaid = () => onMarkPaid(sub.id)
+
+  // Управление общим абонементом теперь через меню «…» (паритет с обычной
+  // карточкой): редактирование, продление срока, удаление.
+  const menuItems: MenuProps['items'] = [
+    {
+      key: 'edit',
+      icon: <EditOutlined />,
+      label: t('students.subCard.editSub'),
+      onClick: () => onEdit(sub),
+    },
+    {
+      key: 'extend',
+      icon: <ClockCircleOutlined />,
+      label: t('students.subCard.extendTerm'),
+      onClick: onExtend,
+    },
+    { type: 'divider' },
+    {
+      key: 'deleteSub',
+      danger: true,
+      icon: <DeleteOutlined />,
+      label: t('students.subCard.deleteSub'),
+      onClick: () => setConfirmDelete(true),
+    },
+  ]
 
   return (
     <div className="sub-card">
@@ -35,20 +78,14 @@ export function SharedSubCard({ student, sub, onDeleteSub, onMarkPaid }: SharedS
         <span style={{ marginLeft: 'auto' }}>
           <StatusBadge status={status} />
         </span>
-        <Popconfirm
-          title={t('students.subCard.deleteSubTitle', { type: subLabel(sub) })}
-          okText={t('common.delete')}
-          cancelText={t('common.cancel')}
-          okButtonProps={{ danger: true }}
-          onConfirm={handleDelete}
-        >
+        <Dropdown trigger={['click']} menu={{ items: menuItems }}>
           <Button
             type="text"
             size="small"
-            icon={<DeleteOutlined />}
-            aria-label={t('common.delete')}
+            icon={<MoreOutlined />}
+            aria-label={t('common.more')}
           />
-        </Popconfirm>
+        </Dropdown>
       </div>
 
       <SubProgressBar sub={sub.isActive ? sub : null} />
@@ -60,6 +97,19 @@ export function SharedSubCard({ student, sub, onDeleteSub, onMarkPaid }: SharedS
           </Button>
         </div>
       )}
+
+      <Modal
+        open={confirmDelete}
+        title={t('students.subCard.deleteSubTitle', { type: subLabel(sub) })}
+        okText={t('common.delete')}
+        cancelText={t('common.cancel')}
+        okButtonProps={{ danger: true }}
+        onOk={() => {
+          setConfirmDelete(false)
+          onDeleteSub(sub.id)
+        }}
+        onCancel={() => setConfirmDelete(false)}
+      />
     </div>
   )
 }

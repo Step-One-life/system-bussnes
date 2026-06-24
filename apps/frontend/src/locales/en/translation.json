@@ -67,6 +67,7 @@
       "subscriptionPriced": "subscription, {{count}} sessions · {{amount}} ₽",
       "subscriptionDeleted": "Subscription deleted: {{name}}",
       "subscriptionExtended": "Extended: {{name}}",
+      "subscriptionEdited": "Subscription edited: {{name}}",
       "sessionDeducted": "Session deducted: {{name}}",
       "sessionDeductedDetail": "{{count}} left",
       "payment": "payment {{amount}} ₽",
@@ -237,6 +238,7 @@
       "deleteSubTitle": "Delete subscription \"{{type}}\"?",
       "deductSession": "Deduct session",
       "newSub": "New subscription",
+      "editSub": "Edit",
       "markPaid": "Record payment",
       "askNextTraining": "Ask about next training",
       "extendTerm": "Extend term",
@@ -292,6 +294,18 @@
       "titleWith": "Issue: {{name}} · «{{group}}»",
       "createBtn": "Issue",
       "created": "Subscription issued"
+    },
+    "edit": {
+      "titleWith": "Edit: {{name}}",
+      "dateLabel": "Valid until",
+      "countLabel": "Sessions count",
+      "countUsedHint": "{{count}} used",
+      "countError": "{{count}} used — can't go lower",
+      "groupsLabel": "Subscription groups",
+      "recordIncome": "Record income for +{{count}} sessions",
+      "incomeAmountLabel": "Income amount, ₽",
+      "saved": "Subscription updated",
+      "incomeFailed": "Failed to record income"
     },
     "add": {
       "title": "New subscription",

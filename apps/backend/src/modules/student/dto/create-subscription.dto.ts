@@ -1,7 +1,9 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 import {
+  ArrayMinSize,
   IsArray,
   IsBoolean,
+  IsDateString,
   IsIn,
   IsInt,
   IsNumber,
@@ -84,6 +86,26 @@ export class ExtendSubscriptionDto {
   @IsInt()
   @Min(1)
   days!: number
+}
+
+export class UpdateSubscriptionDto {
+  @ApiPropertyOptional({ description: 'Новое число занятий' })
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  total?: number
+
+  @ApiPropertyOptional({ description: 'Новая дата «до» (YYYY-MM-DD)' })
+  @IsOptional()
+  @IsDateString()
+  expiresAt?: string
+
+  @ApiPropertyOptional({ type: [String], description: 'Новый состав групп (UUID, минимум 1)' })
+  @IsOptional()
+  @IsArray()
+  @ArrayMinSize(1)
+  @IsUUID('4', { each: true })
+  groupIds?: string[]
 }
 
 export class LinkPaymentDto {

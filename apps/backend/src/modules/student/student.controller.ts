@@ -24,6 +24,7 @@ import {
   CreateSubscriptionDto,
   ExtendSubscriptionDto,
   LinkPaymentDto,
+  UpdateSubscriptionDto,
 } from './dto/create-subscription.dto'
 import { UpdateStudentDto } from './dto/update-student.dto'
 import { Student } from './student.model'
@@ -185,6 +186,39 @@ export class StudentController {
         subscriptionId: subId,
         paymentId: dto.paymentId,
         summary: { studentName, amount: dto.amount },
+      })
+    }
+    return this.studentService.findOneForUser(user.id, id)
+  }
+
+  @Patch(':id/subscriptions/:subId')
+  @ApiOperation({ summary: 'Редактировать абонемент (дата/количество/состав групп)' })
+  async editSubscription(
+    @CurrentUser() user: CurrentUserPayload,
+    @Param('id') id: string,
+    @Param('subId') subId: string,
+    @Body() dto: UpdateSubscriptionDto,
+  ): Promise<Student> {
+    const student = await this.studentService.findOneForUser(user.id, id)
+    const sub = student.subscriptions?.find((s) => s.id === subId)
+    // IDOR: владение ВСЕМИ новыми группами обязательно (как addSubscription),
+    // иначе по перебранному UUID можно переписать абонемент на чужую группу.
+    if (dto.groupIds) {
+      await assertOwned(this.groupModel, user.id, dto.groupIds, 'Группа не найдена')
+    }
+    if (sub) {
+      // Имя группы для журнала фиксируем ДО правки: после смены состава
+      // sub.groupId может смениться (groupId уходит в groupIds[0]).
+      const groupName = await this.activityLog.groupName(sub.groupId)
+      await this.subscriptionsService.updateById(id, subId, dto)
+      // Редактирование — view-only событие журнала (без обратной операции).
+      const studentName = await this.activityLog.studentName(id)
+      await this.activityLog.log({
+        userId: user.id,
+        type: 'subscription_edited',
+        studentId: id,
+        subscriptionId: subId,
+        summary: { studentName, groupName },
       })
     }
     return this.studentService.findOneForUser(user.id, id)
