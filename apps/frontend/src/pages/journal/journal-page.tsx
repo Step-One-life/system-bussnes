@@ -123,7 +123,7 @@ export function JournalPage() {
               item.kind === 'single' ? (
                 renderEvent(item.event, false)
               ) : (
-                <div key={item.batchId} className="jr-batch">
+                <div key={`b-${item.batchId}`} className="jr-batch">
                   <div className="jr-batch__head" onClick={() => toggle(item.batchId)}>
                     <span className="jr-batch__caret">
                       {expanded.has(item.batchId) ? '▾' : '▸'}
@@ -134,6 +134,9 @@ export function JournalPage() {
                     <Button
                       size="small"
                       type="text"
+                      // Нечего откатывать (все события view-only или уже отменены) →
+                      // кнопка неактивна (undoBatch на бэке всё равно был бы no-op).
+                      disabled={!item.children.some((c) => describeEvent(c).undoable)}
                       onClick={(ev) => {
                         ev.stopPropagation()
                         onUndoBatch(item.batchId)

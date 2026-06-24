@@ -34,6 +34,13 @@ function localDate(iso: string): string {
 export function groupByDayAndBatch(events: ActivityEntry[]): LogDay[] {
   const days: LogDay[] = []
   let curDay: LogDay | null = null
+  // Карта batchId → пакет В ПРЕДЕЛАХ ТЕКУЩЕГО ДНЯ: события одного batchId
+  // собираются в один пакет, даже если идут не подряд (между ними чужие
+  // события — возможно при пагинации/курсоре). Раньше брался только последний
+  // элемент дня, и непоследовательные события давали ДВА пакета с одинаковым
+  // batchId → дублирующийся React key. Сбрасывается при смене дня, поэтому
+  // разбивка одного batchId по разным дням сохраняется.
+  let curBatches = new Map<string, BatchItem>()
 
   // Предподсчёт размеров пакетов, чтобы пакет из одного показать плоско.
   const batchCount = new Map<string, number>()
@@ -46,14 +53,18 @@ export function groupByDayAndBatch(events: ActivityEntry[]): LogDay[] {
     if (!curDay || curDay.date !== date) {
       curDay = { date, items: [] }
       days.push(curDay)
+      curBatches = new Map()
     }
     const isRealBatch = e.batchId && (batchCount.get(e.batchId) ?? 0) > 1
     if (isRealBatch) {
-      const last = curDay.items[curDay.items.length - 1]
-      if (last && last.kind === 'batch' && last.batchId === e.batchId) {
-        last.children.push(e)
+      const bid = e.batchId as string
+      const existing = curBatches.get(bid)
+      if (existing) {
+        existing.children.push(e)
       } else {
-        curDay.items.push({ kind: 'batch', batchId: e.batchId as string, children: [e] })
+        const item: BatchItem = { kind: 'batch', batchId: bid, children: [e] }
+        curBatches.set(bid, item)
+        curDay.items.push(item)
       }
     } else {
       curDay.items.push({ kind: 'single', event: e })
