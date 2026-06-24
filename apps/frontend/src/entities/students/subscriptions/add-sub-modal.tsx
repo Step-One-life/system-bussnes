@@ -120,6 +120,8 @@ export function AddSubModal({
         sessionDuration: rule.duration_minutes,
         validityDays: rule.validity_days,
         timeSlot: slot,
+        // Цена для записи суммы в журнал (событие subscription_created).
+        amount: priceOf(rule),
       })
 
       if (createdSub) {

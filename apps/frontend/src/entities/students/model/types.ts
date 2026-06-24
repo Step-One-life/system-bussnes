@@ -64,6 +64,8 @@ export interface SubscriptionInput {
   timeSlot?: TimeSlot
   /** Общий абонемент: покрываемые группы (имена). Пусто = только groupId. */
   groupIds?: string[]
+  /** Цена абонемента — пишется в журнал (событие создания/продления). */
+  amount?: number
 }
 
 export type SubStatusType = 'active' | 'ending' | 'danger' | 'expired' | 'none'

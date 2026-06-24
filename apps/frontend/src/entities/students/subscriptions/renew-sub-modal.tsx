@@ -192,6 +192,8 @@ export function RenewSubModal({
           // Парность и покрытие групп — чтобы продление парного/общего не теряло их.
           isPair,
           groupIds: renewGroupIds,
+          // Цена для записи суммы в журнал (событие subscription_created).
+          amount: price ?? undefined,
         },
       })
 

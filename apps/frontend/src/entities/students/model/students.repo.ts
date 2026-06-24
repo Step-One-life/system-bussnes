@@ -134,6 +134,7 @@ export async function addSubscription(
     validityDays: subData.validityDays,
     timeSlot: subData.timeSlot,
     groupIds,
+    amount: subData.amount,
   })
   const student = toStudent(raw, (await getGroupMaps()).byId)
   // Только что созданный абонемент = самый свежий по дате среди абонементов этой
