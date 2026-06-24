@@ -1,4 +1,11 @@
 {
+  "errors": {
+    "boundary": {
+      "title": "Something went wrong",
+      "description": "An error occurred in the interface. Try reloading the page — your data is safe.",
+      "reload": "Reload"
+    }
+  },
   "settings": {
     "title": "Settings",
     "google": {
