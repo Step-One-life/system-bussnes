@@ -4,7 +4,8 @@ import { Op } from 'sequelize'
 
 import { DateUtil } from '../../../common/utils/date.util'
 import { Training } from '../../training/training.model'
-import type { SyncOperation } from '../calendar.constants'
+import { SYNC_BACKFILL_LOOKBACK_DAYS, type SyncOperation } from '../calendar.constants'
+import { backfillCutoff } from '../lib/sync-decision'
 import { CalendarSyncTask } from '../models/calendar-sync-task.model'
 import { CalendarConnectionService } from './calendar-connection.service'
 
@@ -32,15 +33,27 @@ export class CalendarSyncService {
     await this.enqueue(userId, trainingId, 'delete')
   }
 
-  /** Бэкфилл: все будущие тренировки тренера со временем → upsert. */
+  /**
+   * Бэкфилл: тренировки тренера со временем за окно (последние N дней + всё
+   * будущее) → upsert. Прошлое в окне нужно, чтобы при подключении в календарь
+   * уехало текущее расписание целиком, а не только будущие даты.
+   */
   async backfill(userId: string): Promise<number> {
     if (!(await this.connections.isActive(userId))) return 0
-    const today = DateUtil.todayIso()
+    const since = backfillCutoff(DateUtil.todayIso(), SYNC_BACKFILL_LOOKBACK_DAYS)
     const trainings = await this.trainingModel.findAll({
-      where: { userId, date: { [Op.gte]: today }, time: { [Op.ne]: '' } },
+      where: { userId, date: { [Op.gte]: since }, time: { [Op.ne]: '' } },
     })
     for (const t of trainings) await this.enqueue(userId, t.id, 'upsert')
     return trainings.length
+  }
+
+  /**
+   * После переподключения поднять отложенные задачи тренера (runAfter = now),
+   * чтобы недосинхроненное во время needs_reconnect доехало без ожидания бэкоффа.
+   */
+  async resumePending(userId: string): Promise<void> {
+    await this.taskModel.update({ runAfter: new Date() }, { where: { userId, status: 'pending' } })
   }
 
   private async enqueue(

@@ -11,6 +11,7 @@ import { SYNC_BATCH, SYNC_INTERVAL_MS, SYNC_MAX_ATTEMPTS } from '../calendar.con
 import { buildEventResource, type GoogleEventResource } from '../lib/event-builder'
 import { eventIdFor } from '../lib/event-id'
 import { nextRunAfter } from '../lib/sync-backoff'
+import { syncTaskAction } from '../lib/sync-decision'
 import { CalendarSyncTask } from '../models/calendar-sync-task.model'
 import { CalendarConnectionService } from './calendar-connection.service'
 import { CalendarAuthError, GoogleOAuthService } from './google-oauth.service'
@@ -49,18 +50,26 @@ export class CalendarSyncWorker {
   }
 
   private async process(task: CalendarSyncTask): Promise<void> {
-    const refreshToken = await this.connections.getRefreshToken(task.userId)
     const conn = await this.connections.findByUser(task.userId)
-    if (!refreshToken || !conn || conn.status !== 'connected' || !task.calendarId) {
-      // Подключения нет/отключено — задача неактуальна.
+    const refreshToken = await this.connections.getRefreshToken(task.userId)
+    const action = syncTaskAction(conn?.status ?? null, !!task.calendarId, !!refreshToken)
+    if (action === 'skip') {
+      // Синхронизация выключена (отключена / нет календаря) — задача неактуальна.
       task.status = 'done'
+      await task.save()
+      return
+    }
+    if (action === 'defer') {
+      // Нужно переподключение — НЕ теряем задачу: оставляем pending, откладываем.
+      // resumePending поднимет её сразу после переподключения.
+      task.runAfter = nextRunAfter(SYNC_MAX_ATTEMPTS)
       await task.save()
       return
     }
 
     try {
       if (task.operation === 'delete') {
-        await this.google.deleteEvent(refreshToken, task.calendarId, eventIdFor(task.trainingId))
+        await this.google.deleteEvent(refreshToken!, task.calendarId!, eventIdFor(task.trainingId))
       } else {
         const event = await this.buildEvent(task)
         if (!event) {
@@ -69,7 +78,7 @@ export class CalendarSyncWorker {
           await task.save()
           return
         }
-        await this.google.upsertEvent(refreshToken, task.calendarId, event)
+        await this.google.upsertEvent(refreshToken!, task.calendarId!, event)
       }
       task.status = 'done'
       task.lastError = null

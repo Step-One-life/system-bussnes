@@ -54,9 +54,13 @@ export class CalendarController {
       const { sub } = this.jwt.verify<{ sub: string }>(state)
       const refreshToken = await this.google.exchangeCode(code)
       await this.connections.saveTokens(sub, refreshToken)
-      void reply.redirect(`${front}/settings?google=connected`)
+      // Переподключение: поднять отложенные задачи, чтобы недосинхроненное доехало.
+      await this.sync.resumePending(sub)
+      // Явный 302: NestJS заранее ставит хендлеру статус 200, и reply.redirect()
+      // без кода унаследовал бы его → браузер не следует Location (белая страница).
+      void reply.redirect(`${front}/settings?google=connected`, 302)
     } catch {
-      void reply.redirect(`${front}/settings?google=error`)
+      void reply.redirect(`${front}/settings?google=error`, 302)
     }
   }
 
