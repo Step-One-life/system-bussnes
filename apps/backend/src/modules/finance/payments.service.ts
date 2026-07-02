@@ -10,6 +10,7 @@ import { Location } from '../location/location.model'
 import { Student } from '../student/student.model'
 import { CreatePaymentDto } from './dto/create-payment.dto'
 import { FIN_SESSIONS } from './finance.constants'
+import { HallCost } from './hall-cost.model'
 import { HallCostsService } from './hall-costs.service'
 import { Payment } from './payment.model'
 
@@ -19,6 +20,7 @@ export class PaymentsService extends OwnedCrudService<Payment> {
 
   constructor(
     @InjectModel(Payment) private readonly paymentModel: typeof Payment,
+    @InjectModel(HallCost) private readonly hallCostModel: typeof HallCost,
     @InjectModel(Student) private readonly studentModel: typeof Student,
     @InjectModel(Location) private readonly locationModel: typeof Location,
     @InjectModel(Group) private readonly groupModel: typeof Group,
@@ -86,13 +88,25 @@ export class PaymentsService extends OwnedCrudService<Payment> {
     )
   }
 
-  /** Delete payment + cascade its linked hall cost. */
-  async removePayment(userId: string, id: string): Promise<void> {
-    const payment = await this.findOneForUser(userId, id)
+  /**
+   * Delete payment + cascade its linked hall cost. Принимает tx: откат отметки
+   * (revertVisit) работает в своей транзакции, и без tx destroy уходил
+   * автокоммитом — откат транзакции терял платёж при оставшемся визите.
+   */
+  async removePayment(userId: string, id: string, tx: Transaction | null = null): Promise<void> {
+    const payment = await this.paymentModel.findOne({
+      where: { id, userId },
+      transaction: tx ?? undefined,
+    })
+    if (!payment) throw new NotFoundException('Платёж не найден')
     if (payment.hallCostId) {
-      await this.hallCostsService.removeForUser(userId, payment.hallCostId).catch(() => undefined)
+      const hallCost = await this.hallCostModel.findOne({
+        where: { id: payment.hallCostId, userId },
+        transaction: tx ?? undefined,
+      })
+      if (hallCost) await hallCost.destroy({ transaction: tx ?? undefined })
     }
-    await payment.destroy()
-    await this.activityLog.markPaymentUndone(id)
+    await payment.destroy({ transaction: tx ?? undefined })
+    await this.activityLog.markPaymentUndone(id, tx)
   }
 }
