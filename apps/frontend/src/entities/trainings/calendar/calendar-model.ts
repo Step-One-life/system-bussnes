@@ -1,3 +1,4 @@
+import dayjs from 'dayjs'
 import filter from 'lodash/filter'
 import find from 'lodash/find'
 
@@ -288,20 +289,15 @@ export function buildCalendarSingleDay(
   }
 }
 
+// Подписи — через dayjs: его локаль выставляется в app/i18n.ts и следует за
+// языком интерфейса (раньше был hardcoded 'ru-RU' — в EN календарь оставался русским).
 export function formatDayLabel(d: Date): string {
-  return d.toLocaleDateString('ru-RU', { weekday: 'short', day: 'numeric', month: 'long' })
+  return dayjs(d).format('dd, D MMMM')
 }
 
 export function formatWeekRange(weekStart: Date): string {
-  const end = new Date(weekStart)
-  end.setDate(weekStart.getDate() + 6)
-  const fmtStart = weekStart.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' })
-  const fmtEnd = end.toLocaleDateString('ru-RU', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  })
-  return `${fmtStart} – ${fmtEnd}`
+  const start = dayjs(weekStart)
+  return `${start.format('D MMMM')} – ${start.add(6, 'day').format('D MMMM YYYY')}`
 }
 
 export function currentWeekStart(): Date {
