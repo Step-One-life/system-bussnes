@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 
 import { Button } from 'antd'
 import { CheckSquareOutlined, DollarOutlined, PlusOutlined } from '@ant-design/icons'
@@ -8,34 +8,19 @@ import { useTranslation } from 'react-i18next'
 import { useNow } from 'common/hooks/use-now'
 import { ErrorState, ListSkeleton, PageHeader, WarningItem } from 'common/ui'
 import { formatDateShort, todayISO, yesterdayISO } from 'common/utils/date'
-import { MarkPaidModal } from 'entities/finance'
 import { OnboardingChecklist } from 'entities/onboarding'
-import { StudentDrawer, StudentFormModal } from 'entities/students'
-import { RenewSubModal } from 'entities/students/subscriptions/renew-sub-modal'
-import {
-  AddToTrainingModal,
-  CalendarTrainingModal,
-  EditTrainingModal,
-  ensureIndividualGroup,
-  GroupTrainingModal,
-  IndividualSessionModal,
-  PairSessionModal,
-  TrainingTypeModal,
-} from 'entities/trainings'
+import { StudentDrawer } from 'entities/students'
 
 import { buildAgendaItems, minutesOfDay } from './agenda-model'
-import { CloseDaySheet } from './close-day-sheet'
-import { KpiDetailModal } from './kpi-detail-modal'
+import { HomeModals } from './home-modals'
 import { KpiStrip } from './kpi-strip'
-import { QuickMarkSheet } from './quick-mark-sheet'
 import { TodayAgenda } from './today-agenda'
-import { UnpaidSubsModal } from './unpaid-subs-modal'
 import { useHomePage } from './use-home-page'
 import { useUnpaidSubs } from './use-unpaid-subs'
 
-import type { QuickMarkTarget } from './quick-mark-sheet'
+import type { HomeModal } from './home-modals'
 import type { UnpaidSub } from './use-unpaid-subs'
-import type { CalendarBlock, Training } from 'entities/trainings'
+import type { CalendarBlock } from 'entities/trainings'
 
 import './home-page.scss'
 import dayjs from 'dayjs'
@@ -45,115 +30,64 @@ export function HomePage() {
   const page = useHomePage()
   const { unpaid, count: unpaidCount } = useUnpaidSubs()
 
+  // Всё модальное состояние страницы — одна переменная: какая модалка открыта
+  // и с какими данными (см. HomeModal). Отдельно только шторка ученика — она
+  // сосуществует с модалками (например, открывается из KPI-детализации).
+  const [modal, setModal] = useState<HomeModal | null>(null)
+  // Последняя открывавшаяся: при закрытии modal сразу null, а payload отсюда
+  // ещё нужен antd на время фейда закрытия.
+  const [lastModal, setLastModal] = useState<HomeModal | null>(null)
   const [drawerId, setDrawerId] = useState<string | null>(null)
-  const [paying, setPaying] = useState<UnpaidSub | null>(null)
-  const [unpaidOpen, setUnpaidOpen] = useState(false)
-  const [renew, setRenew] = useState<{ studentId: string; groupId: string } | null>(null)
-  const [typeOpen, setTypeOpen] = useState(false)
-  const [groupOpen, setGroupOpen] = useState(false)
-  const [indOpen, setIndOpen] = useState(false)
-  const [onlineOpen, setOnlineOpen] = useState(false)
-  const [pairOpen, setPairOpen] = useState(false)
-  const [indGroupId, setIndGroupId] = useState<string | null>(null)
-  const [addTarget, setAddTarget] = useState<Training | null>(null)
-  const [calBlock, setCalBlock] = useState<CalendarBlock | null>(null)
-  // Редактирование занятия из модалки отметки на главной (как с календаря).
-  const [editTraining, setEditTraining] = useState<Training | null>(null)
-  const [quickMark, setQuickMark] = useState<QuickMarkTarget | null>(null)
-  // Дата шторки «Закрыть день»: сегодня по кнопке, вчера — по сигналу внимания.
-  const [closeDate, setCloseDate] = useState(todayISO())
-  // Редактирование ученика из дровера (раньше карандаш в дровере с главной был
-  // мёртвым — onEdit={() => {}}); formKey пересоздаёт форму со свежими данными.
-  const [editStudentId, setEditStudentId] = useState<string | null>(null)
-  const [studentFormKey, setStudentFormKey] = useState(0)
-  const editStudent = page.students.find((s) => s.id === editStudentId) ?? null
+  // Счётчик открытий формы ученика: key пересоздаёт форму со свежими данными.
+  const formSeq = useRef(0)
 
-  const pickIndividual = async () => {
-    const g = await ensureIndividualGroup()
-    setIndGroupId(g.name)
-    setTypeOpen(false)
-    setIndOpen(true)
+  const openModal = (m: HomeModal) => {
+    setModal(m)
+    setLastModal(m)
   }
+  const handleCloseModal = () => setModal(null)
 
-  const pickOnline = async () => {
-    const g = await ensureIndividualGroup()
-    setIndGroupId(g.name)
-    setTypeOpen(false)
-    setOnlineOpen(true)
-  }
-
-  const pickPair = async () => {
-    const g = await ensureIndividualGroup()
-    setIndGroupId(g.name)
-    setTypeOpen(false)
-    setPairOpen(true)
-  }
-
-  const renewStudent = page.students.find((s) => s.id === renew?.studentId)
-
-  const handleOpenMarkToday = () => {
-    setCloseDate(todayISO())
-    page.setMarkTodayOpen(true)
-  }
-  const handleOpenYesterday = () => {
-    setCloseDate(yesterdayISO())
-    page.setMarkTodayOpen(true)
-  }
+  const handleOpenMarkToday = () => openModal({ kind: 'close-day', date: todayISO() })
+  const handleOpenYesterday = () => openModal({ kind: 'close-day', date: yesterdayISO() })
   const handleOpenYesterdayBtn = (e: { stopPropagation: () => void }) => {
     e.stopPropagation()
     handleOpenYesterday()
   }
-  const handleOpenType = () => setTypeOpen(true)
-  const handleOpenUnpaid = () => setUnpaidOpen(true)
-  const handleCloseUnpaid = () => setUnpaidOpen(false)
+  const handleOpenType = () => openModal({ kind: 'type-picker' })
+  const handleOpenUnpaid = () => openModal({ kind: 'unpaid' })
 
   const handleOpenStudentDrawer = (id: string) => () => setDrawerId(id)
   const handleRenewWarning =
     (studentId: string, groupId: string) => (e: { stopPropagation: () => void }) => {
       e.stopPropagation()
-      setRenew({ studentId, groupId })
+      openModal({ kind: 'renew', studentId, groupId })
     }
   const handlePayUnpaid = (u: UnpaidSub) => (e: { stopPropagation: () => void }) => {
     e.stopPropagation()
-    setPaying(u)
+    openModal({ kind: 'mark-paid', sub: u })
   }
-  const handleClosePaying = () => setPaying(null)
 
-  const handleCloseKpi = () => page.setKpiType(null)
-  const handleRenew = (studentId: string, groupId: string) => setRenew({ studentId, groupId })
-  const handleCloseMarkToday = () => page.setMarkTodayOpen(false)
-
-  const handleCloseType = () => setTypeOpen(false)
-  const handlePickGroup = () => {
-    setTypeOpen(false)
-    setGroupOpen(true)
-  }
-  const handleCloseGroup = () => setGroupOpen(false)
-  const handleCloseInd = () => setIndOpen(false)
-  const handleCloseOnline = () => setOnlineOpen(false)
-  const handleClosePair = () => setPairOpen(false)
-  const handleCloseAdd = () => setAddTarget(null)
-  const handleCloseCalBlock = () => setCalBlock(null)
-  const handleEditTraining = (training: Training) => setEditTraining(training)
-  const handleCloseEditTraining = () => setEditTraining(null)
+  const handleRowClick = (block: CalendarBlock) => openModal({ kind: 'calendar', block })
   const handleQuickMark = (block: CalendarBlock) =>
-    setQuickMark({
-      groupId: block.groupId,
-      trainingId: block.trainingId,
-      isInd: block.isInd,
-      time: block.time,
-      label: block.label,
-      date: todayISO(),
+    openModal({
+      kind: 'quick-mark',
+      target: {
+        groupId: block.groupId,
+        trainingId: block.trainingId,
+        isInd: block.isInd,
+        time: block.time,
+        label: block.label,
+        date: todayISO(),
+      },
     })
-  const handleCloseQuickMark = () => setQuickMark(null)
   const handleCloseDrawer = () => setDrawerId(null)
+  // Редактирование ученика из шторки: шторка закрывается, форма открывается
+  // со свежим ключом (seq) — пересоздание сбрасывает прошлый черновик.
   const handleEditStudent = (id: string) => {
     setDrawerId(null)
-    setEditStudentId(id)
-    setStudentFormKey((k) => k + 1)
+    formSeq.current += 1
+    openModal({ kind: 'student-form', editId: id, seq: formSeq.current })
   }
-  const handleCloseStudentForm = () => setEditStudentId(null)
-  const handleCloseRenew = () => setRenew(null)
 
   const now = useNow()
 
@@ -268,7 +202,7 @@ export function HomePage() {
       {page.kpis && (
         // Проблемные показатели первыми: тренер сперва видит, где беда.
         <div style={{ marginBottom: 'var(--sp-6)' }}>
-          <KpiStrip kpis={page.kpis} onSelect={page.setKpiType} />
+          <KpiStrip kpis={page.kpis} onSelect={(type) => openModal({ kind: 'kpi', type })} />
         </div>
       )}
 
@@ -293,7 +227,7 @@ export function HomePage() {
               items={agendaItems}
               students={page.students}
               now={now}
-              onRowClick={setCalBlock}
+              onRowClick={handleRowClick}
               onCreate={handleOpenType}
               onQuickMark={handleQuickMark}
             />
@@ -355,111 +289,24 @@ export function HomePage() {
         </section>
       </div>
 
-      <KpiDetailModal
-        kpiType={page.kpiType}
-        students={page.students}
-        trainings={page.trainings}
-        warnings={page.warnings}
-        indNames={page.indNames}
-        regularNames={page.regularNames}
-        onClose={handleCloseKpi}
-        onOpenStudent={setDrawerId}
-        onRenew={handleRenew}
-      />
-
-      <CloseDaySheet
-        open={page.markTodayOpen}
-        date={closeDate}
-        onClose={handleCloseMarkToday}
-      />
-
-      <QuickMarkSheet target={quickMark} onClose={handleCloseQuickMark} />
-
-      <UnpaidSubsModal open={unpaidOpen} onClose={handleCloseUnpaid} />
-
-      <TrainingTypeModal
-        open={typeOpen}
-        onClose={handleCloseType}
-        onPickGroup={handlePickGroup}
-        onPickIndividual={pickIndividual}
-        onPickOnline={pickOnline}
-        onPickPair={pickPair}
-      />
-      <GroupTrainingModal open={groupOpen} onClose={handleCloseGroup} />
-      {indGroupId && (
-        <IndividualSessionModal
-          open={indOpen}
-          indGroupId={indGroupId}
-          onClose={handleCloseInd}
-        />
-      )}
-      {indGroupId && (
-        <IndividualSessionModal
-          open={onlineOpen}
-          indGroupId={indGroupId}
-          onClose={handleCloseOnline}
-          isOnline
-        />
-      )}
-      {indGroupId && (
-        <PairSessionModal
-          open={pairOpen}
-          indGroupId={indGroupId}
-          onClose={handleClosePair}
-        />
-      )}
-
-      <CalendarTrainingModal
-        open={!!calBlock}
-        block={calBlock}
-        onClose={handleCloseCalBlock}
-        onAddStudent={setAddTarget}
-        onEdit={handleEditTraining}
-      />
-      <EditTrainingModal
-        open={!!editTraining}
-        training={editTraining}
-        onClose={handleCloseEditTraining}
-      />
-
-      <AddToTrainingModal
-        open={!!addTarget}
-        training={addTarget}
-        onClose={handleCloseAdd}
-      />
-
       <StudentDrawer
         studentId={drawerId}
         onClose={handleCloseDrawer}
         onEdit={handleEditStudent}
       />
 
-      <StudentFormModal
-        key={studentFormKey}
-        open={!!editStudentId}
-        student={editStudent}
-        onClose={handleCloseStudentForm}
+      <HomeModals
+        modal={modal}
+        lastModal={lastModal}
+        onOpen={openModal}
+        onClose={handleCloseModal}
+        onOpenStudent={setDrawerId}
+        students={page.students}
+        trainings={page.trainings}
+        warnings={page.warnings}
+        indNames={page.indNames}
+        regularNames={page.regularNames}
       />
-
-      {renew && renewStudent && (
-        <RenewSubModal
-          open
-          studentId={renew.studentId}
-          studentName={renewStudent.name}
-          groupId={renew.groupId}
-          onClose={handleCloseRenew}
-        />
-      )}
-
-      {paying && (
-        <MarkPaidModal
-          open
-          student={paying.student}
-          sub={paying.sub}
-          isIndividual={paying.isIndividual}
-          onClose={handleClosePaying}
-        />
-      )}
     </div>
   )
 }
