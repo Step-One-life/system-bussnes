@@ -8,10 +8,12 @@ import { finLabel } from 'entities/finance/model/finance-constants'
 import { useStudents } from 'entities/students'
 
 import { useHallCosts, usePayments } from '../api/use-finance'
+import { financeTotals } from './finance-totals'
 
 import type { HallCost, Payment } from '../model/types'
+import type { FinanceTotals } from './finance-totals'
 
-import { roundMoney, sumMoney } from '@trikick/shared'
+import { roundMoney } from '@trikick/shared'
 
 export type FinancePeriod = 'month' | 'quarter' | 'year' | 'all'
 
@@ -69,15 +71,7 @@ function periodLabelFor(period: FinancePeriod, offset: number): string {
   return ''
 }
 
-export interface FinanceTotals {
-  totalIncome: number
-  totalHall: number
-  netIncome: number
-  margin: number
-  avgCheck: number
-  activeCount: number
-  recordCount: number
-}
+export type { FinanceTotals }
 
 export interface MonthlyPoint {
   label: string
@@ -135,7 +129,6 @@ export function useFinanceStats(): FinanceStats {
   const canGoNext = offset > 0
   const periodLabel = periodLabelFor(period, offset)
 
-  const hallMap = useMemo(() => new Map(hallCosts.map((c) => [c.id, c])), [hallCosts])
   const studentMap = useMemo(
     () => new Map(students.map((s) => [s.id, s])),
     [students],
@@ -149,34 +142,34 @@ export function useFinanceStats(): FinanceStats {
     )
   }, [payments, period, offset])
 
-  const hallAmount = (p: Payment): number =>
-    (p.hall_cost_id ? hallMap.get(p.hall_cost_id)?.hall_amount : 0) ?? 0
+  // Расходы зала фильтруются по СВОЕЙ дате и считаются напрямую: расход,
+  // не привязанный к платежу (standalone), раньше выпадал из статистики.
+  const filteredHall = useMemo<HallCost[]>(() => {
+    const { start, end } = periodRange(period, offset)
+    if (!start && !end) return hallCosts
+    return hallCosts.filter(
+      (c) => (!start || c.paid_at >= start) && (!end || c.paid_at <= end),
+    )
+  }, [hallCosts, period, offset])
 
-  const totals = useMemo<FinanceTotals>(() => {
-    const totalIncome = sumMoney(filtered.map((p) => p.client_amount))
-    const totalHall = sumMoney(filtered.map(hallAmount))
-    const netIncome = roundMoney(totalIncome - totalHall)
-    return {
-      totalIncome,
-      totalHall,
-      netIncome,
-      margin: totalIncome > 0 ? Math.round((netIncome / totalIncome) * 100) : 0,
-      avgCheck: filtered.length > 0 ? Math.round(totalIncome / filtered.length) : 0,
-      activeCount: filtered.filter((p) => p.status === 'active').length,
-      recordCount: filtered.length,
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filtered, hallMap])
+  const totals = useMemo<FinanceTotals>(
+    () => financeTotals(filtered, filteredHall),
+    [filtered, filteredHall],
+  )
 
   const monthly = useMemo<MonthlyPoint[]>(() => {
     const byMonth = new Map<string, { income: number; hall: number }>()
-    for (const p of payments) {
-      const m = p.paid_at.slice(0, 7)
-      const acc = byMonth.get(m) ?? { income: 0, hall: 0 }
-      acc.income += p.client_amount
-      acc.hall += hallAmount(p)
-      byMonth.set(m, acc)
+    const monthAcc = (m: string) => {
+      let acc = byMonth.get(m)
+      if (!acc) {
+        acc = { income: 0, hall: 0 }
+        byMonth.set(m, acc)
+      }
+      return acc
     }
+    for (const p of payments) monthAcc(p.paid_at.slice(0, 7)).income += p.client_amount
+    // Расходы — напрямую из hallCosts (standalone-расход виден в графике).
+    for (const c of hallCosts) monthAcc(c.paid_at.slice(0, 7)).hall += c.hall_amount
     return [...byMonth.keys()]
       .sort()
       .map((m) => {
@@ -193,8 +186,7 @@ export function useFinanceStats(): FinanceStats {
           net: roundMoney(acc.income - acc.hall),
         }
       })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [payments, hallMap, lang])
+  }, [payments, hallCosts, lang])
 
   const clientTypes = useMemo<TypeBreakdown>(() => {
     const map = new Map<string, number>()
@@ -209,18 +201,14 @@ export function useFinanceStats(): FinanceStats {
 
   const hallTypes = useMemo<TypeBreakdown>(() => {
     const map = new Map<string, number>()
-    for (const p of filtered) {
-      const hc: HallCost | undefined = p.hall_cost_id
-        ? hallMap.get(p.hall_cost_id)
-        : undefined
-      if (!hc) continue
+    for (const hc of filteredHall) {
       const label = finLabel(hc.hall_payment_type)
       map.set(label, (map.get(label) ?? 0) + hc.hall_amount)
     }
     return { labels: [...map.keys()], values: [...map.values()].map(roundMoney) }
     // lang нужен: finLabel читает язык внутри — лейблы пересчитываются при его смене
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filtered, hallMap, lang])
+  }, [filteredHall, lang])
 
   const topClients = useMemo<TopClient[]>(() => {
     const map = new Map<string, number>()

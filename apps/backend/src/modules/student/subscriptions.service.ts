@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common'
-import { InjectModel } from '@nestjs/sequelize'
+import { InjectConnection, InjectModel } from '@nestjs/sequelize'
 import type { Transaction } from 'sequelize'
+import { Sequelize } from 'sequelize-typescript'
 
 import { SUB_TYPE_TOTALS } from '@trikick/shared'
 import type { DeductStatus, SubscriptionType, TimeSlot } from '@trikick/shared'
@@ -18,6 +19,7 @@ export class SubscriptionsService {
     @InjectModel(Subscription) private readonly subModel: typeof Subscription,
     @InjectModel(Payment) private readonly paymentModel: typeof Payment,
     private readonly activityLog: ActivityLogService,
+    @InjectConnection() private readonly sequelize: Sequelize,
   ) {}
 
   async add(
@@ -106,26 +108,35 @@ export class SubscriptionsService {
   async deductById(
     studentId: string,
     subId: string,
-  ): Promise<{ sub: Subscription | null; status: DeductStatus }> {
-    const sub = await this.subModel.findOne({ where: { id: subId, studentId } })
-    if (!sub) return { sub: null, status: 'none' }
+  ): Promise<{ sub: Subscription; status: DeductStatus }> {
+    // Транзакция с FOR UPDATE (зеркало deduct/restoreById): параллельные ручные
+    // списания не прочитают один и тот же remaining. Неизвестный subId — 404,
+    // а не молчаливое «ничего не произошло».
+    return this.sequelize.transaction(async (tx) => {
+      const sub = await this.subModel.findOne({
+        where: { id: subId, studentId },
+        transaction: tx,
+        lock: tx.LOCK.UPDATE,
+      })
+      if (!sub) throw new NotFoundException('Абонемент не найден')
 
-    // Безлимит засчитывается, но число занятий не списывается.
-    if (!sub.isUnlimited) {
-      sub.remaining -= 1
-      if (sub.remaining <= 0) {
-        sub.remaining = 0
-        sub.isActive = false
+      // Безлимит засчитывается, но число занятий не списывается.
+      if (!sub.isUnlimited) {
+        sub.remaining -= 1
+        if (sub.remaining <= 0) {
+          sub.remaining = 0
+          sub.isActive = false
+        }
+        await sub.save({ transaction: tx })
       }
-      await sub.save()
-    }
 
-    let status: DeductStatus = 'ok'
-    if (!sub.isUnlimited) {
-      if (!sub.isActive) status = 'expired'
-      else if (sub.remaining <= 2) status = 'ending'
-    }
-    return { sub, status }
+      let status: DeductStatus = 'ok'
+      if (!sub.isUnlimited) {
+        if (!sub.isActive) status = 'expired'
+        else if (sub.remaining <= 2) status = 'ending'
+      }
+      return { sub, status }
+    })
   }
 
   /**
@@ -173,15 +184,22 @@ export class SubscriptionsService {
    * при нескольких абонементах группы продлевался не тот, который открыли.
    */
   async extendById(studentId: string, subId: string, days: number): Promise<Subscription> {
-    const sub = await this.subModel.findOne({ where: { id: subId, studentId } })
-    if (!sub) throw new NotFoundException('Абонемент не найден')
+    // FOR UPDATE: параллельное продление/списание не работает с устаревшей строкой.
+    return this.sequelize.transaction(async (tx) => {
+      const sub = await this.subModel.findOne({
+        where: { id: subId, studentId },
+        transaction: tx,
+        lock: tx.LOCK.UPDATE,
+      })
+      if (!sub) throw new NotFoundException('Абонемент не найден')
 
-    const today = DateUtil.todayIso()
-    const base = sub.expiresAt > today ? sub.expiresAt : today
-    sub.expiresAt = DateUtil.addDays(base, days)
-    if (sub.remaining > 0) sub.isActive = true
-    await sub.save()
-    return sub
+      const today = DateUtil.todayIso()
+      const base = sub.expiresAt > today ? sub.expiresAt : today
+      sub.expiresAt = DateUtil.addDays(base, days)
+      if (sub.remaining > 0) sub.isActive = true
+      await sub.save({ transaction: tx })
+      return sub
+    })
   }
 
   /**
@@ -196,33 +214,41 @@ export class SubscriptionsService {
     subId: string,
     fields: { total?: number; expiresAt?: string; groupIds?: string[] },
   ): Promise<Subscription> {
-    const sub = await this.subModel.findOne({ where: { id: subId, studentId } })
-    if (!sub) throw new NotFoundException('Абонемент не найден')
+    // FOR UPDATE: пересчёт applySubEdit идёт от прочитанного состояния — без
+    // блокировки параллельное списание между чтением и save терялось бы.
+    return this.sequelize.transaction(async (tx) => {
+      const sub = await this.subModel.findOne({
+        where: { id: subId, studentId },
+        transaction: tx,
+        lock: tx.LOCK.UPDATE,
+      })
+      if (!sub) throw new NotFoundException('Абонемент не найден')
 
-    const result = applySubEdit(
-      {
-        total: sub.total,
-        remaining: sub.remaining,
-        isActive: sub.isActive,
-        expiresAt: sub.expiresAt,
-        groupId: sub.groupId,
-        groupIds: sub.groupIds ?? [sub.groupId],
-        isUnlimited: sub.isUnlimited,
-      },
-      fields,
-    )
-    if (!result.ok) {
-      throw new BadRequestException(`Использовано ${result.used} занятий — меньше нельзя`)
-    }
+      const result = applySubEdit(
+        {
+          total: sub.total,
+          remaining: sub.remaining,
+          isActive: sub.isActive,
+          expiresAt: sub.expiresAt,
+          groupId: sub.groupId,
+          groupIds: sub.groupIds ?? [sub.groupId],
+          isUnlimited: sub.isUnlimited,
+        },
+        fields,
+      )
+      if (!result.ok) {
+        throw new BadRequestException(`Использовано ${result.used} занятий — меньше нельзя`)
+      }
 
-    sub.total = result.state.total
-    sub.remaining = result.state.remaining
-    sub.isActive = result.state.isActive
-    sub.expiresAt = result.state.expiresAt
-    sub.groupId = result.state.groupId
-    sub.groupIds = result.state.groupIds
-    await sub.save()
-    return sub
+      sub.total = result.state.total
+      sub.remaining = result.state.remaining
+      sub.isActive = result.state.isActive
+      sub.expiresAt = result.state.expiresAt
+      sub.groupId = result.state.groupId
+      sub.groupIds = result.state.groupIds
+      await sub.save({ transaction: tx })
+      return sub
+    })
   }
 
   async remove(studentId: string, subId: string): Promise<void> {

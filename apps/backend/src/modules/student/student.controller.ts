@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   HttpCode,
+  NotFoundException,
   Param,
   Patch,
   Post,
@@ -120,23 +121,21 @@ export class StudentController {
     const student = await this.studentService.findOneForUser(user.id, id)
     const sub = student.subscriptions?.find((s) => s.id === subId)
     // Списываем строго с указанного абонемента (адресно по subId), а не эвристикой
-    // по группе — иначе при нескольких активных абонементах группы списание
-    // уходило не с того, по которому нажали.
-    if (sub) {
-      const { sub: updated } = await this.subscriptionsService.deductById(id, subId)
-      // Ручное списание (кнопка «Списать занятие») — событие журнала, view-only.
-      // Авто-списание при отметке логируется отдельно как attendance_marked,
-      // здесь дубля нет: это другой, ручной эндпоинт без тренировки.
-      const studentName = await this.activityLog.studentName(id)
-      const groupName = await this.activityLog.groupName(sub.groupId)
-      await this.activityLog.log({
-        userId: user.id,
-        type: 'session_deducted',
-        studentId: id,
-        subscriptionId: subId,
-        summary: { studentName, groupName, remaining: updated?.remaining ?? undefined },
-      })
-    }
+    // по группе. Неизвестный/чужой subId — честный 404, а не молчаливый no-op 200.
+    if (!sub) throw new NotFoundException('Абонемент не найден')
+    const { sub: updated } = await this.subscriptionsService.deductById(id, subId)
+    // Ручное списание (кнопка «Списать занятие») — событие журнала, view-only.
+    // Авто-списание при отметке логируется отдельно как attendance_marked,
+    // здесь дубля нет: это другой, ручной эндпоинт без тренировки.
+    const studentName = await this.activityLog.studentName(id)
+    const groupName = await this.activityLog.groupName(sub.groupId)
+    await this.activityLog.log({
+      userId: user.id,
+      type: 'session_deducted',
+      studentId: id,
+      subscriptionId: subId,
+      summary: { studentName, groupName, remaining: updated.remaining },
+    })
     return this.studentService.findOneForUser(user.id, id)
   }
 
@@ -151,19 +150,19 @@ export class StudentController {
     const student = await this.studentService.findOneForUser(user.id, id)
     const sub = student.subscriptions?.find((s) => s.id === subId)
     // Продлеваем строго указанный абонемент (адресно по subId), не эвристикой.
-    if (sub) {
-      await this.subscriptionsService.extendById(id, subId, dto.days)
-      // Продление срока — событие журнала, view-only (нет обратной операции).
-      const studentName = await this.activityLog.studentName(id)
-      const groupName = await this.activityLog.groupName(sub.groupId)
-      await this.activityLog.log({
-        userId: user.id,
-        type: 'subscription_extended',
-        studentId: id,
-        subscriptionId: subId,
-        summary: { studentName, groupName },
-      })
-    }
+    // Неизвестный subId — 404, а не молчаливый no-op 200.
+    if (!sub) throw new NotFoundException('Абонемент не найден')
+    await this.subscriptionsService.extendById(id, subId, dto.days)
+    // Продление срока — событие журнала, view-only (нет обратной операции).
+    const studentName = await this.activityLog.studentName(id)
+    const groupName = await this.activityLog.groupName(sub.groupId)
+    await this.activityLog.log({
+      userId: user.id,
+      type: 'subscription_extended',
+      studentId: id,
+      subscriptionId: subId,
+      summary: { studentName, groupName },
+    })
     return this.studentService.findOneForUser(user.id, id)
   }
 
@@ -201,26 +200,26 @@ export class StudentController {
   ): Promise<Student> {
     const student = await this.studentService.findOneForUser(user.id, id)
     const sub = student.subscriptions?.find((s) => s.id === subId)
+    // Неизвестный subId — 404, а не молчаливый no-op 200.
+    if (!sub) throw new NotFoundException('Абонемент не найден')
     // IDOR: владение ВСЕМИ новыми группами обязательно (как addSubscription),
     // иначе по перебранному UUID можно переписать абонемент на чужую группу.
     if (dto.groupIds) {
       await assertOwned(this.groupModel, user.id, dto.groupIds, 'Группа не найдена')
     }
-    if (sub) {
-      // Имя группы для журнала фиксируем ДО правки: после смены состава
-      // sub.groupId может смениться (groupId уходит в groupIds[0]).
-      const groupName = await this.activityLog.groupName(sub.groupId)
-      await this.subscriptionsService.updateById(id, subId, dto)
-      // Редактирование — view-only событие журнала (без обратной операции).
-      const studentName = await this.activityLog.studentName(id)
-      await this.activityLog.log({
-        userId: user.id,
-        type: 'subscription_edited',
-        studentId: id,
-        subscriptionId: subId,
-        summary: { studentName, groupName },
-      })
-    }
+    // Имя группы для журнала фиксируем ДО правки: после смены состава
+    // sub.groupId может смениться (groupId уходит в groupIds[0]).
+    const groupName = await this.activityLog.groupName(sub.groupId)
+    await this.subscriptionsService.updateById(id, subId, dto)
+    // Редактирование — view-only событие журнала (без обратной операции).
+    const studentName = await this.activityLog.studentName(id)
+    await this.activityLog.log({
+      userId: user.id,
+      type: 'subscription_edited',
+      studentId: id,
+      subscriptionId: subId,
+      summary: { studentName, groupName },
+    })
     return this.studentService.findOneForUser(user.id, id)
   }
 

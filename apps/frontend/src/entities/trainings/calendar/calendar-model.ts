@@ -10,6 +10,8 @@ import { isIndividualTraining } from '../model/training-helpers'
 import type { Training } from '../model/types'
 import type { Group } from 'entities/groups/model/types'
 
+import dayjs from 'dayjs'
+
 export const CAL_H_START = 10
 export const CAL_H_END = 22
 export const CAL_H_PX = 60
@@ -288,20 +290,15 @@ export function buildCalendarSingleDay(
   }
 }
 
+// Подписи — через dayjs: его локаль выставляется в app/i18n.ts и следует за
+// языком интерфейса (раньше был hardcoded 'ru-RU' — в EN календарь оставался русским).
 export function formatDayLabel(d: Date): string {
-  return d.toLocaleDateString('ru-RU', { weekday: 'short', day: 'numeric', month: 'long' })
+  return dayjs(d).format('dd, D MMMM')
 }
 
 export function formatWeekRange(weekStart: Date): string {
-  const end = new Date(weekStart)
-  end.setDate(weekStart.getDate() + 6)
-  const fmtStart = weekStart.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' })
-  const fmtEnd = end.toLocaleDateString('ru-RU', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  })
-  return `${fmtStart} – ${fmtEnd}`
+  const start = dayjs(weekStart)
+  return `${start.format('D MMMM')} – ${start.add(6, 'day').format('D MMMM YYYY')}`
 }
 
 export function currentWeekStart(): Date {
