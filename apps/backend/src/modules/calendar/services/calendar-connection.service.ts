@@ -52,9 +52,13 @@ export class CalendarConnectionService {
     await this.model.update({ status }, { where: { userId } })
   }
 
+  /** Расшифровать refresh-токен уже загруженного соединения (без запроса к БД). */
+  refreshTokenOf(conn: CalendarConnection | null): string | null {
+    return conn?.refreshTokenEnc ? this.crypto.decrypt(conn.refreshTokenEnc) : null
+  }
+
   async getRefreshToken(userId: string): Promise<string | null> {
-    const c = await this.findByUser(userId)
-    return c?.refreshTokenEnc ? this.crypto.decrypt(c.refreshTokenEnc) : null
+    return this.refreshTokenOf(await this.findByUser(userId))
   }
 
   async disconnect(userId: string): Promise<void> {

@@ -50,8 +50,10 @@ export class CalendarSyncWorker {
   }
 
   private async process(task: CalendarSyncTask): Promise<void> {
+    // Соединение читается ОДИН раз на задачу: токен расшифровывается из него же,
+    // часовой пояс передаётся в buildEvent (раньше — 3×findByUser на задачу).
     const conn = await this.connections.findByUser(task.userId)
-    const refreshToken = await this.connections.getRefreshToken(task.userId)
+    const refreshToken = this.connections.refreshTokenOf(conn)
     const action = syncTaskAction(conn?.status ?? null, !!task.calendarId, !!refreshToken)
     if (action === 'skip') {
       // Синхронизация выключена (отключена / нет календаря) — задача неактуальна.
@@ -71,7 +73,7 @@ export class CalendarSyncWorker {
       if (task.operation === 'delete') {
         await this.google.deleteEvent(refreshToken!, task.calendarId!, eventIdFor(task.trainingId))
       } else {
-        const event = await this.buildEvent(task)
+        const event = await this.buildEvent(task, conn?.calendarTimeZone ?? 'Europe/Moscow')
         if (!event) {
           // Тренировка исчезла — нечего синхронизировать.
           task.status = 'done'
@@ -102,7 +104,10 @@ export class CalendarSyncWorker {
     }
   }
 
-  private async buildEvent(task: CalendarSyncTask): Promise<GoogleEventResource | null> {
+  private async buildEvent(
+    task: CalendarSyncTask,
+    timeZone: string,
+  ): Promise<GoogleEventResource | null> {
     const training = await this.trainingModel.findByPk(task.trainingId)
     if (!training || !training.time) return null
 
@@ -117,7 +122,6 @@ export class CalendarSyncWorker {
       studentName = s?.name ?? null
     }
 
-    const conn = await this.connections.findByUser(task.userId)
     return buildEventResource({
       eventId: eventIdFor(training.id),
       groupName: group?.name ?? null,
@@ -131,7 +135,7 @@ export class CalendarSyncWorker {
       isOnline: training.isOnline,
       isPrime: training.isPrime,
       trainingId: training.id,
-      timeZone: conn?.calendarTimeZone ?? 'Europe/Moscow',
+      timeZone,
     })
   }
 }
