@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
 
-import { Alert, Button, Card, List, message,Modal, Select, Space, Tag, Typography } from 'antd'
+import { Alert, Button, Card, List, Select, Space, Tag, Typography } from 'antd'
 
 import { useTranslation } from 'react-i18next'
 
+import { AdaptiveSheet, useToast } from 'common/ui'
 import {
   type CalendarConnectionState,
   type CalendarOption,
@@ -13,15 +14,22 @@ import { buildTimeZoneOptions } from 'entities/calendar/timezones'
 
 export function GoogleCalendarCard() {
   const { t } = useTranslation()
+  const toast = useToast()
   const [state, setState] = useState<CalendarConnectionState | null>(null)
   const [picker, setPicker] = useState<CalendarOption[] | null>(null)
   const [busy, setBusy] = useState(false)
+  const [syncing, setSyncing] = useState(false)
 
   const refresh = () => calendarRepo.getStatus().then(setState).catch(() => undefined)
+  const fail = () => toast({ type: 'error', title: t('settings.google.requestFailed') })
 
   const openPicker = async () => {
-    const { calendars } = await calendarRepo.listCalendars()
-    setPicker(calendars)
+    try {
+      const { calendars } = await calendarRepo.listCalendars()
+      setPicker(calendars)
+    } catch {
+      fail()
+    }
   }
 
   useEffect(() => {
@@ -29,18 +37,25 @@ export function GoogleCalendarCard() {
     const params = new URLSearchParams(window.location.search)
     if (params.get('google') === 'connected') {
       // setPicker в колбэке промиса — не синхронно в теле эффекта
-      void calendarRepo.listCalendars().then(({ calendars }) => setPicker(calendars))
+      void calendarRepo
+        .listCalendars()
+        .then(({ calendars }) => setPicker(calendars))
+        .catch(() => fail())
       window.history.replaceState({}, '', window.location.pathname)
     } else if (params.get('google') === 'error') {
-      message.error(t('settings.google.error'))
+      toast({ type: 'error', title: t('settings.google.error') })
       window.history.replaceState({}, '', window.location.pathname)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const connect = async () => {
-    const { url } = await calendarRepo.getAuthUrl()
-    window.location.href = url
+    try {
+      const { url } = await calendarRepo.getAuthUrl()
+      window.location.href = url
+    } catch {
+      fail()
+    }
   }
 
   const choose = async (body: { calendarId?: string; create?: boolean; name?: string }) => {
@@ -52,26 +67,47 @@ export function GoogleCalendarCard() {
       })
       setPicker(null)
       await refresh()
-      message.success(t('settings.google.selected'))
+      toast({ type: 'success', title: t('settings.google.selected') })
+    } catch {
+      fail()
     } finally {
       setBusy(false)
     }
   }
 
   const resync = async () => {
-    const { backfilled } = await calendarRepo.resync()
-    message.success(t('settings.google.resynced', { count: backfilled }))
+    setSyncing(true)
+    try {
+      const { backfilled } = await calendarRepo.resync()
+      toast({ type: 'success', title: t('settings.google.resynced', { count: backfilled }) })
+    } catch {
+      fail()
+    } finally {
+      setSyncing(false)
+    }
   }
 
   const changeTimeZone = async (tz: string) => {
-    const { backfilled } = await calendarRepo.setTimeZone(tz)
-    await refresh()
-    message.success(t('settings.google.timeZoneUpdated', { count: backfilled }))
+    try {
+      const { backfilled } = await calendarRepo.setTimeZone(tz)
+      await refresh()
+      toast({
+        type: 'success',
+        title: t('settings.google.timeZoneUpdated', { count: backfilled }),
+      })
+    } catch {
+      fail()
+    }
   }
 
   const disconnect = async () => {
-    await calendarRepo.disconnect()
-    await refresh()
+    try {
+      await calendarRepo.disconnect()
+      await refresh()
+      toast({ type: 'success', title: t('settings.google.disconnected') })
+    } catch {
+      fail()
+    }
   }
 
   const status = state?.status ?? 'disconnected'
@@ -94,7 +130,9 @@ export function GoogleCalendarCard() {
           <>
             <Tag color="green">{t('settings.google.connectedTo', { name: state.calendarId })}</Tag>
             <Space wrap>
-              <Button onClick={resync}>{t('settings.google.resync')}</Button>
+              <Button onClick={resync} loading={syncing}>
+                {t('settings.google.resync')}
+              </Button>
               <Button onClick={openPicker}>{t('settings.google.changeCalendar')}</Button>
               <Button danger onClick={disconnect}>
                 {t('settings.google.disconnect')}
@@ -125,11 +163,11 @@ export function GoogleCalendarCard() {
         )}
       </Space>
 
-      <Modal
+      <AdaptiveSheet
         open={!!picker}
         title={t('settings.google.pickerTitle')}
+        onClose={() => setPicker(null)}
         footer={null}
-        onCancel={() => setPicker(null)}
       >
         <Button
           block
@@ -154,7 +192,7 @@ export function GoogleCalendarCard() {
             </List.Item>
           )}
         />
-      </Modal>
+      </AdaptiveSheet>
     </Card>
   )
 }

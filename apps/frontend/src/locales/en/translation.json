@@ -25,6 +25,8 @@
       "disconnect": "Disconnect",
       "needsReconnect": "Google access expired — reconnect the calendar.",
       "error": "Could not connect Google. Please try again.",
+      "requestFailed": "The action failed. Please try again.",
+      "disconnected": "Google Calendar disconnected",
       "timeZoneLabel": "Time zone",
       "timeZoneUpdated": "Time zone updated, sessions re-synced: {{count}}"
     }

@@ -2,7 +2,10 @@ import map from 'lodash/map'
 
 import { apiClient } from 'common/services/api/api-client'
 import { getGroupMaps } from 'common/services/api/group-map'
+import { todayISO } from 'common/utils/date'
 import { getStudentById, updateStudent } from 'entities/students/model/students.repo'
+
+import { trainingsWindow } from './training-window'
 
 import type { Training, TrainingInput } from './types'
 
@@ -57,8 +60,10 @@ function sortByDateDesc(trainings: Training[]): Training[] {
 }
 
 export async function getTrainings(): Promise<Training[]> {
+  // Скользящее окно вместо всей истории — диапазон режет SQL на бэке.
+  const { from, to } = trainingsWindow(todayISO())
   const [raw, maps] = await Promise.all([
-    apiClient.get<RawTraining[]>('/trainings'),
+    apiClient.get<RawTraining[]>(`/trainings?from=${from}&to=${to}`),
     getGroupMaps(),
   ])
   return sortByDateDesc(map(raw, (r) => toTraining(r, maps.byId)))
