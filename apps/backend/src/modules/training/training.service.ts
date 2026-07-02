@@ -1,6 +1,6 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common'
 import { InjectConnection, InjectModel } from '@nestjs/sequelize'
-import { UniqueConstraintError } from 'sequelize'
+import { Op, UniqueConstraintError } from 'sequelize'
 import type { FindOptions, Transaction } from 'sequelize'
 import { Sequelize } from 'sequelize-typescript'
 
@@ -612,14 +612,20 @@ export class TrainingService extends OwnedCrudService<Training> {
     }
   }
 
-  /** Trainings within a date range. */
+  /** Trainings within a date range — диапазон режет SQL, а не JS после полной выборки. */
   async findInRange(userId: string, from?: string, to?: string): Promise<Training[]> {
-    const trainings = await this.findEveryForUser(userId)
-    if (!from && !to) return trainings
-    return trainings.filter((t) => {
-      if (from && t.date < from) return false
-      if (to && t.date > to) return false
-      return true
+    const date =
+      from && to
+        ? { [Op.between]: [from, to] as [string, string] }
+        : from
+          ? { [Op.gte]: from }
+          : to
+            ? { [Op.lte]: to }
+            : undefined
+    return this.trainingModel.findAll({
+      where: { userId, ...(date ? { date } : {}) },
+      include: [Student],
+      order: [['createdAt', 'DESC']],
     })
   }
 
