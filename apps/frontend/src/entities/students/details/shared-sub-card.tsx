@@ -22,7 +22,8 @@ interface SharedSubCardProps {
   student: Student
   sub: Subscription
   onEdit: (sub: Subscription) => void
-  onExtend: () => void
+  /** Продление адресное: карточка передаёт СВОЙ абонемент. */
+  onExtend: (sub: Subscription) => void
   onDeleteSub: (subId: string) => void
   onMarkPaid: (subId: string) => void
 }
@@ -55,7 +56,7 @@ export function SharedSubCard({
       key: 'extend',
       icon: <ClockCircleOutlined />,
       label: t('students.subCard.extendTerm'),
-      onClick: onExtend,
+      onClick: () => onExtend(sub),
     },
     { type: 'divider' },
     {

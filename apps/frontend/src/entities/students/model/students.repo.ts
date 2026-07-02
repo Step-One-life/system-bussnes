@@ -153,39 +153,21 @@ function filterByGroup(subs: Subscription[], groupName: string): Subscription[] 
   return subs.filter((s) => s.groupId === groupName)
 }
 
-/** Find the active subscription id (or the latest one) for a group on a student. */
-function pickSubForGroup(student: Student, groupName: string): Subscription | null {
-  const active = find(student.subscriptions, (s) => s.groupId === groupName && s.isActive)
-  if (active) return active
-  const all = filterByGroup(student.subscriptions, groupName)
-  if (isEmpty(all)) return null
-  return [...all].sort(
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-  )[0]
-}
-
-export async function deductSession(
+/**
+ * Списать занятие адресно с указанного абонемента. Выбор эвристикой по группе
+ * здесь запрещён: при нескольких активных абонементах одной группы (штатно в
+ * контейнере «Индивидуальные»: обычный + парный + онлайн) списание уходило не
+ * с того абонемента, по которому нажали в карточке.
+ */
+export async function deductSessionById(
   studentId: string,
-  groupId: string,
-  sessionDuration: number | null = null,
+  subId: string,
 ): Promise<{ sub: Subscription | null; status: DeductStatus }> {
-  const student = await getStudentById(studentId)
-  if (!student) return { sub: null, status: 'none' }
-
-  const target = find(
-    student.subscriptions,
-    (s) =>
-      s.groupId === groupId &&
-      s.isActive &&
-      (sessionDuration === null || (s.sessionDuration ?? 60) === sessionDuration),
-  )
-  if (!target) return { sub: null, status: 'none' }
-
   const raw = await apiClient.post<RawStudent>(
-    `/students/${studentId}/subscriptions/${target.id}/deduct`,
+    `/students/${studentId}/subscriptions/${subId}/deduct`,
   )
   const updated = toStudent(raw, (await getGroupMaps()).byId)
-  const sub = find(updated.subscriptions, (s) => s.id === target.id) ?? null
+  const sub = find(updated.subscriptions, (s) => s.id === subId) ?? null
 
   let status: DeductStatus = 'ok'
   if (!sub) status = 'none'
@@ -204,23 +186,18 @@ export async function getActiveSubscription(
   return find(student.subscriptions, (s) => s.groupId === groupId && s.isActive) ?? null
 }
 
-export async function extendSubscription(
+/** Продлить срок адресно указанного абонемента (см. deductSessionById). */
+export async function extendSubscriptionById(
   studentId: string,
-  groupId: string,
+  subId: string,
   days: number,
 ): Promise<Subscription | null> {
-  const student = await getStudentById(studentId)
-  if (!student) return null
-
-  const target = pickSubForGroup(student, groupId)
-  if (!target) return null
-
   const raw = await apiClient.post<RawStudent>(
-    `/students/${studentId}/subscriptions/${target.id}/extend`,
+    `/students/${studentId}/subscriptions/${subId}/extend`,
     { days },
   )
   const updated = toStudent(raw, (await getGroupMaps()).byId)
-  return find(updated.subscriptions, (s) => s.id === target.id) ?? null
+  return find(updated.subscriptions, (s) => s.id === subId) ?? null
 }
 
 export async function deleteSubscription(studentId: string, subId: string): Promise<boolean> {
@@ -267,16 +244,6 @@ export async function linkPaymentToSub(
 }
 
 /* ── Visit history ── */
-
-export async function recordVisit(
-  studentId: string,
-  visit: { date: string; groupId: string; trainingId: string },
-): Promise<void> {
-  // Visits are created server-side when a student is added as a training
-  // attendee (POST /trainings/:id/attendees). No standalone endpoint exists.
-  void studentId
-  void visit
-}
 
 export function getLastVisitDate(student: Student): string | null {
   if (isEmpty(student.visitHistory)) return null
