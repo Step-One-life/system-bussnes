@@ -1,12 +1,10 @@
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 
 import { computeKPIs, computeWarnings } from 'common/lib/kpi'
 import { todayISO, yesterdayISO } from 'common/utils/date'
 import { useGroups } from 'entities/groups'
 import { useStudents } from 'entities/students'
 import { buildCalendarDay, useTrainings } from 'entities/trainings'
-
-import type { KpiType } from './kpi-detail-modal'
 
 export function useHomePage() {
   const { data: students = [], isLoading: studentsLoading } = useStudents()
@@ -26,9 +24,6 @@ export function useHomePage() {
     [studentsLoading, isLoading, students, trainings],
   )
   const warnings = useMemo(() => computeWarnings(students), [students])
-
-  const [kpiType, setKpiType] = useState<KpiType | null>(null)
-  const [markTodayOpen, setMarkTodayOpen] = useState(false)
 
   const indNames = useMemo(
     () => groups.filter((g) => g.isIndividual).map((g) => g.name),
@@ -76,9 +71,5 @@ export function useHomePage() {
     todayTrainings,
     agendaBlocks,
     yesterdayUnmarked,
-    kpiType,
-    setKpiType,
-    markTodayOpen,
-    setMarkTodayOpen,
   }
 }
