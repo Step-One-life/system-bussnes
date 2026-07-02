@@ -28,10 +28,17 @@ export interface WarningEntry {
   status: SubStatus
 }
 
-export async function getKPIs(): Promise<DashboardKPIs> {
-  const [students, trainings] = await Promise.all([getStudents(), getTrainings()])
-
-  const now = new Date()
+/**
+ * KPI главной — чистая функция от уже загруженных списков (кэшей react-query).
+ * Раньше это была async-обёртка с собственными запросами под отдельным
+ * query-ключом ['kpis'], который никто не инвалидировал: после продления или
+ * отметки плашки оставались старыми, а главная качала /students трижды.
+ */
+export function computeKPIs(
+  students: Student[],
+  trainings: { date: string }[],
+  now: Date,
+): DashboardKPIs {
   const month = now.getMonth()
   const year = now.getFullYear()
 
@@ -65,10 +72,9 @@ export async function getKPIs(): Promise<DashboardKPIs> {
   return { total: active, monthTrainings, ending, expired }
 }
 
-export async function getWarningStudents(): Promise<WarningEntry[]> {
-  const students = await getStudents()
+/** Предупреждения «Требует внимания» — чистая производная списка учеников. */
+export function computeWarnings(students: Student[]): WarningEntry[] {
   const warnings: WarningEntry[] = []
-
   for (const s of students) {
     for (const groupId of s.groups) {
       const status = getSubStatus(s, groupId)

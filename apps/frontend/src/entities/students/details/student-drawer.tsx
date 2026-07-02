@@ -32,7 +32,12 @@ interface StudentDrawerProps {
   onEdit: (studentId: string) => void
 }
 
-type SubModalState = { kind: 'renew' | 'extend'; groupId: string } | null
+type SubModalState =
+  | { kind: 'renew'; groupId: string }
+  // Продление адресное: карточка передаёт конкретный абонемент (эвристика
+  // «активный по группе» брала не тот при нескольких активных абонементах).
+  | { kind: 'extend'; groupId: string; sub: Subscription }
+  | null
 type MarkPaidState = { subId: string; groupId: string } | null
 
 export function StudentDrawer({ studentId, onClose, onEdit }: StudentDrawerProps) {
@@ -76,12 +81,13 @@ export function StudentDrawer({ studentId, onClose, onEdit }: StudentDrawerProps
 
   const handleEditStudent = () => student && onEdit(student.id)
 
-  const handleDeduct = (groupId: string) => () =>
-    student && actions.deduct(student.id, groupId)
+  const handleDeduct = (sub: Subscription) => {
+    if (student) void actions.deduct(student.id, sub.id)
+  }
   const handleRenewSub = (groupId: string) => () =>
     setSubModal({ kind: 'renew', groupId })
-  const handleExtendSub = (groupId: string) => () =>
-    setSubModal({ kind: 'extend', groupId })
+  const handleExtendSub = (groupId: string) => (sub: Subscription) =>
+    setSubModal({ kind: 'extend', groupId, sub })
   const handleDeleteSub = (subId: string) =>
     student && actions.removeSubscription(student.id, subId)
   const handleMarkPaid = (groupId: string) => (subId: string) =>
@@ -150,7 +156,7 @@ export function StudentDrawer({ studentId, onClose, onEdit }: StudentDrawerProps
                   student={student}
                   groupId={g}
                   isIndividual={false}
-                  onDeduct={handleDeduct(g)}
+                  onDeduct={handleDeduct}
                   onRenew={handleRenewSub(g)}
                   onExtend={handleExtendSub(g)}
                   onEdit={handleEditSub(false)}
@@ -198,7 +204,7 @@ export function StudentDrawer({ studentId, onClose, onEdit }: StudentDrawerProps
                     student={student}
                     groupId={g}
                     isIndividual
-                    onDeduct={handleDeduct(g)}
+                    onDeduct={handleDeduct}
                     onRenew={handleRenewSub(g)}
                     onExtend={handleExtendSub(g)}
                     onEdit={handleEditSub(true)}
@@ -261,11 +267,7 @@ export function StudentDrawer({ studentId, onClose, onEdit }: StudentDrawerProps
           studentId={student.id}
           studentName={student.name}
           groupId={subModal.groupId}
-          sub={
-            student.subscriptions.find(
-              (s) => s.groupId === subModal.groupId && s.isActive,
-            ) ?? null
-          }
+          sub={subModal.sub}
           onClose={handleCloseSubModal}
         />
       )}

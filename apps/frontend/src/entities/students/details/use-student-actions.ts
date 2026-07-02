@@ -3,10 +3,9 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 
 import { useToast } from 'common/ui'
-import { todayISO } from 'common/utils/date'
 
 import { studentKeys, useDeleteStudent, useDeleteSubscription } from '../api/use-students'
-import { deductSession, recordVisit } from '../model/students.repo'
+import { deductSessionById } from '../model/students.repo'
 
 export function useStudentActions(onAfterChange: () => void) {
   const { t } = useTranslation()
@@ -20,14 +19,11 @@ export function useStudentActions(onAfterChange: () => void) {
     onAfterChange()
   }
 
-  const deduct = async (studentId: string, groupId: string) => {
-    const { sub, status } = await deductSession(studentId, groupId)
+  // Списание адресное: карточка передаёт id СВОЕГО абонемента (эвристика по
+  // группе списывала не с того при нескольких активных абонементах группы).
+  const deduct = async (studentId: string, subId: string) => {
+    const { sub, status } = await deductSessionById(studentId, subId)
     if (!sub) return
-    await recordVisit(studentId, {
-      date: todayISO(),
-      groupId,
-      trainingId: '',
-    })
     const msg =
       status === 'expired'
         ? t('students.actions.subExpired')

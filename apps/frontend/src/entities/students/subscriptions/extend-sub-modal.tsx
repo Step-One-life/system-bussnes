@@ -16,7 +16,8 @@ interface ExtendSubModalProps {
   studentId: string
   studentName: string
   groupId: string
-  sub: Subscription | null
+  /** Продлеваемый абонемент — задан карточкой, продление адресное по его id. */
+  sub: Subscription
   onClose: () => void
 }
 
@@ -36,7 +37,7 @@ export function ExtendSubModal({
   const [days, setDays] = useState(35)
 
   const submit = async () => {
-    await extendSub.mutateAsync({ studentId, groupId, days })
+    await extendSub.mutateAsync({ studentId, subId: sub.id, days })
     toast({
       type: 'success',
       title: t('subscriptions.extend.termExtended'),
@@ -65,7 +66,7 @@ export function ExtendSubModal({
         <br />
         {t('subscriptions.extend.group')} <strong>{groupId}</strong>
       </p>
-      {sub?.expiresAt && (
+      {sub.expiresAt && (
         <div style={{ color: 'var(--tk-text-secondary)', fontSize: '0.85rem', marginTop: 8 }}>
           {t('subscriptions.extend.currentTerm')} <strong>{formatDateFull(sub.expiresAt)}</strong>
         </div>

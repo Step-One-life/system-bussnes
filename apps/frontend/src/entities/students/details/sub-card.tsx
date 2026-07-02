@@ -26,9 +26,10 @@ interface SubCardProps {
   student: Student
   groupId: string
   isIndividual: boolean
-  onDeduct: () => void
+  /** Списание/продление адресные: карточка передаёт СВОЙ абонемент. */
+  onDeduct: (sub: Subscription) => void
   onRenew: () => void
-  onExtend: () => void
+  onExtend: (sub: Subscription) => void
   onEdit: (sub: Subscription) => void
   onDeleteSub: (subId: string) => void
   onMarkPaid?: (subId: string) => void
@@ -88,12 +89,14 @@ export function SubCard({
       onClick: () => onEdit(anySub),
     })
   }
-  if (!(isIndividual && isRazovoe)) {
+  // Продлевать нечего без абонемента — пункт скрыт (раньше открывал модалку,
+  // которая «продлевала» пустоту с тостом об успехе).
+  if (anySub && !(isIndividual && isRazovoe)) {
     menuItems.push({
       key: 'extend',
       icon: <ClockCircleOutlined />,
       label: t('students.subCard.extendTerm'),
-      onClick: onExtend,
+      onClick: () => onExtend(anySub),
     })
   }
   if (anySub) {
@@ -164,7 +167,7 @@ export function SubCard({
             size="small"
             icon={<MinusCircleOutlined />}
             disabled={activeSub.remaining <= 0}
-            onClick={onDeduct}
+            onClick={() => onDeduct(activeSub)}
           >
             {t('students.subCard.deductSession')}
           </Button>

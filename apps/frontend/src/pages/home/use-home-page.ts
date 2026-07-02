@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
 
-import { getKPIs, getWarningStudents } from 'common/lib/kpi'
+import { computeKPIs, computeWarnings } from 'common/lib/kpi'
 import { todayISO, yesterdayISO } from 'common/utils/date'
 import { useGroups } from 'entities/groups'
 import { useStudents } from 'entities/students'
@@ -10,14 +9,23 @@ import { buildCalendarDay, useTrainings } from 'entities/trainings'
 import type { KpiType } from './kpi-detail-modal'
 
 export function useHomePage() {
-  const { data: kpis } = useQuery({ queryKey: ['kpis'], queryFn: getKPIs })
-  const { data: warnings = [] } = useQuery({
-    queryKey: ['warnings'],
-    queryFn: getWarningStudents,
-  })
-  const { data: students = [] } = useStudents()
+  const { data: students = [], isLoading: studentsLoading } = useStudents()
   const { data: trainings = [], isLoading, isError, refetch } = useTrainings()
   const { data: groups = [] } = useGroups()
+
+  // KPI и «Требует внимания» — чистые производные от кэшей students/trainings:
+  // любая инвалидация studentKeys/trainingKeys (продление, отметка, откат)
+  // обновляет их автоматически. Раньше это были отдельные query-ключи
+  // ['kpis']/['warnings'] без единой инвалидации (плашки «залипали») и с
+  // собственными повторными запросами /students и /trainings.
+  const kpis = useMemo(
+    () =>
+      studentsLoading || isLoading
+        ? undefined
+        : computeKPIs(students, trainings, new Date()),
+    [studentsLoading, isLoading, students, trainings],
+  )
+  const warnings = useMemo(() => computeWarnings(students), [students])
 
   const [kpiType, setKpiType] = useState<KpiType | null>(null)
   const [markTodayOpen, setMarkTodayOpen] = useState(false)

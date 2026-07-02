@@ -508,10 +508,15 @@ export class TrainingService extends OwnedCrudService<Training> {
       if (visit.billing === 'subscription' && visit.subscriptionId) {
         await this.subscriptionsService.restoreById(visit.subscriptionId as string, tx)
       } else if (visit.billing === 'payment' && visit.paymentId) {
-        // Платёж могли удалить вручную в Финансах — тогда молча пропускаем.
-        await this.paymentsService
-          .removePayment(training.userId, visit.paymentId)
-          .catch(() => undefined)
+        // Удаление платежа — в ТОЙ ЖЕ транзакции, что и визит: автокоммит терял
+        // платёж при откате транзакции. Платёж могли удалить вручную в Финансах
+        // (404) — это штатно; любая другая ошибка валит откат целиком, иначе
+        // визит удалился бы, а деньги остались.
+        try {
+          await this.paymentsService.removePayment(training.userId, visit.paymentId, tx)
+        } catch (e) {
+          if (!(e instanceof NotFoundException)) throw e
+        }
       } else if (visit.billing == null) {
         // Легаси-визит: возврат эвристикой по группе, но в ТОЙ ЖЕ транзакции
         // (передаём tx) — иначе автокоммит до visit.destroy задваивал занятие.

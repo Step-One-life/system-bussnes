@@ -80,10 +80,13 @@ export class ActivityLogService {
   }
 
   /** Помечает активное событие отменённым (идемпотентно). */
-  private async markUndone(where: Record<string, unknown>): Promise<void> {
+  private async markUndone(
+    where: Record<string, unknown>,
+    tx: Transaction | null = null,
+  ): Promise<void> {
     await this.model.update(
       { undoneAt: new Date() },
-      { where: { ...where, undoneAt: { [Op.is]: null } } },
+      { where: { ...where, undoneAt: { [Op.is]: null } }, transaction: tx ?? undefined },
     )
   }
 
@@ -99,12 +102,12 @@ export class ActivityLogService {
     await this.markUndone({ type: 'subscription_created', subscriptionId })
   }
 
-  async markPaymentUndone(paymentId: string): Promise<void> {
-    await this.markUndone({ type: 'payment_recorded', paymentId })
+  async markPaymentUndone(paymentId: string, tx: Transaction | null = null): Promise<void> {
+    await this.markUndone({ type: 'payment_recorded', paymentId }, tx)
     // Отметка, оплаченная этим платежом (billing='payment'), тоже становится
     // необратимой — платёж удалён, откатывать нечего; иначе у события
     // attendance_marked висела бы активная кнопка «Отменить» (идемпотентно).
-    await this.markUndone({ type: 'attendance_marked', paymentId })
+    await this.markUndone({ type: 'attendance_marked', paymentId }, tx)
   }
 
   /** Установить undone_at напрямую (для отката, когда обратная операция недостижима). */

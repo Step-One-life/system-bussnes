@@ -3,11 +3,10 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   addSubscription,
   createStudent,
-  deductSession,
   deleteStudent,
   deleteSubscription,
   editSubscription,
-  extendSubscription,
+  extendSubscriptionById,
   getStudents,
   updateStudent,
 } from 'entities/students/model/students.repo'
@@ -60,34 +59,18 @@ export function useAddSubscription() {
   })
 }
 
-export function useDeductSession() {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: ({
-      studentId,
-      groupId,
-      sessionDuration,
-    }: {
-      studentId: string
-      groupId: string
-      sessionDuration?: number | null
-    }) => deductSession(studentId, groupId, sessionDuration ?? null),
-    onSuccess: () => qc.invalidateQueries({ queryKey: studentKeys.all }),
-  })
-}
-
 export function useExtendSubscription() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: ({
       studentId,
-      groupId,
+      subId,
       days,
     }: {
       studentId: string
-      groupId: string
+      subId: string
       days: number
-    }) => extendSubscription(studentId, groupId, days),
+    }) => extendSubscriptionById(studentId, subId, days),
     onSuccess: () => qc.invalidateQueries({ queryKey: studentKeys.all }),
   })
 }
