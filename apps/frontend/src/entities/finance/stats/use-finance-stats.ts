@@ -10,8 +10,8 @@ import { useStudents } from 'entities/students'
 import { useHallCosts, usePayments } from '../api/use-finance'
 import { financeTotals } from './finance-totals'
 
-import type { FinanceTotals } from './finance-totals'
 import type { HallCost, Payment } from '../model/types'
+import type { FinanceTotals } from './finance-totals'
 
 import { roundMoney } from '@trikick/shared'
 

@@ -1,9 +1,7 @@
-import 'dayjs/locale/ru'
-
-import dayjs from 'dayjs'
-
 import { formatDayLabel, formatWeekRange } from './calendar-model'
 
+import 'dayjs/locale/ru'
+import dayjs from 'dayjs'
 import { afterAll, describe, expect, it } from 'vitest'
 
 const initialLocale = dayjs.locale()

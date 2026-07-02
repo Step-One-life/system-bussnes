@@ -1,4 +1,3 @@
-import dayjs from 'dayjs'
 import filter from 'lodash/filter'
 import find from 'lodash/find'
 
@@ -10,6 +9,8 @@ import { isIndividualTraining } from '../model/training-helpers'
 
 import type { Training } from '../model/types'
 import type { Group } from 'entities/groups/model/types'
+
+import dayjs from 'dayjs'
 
 export const CAL_H_START = 10
 export const CAL_H_END = 22
