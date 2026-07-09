@@ -174,12 +174,17 @@
     "added": "Ученик добавлен",
     "updated": "Ученик обновлён",
     "filter": {
-      "searchPlaceholder": "Поиск по имени…",
+      "searchPlaceholder": "Поиск по имени или телефону…",
       "allGroups": "Все группы",
       "allStatuses": "Все статусы",
       "statusActive": "Активен",
       "statusEnding": "Заканчивается",
       "statusExpired": "Нужно продлить"
+    },
+    "sort": {
+      "name": "По имени",
+      "problemsFirst": "Проблемные первыми",
+      "lastVisit": "Давно не был"
     },
     "form": {
       "editTitle": "Редактировать ученика",

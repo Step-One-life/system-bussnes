@@ -171,12 +171,17 @@
     "added": "Student added",
     "updated": "Student updated",
     "filter": {
-      "searchPlaceholder": "Search by name…",
+      "searchPlaceholder": "Search by name or phone…",
       "allGroups": "All groups",
       "allStatuses": "All statuses",
       "statusActive": "Active",
       "statusEnding": "Ending",
       "statusExpired": "Needs renewal"
+    },
+    "sort": {
+      "name": "By name",
+      "problemsFirst": "Problems first",
+      "lastVisit": "Longest absent"
     },
     "form": {
       "editTitle": "Edit student",
