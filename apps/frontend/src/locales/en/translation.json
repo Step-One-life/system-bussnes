@@ -552,6 +552,15 @@
       "pricing": "Pricing",
       "locations": "Locations"
     },
+    "csv": {
+      "export": "Export to CSV",
+      "date": "Date",
+      "client": "Client",
+      "group": "Group",
+      "type": "Type",
+      "amount": "Amount",
+      "hallAmount": "Hall expense"
+    },
     "records": {
       "searchPlaceholder": "Search by name, type, date…",
       "add": "Add record",

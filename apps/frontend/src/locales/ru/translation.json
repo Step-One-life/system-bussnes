@@ -558,6 +558,15 @@
       "pricing": "Настройка цен",
       "locations": "Локации"
     },
+    "csv": {
+      "export": "Экспорт в CSV",
+      "date": "Дата",
+      "client": "Клиент",
+      "group": "Группа",
+      "type": "Тип",
+      "amount": "Сумма",
+      "hallAmount": "Расход зала"
+    },
     "records": {
       "searchPlaceholder": "Поиск по имени, типу, дате…",
       "add": "Добавить запись",
