@@ -1,19 +1,22 @@
 import { useTranslation } from 'react-i18next'
 
+import { useTelegramMessage } from 'common/hooks/use-telegram-message'
 import { useToast } from 'common/ui'
-import { isLinkablePhone, waHref } from 'common/utils/phone-links'
+import { isLinkablePhone } from 'common/utils/phone-links'
 
 import { subLabel } from '../model/subscription-status'
 
 import type { Student, Subscription } from '../model/types'
 
 /**
- * «Напомнить об оплате»: с телефоном — открывает WhatsApp с готовым текстом,
- * без телефона — копирует текст в буфер (отправить любым способом).
+ * «Напомнить об оплате»: с телефоном — открывает чат Telegram по номеру
+ * (текст напоминания ложится в буфер — t.me не умеет предзаполнять сообщение),
+ * без телефона — просто копирует текст (отправить любым способом).
  */
 export function usePaymentReminder() {
   const { t } = useTranslation()
   const toast = useToast()
+  const sendTelegram = useTelegramMessage()
 
   return (student: Pick<Student, 'name' | 'phone'>, sub: Subscription) => {
     const text = t('students.contacts.reminderText', {
@@ -21,7 +24,7 @@ export function usePaymentReminder() {
       sub: subLabel(sub),
     })
     if (isLinkablePhone(student.phone)) {
-      window.open(waHref(student.phone, text), '_blank', 'noopener')
+      sendTelegram(student.phone, text)
       return
     }
     navigator.clipboard.writeText(text).then(

@@ -6,9 +6,10 @@ import { CheckSquareOutlined, DollarOutlined, PlusOutlined } from '@ant-design/i
 import { useTranslation } from 'react-i18next'
 
 import { useNow } from 'common/hooks/use-now'
+import { useTelegramMessage } from 'common/hooks/use-telegram-message'
 import { ErrorState, ListSkeleton, PageHeader, WarningItem } from 'common/ui'
 import { formatDateShort, todayISO, yesterdayISO } from 'common/utils/date'
-import { isLinkablePhone, waHref } from 'common/utils/phone-links'
+import { isLinkablePhone } from 'common/utils/phone-links'
 import { OnboardingChecklist } from 'entities/onboarding'
 import { StudentDrawer } from 'entities/students'
 
@@ -67,12 +68,13 @@ export function HomePage() {
     e.stopPropagation()
     openModal({ kind: 'mark-paid', sub: u })
   }
-  // «Пропавшему» пишем в WhatsApp с готовым мягким текстом (кнопка есть
-  // только при пригодном для ссылок телефоне).
+  // «Пропавшему» пишем в Telegram по номеру: чат открывается, мягкий текст
+  // ложится в буфер (кнопка есть только при пригодном для ссылок телефоне).
+  const sendTelegram = useTelegramMessage()
   const handleWriteLapsed =
     (name: string, phone: string) => (e: { stopPropagation: () => void }) => {
       e.stopPropagation()
-      window.open(waHref(phone, t('home.lapsedWaText', { name })), '_blank', 'noopener')
+      sendTelegram(phone, t('home.lapsedMsgText', { name }))
     }
 
   const handleRowClick = (block: CalendarBlock) => openModal({ kind: 'calendar', block })

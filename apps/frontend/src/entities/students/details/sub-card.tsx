@@ -83,8 +83,8 @@ export function SubCard({
       label: t('students.subCard.markPaid'),
       onClick: handleMarkPaid,
     })
-    // Не оплачен → можно сразу напомнить: WhatsApp с готовым текстом
-    // (без телефона — текст в буфер).
+    // Не оплачен → можно сразу напомнить: чат Telegram по номеру, текст
+    // напоминания — в буфер (без телефона — просто в буфер).
     menuItems.push({
       key: 'remind',
       icon: <MessageOutlined />,
