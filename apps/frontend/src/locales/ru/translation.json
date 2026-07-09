@@ -192,7 +192,14 @@
       "indCheckbox": "Записать в индивидуальные занятия",
       "subStartLabel": "Дата начала абонемента",
       "subForGroup": "Абонемент — {{group}}",
-      "subNone": "— не добавлять —"
+      "subNone": "— не добавлять —",
+      "phoneLabel": "Телефон",
+      "phonePlaceholder": "+7 999 123-45-67",
+      "noteLabel": "Заметка",
+      "notePlaceholder": "Особенности, травмы, контакты родителей…"
+    },
+    "contacts": {
+      "call": "Позвонить"
     },
     "sub": {
       "single": "Разовое посещение",

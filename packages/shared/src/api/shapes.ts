@@ -36,6 +36,10 @@ export type UpdateGroupShape = Partial<Omit<CreateGroupShape, 'name'>>
 export interface CreateStudentShape {
   name: string
   groups?: string[]
+  /** Телефон как введён; NULL/пусто = не указан. Ссылки строит фронт. */
+  phone?: string | null
+  /** Заметка тренера (особенности, травмы, контакты родителей). */
+  note?: string | null
 }
 
 export type UpdateStudentShape = Partial<CreateStudentShape>

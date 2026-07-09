@@ -25,7 +25,16 @@ function sub(over: Partial<Subscription>): Subscription {
 }
 
 function student(subs: Subscription[]): Student {
-  return { id: 's1', name: 'Тест', groups: ['g1'], subscriptions: subs, visitHistory: [], createdAt: '2026-01-01' }
+  return {
+    id: 's1',
+    name: 'Тест',
+    phone: null,
+    note: null,
+    groups: ['g1'],
+    subscriptions: subs,
+    visitHistory: [],
+    createdAt: '2026-01-01',
+  }
 }
 
 // M1: findSubForGroup зеркалит бэковый pickSubForDeduct — выбирает тот же

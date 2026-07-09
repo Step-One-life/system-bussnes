@@ -189,7 +189,14 @@
       "indCheckbox": "Enroll in individual sessions",
       "subStartLabel": "Subscription start date",
       "subForGroup": "Subscription — {{group}}",
-      "subNone": "— none —"
+      "subNone": "— none —",
+      "phoneLabel": "Phone",
+      "phonePlaceholder": "+1 555 123-4567",
+      "noteLabel": "Note",
+      "notePlaceholder": "Specifics, injuries, parent contacts…"
+    },
+    "contacts": {
+      "call": "Call"
     },
     "sub": {
       "single": "Single visit",

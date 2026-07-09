@@ -65,6 +65,8 @@ export function useStudentForm({ student, onDone }: UseStudentFormOptions) {
   }
 
   const [name, setName] = useState(student?.name ?? '')
+  const [phone, setPhone] = useState(student?.phone ?? '')
+  const [note, setNote] = useState(student?.note ?? '')
   const [selectedGroups, setSelectedGroups] = useState<string[]>(student?.groups ?? [])
   const [subChoice, setSubChoice] = useState<SubChoice>({})
   const [subStartDate, setSubStartDate] = useState(todayISO())
@@ -85,12 +87,14 @@ export function useStudentForm({ student, onDone }: UseStudentFormOptions) {
       if (isEdit) {
         await updateStudent.mutateAsync({
           id: student.id,
-          changes: { name: name.trim(), groups: selectedGroups },
+          changes: { name: name.trim(), phone, note, groups: selectedGroups },
         })
         toast({ type: 'success', title: t('students.updated'), msg: name.trim() })
       } else {
         const created = await createStudent.mutateAsync({
           name: name.trim(),
+          phone,
+          note,
           groups: selectedGroups,
         })
         const ruleById = new Map(
@@ -120,6 +124,10 @@ export function useStudentForm({ student, onDone }: UseStudentFormOptions) {
     indGroup,
     name,
     setName,
+    phone,
+    setPhone,
+    note,
+    setNote,
     selectedGroups,
     toggleGroup,
     subChoice,

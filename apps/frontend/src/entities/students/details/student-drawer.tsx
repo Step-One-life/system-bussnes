@@ -17,6 +17,7 @@ import { AddSubModal } from '../subscriptions/add-sub-modal'
 import { EditSubModal } from '../subscriptions/edit-sub-modal'
 import { ExtendSubModal } from '../subscriptions/extend-sub-modal'
 import { RenewSubModal } from '../subscriptions/renew-sub-modal'
+import { ContactActions } from './contact-actions'
 import { SharedSubCard } from './shared-sub-card'
 import { SubCard } from './sub-card'
 import { useStudentActions } from './use-student-actions'
@@ -145,6 +146,15 @@ export function StudentDrawer({ studentId, onClose, onEdit }: StudentDrawerProps
               {t('students.drawer.lastVisit')}{' '}
               <strong>{lastVisit ? formatDateShort(lastVisit) : t('common.dash')}</strong>
             </div>
+
+            {student.phone && (
+              <div className="drawer-contacts">
+                <span className="drawer-contacts__phone">{student.phone}</span>
+                <ContactActions phone={student.phone} />
+              </div>
+            )}
+
+            {student.note && <div className="drawer-note">{student.note}</div>}
 
             <div className="section-title" style={{ marginTop: 'var(--sp-4)' }}>
               {t('students.drawer.groupSessions')}

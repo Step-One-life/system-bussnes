@@ -23,6 +23,12 @@ export class Student extends OwnedEntity {
   @Column({ type: DataType.STRING, allowNull: false })
   declare name: string
 
+  @Column({ type: DataType.STRING, allowNull: true })
+  declare phone: string | null
+
+  @Column({ type: DataType.TEXT, allowNull: true })
+  declare note: string | null
+
   @BelongsToMany(() => Group, () => StudentGroup)
   declare groups?: Group[]
 
