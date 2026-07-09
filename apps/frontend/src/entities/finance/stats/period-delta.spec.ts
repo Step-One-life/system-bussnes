@@ -1,8 +1,8 @@
-import { describe, expect, it } from 'vitest'
-
 import { periodDelta } from './period-delta'
 
 import type { FinanceTotals } from './finance-totals'
+
+import { describe, expect, it } from 'vitest'
 
 function totals(over: Partial<FinanceTotals> = {}): FinanceTotals {
   return {

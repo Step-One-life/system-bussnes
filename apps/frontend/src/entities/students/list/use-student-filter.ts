@@ -8,8 +8,8 @@ import { phoneDigits } from 'common/utils/phone-links'
 import { getOverallSubStatus } from '../model/subscription-status'
 import { sortStudents } from './student-sort'
 
-import type { StudentSortKey } from './student-sort'
 import type { Student, SubStatusType } from '../model/types'
+import type { StudentSortKey } from './student-sort'
 
 export interface StudentFilter {
   group: string

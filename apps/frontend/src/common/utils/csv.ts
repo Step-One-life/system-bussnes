@@ -13,5 +13,5 @@ export function csvCell(v: CsvValue): string {
 }
 
 export function buildCsv(rows: CsvValue[][]): string {
-  return `﻿${rows.map((r) => r.map(csvCell).join(';')).join('\r\n')}`
+  return '\ufeff' + rows.map((r) => r.map(csvCell).join(';')).join('\r\n')
 }

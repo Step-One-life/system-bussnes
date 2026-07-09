@@ -1,8 +1,8 @@
-import { describe, expect, it } from 'vitest'
-
 import { computeLapsed } from './lapsed'
 
 import type { Student, VisitRecord } from 'entities/students/model/types'
+
+import { describe, expect, it } from 'vitest'
 
 const TODAY = '2026-07-03'
 

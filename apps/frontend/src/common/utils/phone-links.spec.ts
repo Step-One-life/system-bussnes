@@ -1,6 +1,6 @@
-import { describe, expect, it } from 'vitest'
-
 import { isLinkablePhone, phoneDigits, telHref, tgHref, waHref } from './phone-links'
+
+import { describe, expect, it } from 'vitest'
 
 describe('phoneDigits', () => {
   it('оставляет только цифры', () => {

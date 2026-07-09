@@ -1,8 +1,8 @@
-import { describe, expect, it } from 'vitest'
-
 import { sortStudents } from './student-sort'
 
 import type { Student, Subscription, VisitRecord } from '../model/types'
+
+import { describe, expect, it } from 'vitest'
 
 let seq = 0
 function makeStudent(name: string, over: Partial<Student> = {}): Student {

@@ -10,9 +10,9 @@ import { buildCsv } from 'common/utils/csv'
 import { todayISO } from 'common/utils/date'
 import { downloadFile } from 'common/utils/download'
 
-import { finLabel } from '../model/finance-constants'
 import { AddPaymentModal } from '../form/add-payment-modal'
 import { EditPaymentModal } from '../form/edit-payment-modal'
+import { finLabel } from '../model/finance-constants'
 import { FinanceRecordCard } from './finance-record-card'
 import { useFinanceRecords } from './use-finance-records'
 

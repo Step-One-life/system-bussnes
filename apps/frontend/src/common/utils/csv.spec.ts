@@ -1,6 +1,6 @@
-import { describe, expect, it } from 'vitest'
-
 import { buildCsv, csvCell } from './csv'
+
+import { describe, expect, it } from 'vitest'
 
 describe('csvCell', () => {
   it('простые значения без изменений, null/undefined — пусто', () => {
@@ -23,6 +23,6 @@ describe('buildCsv', () => {
       ['Дата', 'Сумма'],
       ['2026-07-03', 1500],
     ])
-    expect(csv).toBe('﻿Дата;Сумма\r\n2026-07-03;1500')
+    expect(csv).toBe('\ufeffДата;Сумма\r\n2026-07-03;1500')
   })
 })
