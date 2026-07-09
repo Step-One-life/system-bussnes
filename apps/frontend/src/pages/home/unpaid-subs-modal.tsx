@@ -1,12 +1,12 @@
 import { useState } from 'react'
 
-import { Button, Modal } from 'antd'
-import { DollarOutlined } from '@ant-design/icons'
+import { Button, Modal, Tooltip } from 'antd'
+import { DollarOutlined, MessageOutlined } from '@ant-design/icons'
 
 import { useTranslation } from 'react-i18next'
 
 import { MarkPaidModal } from 'entities/finance'
-import { subLabel } from 'entities/students'
+import { subLabel, usePaymentReminder } from 'entities/students'
 
 import { useUnpaidSubs } from './use-unpaid-subs'
 
@@ -23,6 +23,7 @@ export function UnpaidSubsModal({ open, onClose }: UnpaidSubsModalProps) {
   const { t } = useTranslation()
   const { unpaid } = useUnpaidSubs()
   const [paying, setPaying] = useState<UnpaidSub | null>(null)
+  const remindPayment = usePaymentReminder()
 
   const handleClosePay = () => setPaying(null)
 
@@ -43,12 +44,21 @@ export function UnpaidSubsModal({ open, onClose }: UnpaidSubsModalProps) {
                 ? t('home.indTraining')
                 : `${u.groupId} · ${subLabel(u.sub)}`
               const handlePay = () => setPaying(u)
+              const handleRemind = () => remindPayment(u.student, u.sub)
               return (
                 <div key={u.sub.id} className="unpaid-row">
                   <div className="unpaid-row__info">
                     <span className="unpaid-row__name">{u.student.name}</span>
                     <span className="unpaid-row__type">{typeLabel}</span>
                   </div>
+                  <Tooltip title={t('students.contacts.remind')}>
+                    <Button
+                      size="small"
+                      icon={<MessageOutlined />}
+                      aria-label={t('students.contacts.remind')}
+                      onClick={handleRemind}
+                    />
+                  </Tooltip>
                   <Button
                     type="primary"
                     size="small"

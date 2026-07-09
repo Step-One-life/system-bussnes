@@ -196,7 +196,11 @@
       "notePlaceholder": "Specifics, injuries, parent contacts…"
     },
     "contacts": {
-      "call": "Call"
+      "call": "Call",
+      "remind": "Send payment reminder",
+      "reminderText": "Hi {{name}}! A friendly reminder about your subscription payment ({{sub}}). Thank you!",
+      "copied": "Message copied",
+      "copiedHint": "No phone on file — send the text manually"
     },
     "sub": {
       "single": "Single visit",
