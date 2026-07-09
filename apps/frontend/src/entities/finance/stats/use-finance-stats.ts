@@ -9,9 +9,11 @@ import { useStudents } from 'entities/students'
 
 import { useHallCosts, usePayments } from '../api/use-finance'
 import { financeTotals } from './finance-totals'
+import { periodDelta } from './period-delta'
 
 import type { HallCost, Payment } from '../model/types'
 import type { FinanceTotals } from './finance-totals'
+import type { PeriodDelta } from './period-delta'
 
 import { roundMoney } from '@trikick/shared'
 
@@ -49,6 +51,16 @@ function periodRange(period: FinancePeriod, offset: number): PeriodRange {
     return { start: toLocalISODate(start), end: toLocalISODate(end) }
   }
   return { start: null, end: null }
+}
+
+/** Элементы, чья дата попадает в границы периода (null-границы не режут). */
+function inPeriod<T>(items: T[], range: PeriodRange, dateOf: (x: T) => string): T[] {
+  const { start, end } = range
+  if (!start && !end) return items
+  return items.filter((x) => {
+    const d = dateOf(x)
+    return (!start || d >= start) && (!end || d <= end)
+  })
 }
 
 /** Подпись текущего периода: «Июнь 2026» / «Q2 2026» / «2026»; для all — пусто. */
@@ -99,6 +111,9 @@ export interface FinanceStats {
   canGoNext: boolean
   periodLabel: string
   totals: FinanceTotals
+  /** Дельты к прошлому периоду; null на «всём времени». */
+  delta: PeriodDelta | null
+  prevPeriodLabel: string
   monthly: MonthlyPoint[]
   clientTypes: TypeBreakdown
   hallTypes: TypeBreakdown
@@ -134,28 +149,35 @@ export function useFinanceStats(): FinanceStats {
     [students],
   )
 
-  const filtered = useMemo<Payment[]>(() => {
-    const { start, end } = periodRange(period, offset)
-    if (!start && !end) return payments
-    return payments.filter(
-      (p) => (!start || p.paid_at >= start) && (!end || p.paid_at <= end),
-    )
-  }, [payments, period, offset])
+  const filtered = useMemo<Payment[]>(
+    () => inPeriod(payments, periodRange(period, offset), (p) => p.paid_at),
+    [payments, period, offset],
+  )
 
   // Расходы зала фильтруются по СВОЕЙ дате и считаются напрямую: расход,
   // не привязанный к платежу (standalone), раньше выпадал из статистики.
-  const filteredHall = useMemo<HallCost[]>(() => {
-    const { start, end } = periodRange(period, offset)
-    if (!start && !end) return hallCosts
-    return hallCosts.filter(
-      (c) => (!start || c.paid_at >= start) && (!end || c.paid_at <= end),
-    )
-  }, [hallCosts, period, offset])
+  const filteredHall = useMemo<HallCost[]>(
+    () => inPeriod(hallCosts, periodRange(period, offset), (c) => c.paid_at),
+    [hallCosts, period, offset],
+  )
 
   const totals = useMemo<FinanceTotals>(
     () => financeTotals(filtered, filteredHall),
     [filtered, filteredHall],
   )
+
+  // Сравнение с прошлым периодом той же длины (для «всего времени» его нет).
+  const delta = useMemo<PeriodDelta | null>(() => {
+    if (period === 'all') return null
+    const prevRange = periodRange(period, offset + 1)
+    const prevTotals = financeTotals(
+      inPeriod(payments, prevRange, (p) => p.paid_at),
+      inPeriod(hallCosts, prevRange, (c) => c.paid_at),
+    )
+    return periodDelta(totals, prevTotals)
+  }, [period, offset, payments, hallCosts, totals])
+
+  const prevPeriodLabel = period === 'all' ? '' : periodLabelFor(period, offset + 1)
 
   const monthly = useMemo<MonthlyPoint[]>(() => {
     const byMonth = new Map<string, { income: number; hall: number }>()
@@ -233,6 +255,8 @@ export function useFinanceStats(): FinanceStats {
     canGoNext,
     periodLabel,
     totals,
+    delta,
+    prevPeriodLabel,
     monthly,
     clientTypes,
     hallTypes,

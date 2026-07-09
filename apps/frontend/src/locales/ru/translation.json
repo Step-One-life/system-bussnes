@@ -733,6 +733,7 @@
       "periodAll": "Всё время",
       "periodPrev": "Предыдущий период",
       "periodNext": "Следующий период",
+      "deltaVs": "к прошлому периоду ({{period}})",
       "unknownClient": "Неизвестен"
     },
     "autoRecord": {

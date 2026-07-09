@@ -725,6 +725,7 @@
       "periodAll": "All time",
       "periodPrev": "Previous period",
       "periodNext": "Next period",
+      "deltaVs": "vs previous period ({{period}})",
       "unknownClient": "Unknown"
     },
     "autoRecord": {
