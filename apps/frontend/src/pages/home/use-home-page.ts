@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 
 import { computeKPIs, computeWarnings } from 'common/lib/kpi'
+import { computeLapsed } from 'common/lib/lapsed'
 import { todayISO, yesterdayISO } from 'common/utils/date'
 import { useGroups } from 'entities/groups'
 import { useStudents } from 'entities/students'
@@ -25,6 +26,10 @@ export function useHomePage() {
   )
   const warnings = useMemo(() => computeWarnings(students), [students])
 
+  const todayStr = todayISO()
+  // Радар оттока: числится в группах, но давно не появлялся (или так и не пришёл).
+  const lapsed = useMemo(() => computeLapsed(students, todayStr), [students, todayStr])
+
   const indNames = useMemo(
     () => groups.filter((g) => g.isIndividual).map((g) => g.name),
     [groups],
@@ -34,7 +39,6 @@ export function useHomePage() {
     [groups],
   )
 
-  const todayStr = todayISO()
   const todayTrainings = useMemo(
     () => trainings.filter((t) => t.date === todayStr),
     [trainings, todayStr],
@@ -60,6 +64,7 @@ export function useHomePage() {
   return {
     kpis,
     warnings,
+    lapsed,
     students,
     trainings,
     groups,

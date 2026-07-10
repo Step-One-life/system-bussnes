@@ -47,6 +47,8 @@ function makeStudent(over: Partial<Student> = {}): Student {
   return {
     id: `st-${seq}`,
     name: 'Ученик',
+    phone: null,
+    note: null,
     groups: ['Группа'],
     subscriptions: [],
     visitHistory: [],

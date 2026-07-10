@@ -37,6 +37,10 @@ export interface VisitRecord {
 export interface Student {
   id: string
   name: string
+  /** Телефон как введён; null = не указан. Ссылки — common/utils/phone-links. */
+  phone: string | null
+  /** Заметка тренера (особенности, травмы, контакты родителей). */
+  note: string | null
   groups: string[]
   subscriptions: Subscription[]
   visitHistory: VisitRecord[]
@@ -45,6 +49,8 @@ export interface Student {
 
 export interface StudentInput {
   name: string
+  phone?: string | null
+  note?: string | null
   groups?: string[]
   subscriptions?: Subscription[]
 }

@@ -1,3 +1,4 @@
+import { Tooltip } from 'antd'
 import {
   BarChartOutlined,
   CheckCircleOutlined,
@@ -26,6 +27,33 @@ const PERIOD_KEYS: Record<FinancePeriod, string> = {
   all: 'finance.stats.periodAll',
 }
 
+interface DeltaTagProps {
+  pct: number | null
+  /** Для расходов рост — это плохо: инвертирует окраску. */
+  invert?: boolean
+  hint: string
+}
+
+/** «▲ 12%» к прошлому периоду; при пустой базе сравнения не рендерится. */
+function DeltaTag({ pct, invert, hint }: DeltaTagProps) {
+  if (pct === null) return null
+  const good = invert ? pct <= 0 : pct >= 0
+  const arrow = pct > 0 ? '▲' : pct < 0 ? '▼' : '='
+  const color =
+    pct === 0
+      ? 'var(--tk-text-tertiary)'
+      : good
+        ? 'var(--tk-success-text)'
+        : 'var(--tk-danger-text)'
+  return (
+    <Tooltip title={hint}>
+      <span className="fin-hero__delta" style={{ color }}>
+        {arrow} {Math.abs(pct)}%
+      </span>
+    </Tooltip>
+  )
+}
+
 export function StatsTab() {
   const { t } = useTranslation()
   const stats = useFinanceStats()
@@ -34,6 +62,8 @@ export function StatsTab() {
   const handleSelectPeriod = (p: FinancePeriod) => () => stats.setPeriod(p)
 
   if (stats.isError) return <ErrorState onRetry={stats.refetch} />
+
+  const deltaHint = t('finance.stats.deltaVs', { period: stats.prevPeriodLabel })
 
   const netColor = totals.netIncome >= 0 ? 'var(--tk-success-text)' : 'var(--tk-danger-text)'
   const marginColor =
@@ -84,6 +114,7 @@ export function StatsTab() {
           <span className="fin-hero__value" style={{ color: 'var(--tk-success-text)' }}>
             {totals.totalIncome.toLocaleString('ru')} ₽
           </span>
+          {stats.delta && <DeltaTag pct={stats.delta.incomePct} hint={deltaHint} />}
         </div>
         <div className="fin-hero__op">−</div>
         <div className="fin-hero__item">
@@ -91,6 +122,7 @@ export function StatsTab() {
           <span className="fin-hero__value" style={{ color: 'var(--tk-danger-text)' }}>
             {totals.totalHall.toLocaleString('ru')} ₽
           </span>
+          {stats.delta && <DeltaTag pct={stats.delta.hallPct} invert hint={deltaHint} />}
         </div>
         <div className="fin-hero__op">=</div>
         <div className="fin-hero__item fin-hero__item--main">
@@ -102,6 +134,7 @@ export function StatsTab() {
             {totals.netIncome >= 0 ? '+' : ''}
             {totals.netIncome.toLocaleString('ru')} ₽
           </span>
+          {stats.delta && <DeltaTag pct={stats.delta.netPct} hint={deltaHint} />}
         </div>
       </div>
 

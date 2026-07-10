@@ -97,6 +97,8 @@
     "edit": "Редактировать",
     "extend": "Продлить",
     "error": "Ошибка",
+    "tgCopied": "Текст скопирован",
+    "tgCopiedHint": "Вставьте его в открывшийся чат Telegram",
     "continue": "Продолжить",
     "dash": "—",
     "remove": "Убрать",
@@ -174,12 +176,17 @@
     "added": "Ученик добавлен",
     "updated": "Ученик обновлён",
     "filter": {
-      "searchPlaceholder": "Поиск по имени…",
+      "searchPlaceholder": "Поиск по имени или телефону…",
       "allGroups": "Все группы",
       "allStatuses": "Все статусы",
       "statusActive": "Активен",
       "statusEnding": "Заканчивается",
       "statusExpired": "Нужно продлить"
+    },
+    "sort": {
+      "name": "По имени",
+      "problemsFirst": "Проблемные первыми",
+      "lastVisit": "Давно не был"
     },
     "form": {
       "editTitle": "Редактировать ученика",
@@ -192,7 +199,18 @@
       "indCheckbox": "Записать в индивидуальные занятия",
       "subStartLabel": "Дата начала абонемента",
       "subForGroup": "Абонемент — {{group}}",
-      "subNone": "— не добавлять —"
+      "subNone": "— не добавлять —",
+      "phoneLabel": "Телефон",
+      "phonePlaceholder": "+7 999 123-45-67",
+      "noteLabel": "Заметка",
+      "notePlaceholder": "Особенности, травмы, контакты родителей…"
+    },
+    "contacts": {
+      "call": "Позвонить",
+      "remind": "Напомнить об оплате",
+      "reminderText": "Здравствуйте, {{name}}! Напоминаю про оплату абонемента ({{sub}}). Спасибо!",
+      "copied": "Сообщение скопировано",
+      "copiedHint": "Телефон не указан — отправьте текст вручную"
     },
     "sub": {
       "single": "Разовое посещение",
@@ -542,6 +560,15 @@
       "pricing": "Настройка цен",
       "locations": "Локации"
     },
+    "csv": {
+      "export": "Экспорт в CSV",
+      "date": "Дата",
+      "client": "Клиент",
+      "group": "Группа",
+      "type": "Тип",
+      "amount": "Сумма",
+      "hallAmount": "Расход зала"
+    },
     "records": {
       "searchPlaceholder": "Поиск по имени, типу, дате…",
       "add": "Добавить запись",
@@ -722,6 +749,7 @@
       "periodAll": "Всё время",
       "periodPrev": "Предыдущий период",
       "periodNext": "Следующий период",
+      "deltaVs": "к прошлому периоду ({{period}})",
       "unknownClient": "Неизвестен"
     },
     "autoRecord": {
@@ -816,6 +844,12 @@
     "agendaAttendees": "{{count}} чел.",
     "minutesShort": "{{count}} мин",
     "attentionUnpaid": "Ожидает оплаты",
+    "lapsedDays_one": "Не был {{count}} день",
+    "lapsedDays_few": "Не был {{count}} дня",
+    "lapsedDays_many": "Не был {{count}} дней",
+    "lapsedNever": "Записан, но ещё не приходил",
+    "lapsedWrite": "Написать",
+    "lapsedMsgText": "Здравствуйте, {{name}}! Давно вас не было на тренировках — всё ли в порядке? Будем рады видеть!",
     "paymentsShort": "Оплаты",
     "greetingMorning": "Доброе утро",
     "greetingDay": "Добрый день",

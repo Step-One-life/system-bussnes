@@ -6,8 +6,10 @@ import { CheckSquareOutlined, DollarOutlined, PlusOutlined } from '@ant-design/i
 import { useTranslation } from 'react-i18next'
 
 import { useNow } from 'common/hooks/use-now'
+import { useTelegramMessage } from 'common/hooks/use-telegram-message'
 import { ErrorState, ListSkeleton, PageHeader, WarningItem } from 'common/ui'
 import { formatDateShort, todayISO, yesterdayISO } from 'common/utils/date'
+import { isLinkablePhone } from 'common/utils/phone-links'
 import { OnboardingChecklist } from 'entities/onboarding'
 import { StudentDrawer } from 'entities/students'
 
@@ -66,6 +68,14 @@ export function HomePage() {
     e.stopPropagation()
     openModal({ kind: 'mark-paid', sub: u })
   }
+  // «Пропавшему» пишем в Telegram по номеру: чат открывается, мягкий текст
+  // ложится в буфер (кнопка есть только при пригодном для ссылок телефоне).
+  const sendTelegram = useTelegramMessage()
+  const handleWriteLapsed =
+    (name: string, phone: string) => (e: { stopPropagation: () => void }) => {
+      e.stopPropagation()
+      sendTelegram(phone, t('home.lapsedMsgText', { name }))
+    }
 
   const handleRowClick = (block: CalendarBlock) => openModal({ kind: 'calendar', block })
   const handleQuickMark = (block: CalendarBlock) =>
@@ -236,11 +246,17 @@ export function HomePage() {
 
         <section className="home-cols__col">
           <div className="section-title">
-            {page.warnings.length || unpaid.length || page.yesterdayUnmarked > 0
+            {page.warnings.length ||
+            unpaid.length ||
+            page.lapsed.length ||
+            page.yesterdayUnmarked > 0
               ? t('home.attention')
               : t('home.subStatus')}
           </div>
-          {page.warnings.length || unpaid.length || page.yesterdayUnmarked > 0 ? (
+          {page.warnings.length ||
+          unpaid.length ||
+          page.lapsed.length ||
+          page.yesterdayUnmarked > 0 ? (
             <div className="warning-list">
               {/* Серьёзность по убыванию: истёкшие → вчера → неоплаченные → заканчивающиеся. */}
               {page.warnings
@@ -282,6 +298,30 @@ export function HomePage() {
               {page.warnings
                 .filter((w) => w.status.type !== 'expired')
                 .map(renderWarning)}
+              {/* Радар оттока: давно не появлялся / так и не пришёл. */}
+              {page.lapsed.map((l) => (
+                <WarningItem
+                  key={`lapsed-${l.student.id}`}
+                  name={l.student.name}
+                  detail={
+                    l.neverVisited
+                      ? t('home.lapsedNever')
+                      : t('home.lapsedDays', { count: l.daysSince })
+                  }
+                  onClick={handleOpenStudentDrawer(l.student.id)}
+                  action={
+                    isLinkablePhone(l.student.phone) ? (
+                      <Button
+                        className="tk-btn-secondary"
+                        size="small"
+                        onClick={handleWriteLapsed(l.student.name, l.student.phone)}
+                      >
+                        {t('home.lapsedWrite')}
+                      </Button>
+                    ) : undefined
+                  }
+                />
+              ))}
             </div>
           ) : (
             <div className="home-empty-card home-empty-card--ok">{t('home.allSubsOk')}</div>

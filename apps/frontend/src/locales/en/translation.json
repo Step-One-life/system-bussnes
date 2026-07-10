@@ -94,6 +94,8 @@
     "edit": "Edit",
     "extend": "Extend",
     "error": "Error",
+    "tgCopied": "Text copied",
+    "tgCopiedHint": "Paste it into the opened Telegram chat",
     "continue": "Continue",
     "dash": "—",
     "remove": "Remove",
@@ -171,12 +173,17 @@
     "added": "Student added",
     "updated": "Student updated",
     "filter": {
-      "searchPlaceholder": "Search by name…",
+      "searchPlaceholder": "Search by name or phone…",
       "allGroups": "All groups",
       "allStatuses": "All statuses",
       "statusActive": "Active",
       "statusEnding": "Ending",
       "statusExpired": "Needs renewal"
+    },
+    "sort": {
+      "name": "By name",
+      "problemsFirst": "Problems first",
+      "lastVisit": "Longest absent"
     },
     "form": {
       "editTitle": "Edit student",
@@ -189,7 +196,18 @@
       "indCheckbox": "Enroll in individual sessions",
       "subStartLabel": "Subscription start date",
       "subForGroup": "Subscription — {{group}}",
-      "subNone": "— none —"
+      "subNone": "— none —",
+      "phoneLabel": "Phone",
+      "phonePlaceholder": "+1 555 123-4567",
+      "noteLabel": "Note",
+      "notePlaceholder": "Specifics, injuries, parent contacts…"
+    },
+    "contacts": {
+      "call": "Call",
+      "remind": "Send payment reminder",
+      "reminderText": "Hi {{name}}! A friendly reminder about your subscription payment ({{sub}}). Thank you!",
+      "copied": "Message copied",
+      "copiedHint": "No phone on file — send the text manually"
     },
     "sub": {
       "single": "Single visit",
@@ -536,6 +554,15 @@
       "pricing": "Pricing",
       "locations": "Locations"
     },
+    "csv": {
+      "export": "Export to CSV",
+      "date": "Date",
+      "client": "Client",
+      "group": "Group",
+      "type": "Type",
+      "amount": "Amount",
+      "hallAmount": "Hall expense"
+    },
     "records": {
       "searchPlaceholder": "Search by name, type, date…",
       "add": "Add record",
@@ -714,6 +741,7 @@
       "periodAll": "All time",
       "periodPrev": "Previous period",
       "periodNext": "Next period",
+      "deltaVs": "vs previous period ({{period}})",
       "unknownClient": "Unknown"
     },
     "autoRecord": {
@@ -805,6 +833,11 @@
     "agendaAttendees": "{{count}} ppl.",
     "minutesShort": "{{count}} min",
     "attentionUnpaid": "Awaiting payment",
+    "lapsedDays_one": "No visits for {{count}} day",
+    "lapsedDays_other": "No visits for {{count}} days",
+    "lapsedNever": "Enrolled, but hasn't visited yet",
+    "lapsedWrite": "Message",
+    "lapsedMsgText": "Hi {{name}}! We haven't seen you at practice for a while — is everything okay? Hope to see you soon!",
     "paymentsShort": "Payments",
     "greetingMorning": "Good morning",
     "greetingDay": "Good afternoon",

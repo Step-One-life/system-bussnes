@@ -1,14 +1,18 @@
 import { useState } from 'react'
 
-import { Button, Input } from 'antd'
-import { PlusOutlined, SearchOutlined } from '@ant-design/icons'
+import { Button, Input, Tooltip } from 'antd'
+import { DownloadOutlined, PlusOutlined, SearchOutlined } from '@ant-design/icons'
 
 import { useTranslation } from 'react-i18next'
 
 import { EmptyState, ErrorState, ListSkeleton } from 'common/ui'
+import { buildCsv } from 'common/utils/csv'
+import { todayISO } from 'common/utils/date'
+import { downloadFile } from 'common/utils/download'
 
 import { AddPaymentModal } from '../form/add-payment-modal'
 import { EditPaymentModal } from '../form/edit-payment-modal'
+import { finLabel } from '../model/finance-constants'
 import { FinanceRecordCard } from './finance-record-card'
 import { useFinanceRecords } from './use-finance-records'
 
@@ -29,6 +33,29 @@ export function RecordsTab() {
   const handleCloseAdd = () => setAddOpen(false)
   const handleCloseEdit = () => setEditPayment(null)
 
+  // Экспорт того, что на экране (с учётом поискового фильтра).
+  const handleExportCsv = () => {
+    const rows = [
+      [
+        t('finance.csv.date'),
+        t('finance.csv.client'),
+        t('finance.csv.group'),
+        t('finance.csv.type'),
+        t('finance.csv.amount'),
+        t('finance.csv.hallAmount'),
+      ],
+      ...records.filtered.map((item) => [
+        item.payment.paid_at,
+        item.studentName,
+        item.groupName,
+        finLabel(item.payment.client_payment_type),
+        item.payment.client_amount,
+        item.hallCost?.hall_amount ?? null,
+      ]),
+    ]
+    downloadFile(`trikick-payments-${todayISO()}.csv`, buildCsv(rows), 'text/csv;charset=utf-8')
+  }
+
   return (
     <div>
       <div className="fin-records-toolbar">
@@ -39,6 +66,14 @@ export function RecordsTab() {
           value={records.query}
           onChange={handleQueryChange}
         />
+        <Tooltip title={t('finance.csv.export')}>
+          <Button
+            icon={<DownloadOutlined />}
+            aria-label={t('finance.csv.export')}
+            disabled={records.filtered.length === 0}
+            onClick={handleExportCsv}
+          />
+        </Tooltip>
         <Button className="tk-btn-primary" icon={<PlusOutlined />} onClick={handleOpenAdd}>
           {t('finance.records.add')}
         </Button>

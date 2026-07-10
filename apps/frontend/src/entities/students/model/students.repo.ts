@@ -32,6 +32,8 @@ interface RawVisit {
 interface RawStudent {
   id: string
   name: string
+  phone?: string | null
+  note?: string | null
   groups?: RawGroup[]
   subscriptions?: RawSubscription[]
   visits?: RawVisit[]
@@ -43,6 +45,8 @@ function toStudent(raw: RawStudent, byId: Map<string, string>): Student {
   return {
     id: raw.id,
     name: raw.name,
+    phone: raw.phone ?? null,
+    note: raw.note ?? null,
     groups: map(raw.groups ?? [], (g) => g.name),
     subscriptions: map(raw.subscriptions ?? [], (s) => ({
       ...s,
@@ -89,6 +93,8 @@ export async function createStudent(data: StudentInput): Promise<Student> {
   const raw = await apiClient.post<RawStudent>('/students', {
     name: data.name.trim(),
     groups: groupIds,
+    phone: data.phone?.trim() || null,
+    note: data.note?.trim() || null,
   })
   return toStudent(raw, byId)
 }
@@ -100,6 +106,8 @@ export async function updateStudent(
   const { byName, byId } = await getGroupMaps()
   const body: Record<string, unknown> = {}
   if (changes.name !== undefined) body.name = changes.name
+  if (changes.phone !== undefined) body.phone = changes.phone?.trim() || null
+  if (changes.note !== undefined) body.note = changes.note?.trim() || null
   if (changes.groups !== undefined) {
     body.groups = map(changes.groups, (name) => byName.get(name) ?? name)
   }

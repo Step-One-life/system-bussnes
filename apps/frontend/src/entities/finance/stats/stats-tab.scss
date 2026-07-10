@@ -120,6 +120,15 @@
     }
   }
 
+  /* Дельта к прошлому периоду под значением: «▲ 12%» */
+  &__delta {
+    font-size: 0.78rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    cursor: default;
+    width: fit-content;
+  }
+
   &__op {
     font-size: 1.4rem;
     font-weight: 300;

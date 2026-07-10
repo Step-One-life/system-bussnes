@@ -24,6 +24,10 @@ export function StudentFormModal({ open, student, onClose }: StudentFormModalPro
 
   const handleNameChange = (e: ChangeEvent<HTMLInputElement>) =>
     form.setName(e.target.value)
+  const handlePhoneChange = (e: ChangeEvent<HTMLInputElement>) =>
+    form.setPhone(e.target.value)
+  const handleNoteChange = (e: ChangeEvent<HTMLTextAreaElement>) =>
+    form.setNote(e.target.value)
   const handleToggleGroup =
     (groupName: string) => (e: CheckboxChangeEvent) =>
       form.toggleGroup(groupName, e.target.checked)
@@ -55,6 +59,16 @@ export function StudentFormModal({ open, student, onClose }: StudentFormModalPro
             value={form.name}
             onChange={handleNameChange}
             placeholder={t('students.form.namePlaceholder')}
+          />
+        </Form.Item>
+
+        <Form.Item label={t('students.form.phoneLabel')}>
+          <Input
+            value={form.phone}
+            onChange={handlePhoneChange}
+            placeholder={t('students.form.phonePlaceholder')}
+            inputMode="tel"
+            allowClear
           />
         </Form.Item>
 
@@ -127,6 +141,16 @@ export function StudentFormModal({ open, student, onClose }: StudentFormModalPro
             })}
           </>
         )}
+
+        <Form.Item label={t('students.form.noteLabel')} style={{ marginBottom: 0 }}>
+          <Input.TextArea
+            value={form.note}
+            onChange={handleNoteChange}
+            placeholder={t('students.form.notePlaceholder')}
+            autoSize={{ minRows: 2, maxRows: 5 }}
+            maxLength={2000}
+          />
+        </Form.Item>
       </Form>
     </Modal>
   )

@@ -6,6 +6,7 @@ import {
   DeleteOutlined,
   DollarOutlined,
   EditOutlined,
+  MessageOutlined,
   MinusCircleOutlined,
   MoreOutlined,
   PhoneOutlined,
@@ -18,6 +19,7 @@ import { useTranslation } from 'react-i18next'
 import { Badge, StatusBadge, SubProgressBar } from 'common/ui'
 
 import { getDaysRemaining, getSubStatus, subLabel } from '../model/subscription-status'
+import { usePaymentReminder } from '../subscriptions/use-payment-reminder'
 
 import type { Student, Subscription } from '../model/types'
 import type { MenuProps } from 'antd'
@@ -48,6 +50,7 @@ export function SubCard({
 }: SubCardProps) {
   const { t } = useTranslation()
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const remindPayment = usePaymentReminder()
 
   const activeSub = student.subscriptions.find((s) => s.groupId === groupId && s.isActive)
   const anySub =
@@ -79,6 +82,14 @@ export function SubCard({
       icon: <DollarOutlined />,
       label: t('students.subCard.markPaid'),
       onClick: handleMarkPaid,
+    })
+    // Не оплачен → можно сразу напомнить: чат Telegram по номеру, текст
+    // напоминания — в буфер (без телефона — просто в буфер).
+    menuItems.push({
+      key: 'remind',
+      icon: <MessageOutlined />,
+      label: t('students.contacts.remind'),
+      onClick: () => remindPayment(student, anySub),
     })
   }
   if (anySub) {

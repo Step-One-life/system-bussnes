@@ -29,7 +29,11 @@ export class StudentService extends OwnedCrudService<Student> {
     // Группы должны принадлежать тренеру — иначе можно привязать ученика к чужой
     // группе по перебранному UUID (mass-assignment чужого FK).
     await assertOwned(this.groupModel, userId, dto.groups ?? [], 'Группа не найдена')
-    const student = await this.createForUser(userId, { name: dto.name })
+    const student = await this.createForUser(userId, {
+      name: dto.name,
+      phone: dto.phone ?? null,
+      note: dto.note ?? null,
+    })
     if (dto.groups?.length) {
       await student.$set('groups', dto.groups)
     }
@@ -41,8 +45,12 @@ export class StudentService extends OwnedCrudService<Student> {
     if (dto.groups !== undefined) {
       await assertOwned(this.groupModel, userId, dto.groups, 'Группа не найдена')
     }
-    if (dto.name !== undefined) {
-      await student.update({ name: dto.name })
+    const fields: Partial<Pick<Student, 'name' | 'phone' | 'note'>> = {}
+    if (dto.name !== undefined) fields.name = dto.name
+    if (dto.phone !== undefined) fields.phone = dto.phone
+    if (dto.note !== undefined) fields.note = dto.note
+    if (Object.keys(fields).length) {
+      await student.update(fields)
     }
     if (dto.groups !== undefined) {
       await student.$set('groups', dto.groups)
