@@ -24,6 +24,13 @@ import type { Training } from 'entities/trainings'
 export { indKey }
 
 export interface DayGroup {
+  /**
+   * Уникальный ключ среза за день. Группа может иметь НЕСКОЛЬКО занятий в один
+   * день (расписание Пн 10:00 + добавленное на 18:00), поэтому состоянием
+   * отметок нельзя управлять по имени группы: срезы сливались, и посещения
+   * со списаниями уходили в одно занятие, а второе оставалось неотмеченным.
+   */
+  key: string
   groupId: string
   time: string
   duration: number
@@ -72,21 +79,34 @@ export function useDayMarking(open: boolean, onClose: () => void, dateStr: strin
       const entry = isGroupActiveOn(g.expiresAt, dateStr)
         ? (g.schedule ?? []).find((s) => s.day === dow)
         : undefined
-      const existing =
-        trainings.find((t) => t.groupId === g.name && t.date === dateStr) ?? null
-      // Группа участвует, если есть АКТИВНЫЙ слот расписания на этот день недели
-      // ИЛИ уже есть фактическая запись занятия на дату (разовое/перенесённое
-      // занятие группы без расписания — иначе оно выпало бы из «Закрыть день»).
-      if (!entry && !existing) continue
-      result.push({
-        groupId: g.name,
-        time: existing?.time || entry?.time || '',
-        duration: g.duration ?? 60,
-        existing,
-        originalAttendees: new Set(existing?.attendees ?? []),
-      })
+      const dayTrainings = trainings.filter((t) => t.groupId === g.name && t.date === dateStr)
+
+      // По одному срезу на КАЖДОЕ занятие группы за день.
+      for (const tr of dayTrainings) {
+        result.push({
+          key: `t:${tr.id}`,
+          groupId: g.name,
+          time: tr.time || entry?.time || '',
+          duration: g.duration ?? 60,
+          existing: tr,
+          originalAttendees: new Set(tr.attendees ?? []),
+        })
+      }
+
+      // Плюс слот расписания, который ещё не покрыт занятием этого времени.
+      const slotCovered = dayTrainings.some((t) => (t.time || '') === (entry?.time || ''))
+      if (entry && !slotCovered) {
+        result.push({
+          key: `s:${g.name}|${entry.time}`,
+          groupId: g.name,
+          time: entry.time,
+          duration: g.duration ?? 60,
+          existing: null,
+          originalAttendees: new Set<string>(),
+        })
+      }
     }
-    return result
+    return result.sort((a, b) => a.time.localeCompare(b.time))
   }, [open, groups, trainings, dow, dateStr])
 
   const dayIndividuals: DayIndividual[] = useMemo(() => {
@@ -122,7 +142,7 @@ export function useDayMarking(open: boolean, onClose: () => void, dateStr: strin
     const init: Record<string, Set<string>> = {}
     for (const dg of dayGroups) {
       const members = students.filter((s) => s.groups.includes(dg.groupId))
-      init[dg.groupId] = defaultGroupChecks(
+      init[dg.key] = defaultGroupChecks(
         { existing: dg.existing },
         members,
         (s) => !needsSub(getSubStatus(s, dg.groupId, dg.duration).type),
@@ -137,13 +157,14 @@ export function useDayMarking(open: boolean, onClose: () => void, dateStr: strin
     )
   }
 
-  const toggle = (groupId: string, studentId: string) => {
+  /** key — DayGroup.key (не имя группы: срезов у группы за день может быть несколько). */
+  const toggle = (key: string, studentId: string) => {
     setChecks((prev) => {
       const next = { ...prev }
-      const set = new Set(next[groupId] ?? [])
+      const set = new Set(next[key] ?? [])
       if (set.has(studentId)) set.delete(studentId)
       else set.add(studentId)
-      next[groupId] = set
+      next[key] = set
       return next
     })
   }
@@ -162,8 +183,8 @@ export function useDayMarking(open: boolean, onClose: () => void, dateStr: strin
     try {
       const noTariff: string[] = []
       for (const dg of dayGroups) {
-        if (!(dg.groupId in selGroups)) continue
-        const checked = [...(selGroups[dg.groupId] ?? [])]
+        if (!(dg.key in selGroups)) continue
+        const checked = [...(selGroups[dg.key] ?? [])]
         const toAdd = checked.filter((id) => !dg.originalAttendees.has(id))
         const toRemove = [...dg.originalAttendees].filter((id) => !checked.includes(id))
 

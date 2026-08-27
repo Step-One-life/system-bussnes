@@ -154,7 +154,8 @@
       "durationOption": "{{minutes}} min",
       "timePlaceholder": "Time",
       "expiresLabel": "Active until",
-      "expiresHint": "Optional. After this date the group is no longer active — its schedule stops suggesting sessions."
+      "expiresHint": "Optional. After this date the group is no longer active — its schedule stops suggesting sessions.",
+      "scheduleTimeRequired": "Set the time for: {{days}}"
     },
     "schedule": {
       "notSet": "No schedule",

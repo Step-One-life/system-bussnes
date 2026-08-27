@@ -60,13 +60,21 @@ export class SubscriptionsService {
     })
   }
 
-  /** Deduct one session from the active subscription for a group. */
+  /**
+   * Списать занятие с подходящего абонемента.
+   *
+   * `onDate` — дата ЗАНЯТИЯ, а не момент клика. Отметка задним числом обязана
+   * списываться с абонемента, действовавшего в тот день: раньше сюда уходило
+   * «сегодня», и занятие от 5 августа, отмеченное 27-го, не находило свой
+   * (уже истёкший) абонемент и уезжало в авто-платёж — клиент платил дважды.
+   */
   async deduct(
     studentId: string,
     groupId: string,
     sessionDuration: number | null = null,
     tx: Transaction | null = null,
     wantPair = false,
+    onDate: string | null = null,
   ): Promise<{ sub: Subscription | null; status: DeductStatus }> {
     // Выбор абонемента — чистая функция pickSubForDeduct («свой» по длительности
     // → любой «свой» → общий). Истёкшие по сроку отсеиваются: isActive снимается
@@ -78,7 +86,8 @@ export class SubscriptionsService {
       where: { studentId, isActive: true },
       ...(tx ? { transaction: tx, lock: tx.LOCK.UPDATE } : {}),
     })
-    const sub = pickSubForDeduct(subs, groupId, sessionDuration, DateUtil.todayIso(), wantPair)
+    const billingDate = onDate ?? DateUtil.todayIso()
+    const sub = pickSubForDeduct(subs, groupId, sessionDuration, billingDate, wantPair)
     if (!sub) return { sub: null, status: 'none' }
 
     // Безлимит засчитывается (billing=subscription), но число занятий не списывается.

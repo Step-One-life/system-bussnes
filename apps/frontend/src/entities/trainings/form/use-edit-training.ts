@@ -4,9 +4,10 @@ import { useTranslation } from 'react-i18next'
 
 import { useToast } from 'common/ui'
 import { daysBetweenISO, formatDateShort, shiftISODate } from 'common/utils/date'
+import { useLocations } from 'entities/locations'
 
 import { useTrainings, useUpdateTraining, useUpdateTrainingSeries } from '../api/use-trainings'
-import { checkSeriesConflicts, checkTrainingConflict } from '../model/training-logic'
+import { checkSeriesConflicts, checkTrainingConflict, isPrimeTime } from '../model/training-logic'
 
 import type { Training, TrainingConflict } from '../model/types'
 
@@ -21,6 +22,7 @@ export function useEditTraining({ training, onDone }: UseEditTrainingOptions) {
   const update = useUpdateTraining()
   const updateSeries = useUpdateTrainingSeries()
   const { data: trainings = [] } = useTrainings()
+  const { data: locations = [] } = useLocations()
 
   const [date, setDate] = useState('')
   const [time, setTime] = useState('')
@@ -41,6 +43,25 @@ export function useEditTraining({ training, onDone }: UseEditTrainingOptions) {
     setLocationId(training.locationId)
     setIsOnline(training.isOnline)
     setIsPrime(training.isPrime)
+  }
+
+  // Прайм следует за временем и локацией: раньше переключатель оставался в
+  // старом положении при переносе занятия на вечер, и тренер видел одно, а в
+  // авто-платёж уходило другое. Сервер всё равно пересчитывает — здесь важно,
+  // чтобы глаза не обманывались.
+  const location = locations.find((l) => l.id === locationId) ?? null
+  const autoPrime = isPrimeTime(date, time, location)
+  const setDateSynced = (v: string) => {
+    setDate(v)
+    setIsPrime(isPrimeTime(v, time, location))
+  }
+  const setTimeSynced = (v: string) => {
+    setTime(v)
+    setIsPrime(isPrimeTime(date, v, location))
+  }
+  const setLocationSynced = (v: string | null) => {
+    setLocationId(v)
+    setIsPrime(isPrimeTime(date, time, locations.find((l) => l.id === v) ?? null))
   }
 
   const isRecurring = !!training?.recurring && !!training?.recurringId
@@ -161,13 +182,14 @@ export function useEditTraining({ training, onDone }: UseEditTrainingOptions) {
 
   return {
     date,
-    setDate,
+    setDate: setDateSynced,
     time,
-    setTime,
+    setTime: setTimeSynced,
     note,
     setNote,
     locationId,
-    setLocationId,
+    setLocationId: setLocationSynced,
+    autoPrime,
     isOnline,
     setIsOnline,
     isPrime,

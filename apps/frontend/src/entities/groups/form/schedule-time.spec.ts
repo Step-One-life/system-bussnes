@@ -1,4 +1,4 @@
-import { addDay, referenceTime, setDayTime } from './schedule-time'
+import { addDay, daysWithoutTime, DEFAULT_SCHEDULE_TIME, referenceTime, setDayTime } from './schedule-time'
 
 import type { ScheduleEntry } from '../model/types'
 
@@ -28,8 +28,10 @@ describe('referenceTime', () => {
 })
 
 describe('addDay', () => {
-  it('в пустое расписание добавляет день с пустым временем', () => {
-    expect(addDay([], 'Пн')).toEqual([{ day: 'Пн', time: '' }])
+  // Поведение изменено осознанно (D19): пустое время означало день, который
+  // молча не порождает занятий. Теперь подставляется дефолт.
+  it('в пустое расписание добавляет день с дефолтным временем', () => {
+    expect(addDay([], 'Пн')).toEqual([{ day: 'Пн', time: DEFAULT_SCHEDULE_TIME }])
   })
 
   it('новый день наследует эталонное время', () => {
@@ -80,5 +82,33 @@ describe('setDayTime', () => {
       { day: 'Пн', time: '' },
       { day: 'Ср', time: '20:00' },
     ])
+  })
+})
+
+// D19: день без времени молча выпадал из календаря и ленты «Сегодня»,
+// хотя карточка группы показывала его в расписании.
+describe('день без времени', () => {
+  it('первый отмеченный день получает дефолтное время, а не пустоту', () => {
+    expect(addDay([], 'Пн')).toEqual([{ day: 'Пн', time: DEFAULT_SCHEDULE_TIME }])
+  })
+
+  it('следующий день по-прежнему наследует уже заданное время', () => {
+    expect(addDay([{ day: 'Пн', time: '20:00' }], 'Ср')).toEqual([
+      { day: 'Пн', time: '20:00' },
+      { day: 'Ср', time: '20:00' },
+    ])
+  })
+
+  it('daysWithoutTime находит дни, которые тренер очистил вручную', () => {
+    const schedule = [
+      { day: 'Пн', time: '20:00' },
+      { day: 'Ср', time: '' },
+      { day: 'Пт', time: '' },
+    ]
+    expect(daysWithoutTime(schedule)).toEqual(['Ср', 'Пт'])
+  })
+
+  it('полное расписание — пустой список нарушений', () => {
+    expect(daysWithoutTime([{ day: 'Пн', time: '20:00' }])).toEqual([])
   })
 })

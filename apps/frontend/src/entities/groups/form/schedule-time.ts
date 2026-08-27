@@ -1,5 +1,13 @@
 import type { ScheduleEntry } from '../model/types'
 
+/** Время по умолчанию, если в расписании ещё нет ни одного заданного. */
+export const DEFAULT_SCHEDULE_TIME = '18:00'
+
+/** Дни, отмеченные без времени: такой слот не порождает занятий в календаре. */
+export function daysWithoutTime(schedule: ScheduleEntry[]): string[] {
+  return schedule.filter((e) => !e.time).map((e) => e.day)
+}
+
 /** Эталонное время для авто-подстановки: последнее непустое время в расписании. */
 export function referenceTime(schedule: ScheduleEntry[]): string {
   for (let i = schedule.length - 1; i >= 0; i--) {
@@ -8,9 +16,13 @@ export function referenceTime(schedule: ScheduleEntry[]): string {
   return ''
 }
 
-/** Добавить день; новый день наследует эталонное время (если есть). */
+/**
+ * Добавить день. Наследует эталонное время, а если задавать ещё нечего —
+ * подставляет дефолт: день без времени молча выпадал из календаря и ленты
+ * «Сегодня», хотя карточка группы показывала его в расписании.
+ */
 export function addDay(schedule: ScheduleEntry[], abbr: string): ScheduleEntry[] {
-  return [...schedule, { day: abbr, time: referenceTime(schedule) }]
+  return [...schedule, { day: abbr, time: referenceTime(schedule) || DEFAULT_SCHEDULE_TIME }]
 }
 
 /**

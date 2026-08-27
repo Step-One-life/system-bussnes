@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { useToast } from 'common/ui'
 
 import { useCreateGroup, useUpdateGroup } from '../api/use-groups'
+import { daysWithoutTime } from './schedule-time'
 
 import type { Group, ScheduleEntry } from '../model/types'
 
@@ -35,6 +36,16 @@ export function useGroupForm({ group, onDone }: UseGroupFormOptions) {
   const submit = async () => {
     if (!isEdit && !name.trim()) {
       toast({ type: 'error', title: t('groups.nameRequired') })
+      return
+    }
+    // День без времени сохранялся молча и не порождал занятий: в календаре и
+    // ленте «Сегодня» его не было, хотя карточка показывала «Пн, Ср · 60 мин».
+    const noTime = daysWithoutTime(schedule)
+    if (noTime.length) {
+      toast({
+        type: 'error',
+        title: t('groups.form.scheduleTimeRequired', { days: noTime.join(', ') }),
+      })
       return
     }
     const expires = expiresAt || null

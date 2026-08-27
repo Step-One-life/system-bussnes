@@ -110,3 +110,32 @@ describe('pickSubForDeduct — безлимит', () => {
     expect(pickSubForDeduct([unlim], 'g1', 60, TODAY)).toBeNull()
   })
 })
+
+// D10/S1: биллинг считается на дату ЗАНЯТИЯ, а не на момент клика. Тренер
+// отмечает 27 августа занятие от 5 августа; абонемент действовал до 20 августа.
+describe('pickSubForDeduct — отметка задним числом', () => {
+  const LESSON_DAY = '2026-08-05'
+  const CLICK_DAY = '2026-08-27'
+
+  it('абонемент, истёкший ПОСЛЕ даты занятия, списывается', () => {
+    const old = sub({ expiresAt: '2026-08-20' })
+    expect(pickSubForDeduct([old], 'g1', 60, LESSON_DAY)).toBe(old)
+  })
+
+  it('он же на «сегодня» не выбирается — старое поведение уводило в авто-платёж', () => {
+    const old = sub({ expiresAt: '2026-08-20' })
+    expect(pickSubForDeduct([old], 'g1', 60, CLICK_DAY)).toBeNull()
+  })
+
+  it('абонемент, купленный ПОСЛЕ занятия, за то занятие не списывается', () => {
+    const fresh = sub({ expiresAt: '2026-12-31' })
+    const old = sub({ expiresAt: '2026-08-20', sessionDuration: 90 })
+    // На дату занятия действуют оба; «свой» по длительности — старый.
+    expect(pickSubForDeduct([fresh, old], 'g1', 90, LESSON_DAY)).toBe(old)
+  })
+
+  it('в день истечения абонемент ещё действует', () => {
+    const edge = sub({ expiresAt: LESSON_DAY })
+    expect(pickSubForDeduct([edge], 'g1', 60, LESSON_DAY)).toBe(edge)
+  })
+})

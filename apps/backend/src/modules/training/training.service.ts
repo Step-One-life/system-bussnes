@@ -210,7 +210,7 @@ export class TrainingService extends OwnedCrudService<Training> {
    * правки без смены даты/времени не блокируются давними наложениями.
    */
   async updateForUser(userId: string, id: string, data: object): Promise<Training> {
-    const changes = data as { date?: string; time?: string }
+    const changes = data as { date?: string; time?: string; locationId?: string | null }
     const current = await this.findOneForUser(userId, id)
     const date = changes.date ?? current.date
     const time = changes.time ?? current.time
@@ -225,7 +225,26 @@ export class TrainingService extends OwnedCrudService<Training> {
         throw new ConflictException('Время занятия пересекается с другим занятием')
       }
     }
-    const training = await super.updateForUser(userId, id, data)
+    // Прайм пересчитывается сервером при любом сдвиге даты/времени/локации —
+    // как в updateSeriesForUser. Раньше фронт присылал СТАРЫЙ isPrime, сервер
+    // писал его как есть, и перенос занятия на вечер оставлял непраймовую цену
+    // в авто-платеже (а признак уезжал ещё и в Google-событие). Поведение
+    // зависело от того, правят одно занятие или всю серию.
+    const movedInTime =
+      changes.date !== undefined ||
+      changes.time !== undefined ||
+      changes.locationId !== undefined
+    const patch: Record<string, unknown> = { ...(data as Record<string, unknown>) }
+    if (movedInTime) {
+      const locationId =
+        changes.locationId !== undefined ? changes.locationId : current.locationId
+      const location = locationId
+        ? await this.locationService.findOneForUser(userId, locationId).catch(() => null)
+        : null
+      patch.isPrime = isPrimeTime(date, time ?? '', location)
+    }
+
+    const training = await super.updateForUser(userId, id, patch)
     await this.calendarSync.enqueueUpsert(userId, training.id, training.time)
     return training
   }
@@ -335,12 +354,15 @@ export class TrainingService extends OwnedCrudService<Training> {
           {
             // Парная тренировка списывает только ПАРНЫЙ абонемент (wantPair),
             // обычная — индивидуальный/групповой. Нет подходящего → авто-платёж ниже.
+            // Биллинг считается на дату ЗАНЯТИЯ: отметка задним числом должна
+            // списаться с абонемента, действовавшего тогда, а не «сегодня».
             const { sub, status } = await this.subscriptionsService.deduct(
               studentId,
               training.groupId,
               training.sessionDuration,
               tx,
               training.isPair,
+              training.date,
             )
             if (sub) {
               billing = 'subscription'
