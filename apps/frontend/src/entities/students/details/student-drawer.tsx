@@ -55,13 +55,15 @@ export function StudentDrawer({ studentId, onClose, onEdit }: StudentDrawerProps
 
   const {
     data: student,
-    isLoading,
     isError,
     refetch,
   } = useQuery({
     queryKey: ['students', studentId],
     queryFn: () => getStudentById(studentId!),
     enabled: !!studentId,
+    // Шторку открыли осознанно: лучше быстро показать ошибку с кнопкой
+    // «Повторить», чем бесконечно крутить скелет на дефолтных ретраях.
+    retry: 1,
   })
 
   const refresh = () => {
@@ -155,10 +157,11 @@ export function StudentDrawer({ studentId, onClose, onEdit }: StudentDrawerProps
           )
         }
       >
-        {/* Раньше при сбое загрузки шторка оставалась пустой панелью без единого
-            слова — теперь скелет и явная ошибка с повтором. */}
-        {isLoading && <ListSkeleton rows={3} />}
+        {/* Пустой панели быть не может: пока данных нет — скелет, при отказе —
+            ошибка с повтором. isLoading здесь не годится: между ретраями
+            react-query он ложный, и шторка снова пустела. */}
         {isError && <ErrorState onRetry={refetch} />}
+        {!isError && !student && <ListSkeleton rows={3} />}
         {student && (
           <>
             <div style={{ color: 'var(--tk-text-secondary)', fontSize: '0.85rem' }}>
