@@ -68,7 +68,9 @@ export class TrainingService extends OwnedCrudService<Training> {
   }
 
   protected get include(): FindOptions['include'] {
-    return [Student]
+    // Фронту от участника нужен только id — полная модель Student раздувала
+    // ответ /trainings в разы и тащила наружу телефон с заметкой тренера.
+    return [{ model: Student, attributes: ['id'], through: { attributes: [] } }]
   }
 
   /**
@@ -225,6 +227,13 @@ export class TrainingService extends OwnedCrudService<Training> {
         throw new ConflictException('Время занятия пересекается с другим занятием')
       }
     }
+    // Локация должна принадлежать тренеру: без этой проверки PATCH привязывал
+    // занятие к ЧУЖОЙ локации (в журнал и Google-событие уезжал чужой адрес, а
+    // отметка уходила в billing='none' — тариф по чужой локации не находится).
+    if (changes.locationId !== undefined && changes.locationId !== null) {
+      await this.locationService.findOneForUser(userId, changes.locationId)
+    }
+
     // Прайм пересчитывается сервером при любом сдвиге даты/времени/локации —
     // как в updateSeriesForUser. Раньше фронт присылал СТАРЫЙ isPrime, сервер
     // писал его как есть, и перенос занятия на вечер оставлял непраймовую цену
@@ -711,7 +720,9 @@ export class TrainingService extends OwnedCrudService<Training> {
             : undefined
     return this.trainingModel.findAll({
       where: { userId, ...(date ? { date } : {}) },
-      include: [Student],
+      // Фронту от участника нужен только id: полная модель Student раздувала
+      // ответ и тащила наружу телефон с заметкой тренера на каждом занятии.
+      include: [{ model: Student, attributes: ['id'], through: { attributes: [] } }],
       order: [['createdAt', 'DESC']],
     })
   }

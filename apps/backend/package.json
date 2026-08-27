@@ -26,6 +26,7 @@
     "@nestjs/schedule": "^6.1.3",
     "@nestjs/sequelize": "^11.0.0",
     "@nestjs/swagger": "^11.0.0",
+    "@nestjs/throttler": "^6.5.0",
     "@trikick/shared": "*",
     "bcrypt": "^5.1.1",
     "class-transformer": "^0.5.1",

@@ -66,7 +66,7 @@ export class FinanceController {
       // Доход может быть привязан к ученику ИЛИ к группе — резолвим то, что есть,
       // чтобы строка журнала имела читаемый заголовок в обоих режимах.
       const studentName = dto.studentId ? await this.activityLog.studentName(dto.studentId) : ''
-      const groupName = dto.groupId ? await this.activityLog.groupName(dto.groupId) : ''
+      const groupName = dto.groupId ? await this.activityLog.groupName(user.id, dto.groupId) : ''
       await this.activityLog.log({
         userId: user.id,
         type: 'payment_recorded',

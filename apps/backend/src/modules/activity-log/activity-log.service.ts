@@ -35,15 +35,18 @@ export class ActivityLogService {
     return s?.name ?? ''
   }
 
-  /** Имя группы по UUID (на фронте groupId = имя, в БД — UUID). */
-  async groupName(groupId: string): Promise<string> {
-    const g = await this.groupModel.findByPk(groupId)
+  /**
+   * Имя группы по UUID (на фронте groupId = имя, в БД — UUID).
+   * Чтение скоупим по владельцу: в журнал не должно попасть имя чужой группы.
+   */
+  async groupName(userId: string, groupId: string): Promise<string> {
+    const g = await this.groupModel.findOne({ where: { id: groupId, userId } })
     return g?.name ?? ''
   }
 
   /** Индивидуальная ли группа (контейнер индив./онлайн/парных занятий). */
-  async groupIsIndividual(groupId: string): Promise<boolean> {
-    const g = await this.groupModel.findByPk(groupId)
+  async groupIsIndividual(userId: string, groupId: string): Promise<boolean> {
+    const g = await this.groupModel.findOne({ where: { id: groupId, userId } })
     return g?.isIndividual ?? false
   }
 

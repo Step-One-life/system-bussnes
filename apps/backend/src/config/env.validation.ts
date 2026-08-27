@@ -4,6 +4,8 @@ import {
   IsNumberString,
   IsOptional,
   IsString,
+  MinLength,
+  NotEquals,
   ValidateIf,
   validateSync,
 } from 'class-validator'
@@ -34,8 +36,19 @@ class EnvVariables {
   @IsNotEmpty()
   DB_NAME!: string
 
+  /**
+   * Подписывает все токены доступа. Слабый или общеизвестный секрет означает,
+   * что любой желающий подписывает токен с произвольным userId и через обычный
+   * /api читает данные любого тренера — учеников, телефоны, все финансы.
+   * Поэтому в production длина ≥ 32 символов и запрет плейсхолдеров из
+   * .env.example (их видно в репозитории).
+   */
   @IsString()
   @IsNotEmpty()
+  @ValidateIf((o: EnvVariables) => o.NODE_ENV === 'production')
+  @MinLength(32, { message: 'JWT_SECRET в production должен быть не короче 32 символов' })
+  @NotEquals('change-me-in-production', { message: 'JWT_SECRET оставлен плейсхолдером из .env.example' })
+  @NotEquals('secret', { message: 'JWT_SECRET оставлен плейсхолдером' })
   JWT_SECRET!: string
 
   @IsString()
@@ -63,6 +76,8 @@ class EnvVariables {
   @ValidateIf((o: EnvVariables) => o.NODE_ENV === 'production')
   @IsString()
   @IsNotEmpty()
+  @MinLength(32, { message: 'CALENDAR_TOKEN_ENC_KEY должен быть не короче 32 символов' })
+  @NotEquals('dev-insecure-key-change-me', { message: 'CALENDAR_TOKEN_ENC_KEY оставлен dev-фолбэком' })
   CALENDAR_TOKEN_ENC_KEY?: string
 }
 
