@@ -8,7 +8,12 @@ import { useStudents } from 'entities/students'
 import { buildCalendarDay, useTrainings } from 'entities/trainings'
 
 export function useHomePage() {
-  const { data: students = [], isLoading: studentsLoading } = useStudents()
+  const {
+    data: students = [],
+    isLoading: studentsLoading,
+    isError: studentsError,
+    refetch: refetchStudents,
+  } = useStudents()
   const { data: trainings = [], isLoading, isError, refetch } = useTrainings()
   const { data: groups = [] } = useGroups()
 
@@ -71,6 +76,11 @@ export function useHomePage() {
     isLoading,
     isError,
     refetch,
+    // Правая колонка живёт на учениках: у неё своя загрузка и своя ошибка,
+    // иначе недогруженный экран показывает зелёное «Все абонементы в порядке».
+    studentsLoading,
+    studentsError,
+    refetchStudents,
     indNames,
     regularNames,
     todayTrainings,

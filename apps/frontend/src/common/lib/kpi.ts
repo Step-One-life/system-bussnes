@@ -5,12 +5,10 @@ import isEmpty from 'lodash/isEmpty'
 import size from 'lodash/size'
 import some from 'lodash/some'
 
-import { getStudents } from 'entities/students/model/students.repo'
 import {
   getOverallSubStatus,
   getSubStatus,
 } from 'entities/students/model/subscription-status'
-import { getTrainings } from 'entities/trainings/model/trainings.repo'
 
 import type { Student, Subscription, SubStatus } from 'entities/students/model/types'
 
@@ -94,25 +92,38 @@ export interface IndividualKPIs {
   expiring: number
 }
 
-export async function getIndividualKPIs(indGroupNames: string[]): Promise<IndividualKPIs> {
+/**
+ * KPI и предупреждения по индивидуальным занятиям — ЧИСТЫЕ производные от уже
+ * загруженных списков. Раньше это были async-функции под ключами
+ * ['individual','kpis'|'warnings'], которые не инвалидировала ни одна мутация
+ * во всём фронте: тренер записывал занятие с этого же экрана, список сессий
+ * обновлялся, а плитки и предупреждения оставались старыми до ухода со
+ * страницы. Плюс каждая ходила в GET /students и /trainings мимо кэша.
+ */
+export function computeIndividualKPIs(
+  students: Student[],
+  trainings: { date: string; groupId: string }[],
+  indGroupNames: string[],
+  now: Date,
+): IndividualKPIs {
   if (isEmpty(indGroupNames)) {
     return { clients: 0, monthSessions: 0, weekSessions: 0, expiring: 0 }
   }
 
-  const [students, trainings] = await Promise.all([getStudents(), getTrainings()])
-  const clients = filter(students, (s) =>
-    some(s.groups, (g) => includes(indGroupNames, g)),
-  )
+  const clients = filter(students, (s) => some(s.groups, (g) => includes(indGroupNames, g)))
 
-  const now = new Date()
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
   const startOfWeek = new Date(now)
   startOfWeek.setDate(now.getDate() - ((now.getDay() + 6) % 7))
   startOfWeek.setHours(0, 0, 0, 0)
 
   const indTrainings = filter(trainings, (t) => includes(indGroupNames, t.groupId))
-  const monthSessions = size(filter(indTrainings, (t) => new Date(t.date + 'T00:00:00') >= startOfMonth))
-  const weekSessions = size(filter(indTrainings, (t) => new Date(t.date + 'T00:00:00') >= startOfWeek))
+  const monthSessions = size(
+    filter(indTrainings, (t) => new Date(t.date + 'T00:00:00') >= startOfMonth),
+  )
+  const weekSessions = size(
+    filter(indTrainings, (t) => new Date(t.date + 'T00:00:00') >= startOfWeek),
+  )
 
   let expiring = 0
   for (const s of clients) {
@@ -129,8 +140,10 @@ export async function getIndividualKPIs(indGroupNames: string[]): Promise<Indivi
   return { clients: clients.length, monthSessions, weekSessions, expiring }
 }
 
-export async function getIndividualWarnings(indGroupNames: string[]): Promise<WarningEntry[]> {
-  const students = await getStudents()
+export function computeIndividualWarnings(
+  students: Student[],
+  indGroupNames: string[],
+): WarningEntry[] {
   const warnings: WarningEntry[] = []
   for (const s of students) {
     for (const groupId of filter(s.groups, (g) => includes(indGroupNames, g))) {

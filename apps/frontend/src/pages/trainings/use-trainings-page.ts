@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 
 import { useTranslation } from 'react-i18next'
 
-import { useToast } from 'common/ui'
+import { useSafeAction } from 'common/lib/use-safe-action'
 import { getMondayOfWeek } from 'common/utils/date'
 import { useGroups } from 'entities/groups'
 import { useStudents } from 'entities/students'
@@ -20,7 +20,7 @@ export type TrainingsView = 'list' | 'calendar'
 
 export function useTrainingsPage() {
   const { t } = useTranslation()
-  const toast = useToast()
+  const run = useSafeAction()
   const { data: trainings = [], isLoading, isError, refetch } = useTrainings()
   const { data: students = [] } = useStudents()
   const { data: groups = [] } = useGroups()
@@ -67,34 +67,33 @@ export function useTrainingsPage() {
     setGroupModalOpen(true)
   }
 
-  const pickIndividual = async () => {
-    setTypeModalOpen(false)
-    const indGroup = await ensureIndividualGroup()
+  /**
+   * Контейнер «Индивидуальные» создаётся лениво. Раньше при сбое сети пикер
+   * типа уже закрывался, промис уходил в unhandled rejection, и выбор
+   * «Индивидуальная / Онлайн / Парная» выглядел мёртвой кнопкой: ни формы,
+   * ни ошибки. Теперь пикер закрывается ТОЛЬКО после успешного ответа.
+   */
+  const pickInd = (open: (v: boolean) => void) => async () => {
+    const indGroup = await run(() => ensureIndividualGroup())
+    if (!indGroup) return
     setIndGroupId(indGroup.name)
-    setIndModalOpen(true)
+    setTypeModalOpen(false)
+    open(true)
   }
 
-  const pickOnline = async () => {
-    setTypeModalOpen(false)
-    const indGroup = await ensureIndividualGroup()
-    setIndGroupId(indGroup.name)
-    setOnlineModalOpen(true)
-  }
-
-  const pickPair = async () => {
-    setTypeModalOpen(false)
-    const indGroup = await ensureIndividualGroup()
-    setIndGroupId(indGroup.name)
-    setPairModalOpen(true)
-  }
+  const pickIndividual = pickInd(setIndModalOpen)
+  const pickOnline = pickInd(setOnlineModalOpen)
+  const pickPair = pickInd(setPairModalOpen)
 
   const openAddStudent = (training: Training) => setAddTarget(training)
   const openEditTraining = (training: Training) => setEditTarget(training)
 
-  const handleRemoveStudent = async (training: Training, studentId: string) => {
-    await removeFromTraining.mutateAsync({ trainingId: training.id, studentId })
-    toast({ type: 'info', title: t('trainings.removedFromTraining') })
-  }
+  // Снятие с занятия возвращает занятие на абонемент и откатывает авто-платёж:
+  // отказ сервера обязан быть виден, раньше он уходил в тишину.
+  const handleRemoveStudent = (training: Training, studentId: string) =>
+    run(() => removeFromTraining.mutateAsync({ trainingId: training.id, studentId }), {
+      success: t('trainings.removedFromTraining'),
+    })
 
   return {
     trainings,

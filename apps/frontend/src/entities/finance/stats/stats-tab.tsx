@@ -8,7 +8,7 @@ import {
 
 import { useTranslation } from 'react-i18next'
 
-import { ErrorState } from 'common/ui'
+import { ErrorState, ListSkeleton } from 'common/ui'
 
 import { BreakdownChart, MonthlyChart, TopClientsChart } from './finance-charts'
 import { useFinanceStats } from './use-finance-stats'
@@ -62,6 +62,9 @@ export function StatsTab() {
   const handleSelectPeriod = (p: FinancePeriod) => () => stats.setPeriod(p)
 
   if (stats.isError) return <ErrorState onRetry={stats.refetch} />
+  // Пока платежи и расходы в полёте — скелет, а не «Доход 0 ₽» с красной
+  // маржой 0%: на медленной сети это читалось как «все деньги обнулились».
+  if (stats.isLoading) return <ListSkeleton rows={4} />
 
   const deltaHint = t('finance.stats.deltaVs', { period: stats.prevPeriodLabel })
 

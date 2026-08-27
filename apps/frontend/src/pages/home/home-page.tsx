@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next'
 
 import { useNow } from 'common/hooks/use-now'
 import { useTelegramMessage } from 'common/hooks/use-telegram-message'
-import { ErrorState, ListSkeleton, PageHeader, WarningItem } from 'common/ui'
+import { ErrorState, ListSkeleton, PageHeader, QueryState, WarningItem } from 'common/ui'
 import { formatDateShort, todayISO, yesterdayISO } from 'common/utils/date'
 import { isLinkablePhone } from 'common/utils/phone-links'
 import { OnboardingChecklist } from 'entities/onboarding'
@@ -253,10 +253,23 @@ export function HomePage() {
               ? t('home.attention')
               : t('home.subStatus')}
           </div>
-          {page.warnings.length ||
-          unpaid.length ||
-          page.lapsed.length ||
-          page.yesterdayUnmarked > 0 ? (
+          {/* Пока ученики грузятся, «в порядке» — ложь: раньше на холодном
+              открытии и после смены аккаунта колонка зеленела на 1-2 секунды. */}
+          <QueryState
+            isLoading={page.studentsLoading}
+            isError={page.studentsError}
+            onRetry={page.refetchStudents}
+            skeletonRows={3}
+            isEmpty={
+              !page.warnings.length &&
+              !unpaid.length &&
+              !page.lapsed.length &&
+              page.yesterdayUnmarked === 0
+            }
+            empty={
+              <div className="home-empty-card home-empty-card--ok">{t('home.allSubsOk')}</div>
+            }
+          >
             <div className="warning-list">
               {/* Серьёзность по убыванию: истёкшие → вчера → неоплаченные → заканчивающиеся. */}
               {page.warnings
@@ -323,9 +336,7 @@ export function HomePage() {
                 />
               ))}
             </div>
-          ) : (
-            <div className="home-empty-card home-empty-card--ok">{t('home.allSubsOk')}</div>
-          )}
+          </QueryState>
         </section>
       </div>
 

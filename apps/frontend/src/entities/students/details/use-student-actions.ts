@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 
 import { useTranslation } from 'react-i18next'
@@ -16,6 +17,8 @@ export function useStudentActions(onAfterChange: () => void) {
   const run = useSafeAction()
   const deleteStudent = useDeleteStudent()
   const deleteSubscription = useDeleteSubscription()
+  // Списание пишет деньги: пока запрос в полёте, кнопка должна быть заблокирована.
+  const [busy, setBusy] = useState(false)
 
   const invalidate = () => {
     qc.invalidateQueries({ queryKey: studentKeys.all })
@@ -25,12 +28,14 @@ export function useStudentActions(onAfterChange: () => void) {
   // Списание адресное: карточка передаёт id СВОЕГО абонемента (эвристика по
   // группе списывала не с того при нескольких активных абонементах группы).
   // Отказ сервера показывается тостом — раньше промис отваливался молча.
-  const deduct = (studentId: string, subId: string) =>
-    run(async () => {
+  const deduct = (studentId: string, subId: string) => {
+    setBusy(true)
+    return run(async () => {
       const { sub } = await deductSessionById(studentId, subId)
       if (!sub) throw new Error(t('students.actions.subNotFound'))
       return sub
     }).then((sub) => {
+      setBusy(false)
       if (!sub) return
       const expired = !sub.isActive
       toast({
@@ -44,6 +49,7 @@ export function useStudentActions(onAfterChange: () => void) {
       invalidateAfterBilling(qc)
       invalidate()
     })
+  }
 
   const removeSubscription = (studentId: string, subId: string) =>
     run(() => deleteSubscription.mutateAsync({ studentId, subId }), {
@@ -58,5 +64,5 @@ export function useStudentActions(onAfterChange: () => void) {
     return done !== undefined
   }
 
-  return { deduct, removeSubscription, removeStudent }
+  return { deduct, removeSubscription, removeStudent, busy }
 }

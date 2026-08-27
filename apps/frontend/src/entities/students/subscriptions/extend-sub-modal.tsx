@@ -4,6 +4,7 @@ import { Button, Form, Modal, Select } from 'antd'
 
 import { useTranslation } from 'react-i18next'
 
+import { useSafeAction } from 'common/lib/use-safe-action'
 import { useToast } from 'common/ui'
 import { formatDateFull } from 'common/utils/date'
 
@@ -33,11 +34,14 @@ export function ExtendSubModal({
 }: ExtendSubModalProps) {
   const { t } = useTranslation()
   const toast = useToast()
+  const run = useSafeAction()
   const extendSub = useExtendSubscription()
   const [days, setDays] = useState(35)
 
+  // Отказ сервера раньше оставлял модалку открытой без единого слова.
   const submit = async () => {
-    await extendSub.mutateAsync({ studentId, subId: sub.id, days })
+    const done = await run(() => extendSub.mutateAsync({ studentId, subId: sub.id, days }))
+    if (done === undefined) return
     toast({
       type: 'success',
       title: t('subscriptions.extend.termExtended'),

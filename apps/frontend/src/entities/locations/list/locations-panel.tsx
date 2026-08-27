@@ -7,7 +7,8 @@ import map from 'lodash/map'
 
 import { useTranslation } from 'react-i18next'
 
-import { EmptyState } from 'common/ui'
+import { useSafeAction } from 'common/lib/use-safe-action'
+import { EmptyState, QueryState } from 'common/ui'
 
 import { useDeleteLocation, useLocations } from '../api/use-locations'
 import { LocationFormModal } from '../form/location-form-modal'
@@ -20,8 +21,9 @@ import './location-card.scss'
 /** Locations management block, embedded into the Finance page. */
 export function LocationsPanel() {
   const { t } = useTranslation()
-  const { data: locations = [], isLoading } = useLocations()
+  const { data: locations = [], isLoading, isError, refetch } = useLocations()
   const deleteLocation = useDeleteLocation()
+  const run = useSafeAction()
 
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<Location | null>(null)
@@ -35,9 +37,13 @@ export function LocationsPanel() {
     setModalOpen(true)
   }
   const handleClose = () => setModalOpen(false)
-  const handleDelete = (location: Location) => {
-    deleteLocation.mutate(location.id)
-    setModalOpen(false)
+  // Единственная мутация во фронте, что была fire-and-forget: модалка
+  // закрывалась мгновенно, а отказ сервера не показывался вообще.
+  const handleDelete = async (location: Location) => {
+    const done = await run(() => deleteLocation.mutateAsync(location.id), {
+      success: t('locations.deleted'),
+    })
+    if (done !== undefined) setModalOpen(false)
   }
 
   return (
@@ -49,18 +55,25 @@ export function LocationsPanel() {
         </Button>
       </div>
 
-      {!isLoading && !locations.length ? (
-        <EmptyState
-          title={t('locations.empty.title')}
-          text={t('locations.empty.text')}
-        />
-      ) : (
+      <QueryState
+        isLoading={isLoading}
+        isError={isError}
+        onRetry={refetch}
+        skeletonRows={2}
+        isEmpty={!locations.length}
+        empty={
+          <EmptyState
+            title={t('locations.empty.title')}
+            text={t('locations.empty.text')}
+          />
+        }
+      >
         <div className="locations-grid">
           {map(locations, (loc) => (
             <LocationCard key={loc.id} location={loc} onEdit={handleEdit} />
           ))}
         </div>
-      )}
+      </QueryState>
 
       <LocationFormModal
         key={editing?.id ?? 'new'}

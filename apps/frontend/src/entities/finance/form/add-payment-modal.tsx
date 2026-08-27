@@ -108,7 +108,15 @@ export function AddPaymentModal({ open, onClose }: AddPaymentModalProps) {
           }),
           okText: t('common.continue'),
           cancelText: t('common.cancel'),
-          onOk: persist,
+          // Ошибка внутри onOk терялась мимо внешнего try/catch: подтверждение
+          // закрывалось, доход не сохранялся, тренер ничего не узнавал.
+          onOk: () =>
+            persist().catch((e: unknown) =>
+              toast({
+                type: 'error',
+                title: e instanceof Error ? e.message : t('common.error'),
+              }),
+            ),
         })
         return
       }

@@ -15,7 +15,7 @@ export function useGroupsPage() {
   const { t } = useTranslation()
   const qc = useQueryClient()
   const toast = useToast()
-  const { data: groups = [], isLoading } = useGroups()
+  const { data: groups = [], isLoading, isError, refetch } = useGroups()
   const deleteGroup = useDeleteGroup()
 
   // Открытая группа живёт в URL (?group=<id>): браузерное «назад» возвращает
@@ -64,6 +64,8 @@ export function useGroupsPage() {
   return {
     regularGroups,
     isLoading,
+    isError,
+    refetch,
     openedGroup,
     setOpenedGroup,
     formGroup,

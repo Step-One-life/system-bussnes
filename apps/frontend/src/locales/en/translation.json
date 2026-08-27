@@ -915,7 +915,8 @@
       "primeEndPlaceholder": "To",
       "deleteTitle": "Delete location \"{{name}}\"?",
       "deleteDescription": "The location's tariffs will also be deleted"
-    }
+    },
+    "deleted": "Location deleted"
   },
   "auth": {
     "loginSubtitle": "Sign in",
