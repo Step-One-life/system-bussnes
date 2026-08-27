@@ -7,6 +7,7 @@ import { useToast } from 'common/ui'
 import { newBatchId } from 'common/utils/batch-id'
 import { formatDateShort, todayISO } from 'common/utils/date'
 import { uuid } from 'common/utils/uuid'
+import { invalidateAfterBilling } from 'entities/finance/api/use-finance'
 import { autoCreatePayment } from 'entities/finance/lib/auto-payment'
 import { resolvePricingRule, resolvePricingRuleForOnline, subTypeToTuple } from 'entities/finance/lib/pricing-lookup'
 import { useGroups } from 'entities/groups/api/use-groups'
@@ -297,6 +298,7 @@ export function useIndividualSession({ indGroupId, onDone, isOnline = false }: U
       }
 
       qc.invalidateQueries({ queryKey: studentKeys.all })
+      invalidateAfterBilling(qc)
       toast({
         type: 'success',
         title: t('trainings.individual.recorded'),

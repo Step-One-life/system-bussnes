@@ -270,14 +270,19 @@
     },
     "visits": {
       "empty": "No visits yet",
-      "indTraining": "Individual training"
+      "indTraining": "Individual training",
+      "removeTitle": "Remove the {{date}} check-in?",
+      "removeHint": "The session goes back to the subscription and the recorded income is deleted.",
+      "removed": "Check-in removed",
+      "orphanCannotRemove": "This legacy record cannot be removed: it is not linked to a training"
     },
     "actions": {
       "sessionDeducted": "Session deducted",
       "subExpired": "Session deducted — subscription ended",
       "remaining": "Remaining: {{remaining}} of {{total}}",
       "subDeleted": "Subscription deleted",
-      "studentDeleted": "Student deleted"
+      "studentDeleted": "Student deleted",
+      "subNotFound": "Subscription not found — refresh the page"
     }
   },
   "subscriptions": {
@@ -772,11 +777,26 @@
     "stepsLeft": "{{count}} step left",
     "stepsLeft_other": "{{count}} steps left",
     "steps": {
-      "location": { "title": "Add a location", "desc": "Where sessions take place" },
-      "group": { "title": "Create a group", "desc": "Or skip if you train one-on-one" },
-      "student": { "title": "Add a student", "desc": "Your first client" },
-      "training": { "title": "Record your first session", "desc": "Group, individual, online or pair" },
-      "pricing": { "title": "Set up pricing", "desc": "Money is calculated automatically" }
+      "location": {
+        "title": "Add a location",
+        "desc": "Where sessions take place"
+      },
+      "group": {
+        "title": "Create a group",
+        "desc": "Or skip if you train one-on-one"
+      },
+      "student": {
+        "title": "Add a student",
+        "desc": "Your first client"
+      },
+      "training": {
+        "title": "Record your first session",
+        "desc": "Group, individual, online or pair"
+      },
+      "pricing": {
+        "title": "Set up pricing",
+        "desc": "Money is calculated automatically"
+      }
     }
   },
   "home": {

@@ -7,6 +7,7 @@ import { useToast } from 'common/ui'
 import { newBatchId } from 'common/utils/batch-id'
 import { formatDateShort, todayISO } from 'common/utils/date'
 import { uuid } from 'common/utils/uuid'
+import { invalidateAfterBilling } from 'entities/finance/api/use-finance'
 import { usePricingRules } from 'entities/finance/api/use-finance'
 import { autoCreatePayment } from 'entities/finance/lib/auto-payment'
 import { useGroups } from 'entities/groups/api/use-groups'
@@ -153,6 +154,7 @@ export function usePairSession({ indGroupId, onDone }: UsePairSessionOptions) {
         })
       }
       qc.invalidateQueries({ queryKey: studentKeys.all })
+      invalidateAfterBilling(qc)
       toast({ type: 'success', title: t('trainings.pair.recorded') })
       onDone()
     } catch (e) {

@@ -6,10 +6,11 @@ import { DeleteOutlined, EditOutlined, PlusOutlined, UserOutlined } from '@ant-d
 
 import { useTranslation } from 'react-i18next'
 
+import { ErrorState, ListSkeleton, useToast } from 'common/ui'
 import { formatDateShort } from 'common/utils/date'
 import { MarkPaidModal } from 'entities/finance'
 import { useGroups } from 'entities/groups/api/use-groups'
-import { useRemoveVisitAt } from 'entities/trainings/api/use-trainings'
+import { useRemoveVisit } from 'entities/trainings/api/use-trainings'
 
 import { studentKeys } from '../api/use-students'
 import { getLastVisitDate,getStudentById } from '../model/students.repo'
@@ -23,7 +24,7 @@ import { SubCard } from './sub-card'
 import { useStudentActions } from './use-student-actions'
 import { VisitHistory } from './visit-history'
 
-import type { Subscription } from '../model/types'
+import type { Subscription, VisitRecord } from '../model/types'
 
 import './student-drawer.scss'
 
@@ -45,16 +46,24 @@ export function StudentDrawer({ studentId, onClose, onEdit }: StudentDrawerProps
   const { t } = useTranslation()
   const qc = useQueryClient()
   const { data: groups = [] } = useGroups()
-  const removeVisitAt = useRemoveVisitAt()
+  const toast = useToast()
+  const removeVisit = useRemoveVisit()
   const [subModal, setSubModal] = useState<SubModalState>(null)
   const [markPaid, setMarkPaid] = useState<MarkPaidState>(null)
   const [addSubOpen, setAddSubOpen] = useState(false)
   const [editSub, setEditSub] = useState<{ sub: Subscription; isIndividual: boolean } | null>(null)
 
-  const { data: student } = useQuery({
+  const {
+    data: student,
+    isError,
+    refetch,
+  } = useQuery({
     queryKey: ['students', studentId],
     queryFn: () => getStudentById(studentId!),
     enabled: !!studentId,
+    // Шторку открыли осознанно: лучше быстро показать ошибку с кнопкой
+    // «Повторить», чем бесконечно крутить скелет на дефолтных ретраях.
+    retry: 1,
   })
 
   const refresh = () => {
@@ -74,9 +83,16 @@ export function StudentDrawer({ studentId, onClose, onEdit }: StudentDrawerProps
   const indGroups = student?.groups.filter((g) => indNames.includes(g)) ?? []
   const lastVisit = student ? getLastVisitDate(student) : null
 
-  const handleRemoveVisit = async (index: number) => {
+  // Снятие отметки — операция с деньгами (возврат занятия + откат авто-платежа),
+  // поэтому её итог обязан быть виден: и успех, и отказ сервера.
+  const handleRemoveVisit = async (visit: VisitRecord) => {
     if (!studentId) return
-    await removeVisitAt.mutateAsync({ studentId, index })
+    try {
+      await removeVisit.mutateAsync({ studentId, visit })
+      toast({ type: 'success', title: t('students.visits.removed') })
+    } catch (e) {
+      toast({ type: 'error', title: e instanceof Error ? e.message : t('common.error') })
+    }
     refresh()
   }
 
@@ -96,10 +112,11 @@ export function StudentDrawer({ studentId, onClose, onEdit }: StudentDrawerProps
   const handleEditSub = (isIndividual: boolean) => (sub: Subscription) =>
     setEditSub({ sub, isIndividual })
 
+  // Шторка закрывается только если ученик реально удалён: при отказе сервера
+  // она остаётся открытой, а тост объясняет причину.
   const handleConfirmDelete = async () => {
     if (!student) return
-    await actions.removeStudent(student.id)
-    onClose()
+    if (await actions.removeStudent(student.id)) onClose()
   }
 
   const handleCloseSubModal = () => {
@@ -140,6 +157,11 @@ export function StudentDrawer({ studentId, onClose, onEdit }: StudentDrawerProps
           )
         }
       >
+        {/* Пустой панели быть не может: пока данных нет — скелет, при отказе —
+            ошибка с повтором. isLoading здесь не годится: между ретраями
+            react-query он ложный, и шторка снова пустела. */}
+        {isError && <ErrorState onRetry={refetch} />}
+        {!isError && !student && <ListSkeleton rows={3} />}
         {student && (
           <>
             <div style={{ color: 'var(--tk-text-secondary)', fontSize: '0.85rem' }}>
@@ -239,6 +261,7 @@ export function StudentDrawer({ studentId, onClose, onEdit }: StudentDrawerProps
                       student={student}
                       indNames={indNames}
                       onRemoveVisit={handleRemoveVisit}
+                      removing={removeVisit.isPending}
                     />
                   ),
                 },

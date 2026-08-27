@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query'
+import { useMemo } from 'react'
 
 import { Button } from 'antd'
 import {
@@ -13,9 +13,18 @@ import {
 
 import { useTranslation } from 'react-i18next'
 
-import { getGroupStats, getStudentsByGroup } from 'common/lib/kpi'
-import { EmptyState, ErrorState, KpiCard, PageHeader, StatusBadge, SubProgressBar } from 'common/ui'
+import { groupStats, studentsOfGroup } from 'common/lib/kpi'
+import {
+  EmptyState,
+  ErrorState,
+  KpiCard,
+  ListSkeleton,
+  PageHeader,
+  StatusBadge,
+  SubProgressBar,
+} from 'common/ui'
 import { formatDateShort } from 'common/utils/date'
+import { useStudents } from 'entities/students/api/use-students'
 import { getLastVisitDate } from 'entities/students/model/students.repo'
 import { getSubStatus } from 'entities/students/model/subscription-status'
 import { formatSchedule } from 'entities/trainings/model/training-logic'
@@ -34,22 +43,15 @@ interface GroupDetailProps {
 
 export function GroupDetail({ group, onBack, onEdit, onOpenStudent, onAddStudent }: GroupDetailProps) {
   const { t } = useTranslation()
-  const {
-    data: stats,
-    isError: statsError,
-    refetch: refetchStats,
-  } = useQuery({
-    queryKey: ['groups', group.name, 'stats'],
-    queryFn: () => getGroupStats(group.name),
-  })
-  const {
-    data: students = [],
-    isError: studentsError,
-    refetch: refetchStudents,
-  } = useQuery({
-    queryKey: ['groups', group.name, 'students'],
-    queryFn: () => getStudentsByGroup(group.name),
-  })
+  // Один общий кэш учеников на всё приложение: карточка обновляется от любой
+  // инвалидации studentKeys — добавили ученика или продлили абонемент прямо
+  // отсюда, и цифры сразу верные.
+  const { data: allStudents = [], isLoading, isError, refetch } = useStudents()
+  const students = useMemo(
+    () => studentsOfGroup(allStudents, group.name),
+    [allStudents, group.name],
+  )
+  const stats = useMemo(() => groupStats(allStudents, group.name), [allStudents, group.name])
 
   const schedule = formatSchedule(group)
 
@@ -68,17 +70,21 @@ export function GroupDetail({ group, onBack, onEdit, onOpenStudent, onAddStudent
     </Button>
   )
 
-  // Сбой загрузки статистики/учеников группы не должен молча рисовать «0 / пусто».
-  if (statsError || studentsError) {
+  // Сбой загрузки учеников группы не должен молча рисовать «0 / пусто».
+  if (isError) {
     return (
       <div>
         <PageHeader title={group.name} back={backBtn} />
-        <ErrorState
-          onRetry={() => {
-            refetchStats()
-            refetchStudents()
-          }}
-        />
+        <ErrorState onRetry={refetch} />
+      </div>
+    )
+  }
+
+  if (isLoading) {
+    return (
+      <div>
+        <PageHeader title={group.name} back={backBtn} />
+        <ListSkeleton rows={3} />
       </div>
     )
   }
