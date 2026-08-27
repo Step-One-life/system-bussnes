@@ -58,7 +58,7 @@ export class TrainingController {
     @Body() dto: CreateTrainingDto,
   ): Promise<Training> {
     const created = await this.trainingService.createTraining(user.id, dto)
-    const groupName = await this.activityLog.groupName(created.groupId)
+    const groupName = await this.activityLog.groupName(user.id, created.groupId)
     await this.activityLog.log({
       userId: user.id,
       type: 'training_created',
@@ -101,7 +101,7 @@ export class TrainingController {
     // Удаление серии — одна запись в журнале (а не N): группа/ученик/дата
     // первого занятия + число удалённых занятий (sessionsCount).
     if (info.removed > 0) {
-      const groupName = info.groupId ? await this.activityLog.groupName(info.groupId) : undefined
+      const groupName = info.groupId ? await this.activityLog.groupName(user.id, info.groupId) : undefined
       const studentName = info.studentId
         ? await this.activityLog.studentName(info.studentId)
         : undefined
@@ -128,12 +128,12 @@ export class TrainingController {
     @Param() { id }: IdParamDto,
   ): Promise<void> {
     const training = await this.trainingService.findOneForUser(user.id, id)
-    const groupName = await this.activityLog.groupName(training.groupId)
+    const groupName = await this.activityLog.groupName(user.id, training.groupId)
     // Для индивидуальных/онлайн/парных в журнал кладём имя ученика (плановый или,
     // если уже отмечен, первый из attendees), для групповых — только имя группы.
     // Раньше брали только plannedStudentId → у отмеченного индив-занятия имя
     // терялось, и журнал писал «Удалено: Индивидуальные».
-    const individual = await this.activityLog.groupIsIndividual(training.groupId)
+    const individual = await this.activityLog.groupIsIndividual(user.id, training.groupId)
     const studentId = individual
       ? (training.plannedStudentId ?? training.attendees?.[0]?.id ?? null)
       : null
@@ -163,7 +163,7 @@ export class TrainingController {
   ): Promise<{ training: Training; billing: BillingResult[] }> {
     const training = await this.trainingService.findOneForUser(user.id, id)
     const billing = await this.trainingService.markAttendance(training, dto.studentIds)
-    const groupName = await this.activityLog.groupName(training.groupId)
+    const groupName = await this.activityLog.groupName(user.id, training.groupId)
     for (const b of billing) {
       const studentName = await this.activityLog.studentName(b.studentId)
       await this.activityLog.log({

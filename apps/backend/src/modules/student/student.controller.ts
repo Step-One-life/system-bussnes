@@ -99,7 +99,7 @@ export class StudentController {
     )
     const sub = await this.subscriptionsService.add(id, dto)
     const studentName = await this.activityLog.studentName(id)
-    const groupName = await this.activityLog.groupName(dto.groupId)
+    const groupName = await this.activityLog.groupName(user.id, dto.groupId)
     await this.activityLog.log({
       userId: user.id,
       type: 'subscription_created',
@@ -128,7 +128,7 @@ export class StudentController {
     // Авто-списание при отметке логируется отдельно как attendance_marked,
     // здесь дубля нет: это другой, ручной эндпоинт без тренировки.
     const studentName = await this.activityLog.studentName(id)
-    const groupName = await this.activityLog.groupName(sub.groupId)
+    const groupName = await this.activityLog.groupName(user.id, sub.groupId)
     await this.activityLog.log({
       userId: user.id,
       type: 'session_deducted',
@@ -155,7 +155,7 @@ export class StudentController {
     await this.subscriptionsService.extendById(id, subId, dto.days)
     // Продление срока — событие журнала, view-only (нет обратной операции).
     const studentName = await this.activityLog.studentName(id)
-    const groupName = await this.activityLog.groupName(sub.groupId)
+    const groupName = await this.activityLog.groupName(user.id, sub.groupId)
     await this.activityLog.log({
       userId: user.id,
       type: 'subscription_extended',
@@ -209,7 +209,7 @@ export class StudentController {
     }
     // Имя группы для журнала фиксируем ДО правки: после смены состава
     // sub.groupId может смениться (groupId уходит в groupIds[0]).
-    const groupName = await this.activityLog.groupName(sub.groupId)
+    const groupName = await this.activityLog.groupName(user.id, sub.groupId)
     await this.subscriptionsService.updateById(id, subId, dto)
     // Редактирование — view-only событие журнала (без обратной операции).
     const studentName = await this.activityLog.studentName(id)
@@ -237,7 +237,7 @@ export class StudentController {
     // Удаление абонемента — событие журнала (view-only, не откатывается).
     if (sub) {
       const studentName = await this.activityLog.studentName(id)
-      const groupName = await this.activityLog.groupName(sub.groupId)
+      const groupName = await this.activityLog.groupName(user.id, sub.groupId)
       await this.activityLog.log({
         userId: user.id,
         type: 'subscription_deleted',

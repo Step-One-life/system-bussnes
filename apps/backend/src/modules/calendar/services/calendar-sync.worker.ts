@@ -136,12 +136,21 @@ export class CalendarSyncWorker {
     task: CalendarSyncTask,
     timeZone: string,
   ): Promise<GoogleEventResource | null> {
-    const training = await this.trainingModel.findByPk(task.trainingId)
+    // Все чтения скоупим по владельцу задачи: защита в глубину на случай, если
+    // в занятие когда-нибудь попадёт чужой FK — в событие Google не должны
+    // уехать имя чужой группы и адрес чужой локации.
+    const training = await this.trainingModel.findOne({
+      where: { id: task.trainingId, userId: task.userId },
+    })
     if (!training || !training.time) return null
 
-    const group = await this.groupModel.findByPk(training.groupId)
+    const group = await this.groupModel.findOne({
+      where: { id: training.groupId, userId: task.userId },
+    })
     const location = training.locationId
-      ? await this.locationModel.findByPk(training.locationId)
+      ? await this.locationModel.findOne({
+          where: { id: training.locationId, userId: task.userId },
+        })
       : null
 
     let studentName: string | null = null

@@ -23,9 +23,19 @@ export class StudentService extends OwnedCrudService<Student> {
     super(studentModel)
   }
 
-  /** Eager-load related groups, subscriptions and visits. */
+  /**
+   * Три hasMany в одном запросе давали декартово произведение строк: 11
+   * учеников с 42 визитами превращались в 138 строк SQL, а на реальной базе
+   * за пару лет — в мегабайты на КАЖДЫЙ GET /students (самый горячий
+   * эндпоинт: инвалидируется после каждой отметки). separate:true выполняет
+   * их отдельными запросами — перемножения больше нет.
+   */
   protected get include(): FindOptions['include'] {
-    return [Group, Subscription, Visit]
+    return [
+      Group,
+      { model: Subscription, separate: true },
+      { model: Visit, separate: true },
+    ]
   }
 
   async createStudent(userId: string, dto: CreateStudentDto): Promise<Student> {
