@@ -76,6 +76,9 @@ export function GroupFormModal({ open, group, onClose, onDelete }: GroupFormModa
               </p>
             )}
             <p style={{ margin: '4px 0 0' }}>{t('groups.form.deleteImpactShared')}</p>
+            {impact.trainings > 0 && (
+              <p style={{ margin: '4px 0 0' }}>{t('groups.form.deleteImpactCalendar')}</p>
+            )}
           </div>
         }
         okText={t('common.delete')}

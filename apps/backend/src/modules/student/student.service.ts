@@ -1,10 +1,11 @@
-import { Injectable } from '@nestjs/common'
+import { forwardRef, Inject, Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/sequelize'
 import type { FindOptions } from 'sequelize'
 
 import { OwnedCrudService } from '../../common/services/owned-crud.service'
 import { assertOwned } from '../../common/services/assert-owned'
 import { Group } from '../group/group.model'
+import { TrainingService } from '../training/training.service'
 import { CreateStudentDto } from './dto/create-student.dto'
 import { UpdateStudentDto } from './dto/update-student.dto'
 import { Student } from './student.model'
@@ -16,6 +17,8 @@ export class StudentService extends OwnedCrudService<Student> {
   constructor(
     @InjectModel(Student) private readonly studentModel: typeof Student,
     @InjectModel(Group) private readonly groupModel: typeof Group,
+    @Inject(forwardRef(() => TrainingService))
+    private readonly trainingService: TrainingService,
   ) {
     super(studentModel)
   }
@@ -38,6 +41,17 @@ export class StudentService extends OwnedCrudService<Student> {
       await student.$set('groups', dto.groups)
     }
     return this.findOneForUser(userId, student.id)
+  }
+
+  /**
+   * Удаление ученика. Его плановые индивидуальные и парные занятия снимаются
+   * доменно: колонки planned_student_id/-_2 были без FK и никем не обнулялись,
+   * поэтому занятия оставались в расписании с подписью «?» (убирались только
+   * по одному вручную), а события — в Google-календаре.
+   */
+  async removeForUser(userId: string, id: string): Promise<void> {
+    await this.trainingService.removePlannedTrainingsOfStudent(userId, id)
+    await super.removeForUser(userId, id)
   }
 
   async updateStudent(userId: string, id: string, dto: UpdateStudentDto): Promise<Student> {

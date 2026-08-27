@@ -41,7 +41,17 @@ export class CalendarSyncWorker {
         order: [['createdAt', 'ASC']],
         limit: SYNC_BATCH,
       })
-      for (const task of tasks) await this.process(task)
+      // Одна упавшая задача не должна обрывать весь батч: раньше исключение
+      // из process() выбрасывалось наружу, задача оставалась pending и
+      // выбиралась первой каждый проход — очередь вставала для всех тренеров.
+      for (const task of tasks) {
+        try {
+          await this.process(task)
+        } catch (e) {
+          this.logger.error(`Задача ${task.id} упала: ${String(e)}`)
+          await this.failTask(task)
+        }
+      }
     } catch (e) {
       this.logger.error(`Сбой прохода воркера: ${String(e)}`)
     } finally {
@@ -101,6 +111,24 @@ export class CalendarSyncWorker {
         task.runAfter = nextRunAfter(task.attempts)
       }
       await task.save()
+    }
+  }
+
+  /**
+   * Задача упала ВНЕ внутреннего try/catch (чтение соединения, сохранение,
+   * расшифровка). Отмечаем попытку и уводим в бэкофф/failed, чтобы она не
+   * выбиралась первой в каждом проходе. Сам хелпер не бросает: иначе сбой
+   * записи снова обрушил бы батч.
+   */
+  private async failTask(task: CalendarSyncTask): Promise<void> {
+    try {
+      task.attempts += 1
+      task.lastError = 'Сбой обработки задачи'
+      if (task.attempts >= SYNC_MAX_ATTEMPTS) task.status = 'failed'
+      else task.runAfter = nextRunAfter(task.attempts)
+      await task.save()
+    } catch (e) {
+      this.logger.error(`Не удалось пометить задачу ${task.id}: ${String(e)}`)
     }
   }
 

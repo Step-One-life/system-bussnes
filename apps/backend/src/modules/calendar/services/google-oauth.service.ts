@@ -57,12 +57,16 @@ export class GoogleOAuthService {
   async listCalendars(refreshToken: string): Promise<CalendarSummary[]> {
     const cal = this.client(refreshToken)
     const res = await this.wrapAuth(() => cal.calendarList.list({ maxResults: 250 }))
-    return (res.data.items ?? []).map((c) => ({
-      id: c.id ?? '',
-      name: c.summary ?? c.id ?? '',
-      primary: !!c.primary,
-      timeZone: c.timeZone ?? 'Europe/Moscow',
-    }))
+    return (res.data.items ?? [])
+      // Только те, куда можно писать: подписной или чужой календарь выбирался
+      // молча, а потом каждая выгрузка события возвращала 403.
+      .filter((c) => c.accessRole === 'owner' || c.accessRole === 'writer')
+      .map((c) => ({
+        id: c.id ?? '',
+        name: c.summary ?? c.id ?? '',
+        primary: !!c.primary,
+        timeZone: c.timeZone ?? 'Europe/Moscow',
+      }))
   }
 
   /** Создать календарь, вернуть его id и пояс. */
@@ -116,19 +120,61 @@ export class GoogleOAuthService {
     }
   }
 
-  /** Преобразует 401/403/invalid_grant в CalendarAuthError. */
+  /**
+   * Отличает отзыв доступа от временной ошибки Google.
+   *
+   * Раньше ЛЮБОЙ 403 считался отзывом прав: тренер выбирал подписной или
+   * чужой календарь, каждый events.insert возвращал 403 «forbidden», и
+   * соединение уходило в needs_reconnect — на экране висело «переподключите
+   * Google» при полностью исправном токене, а поднять очередь мог только
+   * повторный проход OAuth. Квоты и rate-limit приходят тем же 403 и должны
+   * уходить в обычный бэкофф.
+   */
   private async wrapAuth<T>(fn: () => Promise<T>): Promise<T> {
     try {
       return await fn()
     } catch (e) {
       const s = statusOf(e)
       const msg = String((e as { message?: string })?.message ?? '')
-      if (s === 401 || s === 403 || msg.includes('invalid_grant')) {
+      if (isAuthFailure(s, msg, reasonOf(e))) {
         throw new CalendarAuthError(msg || 'Доступ к Google отозван')
       }
       throw e
     }
   }
+}
+
+/** Причина ошибки из тела ответа Google (errors[0].reason). */
+function reasonOf(e: unknown): string {
+  const err = e as {
+    errors?: { reason?: string }[]
+    response?: { data?: { error?: { errors?: { reason?: string }[] } } }
+  }
+  return (
+    err?.errors?.[0]?.reason ??
+    err?.response?.data?.error?.errors?.[0]?.reason ??
+    ''
+  )
+}
+
+/** Причины 403, которые действительно означают потерю прав (а не квоту). */
+const AUTH_REASONS = new Set([
+  'insufficientPermissions',
+  'forbiddenForServiceAccounts',
+  'authError',
+  'accessNotConfigured',
+])
+
+export function isAuthFailure(
+  status: number | undefined,
+  message: string,
+  reason: string,
+): boolean {
+  if (status === 401) return true
+  if (message.includes('invalid_grant')) return true
+  // 403 сам по себе ничего не значит — решает reason.
+  if (status === 403) return AUTH_REASONS.has(reason)
+  return false
 }
 
 function statusOf(e: unknown): number | undefined {

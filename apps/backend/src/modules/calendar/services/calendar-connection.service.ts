@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { Injectable, Logger } from '@nestjs/common'
 import { InjectModel } from '@nestjs/sequelize'
 
 import type { ConnectionStatus } from '../calendar.constants'
@@ -7,6 +7,8 @@ import { TokenCryptoService } from './token-crypto.service'
 
 @Injectable()
 export class CalendarConnectionService {
+  private readonly logger = new Logger(CalendarConnectionService.name)
+
   constructor(
     @InjectModel(CalendarConnection)
     private readonly model: typeof CalendarConnection,
@@ -53,12 +55,41 @@ export class CalendarConnectionService {
   }
 
   /** Расшифровать refresh-токен уже загруженного соединения (без запроса к БД). */
+  /**
+   * Расшифровать refresh-токен соединения. Сбой расшифровки (сменили
+   * CALENDAR_TOKEN_ENC_KEY, перешли с dev-фолбэка на боевой ключ, битая
+   * строка) — это НЕ повод валить вызывающего: раньше исключение отсюда рвало
+   * цикл воркера, задача не помечалась ни done, ни failed, выбиралась первой
+   * каждые 20 секунд, и синхронизация вставала у ВСЕХ тренеров. Возвращаем
+   * null — соединение честно уходит в needs_reconnect.
+   */
   refreshTokenOf(conn: CalendarConnection | null): string | null {
-    return conn?.refreshTokenEnc ? this.crypto.decrypt(conn.refreshTokenEnc) : null
+    if (!conn?.refreshTokenEnc) return null
+    try {
+      return this.crypto.decrypt(conn.refreshTokenEnc)
+    } catch (e) {
+      this.logger.warn(
+        `Не удалось расшифровать refresh-токен (userId=${conn.userId}): ${String(e)}`,
+      )
+      return null
+    }
   }
 
   async getRefreshToken(userId: string): Promise<string | null> {
     return this.refreshTokenOf(await this.findByUser(userId))
+  }
+
+  /**
+   * Токен есть в базе, но расшифровать его нельзя (сменили ключ шифрования).
+   * Снаружи это неотличимо от «не подключён», хотя лечится только повторным
+   * OAuth — поэтому такое соединение сразу помечается needs_reconnect.
+   */
+  async isTokenBroken(userId: string): Promise<boolean> {
+    const conn = await this.findByUser(userId)
+    if (!conn?.refreshTokenEnc) return false
+    if (this.refreshTokenOf(conn) !== null) return false
+    await this.setStatus(userId, 'needs_reconnect')
+    return true
   }
 
   async disconnect(userId: string): Promise<void> {

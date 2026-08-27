@@ -587,6 +587,71 @@ export class TrainingService extends OwnedCrudService<Training> {
   }
 
   /**
+   * Доменная зачистка занятий группы перед её удалением.
+   *
+   * Каскад FK в БД сносил занятия молча: откат биллинга не выполнялся, задачи
+   * на удаление событий в Google не ставились (backfill умеет только upsert по
+   * существующим строкам), и события оставались в календаре тренера навсегда.
+   * Здесь всё как в removeTraining: откаты и destroy — одной транзакцией,
+   * аутбокс и журнал — после коммита.
+   *
+   * Возвращает число удалённых занятий (для подтверждения и журнала).
+   */
+  async removeTrainingsOfGroup(userId: string, groupId: string): Promise<number> {
+    const trainings = await this.trainingModel.findAll({
+      where: { userId, groupId },
+      include: [Student],
+    })
+    if (!trainings.length) return 0
+
+    await this.sequelize.transaction(async (tx) => {
+      for (const training of trainings) {
+        for (const student of training.attendees ?? []) {
+          await this.revertVisit(training, student.id, tx)
+        }
+        await training.destroy({ transaction: tx })
+      }
+    })
+
+    for (const training of trainings) {
+      await this.calendarSync.enqueueDelete(userId, training.id)
+      await this.activityLog.markTrainingCreatedUndone(training.id)
+    }
+    return trainings.length
+  }
+
+  /**
+   * Занятия, где удаляемый ученик — плановый участник (индивидуальные и парные).
+   * Колонки planned_student_id/-_2 были без FK и никем не обнулялись: занятия
+   * оставались в расписании с подписью «?», а события — в Google-календаре.
+   */
+  async removePlannedTrainingsOfStudent(userId: string, studentId: string): Promise<number> {
+    const trainings = await this.trainingModel.findAll({
+      where: {
+        userId,
+        [Op.or]: [{ plannedStudentId: studentId }, { plannedStudentId2: studentId }],
+      },
+      include: [Student],
+    })
+    if (!trainings.length) return 0
+
+    await this.sequelize.transaction(async (tx) => {
+      for (const training of trainings) {
+        for (const student of training.attendees ?? []) {
+          await this.revertVisit(training, student.id, tx)
+        }
+        await training.destroy({ transaction: tx })
+      }
+    })
+
+    for (const training of trainings) {
+      await this.calendarSync.enqueueDelete(userId, training.id)
+      await this.activityLog.markTrainingCreatedUndone(training.id)
+    }
+    return trainings.length
+  }
+
+  /**
    * Delete a recurring series by recurringId, reverting billing for all
    * attendees. Returns a summary of the deleted series (representative
    * occurrence + count) so the controller can write a single journal entry.

@@ -158,7 +158,8 @@
       "timePlaceholder": "Время",
       "expiresLabel": "Действует до",
       "expiresHint": "Необязательно. После этой даты группа перестаёт быть активной — расписание не предлагает занятий.",
-      "scheduleTimeRequired": "Укажите время для дней: {{days}}"
+      "scheduleTimeRequired": "Укажите время для дней: {{days}}",
+      "deleteImpactCalendar": "События этих занятий будут удалены и из Google Календаря."
     },
     "schedule": {
       "notSet": "Расписание не задано",
