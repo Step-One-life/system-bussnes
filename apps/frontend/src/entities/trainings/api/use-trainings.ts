@@ -8,11 +8,12 @@ import {
   deleteRecurringSeries,
   deleteTraining,
   getTrainings,
-  removeVisitAt,
+  removeVisit,
   updateTraining,
   updateTrainingSeries,
 } from 'entities/trainings/model/trainings.repo'
 
+import type { VisitRecord } from 'entities/students/model/types'
 import type { Training, TrainingInput } from 'entities/trainings/model/types'
 
 export const trainingKeys = {
@@ -94,11 +95,11 @@ export function useMarkAttendance() {
   })
 }
 
-export function useRemoveVisitAt() {
+export function useRemoveVisit() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: ({ studentId, index }: { studentId: string; index: number }) =>
-      removeVisitAt(studentId, index),
+    mutationFn: ({ studentId, visit }: { studentId: string; visit: VisitRecord }) =>
+      removeVisit(studentId, visit),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: trainingKeys.all })
       qc.invalidateQueries({ queryKey: studentKeys.all })

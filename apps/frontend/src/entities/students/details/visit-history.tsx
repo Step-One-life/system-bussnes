@@ -1,4 +1,4 @@
-import { Button } from 'antd'
+import { Button, Popconfirm } from 'antd'
 import { CloseOutlined } from '@ant-design/icons'
 
 import { useTranslation } from 'react-i18next'
@@ -6,15 +6,23 @@ import { useTranslation } from 'react-i18next'
 import { Badge } from 'common/ui'
 import { formatDateShort } from 'common/utils/date'
 
-import type { Student } from '../model/types'
+import type { Student, VisitRecord } from '../model/types'
 
 interface VisitHistoryProps {
   student: Student
   indNames: string[]
-  onRemoveVisit: (index: number) => void
+  /** Визит передаётся целиком: адресация по индексу снимала отметку не с того занятия. */
+  onRemoveVisit: (visit: VisitRecord) => void
+  /** Идёт снятие отметки — кнопки заблокированы, второй клик невозможен. */
+  removing?: boolean
 }
 
-export function VisitHistory({ student, indNames, onRemoveVisit }: VisitHistoryProps) {
+export function VisitHistory({
+  student,
+  indNames,
+  onRemoveVisit,
+  removing = false,
+}: VisitHistoryProps) {
   const { t } = useTranslation()
   if (!student.visitHistory.length) {
     return (
@@ -24,29 +32,37 @@ export function VisitHistory({ student, indNames, onRemoveVisit }: VisitHistoryP
     )
   }
 
-  const visits = student.visitHistory
-    .map((v, i) => ({ ...v, _i: i }))
+  const visits = [...student.visitHistory]
     .sort((a, b) => b.date.localeCompare(a.date))
     .slice(0, 15)
 
-  const handleRemoveVisit = (index: number) => () => onRemoveVisit(index)
+  const handleRemoveVisit = (visit: VisitRecord) => () => onRemoveVisit(visit)
 
   return (
     <div>
       {visits.map((v) => {
         const label = indNames.includes(v.groupId) ? t('students.visits.indTraining') : v.groupId
         return (
-          <div key={v._i} className="visit-row">
+          <div key={`${v.date}-${v.trainingId}-${v.groupId}`} className="visit-row">
             <span style={{ color: 'var(--tk-text-secondary)' }}>{formatDateShort(v.date)}</span>
             <Badge variant="accent">{label}</Badge>
-            <Button
-              type="text"
-              size="small"
-              icon={<CloseOutlined />}
-              style={{ marginLeft: 'auto' }}
-              aria-label={t('common.remove')}
-              onClick={handleRemoveVisit(v._i)}
-            />
+            <Popconfirm
+              title={t('students.visits.removeTitle', { date: formatDateShort(v.date) })}
+              description={t('students.visits.removeHint')}
+              okText={t('common.remove')}
+              cancelText={t('common.cancel')}
+              okButtonProps={{ danger: true }}
+              onConfirm={handleRemoveVisit(v)}
+            >
+              <Button
+                type="text"
+                size="small"
+                icon={<CloseOutlined />}
+                style={{ marginLeft: 'auto' }}
+                disabled={removing}
+                aria-label={t('common.remove')}
+              />
+            </Popconfirm>
           </div>
         )
       })}

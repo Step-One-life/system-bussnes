@@ -2,7 +2,7 @@ import find from 'lodash/find'
 import isEmpty from 'lodash/isEmpty'
 import map from 'lodash/map'
 
-import { apiClient } from 'common/services/api/api-client'
+import { apiClient, ApiError } from 'common/services/api/api-client'
 import { getGroupMaps } from 'common/services/api/group-map'
 
 import type { DeductStatus, Student, StudentInput, Subscription, SubscriptionInput } from './types'
@@ -75,6 +75,12 @@ export async function getStudents(): Promise<Student[]> {
   return map(raw, (r) => toStudent(r, maps.byId))
 }
 
+/**
+ * null означает ТОЛЬКО «такого ученика нет» (404). Любая другая ошибка
+ * пробрасывается: раньше `catch { return null }` превращал сеть/500 в «ученика
+ * нет», из-за чего снятие визита рапортовало об успехе, ничего не сделав, а
+ * шторка ученика открывалась пустой панелью без единого слова об ошибке.
+ */
 export async function getStudentById(id: string): Promise<Student | null> {
   try {
     const [raw, maps] = await Promise.all([
@@ -82,8 +88,9 @@ export async function getStudentById(id: string): Promise<Student | null> {
       getGroupMaps(),
     ])
     return toStudent(raw, maps.byId)
-  } catch {
-    return null
+  } catch (e) {
+    if (e instanceof ApiError && e.status === 404) return null
+    throw e
   }
 }
 

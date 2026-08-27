@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next'
 
 import { useToast } from 'common/ui'
 import { newBatchId } from 'common/utils/batch-id'
+import { invalidateAfterBilling } from 'entities/finance/api/use-finance'
 import { useGroups } from 'entities/groups/api/use-groups'
 import { studentKeys, useStudents } from 'entities/students/api/use-students'
 import {
@@ -167,6 +168,8 @@ export function useCalendarTraining({ block, onDone }: UseCalendarTrainingOption
 
       qc.invalidateQueries({ queryKey: studentKeys.all })
       qc.invalidateQueries({ queryKey: trainingKeys.all })
+      // Отметка списывает занятие или пишет авто-платёж — гасим и финансы.
+      invalidateAfterBilling(qc)
       toast({ type: 'success', title: t('trainings.cal.attendanceSaved') })
       onDone()
     } catch (e) {

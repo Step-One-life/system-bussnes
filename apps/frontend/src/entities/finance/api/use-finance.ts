@@ -16,6 +16,7 @@ import {
   updatePricingRule,
 } from 'entities/finance/model/finance.repo'
 
+import type { QueryClient } from '@tanstack/react-query'
 import type {
   HallCost,
   HallCostInput,
@@ -29,6 +30,18 @@ export const financeKeys = {
   payments: ['payments', 'all'] as const,
   hallCosts: ['hall-costs', 'all'] as const,
   pricingRules: (locationId: string) => ['pricing-rules', locationId] as const,
+}
+
+/**
+ * Любая операция, которая на сервере пишет или удаляет деньги (отметка со
+ * списанием/авто-платежом, покупка абонемента, откат отметки), обязана
+ * сбросить И финансовые кэши: иначе экран «Финансы», открытый в пределах
+ * staleTime, показывает старые суммы, а снятая отметка — уже удалённый доход.
+ * Точки биллинга легко забыть — поэтому список ключей ровно один, здесь.
+ */
+export function invalidateAfterBilling(qc: QueryClient): void {
+  qc.invalidateQueries({ queryKey: financeKeys.payments })
+  qc.invalidateQueries({ queryKey: financeKeys.hallCosts })
 }
 
 export function usePayments() {

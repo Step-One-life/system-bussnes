@@ -1,13 +1,15 @@
 import map from 'lodash/map'
 
-import { apiClient } from 'common/services/api/api-client'
+import i18n from 'i18next'
+
+import { apiClient, ApiError } from 'common/services/api/api-client'
 import { getGroupMaps } from 'common/services/api/group-map'
 import { todayISO } from 'common/utils/date'
-import { getStudentById, updateStudent } from 'entities/students/model/students.repo'
 
 import { trainingsWindow } from './training-window'
 
 import type { Training, TrainingInput } from './types'
+import type { VisitRecord } from 'entities/students/model/types'
 
 /** Raw training shape from the backend — groupId is a UUID, attendees are objects. */
 interface RawTraining {
@@ -69,6 +71,7 @@ export async function getTrainings(): Promise<Training[]> {
   return sortByDateDesc(map(raw, (r) => toTraining(r, maps.byId)))
 }
 
+/** null — только «занятия нет» (404); прочие ошибки видны вызывающему (см. getStudentById). */
 export async function getTrainingById(id: string): Promise<Training | null> {
   try {
     const [raw, maps] = await Promise.all([
@@ -76,8 +79,9 @@ export async function getTrainingById(id: string): Promise<Training | null> {
       getGroupMaps(),
     ])
     return toTraining(raw, maps.byId)
-  } catch {
-    return null
+  } catch (e) {
+    if (e instanceof ApiError && e.status === 404) return null
+    throw e
   }
 }
 
@@ -213,21 +217,18 @@ export async function removeAttendee(
 }
 
 /**
- * Remove a visit by its index in the student's history. Resolves the visit's
- * training and delegates to the backend attendee-removal endpoint, which
- * restores the session and deletes the visit.
+ * Снять отметку посещения. Адресуется УСТОЙЧИВО — по занятию визита, а не по
+ * позиции в массиве: раньше сюда приходил индекс из отрисованного списка, а
+ * функция перечитывала ученика с сервера, и при любом сдвиге истории (второй
+ * клик подряд, отметка из другой вкладки) откатывался биллинг ЧУЖОГО занятия.
+ *
+ * Визит без занятия (легаси, до появления trainingId) удалить нечем: серверного
+ * эндпоинта нет, а PATCH /students поле visitHistory не принимает — раньше эта
+ * ветка молча рапортовала об успехе, ничего не сделав.
  */
-export async function removeVisitAt(studentId: string, index: number): Promise<void> {
-  const student = await getStudentById(studentId)
-  if (!student) return
-  const visit = student.visitHistory[index]
-  if (!visit) return
-
-  if (visit.trainingId) {
-    await removeAttendee(visit.trainingId, studentId)
-    return
+export async function removeVisit(studentId: string, visit: VisitRecord): Promise<void> {
+  if (!visit.trainingId) {
+    throw new Error(i18n.t('students.visits.orphanCannotRemove'))
   }
-  // Orphan visit with no training — drop it locally via a student update.
-  const visitHistory = student.visitHistory.filter((_, i) => i !== index)
-  await updateStudent(studentId, { visitHistory })
+  await removeAttendee(visit.trainingId, studentId)
 }

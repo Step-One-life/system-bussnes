@@ -14,7 +14,16 @@ import type { Group } from 'entities/groups/model/types'
 let cache: Promise<Group[]> | null = null
 
 export function fetchGroupsRaw(): Promise<Group[]> {
-  if (!cache) cache = apiClient.get<Group[]>('/groups')
+  if (!cache) {
+    // Сбой НЕ кэшируем: отклонённый промис оставался в переменной навсегда, и
+    // одна сетевая ошибка при первом GET /groups роняла все экраны, которые
+    // мапят имена групп (ученики, занятия, финансы), — до перезагрузки страницы.
+    // Ретраи react-query и кнопки «Повторить» упирались в тот же кэш.
+    cache = apiClient.get<Group[]>('/groups').catch((e: unknown) => {
+      cache = null
+      throw e
+    })
+  }
   return cache
 }
 

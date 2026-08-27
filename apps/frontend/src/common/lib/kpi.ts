@@ -144,21 +144,35 @@ export async function getIndividualWarnings(indGroupNames: string[]): Promise<Wa
   return warnings
 }
 
-export async function getStudentsByGroup(groupId: string): Promise<Student[]> {
-  const students = await getStudents()
+export interface GroupStats {
+  total: number
+  active: number
+  ending: number
+  expired: number
+}
+
+/**
+ * Ученики группы и её статистика — ЧИСТЫЕ производные от уже загруженного
+ * списка. Раньше это были async-функции под собственными query-ключами
+ * ['groups', имя, 'stats'|'students'], которые не совпадали по префиксу ни с
+ * groupKeys.all, ни со studentKeys.all: ни одна мутация их не инвалидировала,
+ * и карточка группы показывала старые цифры, пока была открыта. Плюс каждая
+ * карточка в списке групп качала GET /students целиком.
+ */
+export function studentsOfGroup(students: Student[], groupId: string): Student[] {
   return filter(students, (s) => includes(s.groups, groupId))
 }
 
-export async function getGroupStats(groupId: string) {
-  const students = await getStudentsByGroup(groupId)
+export function groupStats(students: Student[], groupId: string): GroupStats {
+  const inGroup = studentsOfGroup(students, groupId)
   let active = 0
   let ending = 0
   let expired = 0
-  for (const s of students) {
+  for (const s of inGroup) {
     const st = getSubStatus(s, groupId)
     if (st.type === 'active') active++
     else if (st.type === 'ending') ending++
     else if (st.type === 'expired') expired++
   }
-  return { total: students.length, active, ending, expired }
+  return { total: inGroup.length, active, ending, expired }
 }

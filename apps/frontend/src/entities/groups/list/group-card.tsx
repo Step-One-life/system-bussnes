@@ -22,7 +22,7 @@ interface GroupCardProps {
 
 export function GroupCard({ group, onOpen, onEdit }: GroupCardProps) {
   const { t } = useTranslation()
-  const { data: stats } = useGroupStats(group.name)
+  const stats = useGroupStats(group.name)
 
   const expired = isGroupExpired(group.expiresAt, todayISO())
 
