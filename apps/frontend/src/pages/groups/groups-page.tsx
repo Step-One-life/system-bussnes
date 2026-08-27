@@ -88,7 +88,7 @@ export function GroupsPage() {
       {/* Отказ бэка раньше выглядел как «Групп пока нет» с кнопкой «Создать
           группу» — прямое приглашение наплодить дубли. */}
       <QueryState
-        isLoading={page.isLoading}
+        isPending={page.isPending}
         isError={page.isError}
         onRetry={page.refetch}
         skeletonRows={3}

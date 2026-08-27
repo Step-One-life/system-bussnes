@@ -4,7 +4,12 @@ import { ListSkeleton } from '../list-skeleton/list-skeleton'
 import type { ReactNode } from 'react'
 
 interface QueryStateProps {
-  isLoading: boolean
+  /**
+   * Данных ещё нет — передавать именно `isPending` react-query, НЕ `isLoading`.
+   * `isLoading` в паузах между ретраями ложный, и тогда выигрывает ветка
+   * «пусто»: отказ бэка снова выглядит как «данных нет».
+   */
+  isPending: boolean
   isError: boolean
   onRetry?: () => void
   /** Показать вместо содержимого, когда данных нет (не путать с ошибкой). */
@@ -24,7 +29,7 @@ interface QueryStateProps {
  * заводит существующие сущности заново.
  */
 export function QueryState({
-  isLoading,
+  isPending,
   isError,
   onRetry,
   empty,
@@ -33,7 +38,7 @@ export function QueryState({
   children,
 }: QueryStateProps) {
   if (isError) return <ErrorState onRetry={onRetry} />
-  if (isLoading) return <ListSkeleton rows={skeletonRows} />
+  if (isPending) return <ListSkeleton rows={skeletonRows} />
   if (isEmpty && empty) return <>{empty}</>
   return <>{children}</>
 }

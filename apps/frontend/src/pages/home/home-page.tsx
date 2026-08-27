@@ -256,7 +256,7 @@ export function HomePage() {
           {/* Пока ученики грузятся, «в порядке» — ложь: раньше на холодном
               открытии и после смены аккаунта колонка зеленела на 1-2 секунды. */}
           <QueryState
-            isLoading={page.studentsLoading}
+            isPending={page.studentsPending}
             isError={page.studentsError}
             onRetry={page.refetchStudents}
             skeletonRows={3}

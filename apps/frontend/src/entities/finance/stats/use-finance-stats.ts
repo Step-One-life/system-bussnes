@@ -118,8 +118,8 @@ export interface FinanceStats {
   clientTypes: TypeBreakdown
   hallTypes: TypeBreakdown
   topClients: TopClient[]
-  /** Пока деньги грузятся, нули и красная маржа 0% — ложь, а не факт. */
-  isLoading: boolean
+  /** Данных ещё нет: нули и красная маржа 0% были бы ложью, а не фактом. */
+  isPending: boolean
   isError: boolean
   refetch: () => void
 }
@@ -131,13 +131,13 @@ export function useFinanceStats(): FinanceStats {
   const lang = i18nInstance.language
   const {
     data: payments = [],
-    isLoading: paymentsLoading,
+    isPending: paymentsPending,
     isError: paymentsError,
     refetch: refetchPayments,
   } = usePayments()
   const {
     data: hallCosts = [],
-    isLoading: hallLoading,
+    isPending: hallPending,
     isError: hallError,
     refetch: refetchHall,
   } = useHallCosts()
@@ -273,7 +273,7 @@ export function useFinanceStats(): FinanceStats {
     clientTypes,
     hallTypes,
     topClients,
-    isLoading: paymentsLoading || hallLoading,
+    isPending: paymentsPending || hallPending,
     isError: paymentsError || hallError,
     refetch: () => {
       refetchPayments()

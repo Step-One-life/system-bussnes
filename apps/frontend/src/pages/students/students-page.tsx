@@ -18,7 +18,7 @@ import {
 
 export function StudentsPage() {
   const { t } = useTranslation()
-  const { data: students = [], isLoading, isError, refetch } = useStudents()
+  const { data: students = [], isPending, isError, refetch } = useStudents()
   const { data: groups = [] } = useGroups()
   const { filter, setFilter, filtered, hasActiveFilter } = useStudentFilter(students)
 
@@ -66,7 +66,7 @@ export function StudentsPage() {
       {/* Сбой загрузки старше пустоты: раньше отказ бэка показывался как
           «Ученики не найдены. Добавьте первого» и тренер заводил дубли. */}
       <QueryState
-        isLoading={isLoading}
+        isPending={isPending}
         isError={isError}
         onRetry={refetch}
         isEmpty={!filtered.length}

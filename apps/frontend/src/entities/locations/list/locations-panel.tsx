@@ -21,7 +21,7 @@ import './location-card.scss'
 /** Locations management block, embedded into the Finance page. */
 export function LocationsPanel() {
   const { t } = useTranslation()
-  const { data: locations = [], isLoading, isError, refetch } = useLocations()
+  const { data: locations = [], isPending, isError, refetch } = useLocations()
   const deleteLocation = useDeleteLocation()
   const run = useSafeAction()
 
@@ -56,7 +56,7 @@ export function LocationsPanel() {
       </div>
 
       <QueryState
-        isLoading={isLoading}
+        isPending={isPending}
         isError={isError}
         onRetry={refetch}
         skeletonRows={2}

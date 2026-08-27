@@ -64,7 +64,7 @@ export function StatsTab() {
   if (stats.isError) return <ErrorState onRetry={stats.refetch} />
   // Пока платежи и расходы в полёте — скелет, а не «Доход 0 ₽» с красной
   // маржой 0%: на медленной сети это читалось как «все деньги обнулились».
-  if (stats.isLoading) return <ListSkeleton rows={4} />
+  if (stats.isPending) return <ListSkeleton rows={4} />
 
   const deltaHint = t('finance.stats.deltaVs', { period: stats.prevPeriodLabel })
 
