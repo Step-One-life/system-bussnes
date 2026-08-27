@@ -128,7 +128,11 @@ function collectDayItems(
   groups: Group[],
 ): DayItem[] {
   const dayIdx = dayIndexOf(dateStr)
-  const trMap = new Map(trainings.map((t) => [`${t.groupId}|${t.date}`, t]))
+  // Слот расписания подавляется занятием, совпадающим по ВРЕМЕНИ, а не просто
+  // «есть занятие этой группы в этот день». Иначе у группы с расписанием
+  // Пн 10:00 добавленное дополнительное занятие на 18:00 стирало из календаря
+  // и ленты «Сегодня» сам слот 10:00 — тренер терял занятие из виду.
+  const trMap = new Map(trainings.map((t) => [`${t.groupId}|${t.date}|${t.time}`, t]))
   const items: DayItem[] = []
 
   for (const t of filter(trainings, (tr) => tr.date === dateStr)) {
@@ -162,7 +166,7 @@ function collectDayItems(
     if (!isGroupActiveOn(g.expiresAt, dateStr)) continue
     for (const slot of g.schedule ?? []) {
       if (DOW_IDX[slot.day] !== dayIdx) continue
-      if (trMap.has(`${g.name}|${dateStr}`)) continue
+      if (trMap.has(`${g.name}|${dateStr}|${slot.time}`)) continue
       items.push({
         training: null,
         groupId: g.name,

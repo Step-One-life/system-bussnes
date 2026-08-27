@@ -60,11 +60,23 @@ export function QuickMarkSheet({ target, onClose }: QuickMarkSheetProps) {
   const { data: groups = [] } = useGroups()
   const [issueFor, setIssueFor] = useState<IssueTarget | null>(null)
 
-  // Срез дня под одно занятие: группа по имени, инд./парное по trainingId.
-  const slotGroup =
-    target && !target.isInd
-      ? dayGroups.find((g) => g.groupId === target.groupId) ?? null
-      : null
+  // Срез дня под КОНКРЕТНОЕ занятие. По имени группы искать нельзя: у группы
+  // может быть несколько занятий в один день, и отметка уходила в самое
+  // позднее — посещения, списания и авто-платежи привязывались к чужому времени.
+  const slotGroup = useMemo(() => {
+    if (!target || target.isInd) return null
+    if (target.trainingId) {
+      return dayGroups.find((g) => g.existing?.id === target.trainingId) ?? null
+    }
+    // Занятия ещё нет — это слот расписания: ищем незанятый срез этой группы.
+    return (
+      dayGroups.find(
+        (g) => g.groupId === target.groupId && !g.existing && g.time === target.time,
+      ) ??
+      dayGroups.find((g) => g.groupId === target.groupId && !g.existing) ??
+      null
+    )
+  }, [dayGroups, target])
   const slotInd = useMemo(
     () => (target?.isInd ? dayIndividuals.filter((i) => i.trainingId === target.trainingId) : []),
     [dayIndividuals, target],
@@ -106,6 +118,8 @@ export function QuickMarkSheet({ target, onClose }: QuickMarkSheetProps) {
       isPrime,
       sessionDuration: duration,
       rules,
+      // Дата занятия, а не «сегодня»: гейт для отметки задним числом.
+      onDate: target.date,
     })
     if (preview.kind === 'subscription')
       return t('home.billingSub', { count: preview.remaining })
@@ -117,7 +131,7 @@ export function QuickMarkSheet({ target, onClose }: QuickMarkSheetProps) {
   }
 
   const checkedCount = slotGroup
-    ? (checks[slotGroup.groupId]?.size ?? 0)
+    ? (checks[slotGroup.key]?.size ?? 0)
     : slotInd.filter((i) => indChecks[indKey(i.trainingId, i.studentId)] ?? i.originalPresent).length
   const totalCount = slotGroup ? groupMembers.length : slotInd.length
 
@@ -125,7 +139,7 @@ export function QuickMarkSheet({ target, onClose }: QuickMarkSheetProps) {
     if (!target) return
     // Сохраняем ТОЛЬКО срез этого занятия — остальной день не трогаем.
     if (slotGroup) {
-      save({ groups: { [slotGroup.groupId]: checks[slotGroup.groupId] ?? new Set() }, ind: {} })
+      save({ groups: { [slotGroup.key]: checks[slotGroup.key] ?? new Set() }, ind: {} })
     } else {
       const ind: Record<string, boolean> = {}
       for (const i of slotInd) {
@@ -139,7 +153,7 @@ export function QuickMarkSheet({ target, onClose }: QuickMarkSheetProps) {
   const handleIssued = () => {
     if (!issueFor) return
     if (issueFor.trainingId) toggleInd(issueFor.trainingId, issueFor.studentId)
-    else toggle(issueFor.groupId, issueFor.studentId)
+    else if (slotGroup) toggle(slotGroup.key, issueFor.studentId)
   }
 
   return (
@@ -165,7 +179,7 @@ export function QuickMarkSheet({ target, onClose }: QuickMarkSheetProps) {
           {slotGroup &&
             groupMembers.map((s) => {
               const st = getSubStatus(s, slotGroup.groupId, slotGroup.duration)
-              const checked = checks[slotGroup.groupId]?.has(s.id) ?? false
+              const checked = checks[slotGroup.key]?.has(s.id) ?? false
               const gated = needsSub(st.type) && !checked
               return (
                 <MarkStudentRow
@@ -176,7 +190,7 @@ export function QuickMarkSheet({ target, onClose }: QuickMarkSheetProps) {
                   gated={gated}
                   legacyWarn={needsSub(st.type) && checked}
                   subLine={billingLine(s.id, false, false, slotGroup.duration)}
-                  onToggle={() => toggle(slotGroup.groupId, s.id)}
+                  onToggle={() => toggle(slotGroup.key, s.id)}
                   onIssue={() =>
                     setIssueFor({ studentId: s.id, name: s.name, groupId: slotGroup.groupId })
                   }

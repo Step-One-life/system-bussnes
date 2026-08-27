@@ -4,6 +4,8 @@ import map from 'lodash/map'
 
 import i18n from 'i18next'
 
+import { todayISO } from 'common/utils/date'
+
 import type { Student, Subscription, SubStatus } from './types'
 
 export function subTypeLabel(type: string): string {
@@ -59,6 +61,13 @@ export function findSubForGroup(
   groupId: string,
   sessionDuration: number | null = null,
   wantPair = false,
+  /**
+   * Дата ЗАНЯТИЯ (YYYY-MM-DD). Отметка задним числом должна видеть абонемент,
+   * действовавший в тот день: с «сегодня» гейт вёл в «Оформить абонемент» и
+   * клиент платил за уже оплаченный визит второй раз. По умолчанию — сегодня
+   * (превью для занятий «здесь и сейчас»).
+   */
+  onDate: string | null = null,
 ): Subscription | null {
   // Парные тренировки списывают только парные абонементы, остальные — не-парные
   // (парный и индивидуальный живут на одной группе-контейнере). `?? false` —
@@ -71,8 +80,9 @@ export function findSubForGroup(
       // абонемент сервер не спишет (отметка уйдёт в авто-платёж), значит и
       // превью остатка должно его пропускать. getDaysRemaining считает по
       // локальной полуночи (без UTC-сдвига на границе суток).
-      const days = getDaysRemaining(s)
-      return days === null || days >= 0
+      // Зеркало бэкового isNotExpired(sub, billingDate).
+      if (!s.expiresAt) return true
+      return s.expiresAt >= (onDate ?? todayISO())
     })
     .sort((a, b) => Number(a.isUnlimited ?? false) - Number(b.isUnlimited ?? false))
   return (

@@ -1,5 +1,5 @@
 import { clientTypeToTuple, matchRule } from 'entities/finance/lib/rule-match'
-import { findSubForGroup, getDaysRemaining } from 'entities/students/model/subscription-status'
+import { findSubForGroup } from 'entities/students/model/subscription-status'
 
 import type { PricingRule } from 'entities/finance/model/types'
 import type { Student } from 'entities/students/model/types'
@@ -18,6 +18,12 @@ interface PreviewArgs {
   sessionDuration: number
   /** Тарифы локации занятия. */
   rules: PricingRule[]
+  /**
+   * Дата занятия (YYYY-MM-DD). Для отметки задним числом гейт обязан смотреть
+   * на абонемент, действовавший в тот день, иначе тренер уводится в
+   * «Оформить абонемент» и клиент платит второй раз за уже оплаченный визит.
+   */
+  onDate?: string
 }
 
 /**
@@ -29,17 +35,16 @@ interface PreviewArgs {
  * не показывает.
  */
 export function previewBilling(args: PreviewArgs): BillingPreview {
-  const { student, groupId, isPair, isPrime, sessionDuration, rules } = args
+  const { student, groupId, isPair, isPrime, sessionDuration, rules, onDate } = args
   if (isPair) {
     const type = sessionDuration >= 90 ? 'single_pair_90' : 'single_pair'
     const rule = matchRule(rules, clientTypeToTuple(type))
     if (!rule) return { kind: 'payment', amount: null }
     return { kind: 'payment', amount: isPrime ? rule.client_prime_price : rule.client_price }
   }
-  const sub = findSubForGroup(student, groupId, sessionDuration)
-  // Зеркало серверного isNotExpired: истёкший по сроку абонемент сервер
-  // не списывает, даже если isActive ещё не снят.
-  const days = getDaysRemaining(sub)
-  if (sub && (days === null || days >= 0)) return { kind: 'subscription', remaining: sub.remaining }
+  // findSubForGroup сам отсеивает истёкшие на дату занятия (зеркало
+  // серверного isNotExpired на billingDate).
+  const sub = findSubForGroup(student, groupId, sessionDuration, false, onDate ?? null)
+  if (sub) return { kind: 'subscription', remaining: sub.remaining }
   return { kind: 'gated' }
 }

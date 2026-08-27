@@ -54,7 +54,8 @@ export function CloseDaySheet({ open, date, onClose }: CloseDaySheetProps) {
       )
       const willMark = [...def].filter((id) => !dg.originalAttendees.has(id)).length
       out.push({
-        key: `g:${dg.groupId}`,
+        // Ключ строки — срез занятия: у группы их может быть несколько за день.
+        key: dg.key,
         label: dg.groupId,
         time: dg.time,
         alreadyMarked: dg.originalAttendees.size > 0,
@@ -141,7 +142,8 @@ export function CloseDaySheet({ open, date, onClose }: CloseDaySheetProps) {
     const selection: MarkSelection = { groups: {}, ind: {} }
     for (const r of rows) {
       if (r.alreadyMarked || !checkedRows.has(r.key)) continue
-      if (r.groupChecks) selection.groups[r.target.groupId] = r.groupChecks
+      // Ключ выборки — тот же key среза, что и в use-day-marking.
+      if (r.groupChecks) selection.groups[r.key] = r.groupChecks
       if (r.indChecks) Object.assign(selection.ind, r.indChecks)
     }
     day.save(selection)
