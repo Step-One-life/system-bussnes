@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Query, Res, UseGuards } from '@nestjs/common'
+import { Body, ConflictException, Controller, Get, Post, Query, Res, UseGuards } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { JwtService } from '@nestjs/jwt'
 import type { FastifyReply } from 'fastify'
@@ -69,7 +69,14 @@ export class CalendarController {
   @UseGuards(JwtAuthGuard)
   async calendars(@CurrentUser() user: CurrentUserPayload) {
     const token = await this.connections.getRefreshToken(user.id)
-    if (!token) return { calendars: [] }
+    if (!token) {
+      // Токен есть, но не расшифровывается — это не «не подключён», а
+      // «переподключите»: раньше отсюда прилетало 500.
+      if (await this.connections.isTokenBroken(user.id)) {
+        throw new ConflictException('Переподключите Google Календарь')
+      }
+      return { calendars: [] }
+    }
     return { calendars: await this.google.listCalendars(token) }
   }
 
@@ -78,7 +85,12 @@ export class CalendarController {
   @UseGuards(JwtAuthGuard)
   async select(@CurrentUser() user: CurrentUserPayload, @Body() dto: SelectCalendarDto) {
     const token = await this.connections.getRefreshToken(user.id)
-    if (!token) return { ok: false }
+    if (!token) {
+      if (await this.connections.isTokenBroken(user.id)) {
+        throw new ConflictException('Переподключите Google Календарь')
+      }
+      return { ok: false }
+    }
 
     const timeZone = dto.timeZone || 'Europe/Moscow'
     let calendarId = dto.calendarId ?? ''

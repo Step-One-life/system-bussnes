@@ -155,7 +155,8 @@
       "timePlaceholder": "Time",
       "expiresLabel": "Active until",
       "expiresHint": "Optional. After this date the group is no longer active — its schedule stops suggesting sessions.",
-      "scheduleTimeRequired": "Set the time for: {{days}}"
+      "scheduleTimeRequired": "Set the time for: {{days}}",
+      "deleteImpactCalendar": "Their events will also be removed from Google Calendar."
     },
     "schedule": {
       "notSet": "No schedule",

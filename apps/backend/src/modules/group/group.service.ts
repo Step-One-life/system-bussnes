@@ -1,10 +1,11 @@
-import { ConflictException, Injectable } from '@nestjs/common'
+import { ConflictException, forwardRef, Inject, Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/sequelize'
 import { UniqueConstraintError } from 'sequelize'
 
 import { OwnedCrudService } from '../../common/services/owned-crud.service'
 import { assertOwned } from '../../common/services/assert-owned'
 import { Location } from '../location/location.model'
+import { TrainingService } from '../training/training.service'
 import { Student } from '../student/student.model'
 import { Subscription } from '../student/subscription.model'
 import { Group } from './group.model'
@@ -18,6 +19,8 @@ export class GroupService extends OwnedCrudService<Group> {
     @InjectModel(Subscription) private readonly subModel: typeof Subscription,
     @InjectModel(Student) private readonly studentModel: typeof Student,
     @InjectModel(Location) private readonly locationModel: typeof Location,
+    @Inject(forwardRef(() => TrainingService))
+    private readonly trainingService: TrainingService,
   ) {
     super(groupModel)
   }
@@ -65,6 +68,9 @@ export class GroupService extends OwnedCrudService<Group> {
    */
   async removeForUser(userId: string, id: string): Promise<void> {
     await this.detachSharedSubscriptions(userId, id)
+    // Занятия группы удаляем ДОМЕННО, а не каскадом FK: иначе биллинг не
+    // откатывается, а события остаются в Google-календаре навсегда.
+    await this.trainingService.removeTrainingsOfGroup(userId, id)
     await super.removeForUser(userId, id)
   }
 

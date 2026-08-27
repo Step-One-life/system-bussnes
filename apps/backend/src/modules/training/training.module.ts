@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common'
+import { forwardRef, Module } from '@nestjs/common'
 import { SequelizeModule } from '@nestjs/sequelize'
 
 import { ActivityLogModule } from '../activity-log/activity-log.module'
@@ -15,8 +15,8 @@ import { TrainingService } from './training.service'
 @Module({
   imports: [
     SequelizeModule.forFeature([Training, TrainingAttendee]),
-    StudentModule,
-    GroupModule,
+    forwardRef(() => StudentModule),
+    forwardRef(() => GroupModule),
     LocationModule,
     FinanceModule,
     CalendarModule,
