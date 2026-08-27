@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
 
-import { getIndividualKPIs, getIndividualWarnings } from 'common/lib/kpi'
+import { computeIndividualKPIs, computeIndividualWarnings } from 'common/lib/kpi'
 import { useGroups } from 'entities/groups'
 import { useStudents } from 'entities/students'
 import { getLastVisitDate } from 'entities/students/model/students.repo'
@@ -16,8 +15,18 @@ export function useIndividualPage() {
   const [sessionOpen, setSessionOpen] = useState(false)
   const [onlineSessionOpen, setOnlineSessionOpen] = useState(false)
 
+  // Сбой создания контейнера раньше уходил в unhandled rejection: три CTA
+  // экрана оставались серыми навсегда, а «Повторить» их не оживляло.
+  const [indGroupError, setIndGroupError] = useState(false)
   useEffect(() => {
-    ensureIndividualGroup().then((g) => setIndGroupId(g.name))
+    let alive = true
+    ensureIndividualGroup().then(
+      (g) => alive && setIndGroupId(g.name),
+      () => alive && setIndGroupError(true),
+    )
+    return () => {
+      alive = false
+    }
   }, [])
 
   const indGroupNames = useMemo(
@@ -25,17 +34,18 @@ export function useIndividualPage() {
     [groups],
   )
 
-  const { data: kpis } = useQuery({
-    queryKey: ['individual', 'kpis', indGroupNames],
-    queryFn: () => getIndividualKPIs(indGroupNames),
-    enabled: indGroupNames.length > 0,
-  })
-
-  const { data: warnings = [] } = useQuery({
-    queryKey: ['individual', 'warnings', indGroupNames],
-    queryFn: () => getIndividualWarnings(indGroupNames),
-    enabled: indGroupNames.length > 0,
-  })
+  // Считаем из общих кэшей: любая инвалидация studentKeys/trainingKeys
+  // (запись занятия прямо с этого экрана) сразу обновляет плитки и блок
+  // предупреждений. Раньше они жили на собственных ключах, которые никто не
+  // инвалидировал, и качали /students дополнительно.
+  const kpis = useMemo(
+    () => computeIndividualKPIs(students, trainings, indGroupNames, new Date()),
+    [students, trainings, indGroupNames],
+  )
+  const warnings = useMemo(
+    () => computeIndividualWarnings(students, indGroupNames),
+    [students, indGroupNames],
+  )
 
   const clients = useMemo(
     () =>
@@ -53,8 +63,13 @@ export function useIndividualPage() {
     [trainings, indGroupNames],
   )
 
-  const isError = groupsError || studentsError || trainingsError
+  const isError = groupsError || studentsError || trainingsError || indGroupError
   const refetch = () => {
+    setIndGroupError(false)
+    ensureIndividualGroup().then(
+      (g) => setIndGroupId(g.name),
+      () => setIndGroupError(true),
+    )
     refetchGroups()
     refetchStudents()
     refetchTrainings()
@@ -63,7 +78,7 @@ export function useIndividualPage() {
   return {
     indGroupId,
     indGroupNames,
-    kpis: kpis ?? { clients: 0, monthSessions: 0, weekSessions: 0, expiring: 0 },
+    kpis,
     warnings,
     clients,
     recentSessions,

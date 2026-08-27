@@ -194,6 +194,7 @@ export function StudentDrawer({ studentId, onClose, onEdit }: StudentDrawerProps
                   onEdit={handleEditSub(false)}
                   onDeleteSub={handleDeleteSub}
                   onMarkPaid={handleMarkPaid(g)}
+                  busy={actions.busy}
                 />
               ))
             ) : (
@@ -242,6 +243,7 @@ export function StudentDrawer({ studentId, onClose, onEdit }: StudentDrawerProps
                     onEdit={handleEditSub(true)}
                     onDeleteSub={handleDeleteSub}
                     onMarkPaid={handleMarkPaid(g)}
+                    busy={actions.busy}
                   />
                 ))}
               </>

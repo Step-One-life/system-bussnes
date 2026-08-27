@@ -5,7 +5,7 @@ import { UserAddOutlined } from '@ant-design/icons'
 
 import { useTranslation } from 'react-i18next'
 
-import { EmptyState, ListSkeleton, PageHeader } from 'common/ui'
+import { EmptyState, PageHeader, QueryState } from 'common/ui'
 import { useGroups } from 'entities/groups'
 import {
   StudentDrawer,
@@ -18,7 +18,7 @@ import {
 
 export function StudentsPage() {
   const { t } = useTranslation()
-  const { data: students = [], isLoading } = useStudents()
+  const { data: students = [], isPending, isError, refetch } = useStudents()
   const { data: groups = [] } = useGroups()
   const { filter, setFilter, filtered, hasActiveFilter } = useStudentFilter(students)
 
@@ -63,16 +63,22 @@ export function StudentsPage() {
 
       <StudentToolbar filter={filter} onChange={setFilter} groupNames={groupNames} />
 
-      {isLoading ? (
-        <ListSkeleton />
-      ) : filtered.length ? (
+      {/* Сбой загрузки старше пустоты: раньше отказ бэка показывался как
+          «Ученики не найдены. Добавьте первого» и тренер заводил дубли. */}
+      <QueryState
+        isPending={isPending}
+        isError={isError}
+        onRetry={refetch}
+        isEmpty={!filtered.length}
+        empty={
+          <EmptyState
+            title={t('students.notFound')}
+            text={hasActiveFilter ? t('students.tryFilters') : t('students.addFirst')}
+          />
+        }
+      >
         <StudentList students={filtered} indNames={indNames} onOpen={setDrawerId} />
-      ) : (
-        <EmptyState
-          title={t('students.notFound')}
-          text={hasActiveFilter ? t('students.tryFilters') : t('students.addFirst')}
-        />
-      )}
+      </QueryState>
 
       <StudentDrawer studentId={drawerId} onClose={handleCloseDrawer} onEdit={openEdit} />
 

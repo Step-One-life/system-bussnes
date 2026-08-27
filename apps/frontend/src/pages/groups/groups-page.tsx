@@ -5,7 +5,7 @@ import { PlusOutlined } from '@ant-design/icons'
 
 import { useTranslation } from 'react-i18next'
 
-import { EmptyState, ListSkeleton, PageHeader } from 'common/ui'
+import { EmptyState, PageHeader, QueryState } from 'common/ui'
 import { GroupDetail, GroupFormModal, GroupList } from 'entities/groups'
 import { StudentDrawer, StudentFormModal, useStudents } from 'entities/students'
 
@@ -85,25 +85,32 @@ export function GroupsPage() {
         }
       />
 
-      {page.isLoading ? (
-        <ListSkeleton rows={3} />
-      ) : page.regularGroups.length ? (
+      {/* Отказ бэка раньше выглядел как «Групп пока нет» с кнопкой «Создать
+          группу» — прямое приглашение наплодить дубли. */}
+      <QueryState
+        isPending={page.isPending}
+        isError={page.isError}
+        onRetry={page.refetch}
+        skeletonRows={3}
+        isEmpty={!page.regularGroups.length}
+        empty={
+          <EmptyState
+            title={t('groups.empty')}
+            text={t('groups.emptyText')}
+            action={
+              <Button className="tk-btn-primary" icon={<PlusOutlined />} onClick={page.openCreate}>
+                {t('groups.create')}
+              </Button>
+            }
+          />
+        }
+      >
         <GroupList
           groups={page.regularGroups}
           onOpen={page.setOpenedGroup}
           onEdit={page.openEdit}
         />
-      ) : (
-        <EmptyState
-          title={t('groups.empty')}
-          text={t('groups.emptyText')}
-          action={
-            <Button className="tk-btn-primary" icon={<PlusOutlined />} onClick={page.openCreate}>
-              {t('groups.create')}
-            </Button>
-          }
-        />
-      )}
+      </QueryState>
 
       <GroupFormModal
         key={page.formKey}

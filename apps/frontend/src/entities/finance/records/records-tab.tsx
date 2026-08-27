@@ -79,7 +79,7 @@ export function RecordsTab() {
         </Button>
       </div>
 
-      {records.isLoading ? (
+      {records.isPending ? (
         <ListSkeleton />
       ) : records.isError ? (
         <ErrorState onRetry={records.refetch} />

@@ -29,7 +29,7 @@ export interface FinanceRecordItem {
 export function useFinanceRecords() {
   const { t, i18n } = useTranslation()
   const toast = useToast()
-  const { data: payments = [], isLoading, isError, refetch } = usePayments()
+  const { data: payments = [], isPending, isError, refetch } = usePayments()
   const { data: hallCosts = [] } = useHallCosts()
   const { data: students = [] } = useStudents()
   const { data: groups = [] } = useGroups()
@@ -91,7 +91,7 @@ export function useFinanceRecords() {
     setQuery,
     handleDelete,
     isEmpty: isEmpty(payments),
-    isLoading,
+    isPending,
     isError,
     refetch,
   }

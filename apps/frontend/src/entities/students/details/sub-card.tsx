@@ -35,6 +35,8 @@ interface SubCardProps {
   onEdit: (sub: Subscription) => void
   onDeleteSub: (subId: string) => void
   onMarkPaid?: (subId: string) => void
+  /** Идёт списание — кнопка заблокирована, двойной клик невозможен. */
+  busy?: boolean
 }
 
 export function SubCard({
@@ -47,6 +49,7 @@ export function SubCard({
   onEdit,
   onDeleteSub,
   onMarkPaid,
+  busy = false,
 }: SubCardProps) {
   const { t } = useTranslation()
   const [confirmDelete, setConfirmDelete] = useState(false)
@@ -177,7 +180,7 @@ export function SubCard({
             type="primary"
             size="small"
             icon={<MinusCircleOutlined />}
-            disabled={activeSub.remaining <= 0}
+            disabled={busy || activeSub.remaining <= 0}
             onClick={() => onDeduct(activeSub)}
           >
             {t('students.subCard.deductSession')}

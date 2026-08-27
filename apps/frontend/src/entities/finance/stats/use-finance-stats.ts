@@ -118,6 +118,8 @@ export interface FinanceStats {
   clientTypes: TypeBreakdown
   hallTypes: TypeBreakdown
   topClients: TopClient[]
+  /** Данных ещё нет: нули и красная маржа 0% были бы ложью, а не фактом. */
+  isPending: boolean
   isError: boolean
   refetch: () => void
 }
@@ -127,8 +129,18 @@ export function useFinanceStats(): FinanceStats {
   // переключения языка.
   const { i18n: i18nInstance } = useTranslation()
   const lang = i18nInstance.language
-  const { data: payments = [], isError: paymentsError, refetch: refetchPayments } = usePayments()
-  const { data: hallCosts = [], isError: hallError, refetch: refetchHall } = useHallCosts()
+  const {
+    data: payments = [],
+    isPending: paymentsPending,
+    isError: paymentsError,
+    refetch: refetchPayments,
+  } = usePayments()
+  const {
+    data: hallCosts = [],
+    isPending: hallPending,
+    isError: hallError,
+    refetch: refetchHall,
+  } = useHallCosts()
   const { data: students = [] } = useStudents()
 
   const [period, setPeriodState] = useState<FinancePeriod>('month')
@@ -261,6 +273,7 @@ export function useFinanceStats(): FinanceStats {
     clientTypes,
     hallTypes,
     topClients,
+    isPending: paymentsPending || hallPending,
     isError: paymentsError || hallError,
     refetch: () => {
       refetchPayments()

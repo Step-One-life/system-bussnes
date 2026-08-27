@@ -1,3 +1,4 @@
+import { useSafeAction } from 'common/lib/use-safe-action'
 import { todayISO } from 'common/utils/date'
 import { MarkPaidModal } from 'entities/finance'
 import { StudentFormModal } from 'entities/students'
@@ -80,6 +81,7 @@ export function HomeModals({
   indNames,
   regularNames,
 }: HomeModalsProps) {
+  const run = useSafeAction()
   // Payload для фейда закрытия — чистые производные от lastModal (никаких
   // ref/effect: и то и другое запрещено линтером в рендере).
   const heldInd = lastModal?.kind === 'individual' ? lastModal : null
@@ -95,17 +97,20 @@ export function HomeModals({
   const renewStudent =
     modal?.kind === 'renew' ? students.find((s) => s.id === modal.studentId) : undefined
 
+  // Контейнер «Индивидуальные» создаётся лениво: при сбое сети пикер типа
+  // раньше просто оставался открытым, повторные тапы ничего не делали и
+  // ошибку никто не показывал (это не мутация — глобальный onError молчит).
   const pickIndividual = async () => {
-    const g = await ensureIndividualGroup()
-    onOpen({ kind: 'individual', groupId: g.name, isOnline: false })
+    const g = await run(() => ensureIndividualGroup())
+    if (g) onOpen({ kind: 'individual', groupId: g.name, isOnline: false })
   }
   const pickOnline = async () => {
-    const g = await ensureIndividualGroup()
-    onOpen({ kind: 'individual', groupId: g.name, isOnline: true })
+    const g = await run(() => ensureIndividualGroup())
+    if (g) onOpen({ kind: 'individual', groupId: g.name, isOnline: true })
   }
   const pickPair = async () => {
-    const g = await ensureIndividualGroup()
-    onOpen({ kind: 'pair', groupId: g.name })
+    const g = await run(() => ensureIndividualGroup())
+    if (g) onOpen({ kind: 'pair', groupId: g.name })
   }
   const handlePickGroup = () => onOpen({ kind: 'group' })
   const handleAddStudent = (training: Training) => onOpen({ kind: 'add-to-training', training })

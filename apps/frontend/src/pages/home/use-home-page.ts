@@ -8,7 +8,12 @@ import { useStudents } from 'entities/students'
 import { buildCalendarDay, useTrainings } from 'entities/trainings'
 
 export function useHomePage() {
-  const { data: students = [], isLoading: studentsLoading } = useStudents()
+  const {
+    data: students = [],
+    isPending: studentsPending,
+    isError: studentsError,
+    refetch: refetchStudents,
+  } = useStudents()
   const { data: trainings = [], isLoading, isError, refetch } = useTrainings()
   const { data: groups = [] } = useGroups()
 
@@ -19,10 +24,10 @@ export function useHomePage() {
   // собственными повторными запросами /students и /trainings.
   const kpis = useMemo(
     () =>
-      studentsLoading || isLoading
+      studentsPending || isLoading
         ? undefined
         : computeKPIs(students, trainings, new Date()),
-    [studentsLoading, isLoading, students, trainings],
+    [studentsPending, isLoading, students, trainings],
   )
   const warnings = useMemo(() => computeWarnings(students), [students])
 
@@ -71,6 +76,11 @@ export function useHomePage() {
     isLoading,
     isError,
     refetch,
+    // Правая колонка живёт на учениках: у неё своя загрузка и своя ошибка,
+    // иначе недогруженный экран показывает зелёное «Все абонементы в порядке».
+    studentsPending,
+    studentsError,
+    refetchStudents,
     indNames,
     regularNames,
     todayTrainings,
