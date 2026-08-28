@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common'
+import { BadRequestException, ConflictException, Injectable, Logger, NotFoundException } from '@nestjs/common'
 import { InjectConnection, InjectModel } from '@nestjs/sequelize'
 import { Op, UniqueConstraintError } from 'sequelize'
 import type { FindOptions, Transaction } from 'sequelize'
@@ -48,6 +48,8 @@ export interface BillingResult {
 
 @Injectable()
 export class TrainingService extends OwnedCrudService<Training> {
+  private readonly logger = new Logger(TrainingService.name)
+
   protected readonly searchField: string | null = null
 
   constructor(
@@ -212,14 +214,27 @@ export class TrainingService extends OwnedCrudService<Training> {
    * правки без смены даты/времени не блокируются давними наложениями.
    */
   async updateForUser(userId: string, id: string, data: object): Promise<Training> {
-    const changes = data as { date?: string; time?: string; locationId?: string | null }
+    const changes = data as {
+      date?: string
+      time?: string
+      locationId?: string | null
+      sessionDuration?: number
+    }
     const current = await this.findOneForUser(userId, id)
     const date = changes.date ?? current.date
     const time = changes.time ?? current.time
-    if (time && (date !== current.date || time !== current.time)) {
+    const duration = changes.sessionDuration ?? current.sessionDuration ?? 60
+    // Длительность тоже двигает границы занятия: PATCH, меняющий ТОЛЬКО её,
+    // проверку наложения не проходил вовсе.
+    if (
+      time &&
+      (date !== current.date ||
+        time !== current.time ||
+        duration !== (current.sessionDuration || 60))
+    ) {
       const candidates = await this.overlapCandidatesFor(userId, date, current.groupId)
       const overlaps = findOverlaps(
-        { date, time, durationMinutes: current.sessionDuration || 60 },
+        { date, time, durationMinutes: duration },
         candidates,
         [id],
       )
@@ -384,9 +399,22 @@ export class TrainingService extends OwnedCrudService<Training> {
           if (billing === 'none') {
             // Ошибка биллинга не должна ломать отметку: платёж не создан →
             // визит сохраняется с billing='none', UI покажет предупреждение.
-            const payment = await this.createAttendancePayment(training, studentId, tx).catch(
-              () => null,
-            )
+            //
+            // ВЛОЖЕННАЯ транзакция (SAVEPOINT) обязательна: расход зала
+            // создаётся ПЕРВЫМ, и при сбое создания дохода он коммитился
+            // вместе с визитом — оставался «осиротевший» расход, который из
+            // интерфейса не удалить. Теперь откатывается вся денежная пара.
+            const payment = await this.sequelize
+              .transaction({ transaction: tx }, (inner) =>
+                this.createAttendancePayment(training, studentId, inner),
+              )
+              .catch((e: unknown) => {
+                // Раньше ошибка исчезала совсем — не было даже строки в логе.
+                this.logger.warn(
+                  `Авто-платёж не создан (занятие ${training.id}, ученик ${studentId}): ${String(e)}`,
+                )
+                return null
+              })
             if (payment) {
               billing = 'payment'
               paymentId = payment.id
@@ -537,7 +565,7 @@ export class TrainingService extends OwnedCrudService<Training> {
       })
       if (!visit) return
       if (visit.billing === 'subscription' && visit.subscriptionId) {
-        await this.subscriptionsService.restoreById(visit.subscriptionId as string, tx)
+        await this.subscriptionsService.restoreById(visit.subscriptionId, tx)
       } else if (visit.billing === 'payment' && visit.paymentId) {
         // Удаление платежа — в ТОЙ ЖЕ транзакции, что и визит: автокоммит терял
         // платёж при откате транзакции. Платёж могли удалить вручную в Финансах

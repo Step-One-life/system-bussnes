@@ -1,26 +1,16 @@
-export type ClientPaymentType =
-  | 'single_individual'
-  | 'single_group'
-  | 'individual_sub_4'
-  | 'group_sub_4'
-  | 'individual_sub_8'
-  | 'group_sub_8'
-  | 'single_individual_90'
-  | 'individual_sub_4_90'
-  | 'individual_sub_8_90'
-  | 'single_pair'
-  | 'single_pair_90'
-  // Обобщённый доход за абонемент с произвольным числом занятий (число — в sessions_total).
-  | 'group_subscription'
-  | 'individual_subscription'
-  | 'pair_subscription'
-  | 'unlimited_subscription'
+/**
+ * Денежные перечисления — РЕ-ЭКСПОРТ из @trikick/shared, а не копия.
+ * Раньше здесь лежал дословный дубль, и добавление вида занятия требовало
+ * правки в двух местах: расхождение уже ломало прайм-цены (см. ARCHITECTURE §8).
+ */
+import type {
+  ClientPaymentType,
+  FinStatus,
+  HallPaymentType,
+  TimeSlot,
+} from '@trikick/shared'
 
-export type HallPaymentType = ClientPaymentType
-
-export type TimeSlot = 'regular' | 'prime'
-
-export type FinStatus = 'active' | 'closed'
+export type { ClientPaymentType, FinStatus, HallPaymentType, TimeSlot }
 
 export interface Payment {
   id: string

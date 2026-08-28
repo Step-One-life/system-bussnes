@@ -33,7 +33,8 @@ export default defineConfig({
         manualChunks: {
           react: ['react', 'react-dom', 'react-router-dom'],
           antd: ['antd', '@ant-design/icons'],
-          charts: ['chart.js', 'react-chartjs-2'],
+          // chart.js НЕ в ручном чанке: иначе он попадает в modulepreload
+          // index.html и грузится ещё на экране логина.
           vendor: ['lodash', 'dayjs', 'i18next', 'react-i18next', '@tanstack/react-query'],
         },
       },

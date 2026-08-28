@@ -1,7 +1,10 @@
+import { lazy, Suspense } from 'react'
+
 import { useTranslation } from 'react-i18next'
 
-import { PageHeader } from 'common/ui'
-import { PricingTab, RecordsTab, StatsTab } from 'entities/finance'
+import { ListSkeleton, PageHeader } from 'common/ui'
+import { PricingTab } from 'entities/finance/pricing/pricing-tab'
+import { RecordsTab } from 'entities/finance/records/records-tab'
 import { LocationsPanel } from 'entities/locations'
 
 import { useFinancePage } from './use-finance-page'
@@ -9,6 +12,12 @@ import { useFinancePage } from './use-finance-page'
 import type { FinanceTab } from './use-finance-page'
 
 import './finance-page.scss'
+
+// chart.js (163 КБ) нужен ТОЛЬКО этой вкладке: через бочку он попадал в
+// предзагрузку каждой страницы, включая экран логина.
+const StatsTab = lazy(() =>
+  import('entities/finance/stats/stats-tab').then((m) => ({ default: m.StatsTab })),
+)
 
 export function FinancePage() {
   const { t } = useTranslation()
@@ -40,7 +49,7 @@ export function FinancePage() {
       </div>
 
       {page.tab === 'records' && <RecordsTab />}
-      {page.tab === 'stats' && <StatsTab />}
+      {page.tab === 'stats' && <Suspense fallback={<ListSkeleton rows={4} />}><StatsTab /></Suspense>}
       {page.tab === 'pricing' && <PricingTab onAddLocation={() => page.setTab('locations')} />}
       {page.tab === 'locations' && <LocationsPanel />}
     </div>

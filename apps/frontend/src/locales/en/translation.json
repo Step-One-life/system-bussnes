@@ -279,7 +279,8 @@
       "removeTitle": "Remove the {{date}} check-in?",
       "removeHint": "The session goes back to the subscription and the recorded income is deleted.",
       "removed": "Check-in removed",
-      "orphanCannotRemove": "This legacy record cannot be removed: it is not linked to a training"
+      "orphanCannotRemove": "This legacy record cannot be removed: it is not linked to a training",
+      "legacy": "legacy record"
     },
     "actions": {
       "sessionDeducted": "Session deducted",

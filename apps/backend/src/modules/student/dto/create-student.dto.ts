@@ -7,6 +7,7 @@ export class CreateStudentDto implements CreateStudentShape {
   @ApiProperty({ example: 'Алексей Иванов' })
   @IsString()
   @IsNotEmpty()
+  @MaxLength(200)
   name!: string
 
   @ApiPropertyOptional({ type: [String], description: 'id групп' })

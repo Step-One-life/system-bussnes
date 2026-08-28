@@ -18,7 +18,7 @@ describe('seriesUpdateFields', () => {
       date: '2026-06-09',
       groupId: 'g',
       isPrime: true,
-    } as never)
+    })
     expect(out).toEqual({ time: '19:30' })
     expect('date' in out).toBe(false)
     expect('isPrime' in out).toBe(false)
@@ -111,5 +111,39 @@ describe('seriesTargets', () => {
       time: '19:00',
       moved: true,
     })
+  })
+})
+
+// D44: PATCH серии с sessionDuration отвечал 200 {updated: 8}, ничего не меняя —
+// поле не входило ни в распространяемые, ни в запрещённые.
+describe('seriesForbiddenFields — белый список', () => {
+  it('распространяемые поля разрешены', () => {
+    expect(
+      seriesForbiddenFields({ time: '18:00', locationId: null, note: 'x', isOnline: true }),
+    ).toEqual([])
+  })
+
+  it('относительный перенос разрешён', () => {
+    expect(seriesForbiddenFields({ dateShiftDays: 7 })).toEqual([])
+  })
+
+  it('isPrime принимается молча — пересчитывается по дате занятия', () => {
+    expect(seriesForbiddenFields({ isPrime: true })).toEqual([])
+  })
+
+  it('любое поле вне набора отклоняется, а не игнорируется', () => {
+    expect(seriesForbiddenFields({ sessionDuration: 90 } as never)).toEqual(['sessionDuration'])
+    expect(seriesForbiddenFields({ attendees: ['a'] } as never)).toEqual(['attendees'])
+  })
+
+  it('абсолютная дата и смена группы по-прежнему запрещены', () => {
+    expect(seriesForbiddenFields({ date: '2026-09-01', groupId: 'g1' }).sort()).toEqual([
+      'date',
+      'groupId',
+    ])
+  })
+
+  it('undefined-поля не считаются присланными', () => {
+    expect(seriesForbiddenFields({ time: '18:00', date: undefined })).toEqual([])
   })
 })
