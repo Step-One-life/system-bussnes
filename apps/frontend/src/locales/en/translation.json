@@ -109,7 +109,8 @@
     "theme": "Theme",
     "themeOptionLight": "Light",
     "themeOptionDark": "Dark",
-    "themeOptionSystem": "System"
+    "themeOptionSystem": "System",
+    "tgCopyFailed": "Could not copy — here is the text"
   },
   "groups": {
     "create": "Create group",
@@ -209,7 +210,8 @@
       "remind": "Send payment reminder",
       "reminderText": "Hi {{name}}! A friendly reminder about your subscription payment ({{sub}}). Thank you!",
       "copied": "Message copied",
-      "copiedHint": "No phone on file — send the text manually"
+      "copiedHint": "No phone on file — send the text manually",
+      "copiedHintShort": "The number is incomplete — send the text manually"
     },
     "sub": {
       "single": "Single visit",
@@ -749,7 +751,9 @@
       "periodPrev": "Previous period",
       "periodNext": "Next period",
       "deltaVs": "vs previous period ({{period}})",
-      "unknownClient": "Unknown"
+      "unknownClient": "Unknown",
+      "deltaVsPartial": "vs the same part of the previous period ({{period}})",
+      "partialPeriod": "The period is still running — compared with the same part of the previous one."
     },
     "autoRecord": {
       "noTariff": "No tariff configured — finance record not created"

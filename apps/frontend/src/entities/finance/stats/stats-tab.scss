@@ -232,3 +232,10 @@
     }
   }
 }
+
+/* Пояснение к дельте незавершённого периода — рядом с цифрами, не в тултипе */
+.fin-partial-note {
+  margin: 0 0 var(--sp-3);
+  font-size: 0.82rem;
+  color: var(--tk-text-tertiary);
+}
