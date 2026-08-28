@@ -214,3 +214,10 @@
     align-items: start;
   }
 }
+
+/* «Показать ещё N» под лентой внимания */
+.attention-more {
+  margin-top: var(--sp-2);
+  color: var(--tk-text-secondary);
+  font-size: 0.85rem;
+}

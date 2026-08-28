@@ -6,6 +6,7 @@ import size from 'lodash/size'
 import some from 'lodash/some'
 
 import {
+  findSubForGroup,
   getOverallSubStatus,
   getSubStatus,
 } from 'entities/students/model/subscription-status'
@@ -74,15 +75,33 @@ export function computeKPIs(
 export function computeWarnings(students: Student[]): WarningEntry[] {
   const warnings: WarningEntry[] = []
   for (const s of students) {
+    // Один абонемент — одна строка. Общий абонемент покрывает несколько групп,
+    // и раньше на каждую из них создавалась ОТДЕЛЬНАЯ идентичная плашка про
+    // один и тот же абонемент. Абонемент ищем тем же предикатом, что и статус
+    // (findSubForGroup), иначе для общего сюда попадал null.
+    const seenSubs = new Set<string>()
     for (const groupId of s.groups) {
       const status = getSubStatus(s, groupId)
-      if (status.type === 'ending' || status.type === 'expired') {
-        const sub = find(s.subscriptions, (sub) => sub.groupId === groupId) ?? null
-        warnings.push({ student: s, groupId, sub, status })
+      if (status.type !== 'ending' && status.type !== 'expired') continue
+
+      const sub = findSubForGroup(s, groupId) ?? findAnyCovering(s, groupId)
+      if (sub) {
+        if (seenSubs.has(sub.id)) continue
+        seenSubs.add(sub.id)
       }
+      warnings.push({ student: s, groupId, sub, status })
     }
   }
   return warnings
+}
+
+/** Абонемент, покрывающий группу, включая истёкший (для строки «нужно продлить»). */
+function findAnyCovering(student: Student, groupId: string): Subscription | null {
+  return (
+    find(student.subscriptions, (sub) =>
+      sub.groupIds?.length ? sub.groupIds.includes(groupId) : sub.groupId === groupId,
+    ) ?? null
+  )
 }
 
 export interface IndividualKPIs {

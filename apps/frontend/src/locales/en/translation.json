@@ -110,7 +110,8 @@
     "themeOptionLight": "Light",
     "themeOptionDark": "Dark",
     "themeOptionSystem": "System",
-    "tgCopyFailed": "Could not copy — here is the text"
+    "tgCopyFailed": "Could not copy — here is the text",
+    "loading": "Loading…"
   },
   "groups": {
     "create": "Create group",
@@ -721,7 +722,8 @@
       "durationPreset": "{{minutes}} min",
       "sessionsCount": "{{count}} sessions",
       "sessionsCount_one": "{{count}} session",
-      "sessionsValue": "{{count}}"
+      "sessionsValue": "{{count}}",
+      "copyDisabledHint": "You need at least a second location to copy from"
     },
     "priceRow": {
       "perSession": "≈ {{amount}} ₽/sess.",
@@ -835,7 +837,8 @@
       "expired": "Needs renewal",
       "indTraining": "Individual training",
       "extend": "Extend",
-      "noCategory": "No students in this category"
+      "noCategory": "No students in this category",
+      "activeStudents": "Active students ({{count}})"
     },
     "markTodayModal": {
       "nothingScheduled": "Nothing scheduled for today by group timetable"
@@ -880,7 +883,11 @@
     "quickMarkDone": "Done · {{checked}} of {{total}}",
     "billingSub": "session will be deducted · {{count}} left",
     "billingPayment": "one-time payment · {{amount}} ₽",
-    "billingNoTariff": "one-time payment · no tariff"
+    "billingNoTariff": "one-time payment · no tariff",
+    "reasonExpired": "Needs renewal",
+    "reasonEnding": "Ending",
+    "reasonLapsed": "Long absent",
+    "attentionShowMore": "Show {{count}} more"
   },
   "locations": {
     "title": "Locations",

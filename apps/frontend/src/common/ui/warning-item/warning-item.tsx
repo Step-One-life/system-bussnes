@@ -1,3 +1,5 @@
+import { useClickable } from 'common/lib/use-clickable'
+
 import type { ReactNode } from 'react'
 
 import './warning-item.scss'
@@ -11,13 +13,14 @@ interface WarningItemProps {
 }
 
 export function WarningItem({ name, detail, danger, action, onClick }: WarningItemProps) {
+  const clickable = useClickable(onClick)
   return (
     // --dot — токен-скин компонента (точка статуса вместо цветной полосы);
     // сырые классы .warning-item на других экранах остаются на легаси-стилях.
     <div
       className={`warning-item warning-item--dot${danger ? ' warning-item--danger' : ''}`}
-      onClick={onClick}
       style={onClick ? { cursor: 'pointer' } : undefined}
+      {...clickable}
     >
       <div className="warning-item__main">
         <div className="warning-item__name">

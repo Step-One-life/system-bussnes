@@ -1,10 +1,11 @@
-import { Modal } from 'antd'
+import { Button, Modal } from 'antd'
 
+import i18n from 'i18next'
 import { useTranslation } from 'react-i18next'
 
-import { Badge, StatusBadge, WarningItem } from 'common/ui'
+import { StatusBadge, WarningItem } from 'common/ui'
 import { formatDay, formatDayOfWeek, formatMonth } from 'common/utils/date'
-import { getInitials, getOverallSubStatus } from 'entities/students'
+import { getInitials, getOverallSubStatus, getSubStatus } from 'entities/students'
 
 import type { WarningEntry } from 'common/lib/kpi'
 import type { Student } from 'entities/students'
@@ -58,10 +59,21 @@ export function KpiDetailModal({
   let body: React.ReactNode = null
 
   if (kpiType === 'total') {
-    title = t('home.kpi.allStudents', { count: students.length })
-    body = students.length ? (
+    // Тот же предикат, что и в computeKPIs: плитка «Активных» показывала 12,
+    // а модалка открывала список из 30 — числа не сходились, и доверие к
+    // цифрам главной падало.
+    const activeStudents = students.filter(
+      (s) =>
+        s.groups.length > 0 &&
+        s.groups.some((g) => {
+          const type = getSubStatus(s, g).type
+          return type === 'active' || type === 'ending'
+        }),
+    )
+    title = t('home.kpi.activeStudents', { count: activeStudents.length })
+    body = activeStudents.length ? (
       <div className="kpi-list">
-        {students.map((s) => {
+        {activeStudents.map((s) => {
           const st = getOverallSubStatus(s)
           const groups = s.groups.filter((g) => !indNames.includes(g))
           return (
@@ -88,7 +100,7 @@ export function KpiDetailModal({
   }
 
   if (kpiType === 'month') {
-    const monthName = now.toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' })
+    const monthName = now.toLocaleDateString(i18n.language, { month: 'long', year: 'numeric' })
     const monthList = trainings
       .filter((tr) => {
         const d = new Date(tr.date)
@@ -145,14 +157,15 @@ export function KpiDetailModal({
             danger={w.status.type === 'expired'}
             onClick={handleOpenStudent(w.student.id)}
             action={
-              <Badge variant="accent">
-                <span
-                  onClick={handleRenewWarning(w.student.id, w.groupId)}
-                  style={{ cursor: 'pointer' }}
-                >
-                  {t('home.kpi.extend')}
-                </span>
-              </Badge>
+              /* Та же кнопка, что на главной: Badge со span не фокусировался
+                 и не активировался с клавиатуры. */
+              <Button
+                className="tk-btn-primary"
+                size="small"
+                onClick={handleRenewWarning(w.student.id, w.groupId)}
+              >
+                {t('home.kpi.extend')}
+              </Button>
             }
           />
         ))}

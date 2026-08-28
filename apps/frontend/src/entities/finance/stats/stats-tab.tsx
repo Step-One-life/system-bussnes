@@ -6,6 +6,7 @@ import {
   FileTextOutlined,
 } from '@ant-design/icons'
 
+import i18n from 'i18next'
 import { useTranslation } from 'react-i18next'
 
 import { ErrorState, ListSkeleton } from 'common/ui'
@@ -123,7 +124,7 @@ export function StatsTab() {
         <div className="fin-hero__item">
           <span className="fin-hero__label">{t('finance.stats.income')}</span>
           <span className="fin-hero__value" style={{ color: 'var(--tk-success-text)' }}>
-            {totals.totalIncome.toLocaleString('ru')} ₽
+            {totals.totalIncome.toLocaleString(i18n.language)} ₽
           </span>
           {stats.delta && <DeltaTag pct={stats.delta.incomePct} hint={deltaHint} />}
         </div>
@@ -131,7 +132,7 @@ export function StatsTab() {
         <div className="fin-hero__item">
           <span className="fin-hero__label">{t('finance.stats.hallExpense')}</span>
           <span className="fin-hero__value" style={{ color: 'var(--tk-danger-text)' }}>
-            {totals.totalHall.toLocaleString('ru')} ₽
+            {totals.totalHall.toLocaleString(i18n.language)} ₽
           </span>
           {stats.delta && <DeltaTag pct={stats.delta.hallPct} invert hint={deltaHint} />}
         </div>
@@ -143,7 +144,7 @@ export function StatsTab() {
             style={{ color: netColor }}
           >
             {totals.netIncome >= 0 ? '+' : ''}
-            {totals.netIncome.toLocaleString('ru')} ₽
+            {totals.netIncome.toLocaleString(i18n.language)} ₽
           </span>
           {stats.delta && <DeltaTag pct={stats.delta.netPct} hint={deltaHint} />}
         </div>
@@ -171,7 +172,7 @@ export function StatsTab() {
           <span className="fin-pill__icon"><CreditCardOutlined /></span>
           <span className="fin-pill__label">{t('finance.stats.avgCheck')}</span>
           <span className="fin-pill__value">
-            {totals.avgCheck.toLocaleString('ru')} ₽
+            {totals.avgCheck.toLocaleString(i18n.language)} ₽
           </span>
         </div>
       </div>

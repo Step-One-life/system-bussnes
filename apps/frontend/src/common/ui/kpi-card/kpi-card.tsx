@@ -1,4 +1,5 @@
 import { useCountUp } from 'common/hooks/use-count-up'
+import { useClickable } from 'common/lib/use-clickable'
 
 import type { ReactNode } from 'react'
 
@@ -16,10 +17,11 @@ interface KpiCardProps {
 
 export function KpiCard({ label, value, icon, variant = 'accent', onClick }: KpiCardProps) {
   const animated = useCountUp(value)
+  const clickable = useClickable(onClick)
   return (
     <div
       className={`kpi-card kpi-card--${variant}${onClick ? ' kpi-card--clickable' : ''}`}
-      onClick={onClick}
+      {...clickable}
     >
       {icon && <div className="kpi-card__icon">{icon}</div>}
       <div className="kpi-card__label">{label}</div>

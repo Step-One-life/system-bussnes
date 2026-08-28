@@ -14,12 +14,14 @@ import { OnboardingChecklist } from 'entities/onboarding'
 import { StudentDrawer } from 'entities/students'
 
 import { buildAgendaItems, minutesOfDay } from './agenda-model'
+import { ATTENTION_LIMIT, buildAttentionFeed } from './attention-feed'
 import { HomeModals } from './home-modals'
 import { KpiStrip } from './kpi-strip'
 import { TodayAgenda } from './today-agenda'
 import { useHomePage } from './use-home-page'
 import { useUnpaidSubs } from './use-unpaid-subs'
 
+import type { AttentionItem, AttentionReason } from './attention-feed'
 import type { HomeModal } from './home-modals'
 import type { UnpaidSub } from './use-unpaid-subs'
 import type { CalendarBlock } from 'entities/trainings'
@@ -40,6 +42,8 @@ export function HomePage() {
   // ещё нужен antd на время фейда закрытия.
   const [lastModal, setLastModal] = useState<HomeModal | null>(null)
   const [drawerId, setDrawerId] = useState<string | null>(null)
+  // Лента внимания показывается по top-5; «Показать ещё» раскрывает остальное.
+  const [showAllAttention, setShowAllAttention] = useState(false)
   // Счётчик открытий формы ученика: key пересоздаёт форму со свежими данными.
   const formSeq = useRef(0)
 
@@ -120,24 +124,79 @@ export function HomePage() {
   )
   const doneCount = agendaItems.filter((it) => it.endMin <= minutesOfDay(now)).length
 
-  const renderWarning = (w: (typeof page.warnings)[number]) => (
-    <WarningItem
-      key={`${w.student.id}-${w.groupId}`}
-      name={w.student.name}
-      detail={`${page.indNames.includes(w.groupId) ? t('home.indTraining') : w.groupId} · ${w.status.label}`}
-      danger={w.status.type === 'expired'}
-      onClick={handleOpenStudentDrawer(w.student.id)}
-      action={
+  // Лента: одна строка на ученика, причины — чипами, действие — одно
+  // (первичное по худшей причине).
+  const attention = useMemo(
+    () => buildAttentionFeed(page.warnings, unpaid, page.lapsed),
+    [page.warnings, unpaid, page.lapsed],
+  )
+  const visibleAttention = showAllAttention ? attention : attention.slice(0, ATTENTION_LIMIT)
+  const hiddenAttention = attention.length - visibleAttention.length
+  const handleShowAllAttention = () => setShowAllAttention(true)
+
+  const REASON_KEY: Record<AttentionReason, string> = {
+    expired: 'home.reasonExpired',
+    unpaid: 'home.attentionUnpaid',
+    ending: 'home.reasonEnding',
+    lapsed: 'home.reasonLapsed',
+  }
+
+  const renderAttention = (item: AttentionItem) => {
+    // «Давно не был» показываем конкретной подписью («Не был 80 дней»), а не
+    // общим чипом — иначе строка дублирует сама себя.
+    const parts = item.reasons.filter((r) => r !== 'lapsed').map((r) => t(REASON_KEY[r]))
+    if (item.reasons.includes('lapsed')) {
+      parts.push(
+        item.neverVisited
+          ? t('home.lapsedNever')
+          : t('home.lapsedDays', { count: item.lapsedDays ?? 0 }),
+      )
+    }
+    const detail = parts.join(' · ')
+    return (
+      <WarningItem
+        key={item.studentId}
+        name={item.name}
+        detail={detail}
+        danger={item.top === 'expired'}
+        onClick={handleOpenStudentDrawer(item.studentId)}
+        action={renderAttentionAction(item)}
+      />
+    )
+  }
+
+  const renderAttentionAction = (item: AttentionItem) => {
+    if (item.top === 'unpaid' && item.unpaid) {
+      return (
+        <Button className="tk-btn-secondary" size="small" onClick={handlePayUnpaid(item.unpaid)}>
+          {t('students.subCard.markPaid')}
+        </Button>
+      )
+    }
+    if (item.warning) {
+      return (
         <Button
           className="tk-btn-primary"
           size="small"
-          onClick={handleRenewWarning(w.student.id, w.groupId)}
+          onClick={handleRenewWarning(item.studentId, item.warning.groupId)}
         >
           {t('home.extend')}
         </Button>
-      }
-    />
-  )
+      )
+    }
+    if (isLinkablePhone(item.phone)) {
+      return (
+        <Button
+          className="tk-btn-secondary"
+          size="small"
+          onClick={handleWriteLapsed(item.name, item.phone)}
+        >
+          {t('home.lapsedWrite')}
+        </Button>
+      )
+    }
+    return undefined
+  }
 
   return (
     <div className="home-header">
@@ -271,10 +330,7 @@ export function HomePage() {
             }
           >
             <div className="warning-list">
-              {/* Серьёзность по убыванию: истёкшие → вчера → неоплаченные → заканчивающиеся. */}
-              {page.warnings
-                .filter((w) => w.status.type === 'expired')
-                .map(renderWarning)}
+              {/* «Вчера не отмечено» — про день, а не про ученика: отдельной строкой. */}
               {page.yesterdayUnmarked > 0 && (
                 <WarningItem
                   name={t('home.attentionYesterday', { count: page.yesterdayUnmarked })}
@@ -291,50 +347,19 @@ export function HomePage() {
                   }
                 />
               )}
-              {unpaid.map((u) => (
-                <WarningItem
-                  key={`unpaid-${u.sub.id}`}
-                  name={u.student.name}
-                  detail={`${u.isIndividual ? t('home.indTraining') : u.groupId} · ${t('home.attentionUnpaid')}`}
-                  onClick={handleOpenStudentDrawer(u.student.id)}
-                  action={
-                    <Button
-                      className="tk-btn-secondary"
-                      size="small"
-                      onClick={handlePayUnpaid(u)}
-                    >
-                      {t('students.subCard.markPaid')}
-                    </Button>
-                  }
-                />
-              ))}
-              {page.warnings
-                .filter((w) => w.status.type !== 'expired')
-                .map(renderWarning)}
-              {/* Радар оттока: давно не появлялся / так и не пришёл. */}
-              {page.lapsed.map((l) => (
-                <WarningItem
-                  key={`lapsed-${l.student.id}`}
-                  name={l.student.name}
-                  detail={
-                    l.neverVisited
-                      ? t('home.lapsedNever')
-                      : t('home.lapsedDays', { count: l.daysSince })
-                  }
-                  onClick={handleOpenStudentDrawer(l.student.id)}
-                  action={
-                    isLinkablePhone(l.student.phone) ? (
-                      <Button
-                        className="tk-btn-secondary"
-                        size="small"
-                        onClick={handleWriteLapsed(l.student.name, l.student.phone)}
-                      >
-                        {t('home.lapsedWrite')}
-                      </Button>
-                    ) : undefined
-                  }
-                />
-              ))}
+              {/* Одна строка на УЧЕНИКА с чипами причин: раньше он давал до
+                  трёх одинаковых плашек, а колонка росла до трёх экранов. */}
+              {visibleAttention.map(renderAttention)}
+              {hiddenAttention > 0 && (
+                <Button
+                  type="text"
+                  block
+                  className="attention-more"
+                  onClick={handleShowAllAttention}
+                >
+                  {t('home.attentionShowMore', { count: hiddenAttention })}
+                </Button>
+              )}
             </div>
           </QueryState>
         </section>
