@@ -113,7 +113,8 @@
     "themeOptionLight": "Светлая",
     "themeOptionDark": "Тёмная",
     "themeOptionSystem": "Системная",
-    "tgCopyFailed": "Не удалось скопировать — вот текст"
+    "tgCopyFailed": "Не удалось скопировать — вот текст",
+    "loading": "Загрузка…"
   },
   "groups": {
     "create": "Создать группу",
@@ -729,7 +730,8 @@
       "sessionsCount": "{{count}} занятие",
       "sessionsCount_few": "{{count}} занятия",
       "sessionsCount_many": "{{count}} занятий",
-      "sessionsValue": "{{count}}"
+      "sessionsValue": "{{count}}",
+      "copyDisabledHint": "Нужна хотя бы вторая локация — копировать не из чего"
     },
     "priceRow": {
       "perSession": "≈ {{amount}} ₽/зан.",
@@ -844,7 +846,8 @@
       "expired": "Нужно продлить",
       "indTraining": "Индивидуальная тренировка",
       "extend": "Продлить",
-      "noCategory": "Нет учеников в этой категории"
+      "noCategory": "Нет учеников в этой категории",
+      "activeStudents": "Активные ученики ({{count}})"
     },
     "markTodayModal": {
       "nothingScheduled": "По расписанию групп на сегодня ничего не запланировано"
@@ -892,7 +895,11 @@
     "quickMarkDone": "Готово · {{checked}} из {{total}}",
     "billingSub": "спишется занятие · осталось {{count}}",
     "billingPayment": "разовый платёж · {{amount}} ₽",
-    "billingNoTariff": "разовый платёж · нет тарифа"
+    "billingNoTariff": "разовый платёж · нет тарифа",
+    "reasonExpired": "Нужно продлить",
+    "reasonEnding": "Заканчивается",
+    "reasonLapsed": "Давно не был",
+    "attentionShowMore": "Показать ещё {{count}}"
   },
   "locations": {
     "title": "Локации",

@@ -74,8 +74,8 @@ export function OnboardingChecklist() {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  background: done ? 'var(--tk-ok, #52c41a)' : 'transparent',
-                  border: done ? 'none' : '2px solid var(--tk-border, #d9d9d9)',
+                  background: done ? 'var(--tk-success-dot)' : 'transparent',
+                  border: done ? 'none' : '2px solid var(--tk-border-strong)',
                   color: '#fff',
                   fontSize: 11,
                 }}

@@ -20,5 +20,10 @@ export function usePageTitle() {
   useEffect(() => {
     const key = TITLE_KEYS[pathname.split('/')[1] ?? '']
     document.title = key ? `${t(key)} · TriKick` : 'TriKick'
+    // Экран логина лежит ВНЕ лейаута: после выхода из аккаунта вкладка
+    // продолжала называться «Финансы · TriKick».
+    return () => {
+      document.title = 'TriKick'
+    }
   }, [pathname, t, i18n.language])
 }

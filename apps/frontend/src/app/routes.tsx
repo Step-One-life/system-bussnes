@@ -3,6 +3,7 @@
    fast refresh к нему неприменим, правка роутов — всегда полная перезагрузка */
 import { lazy, Suspense } from 'react'
 
+import i18n from 'i18next'
 import { createBrowserRouter, Navigate } from 'react-router-dom'
 
 import { AppLayout } from './layout/app-layout'
@@ -51,7 +52,7 @@ function fallback(): ReactNode {
         color: 'var(--tk-text-secondary, #8a8a92)',
       }}
     >
-      Загрузка…
+      {i18n.t('common.loading')}
     </div>
   )
 }

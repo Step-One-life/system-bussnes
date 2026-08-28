@@ -14,6 +14,7 @@ import { useGroups } from 'entities/groups/api/use-groups'
 import { useLocations } from 'entities/locations'
 import { studentKeys, useStudents } from 'entities/students/api/use-students'
 import { addSubscription, linkPaymentToSub } from 'entities/students/model/students.repo'
+import { updateStudent } from 'entities/students/model/students.repo'
 import { findSubForGroup, subLabel } from 'entities/students/model/subscription-status'
 
 import { useCreateTraining } from '../api/use-trainings'
@@ -112,6 +113,12 @@ export function usePairSession({ indGroupId, onDone }: UsePairSessionOptions) {
         for (const clientId of [clientA, clientB]) {
           const student = students.find((s) => s.id === clientId) ?? null
           if (student && findSubForGroup(student, indGroupId, null, true)) continue
+          // Без записи в контейнерную группу выданный парный абонемент
+          // существует и списывается, но в карточке ученика его НЕ ВИДНО:
+          // дровер рисует карточки только по группам ученика.
+          if (student && !student.groups.includes(indGroupId)) {
+            await updateStudent(clientId, { groups: [...student.groups, indGroupId] })
+          }
           const createdSub = await addSubscription(clientId, {
             groupId: indGroupId,
             type: 'sub',

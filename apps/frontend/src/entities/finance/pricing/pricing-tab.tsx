@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { Button, Grid, Select } from 'antd'
+import { Button, Grid, Select, Tooltip } from 'antd'
 import { CopyOutlined, PlusOutlined } from '@ant-design/icons'
 
 import find from 'lodash/find'
@@ -84,13 +84,16 @@ export function PricingTab({ onAddLocation }: PricingTabProps) {
           onChange={setPicked}
           options={map(locations, (l) => ({ value: l.id, label: l.name }))}
         />
-        <Button
-          icon={<CopyOutlined />}
-          onClick={handleCopyOpen}
-          disabled={size(locations) < 2}
-        >
-          {t('finance.pricing.copyButton')}
-        </Button>
+        {/* Неактивная кнопка без объяснения читается как поломка. */}
+        <Tooltip title={size(locations) < 2 ? t('finance.pricing.copyDisabledHint') : ''}>
+          <Button
+            icon={<CopyOutlined />}
+            onClick={handleCopyOpen}
+            disabled={size(locations) < 2}
+          >
+            {t('finance.pricing.copyButton')}
+          </Button>
+        </Tooltip>
         <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
           {t('finance.pricing.addRule')}
         </Button>

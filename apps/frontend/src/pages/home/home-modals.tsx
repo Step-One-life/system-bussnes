@@ -205,6 +205,13 @@ export function HomeModals({
           studentId={modal.studentId}
           studentName={renewStudent.name}
           groupId={modal.groupId}
+          issueMode={
+            !renewStudent.subscriptions.some((sb) =>
+              sb.groupIds?.length
+                ? sb.groupIds.includes(modal.groupId)
+                : sb.groupId === modal.groupId,
+            )
+          }
           onClose={onClose}
         />
       )}

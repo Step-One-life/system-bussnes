@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
 
+import { useClickable } from 'common/lib/use-clickable'
 import { Badge, StatusBadge } from 'common/ui'
 import { formatDateShort } from 'common/utils/date'
 
@@ -25,9 +26,10 @@ export function StudentCard({ student, indNames, onClick }: StudentCardProps) {
   const hasInd = student.groups.some((g) => indNames.includes(g))
 
   const handleClick = () => onClick(student.id)
+  const clickable = useClickable(handleClick)
 
   return (
-    <div className="student-card" onClick={handleClick}>
+    <div className="student-card" {...clickable}>
       <div className="student-card__top">
         <div className="student-card__avatar">{getInitials(student.name)}</div>
         <div className="student-card__info">

@@ -293,6 +293,15 @@ export function StudentDrawer({ studentId, onClose, onEdit }: StudentDrawerProps
           studentId={student.id}
           studentName={student.name}
           groupId={subModal.groupId}
+          // Нет ни одного абонемента по группе — это ОФОРМЛЕНИЕ, а не
+          // продление: заголовок и кнопка меняются, дефолтом встаёт тариф.
+          issueMode={
+            !student.subscriptions.some((sb) =>
+              sb.groupIds?.length
+                ? sb.groupIds.includes(subModal.groupId)
+                : sb.groupId === subModal.groupId,
+            )
+          }
           onClose={handleCloseSubModal}
         />
       )}
