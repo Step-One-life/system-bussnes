@@ -1,4 +1,4 @@
-import { Button, Popconfirm } from 'antd'
+import { Button, Popconfirm, Tooltip } from 'antd'
 import { CloseOutlined } from '@ant-design/icons'
 
 import { useTranslation } from 'react-i18next'
@@ -46,23 +46,39 @@ export function VisitHistory({
           <div key={`${v.date}-${v.trainingId}-${v.groupId}`} className="visit-row">
             <span style={{ color: 'var(--tk-text-secondary)' }}>{formatDateShort(v.date)}</span>
             <Badge variant="accent">{label}</Badge>
-            <Popconfirm
-              title={t('students.visits.removeTitle', { date: formatDateShort(v.date) })}
-              description={t('students.visits.removeHint')}
-              okText={t('common.remove')}
-              cancelText={t('common.cancel')}
-              okButtonProps={{ danger: true }}
-              onConfirm={handleRemoveVisit(v)}
-            >
-              <Button
-                type="text"
-                size="small"
-                icon={<CloseOutlined />}
-                style={{ marginLeft: 'auto' }}
-                disabled={removing}
-                aria-label={t('common.remove')}
-              />
-            </Popconfirm>
+            {/* Легаси-визит без занятия снять нечем: серверного эндпоинта нет.
+                Показываем причину вместо кнопки, которая гарантированно упадёт. */}
+            {v.trainingId ? (
+              <Popconfirm
+                title={t('students.visits.removeTitle', { date: formatDateShort(v.date) })}
+                description={t('students.visits.removeHint')}
+                okText={t('common.remove')}
+                cancelText={t('common.cancel')}
+                okButtonProps={{ danger: true }}
+                onConfirm={handleRemoveVisit(v)}
+              >
+                <Button
+                  type="text"
+                  size="small"
+                  icon={<CloseOutlined />}
+                  style={{ marginLeft: 'auto' }}
+                  disabled={removing}
+                  aria-label={t('common.remove')}
+                />
+              </Popconfirm>
+            ) : (
+              <Tooltip title={t('students.visits.orphanCannotRemove')}>
+                <span
+                  style={{
+                    marginLeft: 'auto',
+                    fontSize: '0.75rem',
+                    color: 'var(--tk-text-tertiary)',
+                  }}
+                >
+                  {t('students.visits.legacy')}
+                </span>
+              </Tooltip>
+            )}
           </div>
         )
       })}

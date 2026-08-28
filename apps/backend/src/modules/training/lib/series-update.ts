@@ -42,10 +42,21 @@ export function seriesUpdateFields(dto: SeriesUpdateInput): SeriesUpdatableField
  * сервис отвечает 400.
  */
 export function seriesForbiddenFields(dto: SeriesUpdateInput): string[] {
-  const out: string[] = []
-  if (dto.groupId !== undefined) out.push('groupId')
-  if (dto.date !== undefined) out.push('date')
-  return out
+  const allowed = new Set([
+    'time',
+    'locationId',
+    'note',
+    'isOnline',
+    'dateShiftDays',
+    // Принимается, но осознанно игнорируется: пересчитывается по дате занятия.
+    'isPrime',
+  ])
+  // Белый список вместо чёрного: раньше PATCH с sessionDuration отвечал
+  // 200 {updated: 8}, ничего не меняя — поле не входило ни в распространяемые,
+  // ни в запрещённые, и клиент получал «успех» без эффекта.
+  return Object.keys(dto).filter(
+    (k) => !allowed.has(k) && (dto as Record<string, unknown>)[k] !== undefined,
+  )
 }
 
 /** Сдвиг даты YYYY-MM-DD на N дней (UTC-арифметика, без часовых поясов). */

@@ -1,6 +1,6 @@
 import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 
-import { financeKeys } from 'entities/finance'
+import { financeKeys } from 'entities/finance/api/use-finance'
 import { studentKeys } from 'entities/students'
 import { trainingKeys } from 'entities/trainings'
 

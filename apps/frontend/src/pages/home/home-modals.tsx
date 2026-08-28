@@ -1,6 +1,6 @@
 import { useSafeAction } from 'common/lib/use-safe-action'
 import { todayISO } from 'common/utils/date'
-import { MarkPaidModal } from 'entities/finance'
+import { MarkPaidModal } from 'entities/finance/form/mark-paid-modal'
 import { StudentFormModal } from 'entities/students'
 import { RenewSubModal } from 'entities/students/subscriptions/renew-sub-modal'
 import {

@@ -5,7 +5,7 @@ import { DollarOutlined, MessageOutlined } from '@ant-design/icons'
 
 import { useTranslation } from 'react-i18next'
 
-import { MarkPaidModal } from 'entities/finance'
+import { MarkPaidModal } from 'entities/finance/form/mark-paid-modal'
 import { subLabel, usePaymentReminder } from 'entities/students'
 
 import { useUnpaidSubs } from './use-unpaid-subs'

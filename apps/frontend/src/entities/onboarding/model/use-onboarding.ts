@@ -1,4 +1,4 @@
-import { usePricingRules } from 'entities/finance'
+import { usePricingRules } from 'entities/finance/api/use-finance'
 import { useGroups } from 'entities/groups'
 import { useLocations } from 'entities/locations'
 import { useStudents } from 'entities/students'

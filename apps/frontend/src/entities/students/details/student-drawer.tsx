@@ -8,7 +8,7 @@ import { useTranslation } from 'react-i18next'
 
 import { ErrorState, ListSkeleton, useToast } from 'common/ui'
 import { formatDateShort } from 'common/utils/date'
-import { MarkPaidModal } from 'entities/finance'
+import { MarkPaidModal } from 'entities/finance/form/mark-paid-modal'
 import { useGroups } from 'entities/groups/api/use-groups'
 import { useRemoveVisit } from 'entities/trainings/api/use-trainings'
 
