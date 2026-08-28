@@ -3,7 +3,7 @@ import { PhoneOutlined, SendOutlined, WhatsAppOutlined } from '@ant-design/icons
 
 import { useTranslation } from 'react-i18next'
 
-import { isLinkablePhone, telHref, tgHref, waHref } from 'common/utils/phone-links'
+import { isCallablePhone, isLinkablePhone, telHref, tgHref, waHref } from 'common/utils/phone-links'
 
 interface ContactActionsProps {
   phone: string | null | undefined
@@ -14,12 +14,16 @@ interface ContactActionsProps {
 /** Кнопки связи с учеником: звонок, WhatsApp, Telegram. Без номера — ничего. */
 export function ContactActions({ phone, waText }: ContactActionsProps) {
   const { t } = useTranslation()
-  if (!isLinkablePhone(phone)) return null
+  // Позвонить можно и на короткий городской номер — раньше он молча убирал
+  // ВСЕ кнопки связи. Мессенджеры требуют полный номер, их и прячем.
+  if (!isCallablePhone(phone)) return null
+  const messengers = isLinkablePhone(phone)
   return (
     <div className="contact-actions">
       <Button size="small" icon={<PhoneOutlined />} href={telHref(phone)}>
         {t('students.contacts.call')}
       </Button>
+      {messengers && (
       <Button
         size="small"
         icon={<WhatsAppOutlined />}
@@ -29,6 +33,8 @@ export function ContactActions({ phone, waText }: ContactActionsProps) {
       >
         WhatsApp
       </Button>
+      )}
+      {messengers && (
       <Button
         size="small"
         icon={<SendOutlined />}
@@ -38,6 +44,7 @@ export function ContactActions({ phone, waText }: ContactActionsProps) {
       >
         Telegram
       </Button>
+      )}
     </div>
   )
 }

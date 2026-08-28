@@ -9,20 +9,15 @@ import { useStudents } from 'entities/students'
 
 import { useHallCosts, usePayments } from '../api/use-finance'
 import { financeTotals } from './finance-totals'
-import { periodDelta } from './period-delta'
+import { clipToElapsed, periodDelta } from './period-delta'
 
 import type { HallCost, Payment } from '../model/types'
 import type { FinanceTotals } from './finance-totals'
-import type { PeriodDelta } from './period-delta'
+import type { PeriodDelta, PeriodRange } from './period-delta'
 
 import { roundMoney } from '@trikick/shared'
 
 export type FinancePeriod = 'month' | 'quarter' | 'year' | 'all'
-
-interface PeriodRange {
-  start: string | null
-  end: string | null
-}
 
 /** Название месяца на текущем языке с заглавной буквы («Июнь» / "June"). */
 function monthName(d: Date): string {
@@ -113,6 +108,8 @@ export interface FinanceStats {
   totals: FinanceTotals
   /** Дельты к прошлому периоду; null на «всём времени». */
   delta: PeriodDelta | null
+  /** Текущий период ещё идёт — дельта считается по равной доле. */
+  periodInProgress: boolean
   prevPeriodLabel: string
   monthly: MonthlyPoint[]
   clientTypes: TypeBreakdown
@@ -178,16 +175,25 @@ export function useFinanceStats(): FinanceStats {
     [filtered, filteredHall],
   )
 
-  // Сравнение с прошлым периодом той же длины (для «всего времени» его нет).
+  /**
+   * Сравнение с прошлым периодом. Текущий период ещё не закончился, поэтому
+   * прошлый обрезается по той же прошедшей доле: 3-го июля 6 000 ₽ делились на
+   * ВЕСЬ прошлый месяц и давали красное «▼ 90%» — так было бы каждый день
+   * месяца, кроме последнего, и нормальный месяц читался как обвал выручки.
+   */
   const delta = useMemo<PeriodDelta | null>(() => {
     if (period === 'all') return null
     const prevRange = periodRange(period, offset + 1)
+    const clipped = offset === 0 ? clipToElapsed(periodRange(period, 0), prevRange) : prevRange
     const prevTotals = financeTotals(
-      inPeriod(payments, prevRange, (p) => p.paid_at),
-      inPeriod(hallCosts, prevRange, (c) => c.paid_at),
+      inPeriod(payments, clipped, (p) => p.paid_at),
+      inPeriod(hallCosts, clipped, (c) => c.paid_at),
     )
     return periodDelta(totals, prevTotals)
   }, [period, offset, payments, hallCosts, totals])
+
+  /** Идёт ли период прямо сейчас — подпись «неполный» рядом с дельтой. */
+  const periodInProgress = period !== 'all' && offset === 0
 
   const prevPeriodLabel = period === 'all' ? '' : periodLabelFor(period, offset + 1)
 
@@ -268,6 +274,7 @@ export function useFinanceStats(): FinanceStats {
     periodLabel,
     totals,
     delta,
+    periodInProgress,
     prevPeriodLabel,
     monthly,
     clientTypes,

@@ -63,11 +63,14 @@ export function StudentFormModal({ open, student, onClose }: StudentFormModalPro
         </Form.Item>
 
         <Form.Item label={t('students.form.phoneLabel')}>
+          {/* maxLength симметрично заметке: без ограничения бэк отвечал 400
+              с английским текстом валидатора в русском интерфейсе. */}
           <Input
             value={form.phone}
             onChange={handlePhoneChange}
             placeholder={t('students.form.phonePlaceholder')}
             inputMode="tel"
+            maxLength={40}
             allowClear
           />
         </Form.Item>

@@ -3,7 +3,7 @@ import { useMemo, useState } from 'react'
 import lodashFilter from 'lodash/filter'
 import includes from 'lodash/includes'
 
-import { phoneDigits } from 'common/utils/phone-links'
+import { phoneMatches } from 'common/utils/phone-links'
 
 import { getOverallSubStatus } from '../model/subscription-status'
 import { sortStudents } from './student-sort'
@@ -20,11 +20,10 @@ export interface StudentFilter {
 
 const EMPTY_FILTER: StudentFilter = { group: '', status: '', search: '', sort: 'name' }
 
-/** Запрос из цифр ищет и по телефону («8999…» найдёт «+7 999…»). */
+/** Имя или телефон. Разбор запроса как номера — в phoneMatches (см. D23). */
 function matchesSearch(s: Student, q: string): boolean {
   if (includes(s.name.toLowerCase(), q)) return true
-  const qDigits = phoneDigits(q)
-  return !!qDigits && !!s.phone && includes(phoneDigits(s.phone), qDigits)
+  return phoneMatches(s.phone, q)
 }
 
 export function useStudentFilter(students: Student[]) {

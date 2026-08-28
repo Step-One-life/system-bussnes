@@ -66,7 +66,11 @@ export function StatsTab() {
   // маржой 0%: на медленной сети это читалось как «все деньги обнулились».
   if (stats.isPending) return <ListSkeleton rows={4} />
 
-  const deltaHint = t('finance.stats.deltaVs', { period: stats.prevPeriodLabel })
+  // Подпись видна на экране, а не только в тултипе: иначе нормальный месяц
+  // в начале читается как обвал выручки.
+  const deltaHint = stats.periodInProgress
+    ? t('finance.stats.deltaVsPartial', { period: stats.prevPeriodLabel })
+    : t('finance.stats.deltaVs', { period: stats.prevPeriodLabel })
 
   const netColor = totals.netIncome >= 0 ? 'var(--tk-success-text)' : 'var(--tk-danger-text)'
   const marginColor =
@@ -109,6 +113,10 @@ export function StatsTab() {
             ›
           </button>
         </div>
+      )}
+
+      {stats.periodInProgress && stats.delta && (
+        <p className="fin-partial-note">{t('finance.stats.partialPeriod')}</p>
       )}
 
       <div className="fin-hero">
