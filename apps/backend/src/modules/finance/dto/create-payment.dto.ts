@@ -1,5 +1,7 @@
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger'
-import { IsBoolean, IsIn, IsInt, IsNumber, IsOptional, IsString, IsUUID, Min } from 'class-validator'
+import { IsBoolean, IsIn, IsInt, IsNumber, IsOptional, IsString, IsUUID, Min, MaxLength } from 'class-validator'
+
+import { IsIsoDate } from '../../../common/decorators/date-format.decorators'
 
 import type { ClientPaymentType, CreatePaymentShape } from '@trikick/shared'
 
@@ -52,14 +54,15 @@ export class CreatePaymentDto implements CreatePaymentShape {
   @Min(1)
   sessionsTotal?: number
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ description: 'Дата YYYY-MM-DD' })
   @IsOptional()
-  @IsString()
+  @IsIsoDate()
   paidAt?: string
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
+  @MaxLength(2000)
   notes?: string
 
   @ApiPropertyOptional({ format: 'uuid', nullable: true })

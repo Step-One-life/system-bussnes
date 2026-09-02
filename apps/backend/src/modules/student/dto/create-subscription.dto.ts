@@ -3,15 +3,15 @@ import {
   ArrayMinSize,
   IsArray,
   IsBoolean,
-  IsDateString,
   IsIn,
   IsInt,
   IsNumber,
   IsOptional,
-  IsString,
   IsUUID,
   Min,
 } from 'class-validator'
+
+import { IsIsoDate } from '../../../common/decorators/date-format.decorators'
 
 import type { CreateSubscriptionShape, SubscriptionType, TimeSlot } from '@trikick/shared'
 
@@ -43,9 +43,9 @@ export class CreateSubscriptionDto implements CreateSubscriptionShape {
   @IsBoolean()
   isUnlimited?: boolean
 
-  @ApiPropertyOptional({ description: 'Дата начала (ISO)' })
+  @ApiPropertyOptional({ description: 'Дата начала YYYY-MM-DD' })
   @IsOptional()
-  @IsString()
+  @IsIsoDate()
   createdAt?: string
 
   @ApiPropertyOptional({ default: 60 })
@@ -97,7 +97,7 @@ export class UpdateSubscriptionDto {
 
   @ApiPropertyOptional({ description: 'Новая дата «до» (YYYY-MM-DD)' })
   @IsOptional()
-  @IsDateString()
+  @IsIsoDate()
   expiresAt?: string
 
   @ApiPropertyOptional({ type: [String], description: 'Новый состав групп (UUID, минимум 1)' })

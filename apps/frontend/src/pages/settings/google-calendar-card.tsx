@@ -118,12 +118,12 @@ export function GoogleCalendarCard() {
         <Alert
           type="warning"
           showIcon
-          message={t('settings.google.needsReconnect')}
+          title={t('settings.google.needsReconnect')}
           style={{ marginBottom: 12 }}
         />
       )}
 
-      <Space direction="vertical" style={{ width: '100%' }}>
+      <Space orientation="vertical" style={{ width: '100%' }}>
         <Typography.Text type="secondary">{t('settings.google.hint')}</Typography.Text>
 
         {status === 'connected' && state?.calendarId ? (

@@ -1,5 +1,16 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
-import { IsBoolean, IsIn, IsInt, IsNotEmpty, IsNumber, IsOptional, IsString, IsUUID, Min } from 'class-validator'
+import {
+  IsBoolean,
+  IsIn,
+  IsInt,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  IsUUID,
+  MaxLength,
+  Min,
+} from 'class-validator'
 
 import type { CreatePricingRuleShape, LessonKind, PricingFormat } from '@trikick/shared'
 
@@ -14,6 +25,7 @@ export class CreatePricingRuleDto implements CreatePricingRuleShape {
   @ApiProperty({ example: 'Индив. абонемент 4' })
   @IsString()
   @IsNotEmpty()
+  @MaxLength(200)
   title!: string
 
   @ApiProperty({ enum: LESSON_KINDS })

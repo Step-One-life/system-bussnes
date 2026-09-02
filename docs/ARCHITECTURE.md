@@ -127,6 +127,17 @@ NestJS-модули в `modules/`:
 - **Смена аккаунта** должна сбрасывать кэши: `queryClient.clear()` + `invalidateLocations()`
   + `invalidateGroupMap()` (в `auth-provider`), иначе данные «протекают» между аккаунтами.
 
+- **Даты/время в DTO — строго по формату.** Декораторы `IsIsoDate()` (реальная дата
+  `YYYY-MM-DD`, без времени и зоны) и `IsHHmm()` в `common/decorators/date-format.decorators.ts`.
+  Новые поля дат/времени вешать на них, не на `@IsString()`/`@IsDateString()`: первый пропускал
+  `'2026-13-45'` в MySQL (500), второй принимает ISO с временем, и полночь UTC уезжает на другой день.
+- **Строки в DTO — с `@MaxLength`** (VARCHAR(255) в БД → без лимита 500 «Data too long»);
+  на фронтовых `Input` тех же полей стоит `maxLength`, чтобы тренер не видел текст валидатора.
+- **«Сегодня» на сервере — в зоне `APP_TZ`** (`DateUtil.todayIso`, дефолт Europe/Moscow), а не в
+  системной зоне хоста; MySQL `NOW()` по-прежнему локальное — для диагностики `UTC_TIMESTAMP()`.
+- **Ошибки роутера фронта** — `pages/error/RouteErrorPage` (catch-all `*` под AppLayout +
+  `errorElement` на корнях); 401 в `api-client` считается «сессия истекла» только под токеном.
+
 ## 9. Запуск локально
 
 ```bash

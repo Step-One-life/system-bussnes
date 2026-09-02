@@ -1,10 +1,15 @@
 // Локаль dayjs выставляется в app/i18n.ts и следует за языком интерфейса.
 import dayjs from 'dayjs'
 
-/** "15 мая" */
+/**
+ * "15 мая" — для дат текущего года; для прошлых/будущих лет добавляется год
+ * ("15 мая 2025"): иначе визит или платёж годичной давности в списках
+ * неотличим от свежего.
+ */
 export function formatDateShort(isoDate?: string | null): string {
   if (!isoDate) return '—'
-  return dayjs(isoDate).format('D MMMM')
+  const d = dayjs(isoDate)
+  return d.format(d.year() === dayjs().year() ? 'D MMMM' : 'D MMMM YYYY')
 }
 
 /** "15 мая 2026" */

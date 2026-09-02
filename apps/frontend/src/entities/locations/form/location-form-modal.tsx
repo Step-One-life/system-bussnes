@@ -89,6 +89,7 @@ export function LocationFormModal({
             value={form.name}
             onChange={handleNameChange}
             placeholder={t('locations.form.namePlaceholder')}
+            maxLength={200}
           />
         </Form.Item>
         <Form.Item label={t('locations.form.addressLabel')}>
@@ -96,6 +97,7 @@ export function LocationFormModal({
             value={form.address ?? ''}
             onChange={handleAddressChange}
             placeholder={t('locations.form.addressPlaceholder')}
+            maxLength={255}
           />
         </Form.Item>
         <Form.Item label={t('locations.form.kindLabel')}>

@@ -32,6 +32,20 @@ function buildUrl(path: string, query?: Record<string, string | undefined>): str
   return qs ? `${url}?${qs}` : url
 }
 
+/**
+ * Тело ответа не обязано быть JSON: 502/504 от nginx приходят HTML-страницей,
+ * и голый JSON.parse ронял запрос с «Unexpected token '<'» вместо понятной
+ * ошибки со статусом. Непарсибельное тело считаем пустым.
+ */
+function parseJson(text: string): unknown {
+  if (!text) return null
+  try {
+    return JSON.parse(text) as unknown
+  } catch {
+    return null
+  }
+}
+
 function handleUnauthorized(): void {
   clearToken()
   if (window.location.pathname !== '/login') {
@@ -56,7 +70,10 @@ async function request<T>(
 
   const res = await fetch(buildUrl(path, options.query), init)
 
-  if (res.status === 401) {
+  // 401 означает «сессия истекла» только для запросов ПОД токеном. Неверный
+  // пароль на /auth/login — тоже 401, и раньше он превращался в «Сессия
+  // истекла» вместо сообщения сервера «Неверный email или пароль».
+  if (res.status === 401 && token) {
     handleUnauthorized()
     throw new ApiError(401, i18n.t('common.sessionExpired'))
   }
@@ -66,7 +83,7 @@ async function request<T>(
   }
 
   const text = await res.text()
-  const payload = text ? (JSON.parse(text) as unknown) : null
+  const payload = parseJson(text)
 
   if (!res.ok) {
     const body = (payload ?? {}) as ApiErrorBody

@@ -96,6 +96,7 @@ export function RuleFormModal({
             value={form.title}
             onChange={handleTitleChange}
             placeholder={t('finance.pricing.ruleForm.titlePlaceholder')}
+            maxLength={200}
           />
         </Form.Item>
         <Form.Item

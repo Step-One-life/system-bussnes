@@ -47,7 +47,7 @@ export function FinanceRecordCard({
     <div className={`fin-record${open ? ' is-open' : ''}`}>
       <div className="fin-record__header" onClick={handleToggleOpen}>
         <div className="fin-record__meta">
-          <span className="fin-record__name">{studentName ?? '—'}</span>
+          <span className="fin-record__name">{studentName ?? t('finance.card.noClient')}</span>
           <span className="fin-record__date">{formatDateShort(payment.paid_at)}</span>
         </div>
         <div className="fin-record__summary">

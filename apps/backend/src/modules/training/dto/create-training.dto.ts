@@ -6,18 +6,21 @@ import {
   IsOptional,
   IsString,
   IsUUID,
+  MaxLength,
 } from 'class-validator'
+
+import { IsHHmm, IsIsoDate } from '../../../common/decorators/date-format.decorators'
 
 import type { CreateTrainingShape } from '@trikick/shared'
 
 export class CreateTrainingDto implements CreateTrainingShape {
   @ApiProperty({ description: 'Дата YYYY-MM-DD' })
-  @IsString()
+  @IsIsoDate()
   date!: string
 
   @ApiPropertyOptional({ description: 'Время HH:mm' })
   @IsOptional()
-  @IsString()
+  @IsHHmm()
   time?: string
 
   @ApiProperty({ description: 'id группы', format: 'uuid' })
@@ -38,6 +41,7 @@ export class CreateTrainingDto implements CreateTrainingShape {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
+  @MaxLength(2000)
   note?: string
 
   @ApiPropertyOptional()
@@ -58,6 +62,7 @@ export class CreateTrainingDto implements CreateTrainingShape {
   @ApiPropertyOptional({ nullable: true })
   @IsOptional()
   @IsString()
+  @MaxLength(36)
   recurringId?: string | null
 
   @ApiPropertyOptional({ default: false })

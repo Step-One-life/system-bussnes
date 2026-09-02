@@ -37,8 +37,12 @@ export class AllExceptionsFilter implements ExceptionFilter {
         error = body.error as string | undefined
       }
     } else if (exception instanceof Error) {
-      message = exception.message
-      this.logger.error(exception.stack)
+      // Текст неожиданной ошибки — ТОЛЬКО в лог. Раньше он уходил клиенту как
+      // есть: «Data too long for column 'name' at row 1», «Incorrect DATE value»
+      // — внутренности схемы БД в ответе API и бессмысленный тост для тренера.
+      this.logger.error(exception.stack ?? exception.message)
+    } else {
+      this.logger.error(String(exception))
     }
 
     void reply.status(status).send({

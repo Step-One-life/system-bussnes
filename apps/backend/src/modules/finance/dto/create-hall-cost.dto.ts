@@ -1,5 +1,7 @@
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger'
-import { IsIn, IsInt, IsNumber, IsOptional, IsString, IsUUID, Min } from 'class-validator'
+import { IsIn, IsInt, IsNumber, IsOptional, IsString, IsUUID, Min, MaxLength } from 'class-validator'
+
+import { IsIsoDate } from '../../../common/decorators/date-format.decorators'
 
 import type { CreateHallCostShape, HallPaymentType, TimeSlot } from '@trikick/shared'
 
@@ -59,14 +61,15 @@ export class CreateHallCostDto implements CreateHallCostShape {
   @Min(1)
   sessionsTotal?: number
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ description: 'Дата YYYY-MM-DD' })
   @IsOptional()
-  @IsString()
+  @IsIsoDate()
   paidAt?: string
 
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
+  @MaxLength(2000)
   notes?: string
 }
 

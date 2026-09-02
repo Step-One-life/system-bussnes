@@ -1,4 +1,4 @@
-import { daysBetweenISO, shiftISODate, todayISO, tomorrowISO } from './date'
+import { daysBetweenISO, formatDateShort, shiftISODate, todayISO, tomorrowISO } from './date'
 
 import dayjs from 'dayjs'
 import { describe, expect, it } from 'vitest'
@@ -42,5 +42,21 @@ describe('daysBetweenISO', () => {
 
   it('через границу месяца', () => {
     expect(daysBetweenISO('2026-09-30', '2026-10-02')).toBe(2)
+  })
+})
+
+describe('formatDateShort', () => {
+  it('в текущем году — без года', () => {
+    const iso = `${dayjs().year()}-05-15`
+    expect(formatDateShort(iso)).not.toMatch(/\d{4}/)
+  })
+
+  it('в другом году — с годом (иначе прошлогодний визит выглядит свежим)', () => {
+    const y = dayjs().year() - 1
+    expect(formatDateShort(`${y}-05-15`)).toMatch(new RegExp(String(y)))
+  })
+
+  it('пустая дата — тире', () => {
+    expect(formatDateShort(null)).toBe('—')
   })
 })

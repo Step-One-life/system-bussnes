@@ -134,7 +134,17 @@
 }
 
 @media (max-width: 640px) {
+  // Поиск — своей строкой, экспорт и «Добавить» — второй: колонка из трёх
+  // элементов оставляла одинокий квадрат экспорта на отдельной строке.
   .fin-records-toolbar {
-    flex-direction: column;
+    flex-wrap: wrap;
+
+    .ant-input-affix-wrapper {
+      flex-basis: 100%;
+    }
+
+    .tk-btn-primary {
+      flex: 1;
+    }
   }
 }

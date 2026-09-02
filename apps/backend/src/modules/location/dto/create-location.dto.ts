@@ -1,5 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
-import { IsBoolean, IsIn, IsNotEmpty, IsOptional, IsString } from 'class-validator'
+import { IsBoolean, IsIn, IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator'
+
+import { IsHHmm } from '../../../common/decorators/date-format.decorators'
 
 import type { CreateLocationShape, LocationKind } from '@trikick/shared'
 
@@ -9,11 +11,13 @@ export class CreateLocationDto implements CreateLocationShape {
   @ApiProperty({ example: 'Основной зал' })
   @IsString()
   @IsNotEmpty()
+  @MaxLength(200)
   name!: string
 
   @ApiPropertyOptional({ example: 'ул. Спортивная, 1' })
   @IsOptional()
   @IsString()
+  @MaxLength(255)
   address?: string | null
 
   @ApiPropertyOptional({ enum: LOCATION_KINDS, default: 'hall' })
@@ -28,21 +32,21 @@ export class CreateLocationDto implements CreateLocationShape {
 
   @ApiPropertyOptional({ example: '17:00', description: 'Начало прайм-тайм в будни (HH:mm)' })
   @IsOptional()
-  @IsString()
+  @IsHHmm()
   primeWeekdayStart?: string | null
 
   @ApiPropertyOptional({ example: '20:00', description: 'Конец прайм-тайм в будни (HH:mm)' })
   @IsOptional()
-  @IsString()
+  @IsHHmm()
   primeWeekdayEnd?: string | null
 
   @ApiPropertyOptional({ example: '10:00', description: 'Начало прайм-тайм в выходные (HH:mm)' })
   @IsOptional()
-  @IsString()
+  @IsHHmm()
   primeWeekendStart?: string | null
 
   @ApiPropertyOptional({ example: '20:00', description: 'Конец прайм-тайм в выходные (HH:mm)' })
   @IsOptional()
-  @IsString()
+  @IsHHmm()
   primeWeekendEnd?: string | null
 }
