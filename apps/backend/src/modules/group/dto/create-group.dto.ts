@@ -3,14 +3,16 @@ import { Type } from 'class-transformer'
 import {
   IsArray,
   IsBoolean,
-  IsDateString,
   IsInt,
   IsNotEmpty,
   IsOptional,
   IsString,
   IsUUID,
+  MaxLength,
   ValidateNested,
 } from 'class-validator'
+
+import { IsIsoDate } from '../../../common/decorators/date-format.decorators'
 
 import type { CreateGroupShape } from '@trikick/shared'
 
@@ -20,6 +22,7 @@ export class CreateGroupDto implements CreateGroupShape {
   @ApiProperty({ example: 'Трикинг' })
   @IsString()
   @IsNotEmpty()
+  @MaxLength(200)
   name!: string
 
   @ApiPropertyOptional({ type: [ScheduleEntryDto] })
@@ -50,6 +53,6 @@ export class CreateGroupDto implements CreateGroupShape {
     description: 'Срок годности (YYYY-MM-DD, вкл.). Пусто/null — бессрочная.',
   })
   @IsOptional()
-  @IsDateString()
+  @IsIsoDate()
   expiresAt?: string | null
 }
