@@ -59,6 +59,7 @@ export function StudentFormModal({ open, student, onClose }: StudentFormModalPro
             value={form.name}
             onChange={handleNameChange}
             placeholder={t('students.form.namePlaceholder')}
+            maxLength={200}
           />
         </Form.Item>
 

@@ -52,7 +52,12 @@ export function RegisterPage() {
           label={t('auth.nameLabel')}
           rules={[{ required: true, message: t('auth.nameRequired') }]}
         >
-          <Input prefix={<UserOutlined />} placeholder={t('auth.namePlaceholder')} size="large" />
+          <Input
+            prefix={<UserOutlined />}
+            placeholder={t('auth.namePlaceholder')}
+            size="large"
+            maxLength={200}
+          />
         </Form.Item>
         <Form.Item
           name="email"

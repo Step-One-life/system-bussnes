@@ -59,6 +59,11 @@ class EnvVariables {
   @IsNotEmpty()
   CORS_ORIGIN!: string
 
+  /** IANA-зона для «сегодня» на сервере (см. DateUtil). Пусто — Europe/Moscow. */
+  @IsOptional()
+  @IsString()
+  APP_TZ?: string
+
   @IsOptional()
   @IsString()
   GOOGLE_OAUTH_CLIENT_ID?: string

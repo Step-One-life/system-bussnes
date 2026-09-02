@@ -116,6 +116,7 @@ export function GroupFormModal({ open, group, onClose, onDelete }: GroupFormModa
               value={form.name}
               onChange={handleNameChange}
               placeholder={t('groups.form.namePlaceholder')}
+              maxLength={200}
             />
           )}
         </Form.Item>
