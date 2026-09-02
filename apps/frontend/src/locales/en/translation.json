@@ -4,6 +4,11 @@
       "title": "Something went wrong",
       "description": "An error occurred in the interface. Try reloading the page — your data is safe.",
       "reload": "Reload"
+    },
+    "notFound": {
+      "title": "Page not found",
+      "description": "There is nothing at this address — the link may be outdated or mistyped.",
+      "home": "Go home"
     }
   },
   "settings": {
@@ -586,6 +591,7 @@
     "card": {
       "statusActive": "Active",
       "statusClosed": "Closed",
+      "noClient": "No client",
       "clientPays": "Client pays",
       "hallExpense": "Hall cost",
       "netIncome": "Net income",

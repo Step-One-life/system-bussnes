@@ -40,6 +40,9 @@ const SettingsPage = lazy(() =>
 const JournalPage = lazy(() =>
   import('pages/journal').then((m) => ({ default: m.JournalPage })),
 )
+const RouteErrorPage = lazy(() =>
+  import('pages/error').then((m) => ({ default: m.RouteErrorPage })),
+)
 
 function fallback(): ReactNode {
   return (
@@ -61,11 +64,19 @@ function lazyEl(node: ReactNode): ReactNode {
   return <Suspense fallback={fallback()}>{node}</Suspense>
 }
 
+// Ошибки роутера (в т.ч. несуществующий URL) — свой экран вместо служебного
+// «Unexpected Application Error» React Router. Неизвестный путь внутри
+// приложения ловит catch-all `*` под AppLayout — с сайдбаром и кнопкой «На главную».
 export const router = createBrowserRouter([
-  { path: '/login', element: lazyEl(<LoginPage />) },
-  { path: '/register', element: lazyEl(<RegisterPage />) },
+  { path: '/login', element: lazyEl(<LoginPage />), errorElement: lazyEl(<RouteErrorPage />) },
+  {
+    path: '/register',
+    element: lazyEl(<RegisterPage />),
+    errorElement: lazyEl(<RouteErrorPage />),
+  },
   {
     element: <ProtectedRoute />,
+    errorElement: lazyEl(<RouteErrorPage />),
     children: [
       {
         path: '/',
@@ -86,6 +97,7 @@ export const router = createBrowserRouter([
           { path: 'finance', element: lazyEl(<FinancePage />) },
           { path: 'settings', element: lazyEl(<SettingsPage />) },
           { path: 'journal', element: lazyEl(<JournalPage />) },
+          { path: '*', element: lazyEl(<RouteErrorPage notFound />) },
         ],
       },
     ],

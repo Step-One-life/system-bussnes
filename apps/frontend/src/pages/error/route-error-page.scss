@@ -1,0 +1,36 @@
+.route-error {
+  min-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-3);
+  padding: var(--sp-6);
+  text-align: center;
+  background: var(--tk-surface-page);
+  color: var(--tk-text-primary);
+}
+
+.route-error__code {
+  font-size: 3rem;
+  font-weight: 700;
+  color: var(--tk-text-tertiary);
+  line-height: 1;
+}
+
+.route-error__title {
+  font-size: 1.2rem;
+  margin: 0;
+}
+
+.route-error__text {
+  color: var(--tk-text-secondary);
+  max-width: 360px;
+  margin: 0;
+}
+
+.route-error__actions {
+  display: flex;
+  gap: var(--sp-2);
+  margin-top: var(--sp-2);
+}
