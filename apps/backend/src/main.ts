@@ -7,9 +7,13 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 import { AppModule } from './app.module'
 
 async function bootstrap() {
+  // trustProxy: за nginx Fastify без него берёт req.ip у самого прокси, и
+  // ThrottlerGuard считает всех клиентов одним адресом — 10 чужих неверных
+  // паролей блокировали вход всем пользователям на 15 минут (проверено на проде).
+  // Без прокси (локально) заголовка X-Forwarded-For нет, и req.ip остаётся реальным.
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
-    new FastifyAdapter(),
+    new FastifyAdapter({ trustProxy: true }),
   )
 
   const config = app.get(ConfigService)
